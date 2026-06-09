@@ -21,9 +21,22 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
 - UI en español.
 - Sin login y sin internet.
 
+## Alcance del Entregable 2
+
+- Importación desde CSV exportado de Notion.
+- Selector nativo de archivo CSV.
+- Parseo de headers y filas con soporte de comillas, comas y saltos de línea.
+- Mapping editable de columnas.
+- Preview antes de escribir en base.
+- Normalización de fechas, duración, puntaje, estado, géneros y plataformas.
+- Warnings y errores por fila.
+- Detección básica de duplicados.
+- Importación confirmada y transaccional.
+- Resumen final de importación.
+
 ## Fuera de alcance
 
-- Importación desde Notion CSV.
+- Notion API.
 - Metadata automática.
 - Providers externos como RAWG, IGDB, SteamGridDB o Steam.
 - Covers descargados o cache de imágenes externas.

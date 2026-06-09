@@ -33,6 +33,12 @@ class _GameListPageState extends ConsumerState<GameListPage> {
       appBar: AppBar(
         title: const Text('Backlog Vault'),
         actions: [
+          OutlinedButton.icon(
+            onPressed: () => context.go('/import/notion-csv'),
+            icon: const Icon(Icons.upload_file_outlined),
+            label: const Text('Importar CSV'),
+          ),
+          const SizedBox(width: 8),
           FilledButton.icon(
             onPressed: () => context.go('/games/new'),
             icon: const Icon(Icons.add),
@@ -122,13 +128,14 @@ class _GameDataTable extends ConsumerWidget {
                       children: [
                         IconButton(
                           tooltip: 'Abrir detalle',
-                          onPressed: () => context.go('/games/${item.entry.id}'),
+                          onPressed:
+                              () => context.go('/games/${item.entry.id}'),
                           icon: const Icon(Icons.open_in_new),
                         ),
                         IconButton(
                           tooltip: 'Editar',
-                          onPressed: () =>
-                              context.go('/games/${item.entry.id}/edit'),
+                          onPressed:
+                              () => context.go('/games/${item.entry.id}/edit'),
                           icon: const Icon(Icons.edit_outlined),
                         ),
                         IconButton(
@@ -183,10 +190,11 @@ class _GameCardList extends ConsumerWidget {
               if (value == 'edit') context.go('/games/${item.entry.id}/edit');
               if (value == 'delete') _confirmDelete(context, ref, item);
             },
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 'edit', child: Text('Editar')),
-              PopupMenuItem(value: 'delete', child: Text('Eliminar')),
-            ],
+            itemBuilder:
+                (context) => const [
+                  PopupMenuItem(value: 'edit', child: Text('Editar')),
+                  PopupMenuItem(value: 'delete', child: Text('Eliminar')),
+                ],
           ),
         );
       },
@@ -201,20 +209,21 @@ Future<void> _confirmDelete(
 ) async {
   final confirmed = await showDialog<bool>(
     context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Eliminar juego'),
-      content: Text('Se ocultará "${item.game.title}" de la biblioteca.'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancelar'),
+    builder:
+        (context) => AlertDialog(
+          title: const Text('Eliminar juego'),
+          content: Text('Se ocultará "${item.game.title}" de la biblioteca.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Eliminar'),
+            ),
+          ],
         ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, true),
-          child: const Text('Eliminar'),
-        ),
-      ],
-    ),
   );
   if (confirmed != true || !context.mounted) return;
   await ref.read(gameRepositoryProvider).softDelete(item.entry.id);
