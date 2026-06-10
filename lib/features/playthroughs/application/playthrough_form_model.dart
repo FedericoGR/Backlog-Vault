@@ -2,6 +2,7 @@ import '../domain/playthrough_status.dart';
 
 class PlaythroughFormModel {
   const PlaythroughFormModel({
+    this.playthroughId,
     required this.libraryEntryId,
     this.platformId,
     required this.status,
@@ -12,6 +13,7 @@ class PlaythroughFormModel {
     this.notes,
   });
 
+  final String? playthroughId;
   final String libraryEntryId;
   final String? platformId;
   final PlaythroughStatus status;
@@ -30,6 +32,13 @@ class PlaythroughFormModel {
     }
     if (status == PlaythroughStatus.completed && completedAt == null) {
       throw ArgumentError('La fecha de completado es obligatoria.');
+    }
+    if (startedAt != null &&
+        completedAt != null &&
+        startedAt!.isAfter(completedAt!)) {
+      throw ArgumentError(
+        'La fecha de inicio no puede ser posterior a la fecha de completado.',
+      );
     }
   }
 }

@@ -46,6 +46,18 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
 - Vistas custom persistidas localmente en `saved_views` con soft delete.
 - Resumen/totales de la vista visible.
 
+## Alcance del Entregable 4
+
+- Ficha avanzada de juego con resumen y progreso.
+- Acciones rápidas para marcar jugando, pausado, completado, abandonado o pendiente.
+- Playthroughs mejorados:
+  - crear;
+  - editar;
+  - soft-delete;
+  - listar con estado, plataforma, fechas, horas, puntaje y notas.
+- Resumen de horas totales, último completado, cantidad de playthroughs y partida activa/pausada.
+- Operaciones de progreso transaccionales para mantener consistencia entre `LibraryEntry` y `Playthrough`.
+
 ## Fuera de alcance
 
 - Notion API.
@@ -57,6 +69,8 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
 - Backup/export.
 - Estadísticas.
 - Recomendador.
+- Achievements/trophies.
+- Session logs avanzados.
 
 ## Preparar el proyecto Flutter
 
