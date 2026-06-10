@@ -8,6 +8,7 @@ import 'package:backlog_vault/core/time/clock.dart';
 import 'package:backlog_vault/features/backup_restore/data/backup_service.dart';
 import 'package:backlog_vault/features/backup_restore/data/export_repository.dart';
 import 'package:backlog_vault/features/backup_restore/domain/backup_models.dart';
+import 'package:backlog_vault/features/library/data/library_query_repository.dart';
 import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/playthroughs/domain/playthrough_status.dart';
 import 'package:crypto/crypto.dart';
@@ -112,6 +113,33 @@ void main() {
     expect(result.warnings.single.code, 'missing_media_file');
   });
 
+  test('backup warns and omits media paths outside media folder', () async {
+    await _insertCompleteLibrary(db, mediaBase: tempDir);
+    await db
+        .into(db.mediaAssets)
+        .insert(
+          MediaAssetsCompanion.insert(
+            id: 'unsafe-cover',
+            gameId: 'game-1',
+            kind: 'cover',
+            source: 'local',
+            localPath: 'covers/game-1/unsafe-cover.png',
+            fileName: 'unsafe-cover.png',
+            createdAt: DateTime(2026),
+            updatedAt: DateTime(2026),
+          ),
+        );
+
+    final result = await backupService.createBackup();
+    final archive = ZipDecoder().decodeBytes(result.bytes);
+
+    expect(archive.findFile('covers/game-1/unsafe-cover.png'), isNull);
+    expect(
+      result.warnings.map((warning) => warning.code),
+      contains('unsafe_media_path'),
+    );
+  });
+
   test('reader rejects incompatible schema and unsafe paths', () async {
     final validLibrary =
         LogicalLibraryExport(
@@ -139,6 +167,13 @@ void main() {
 
     expect(
       () => BackupPackageReader().read(
+        _backupBytes(libraryJson: validLibrary, backupFormatVersionValue: 99),
+      ),
+      throwsA(isA<BackupException>()),
+    );
+
+    expect(
+      () => BackupPackageReader().read(
         _backupBytes(
           libraryJson: validLibrary,
           extraPath: 'media/../secret.png',
@@ -148,10 +183,81 @@ void main() {
     );
   });
 
+  test('reader rejects missing data, bad checksum and corrupt package', () {
+    final validLibrary =
+        LogicalLibraryExport(
+          formatVersion: 1,
+          schemaVersion: 4,
+          exportedAt: DateTime(2026),
+          games: const [],
+          libraryEntries: const [],
+          platforms: const [],
+          libraryEntryPlatforms: const [],
+          genres: const [],
+          gameGenres: const [],
+          playthroughs: const [],
+          savedViews: const [],
+          externalGameIds: const [],
+          mediaAssets: const [],
+        ).toJsonString();
+
+    expect(
+      () => BackupPackageReader().read(
+        _backupBytes(libraryJson: validLibrary, includeLibrary: false),
+      ),
+      throwsA(isA<BackupException>()),
+    );
+    expect(
+      () => BackupPackageReader().read(
+        _backupBytes(
+          libraryJson: validLibrary,
+          libraryJsonSha256: 'not-the-real-checksum',
+        ),
+      ),
+      throwsA(isA<BackupException>()),
+    );
+    expect(
+      () => BackupPackageReader().read([1, 2, 3, 4]),
+      throwsA(isA<BackupException>()),
+    );
+  });
+
+  test('reader rejects unsafe media paths inside logical export', () {
+    final invalidLibrary =
+        LogicalLibraryExport(
+          formatVersion: 1,
+          schemaVersion: 4,
+          exportedAt: DateTime(2026),
+          games: const [],
+          libraryEntries: const [],
+          platforms: const [],
+          libraryEntryPlatforms: const [],
+          genres: const [],
+          gameGenres: const [],
+          playthroughs: const [],
+          savedViews: const [],
+          externalGameIds: const [],
+          mediaAssets: const [
+            {
+              'id': 'media-1',
+              'gameId': 'game-1',
+              'localPath': '../outside.png',
+            },
+          ],
+        ).toJsonString();
+
+    expect(
+      () =>
+          BackupPackageReader().read(_backupBytes(libraryJson: invalidLibrary)),
+      throwsA(isA<BackupException>()),
+    );
+  });
+
   test(
     'restore rebuilds data and media without hard-deleting current rows',
     () async {
       await _insertCompleteLibrary(db, mediaBase: tempDir);
+      await _insertDeletedGame(db);
       final backup = await backupService.createBackup();
       await db.close();
       dbClosed = true;
@@ -165,6 +271,7 @@ void main() {
           targetDb,
           mediaBase: targetTempDir,
         );
+        await _insertOverlappingGameAsActive(targetDb);
         final targetService = BackupService(
           exportRepository: ExportRepository(targetDb, clock: _FixedClock()),
           baseDirectoryLoader: () async => targetTempDir,
@@ -183,6 +290,9 @@ void main() {
         final absentGame =
             await (targetDb.select(targetDb.games)
               ..where((table) => table.id.equals('old-game'))).getSingle();
+        final softDeletedFromBackup =
+            await (targetDb.select(targetDb.games)
+              ..where((table) => table.id.equals('deleted-game'))).getSingle();
         final restoredMedia = io.File(
           '${targetTempDir.path}${io.Platform.pathSeparator}media${io.Platform.pathSeparator}games${io.Platform.pathSeparator}game-1${io.Platform.pathSeparator}cover-1.png',
         );
@@ -191,11 +301,23 @@ void main() {
         );
 
         expect(restoredGame.deletedAt, isNull);
+        expect(restoredGame.title, 'Hades');
         expect(absentGame.deletedAt, isNotNull);
+        expect(softDeletedFromBackup.deletedAt, isNotNull);
         expect(await restoredMedia.exists(), isTrue);
         expect(await oldMedia.exists(), isTrue);
         expect(await io.File(result.preRestoreBackupPath).exists(), isTrue);
-        expect(result.restoredCounts.games, 1);
+        expect(
+          () => BackupPackageReader().read(
+            io.File(result.preRestoreBackupPath).readAsBytesSync(),
+          ),
+          returnsNormally,
+        );
+        expect(result.restoredCounts.games, 2);
+
+        final visibleRows =
+            await LibraryQueryRepository(targetDb).watchRows().first;
+        expect(visibleRows.map((row) => row.title), ['Hades']);
       } finally {
         await targetDb.close();
         if (await targetTempDir.exists()) {
@@ -214,6 +336,48 @@ void main() {
       throwsA(isA<BackupException>()),
     );
   });
+
+  test(
+    'restore does not continue if pre-restore backup cannot be created',
+    () async {
+      await _insertCompleteLibrary(db, mediaBase: tempDir);
+      final backup = await backupService.createBackup();
+      await db.close();
+      dbClosed = true;
+
+      final targetDb = AppDatabase(NativeDatabase.memory());
+      final targetTempDir = await io.Directory.systemTemp.createTemp(
+        'backlog_vault_restore_prebackup_failure_',
+      );
+      try {
+        await _insertDeletedCandidateAsActive(
+          targetDb,
+          mediaBase: targetTempDir,
+        );
+        final service = BackupService(
+          exportRepository: _FailingExportRepository(targetDb),
+          baseDirectoryLoader: () async => targetTempDir,
+          ids: _FixedIds(),
+          clock: _FixedClock(),
+        );
+
+        await expectLater(
+          service.restoreBackup(backup.bytes, confirmation: 'RESTAURAR'),
+          throwsA(isA<StateError>()),
+        );
+
+        final oldGame =
+            await (targetDb.select(targetDb.games)
+              ..where((table) => table.id.equals('old-game'))).getSingle();
+        expect(oldGame.deletedAt, isNull);
+      } finally {
+        await targetDb.close();
+        if (await targetTempDir.exists()) {
+          await targetTempDir.delete(recursive: true);
+        }
+      }
+    },
+  );
 }
 
 Future<void> _insertCompleteLibrary(
@@ -431,14 +595,31 @@ Future<void> _insertDeletedCandidateAsActive(
   await file.writeAsBytes(_pngBytes(), flush: true);
 }
 
+Future<void> _insertOverlappingGameAsActive(AppDatabase db) async {
+  final now = DateTime(2026, 1, 1);
+  await db
+      .into(db.games)
+      .insert(
+        GamesCompanion.insert(
+          id: 'game-1',
+          title: 'Wrong Title',
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+}
+
 List<int> _backupBytes({
   required String libraryJson,
   int appSchemaVersion = 4,
+  int backupFormatVersionValue = backupFormatVersion,
+  bool includeLibrary = true,
+  String? libraryJsonSha256,
   String? extraPath,
 }) {
   final manifest = BackupManifest(
     appName: backupAppName,
-    backupFormatVersion: backupFormatVersion,
+    backupFormatVersion: backupFormatVersionValue,
     backupId: 'backup-1',
     createdAt: DateTime(2026),
     appSchemaVersion: appSchemaVersion,
@@ -455,18 +636,21 @@ List<int> _backupBytes({
       mediaAssets: 0,
       mediaFiles: 0,
     ),
-    libraryJsonSha256: sha256.convert(utf8.encode(libraryJson)).toString(),
+    libraryJsonSha256:
+        libraryJsonSha256 ??
+        sha256.convert(utf8.encode(libraryJson)).toString(),
     warnings: const [],
   );
   final archive =
-      Archive()
-        ..addFile(
-          ArchiveFile.string(
-            'manifest.json',
-            const JsonEncoder.withIndent('  ').convert(manifest.toJson()),
-          ),
-        )
-        ..addFile(ArchiveFile.string('data/library.json', libraryJson));
+      Archive()..addFile(
+        ArchiveFile.string(
+          'manifest.json',
+          const JsonEncoder.withIndent('  ').convert(manifest.toJson()),
+        ),
+      );
+  if (includeLibrary) {
+    archive.addFile(ArchiveFile.string('data/library.json', libraryJson));
+  }
   if (extraPath != null) {
     archive.addFile(ArchiveFile.bytes(extraPath, _pngBytes()));
   }
@@ -487,4 +671,13 @@ class _FixedIds extends IdGenerator {
 
   @override
   String newId() => 'backup-id';
+}
+
+class _FailingExportRepository extends ExportRepository {
+  const _FailingExportRepository(super.db);
+
+  @override
+  Future<LogicalLibraryExport> exportLogical({bool includeSoftDeleted = true}) {
+    throw StateError('pre-restore backup failed');
+  }
 }

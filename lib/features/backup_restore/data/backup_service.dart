@@ -241,7 +241,14 @@ class DecodedBackupPackage {
 
 class BackupPackageReader {
   DecodedBackupPackage read(List<int> bytes) {
-    final archive = ZipDecoder().decodeBytes(bytes, verify: true);
+    final Archive archive;
+    try {
+      archive = ZipDecoder().decodeBytes(bytes, verify: true);
+    } on Object {
+      throw const BackupException(
+        'El archivo de backup no se pudo leer o está corrupto.',
+      );
+    }
     for (final file in archive) {
       if (!_isSafeArchivePath(file.name)) {
         throw const BackupException(
@@ -258,12 +265,22 @@ class BackupPackageReader {
       );
     }
 
-    final manifest = BackupManifest.fromJson(
-      jsonDecode(utf8.decode(manifestFile.content)) as Map<String, Object?>,
-    );
+    final BackupManifest manifest;
+    final String libraryJson;
+    final LogicalLibraryExport logicalExport;
+    try {
+      manifest = BackupManifest.fromJson(
+        jsonDecode(utf8.decode(manifestFile.content)) as Map<String, Object?>,
+      );
+      libraryJson = utf8.decode(libraryFile.content);
+      logicalExport = LogicalLibraryExport.fromJsonString(libraryJson);
+    } on Object {
+      throw const BackupException(
+        'El backup tiene un manifest o data/library.json inválido.',
+      );
+    }
     _validateManifest(manifest);
 
-    final libraryJson = utf8.decode(libraryFile.content);
     final computedChecksum =
         sha256.convert(utf8.encode(libraryJson)).toString();
     if (computedChecksum != manifest.libraryJsonSha256) {
@@ -272,12 +289,12 @@ class BackupPackageReader {
       );
     }
 
-    final logicalExport = LogicalLibraryExport.fromJsonString(libraryJson);
     if (logicalExport.schemaVersion > supportedBackupSchemaVersion) {
       throw const BackupException(
         'El backup requiere una versión más nueva de Backlog Vault.',
       );
     }
+    _validateLogicalExport(logicalExport);
 
     final mediaFiles = <String, List<int>>{};
     for (final file in archive) {
@@ -313,6 +330,19 @@ class BackupPackageReader {
       throw const BackupException(
         'El backup usa un schema más nuevo que esta app.',
       );
+    }
+  }
+
+  void _validateLogicalExport(LogicalLibraryExport export) {
+    for (final mediaAsset in export.mediaAssets) {
+      final localPath = mediaAsset['localPath'];
+      if (localPath is! String ||
+          !_isSafeRelativePath(localPath) ||
+          !localPath.startsWith('media/')) {
+        throw const BackupException(
+          'El backup contiene una ruta de media inválida en data/library.json.',
+        );
+      }
     }
   }
 }
