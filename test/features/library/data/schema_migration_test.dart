@@ -3,7 +3,7 @@ import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('migrates schema 1 database to schema 2 preserving library data', () async {
+  test('migrates schema 1 database to schema 3 preserving library data', () async {
     final executor = NativeDatabase.memory(
       setup: (db) {
         db
@@ -105,6 +105,12 @@ void main() {
               "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'saved_views';",
             )
             .getSingleOrNull();
+    final externalGameIdsTable =
+        await db
+            .customSelect(
+              "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'external_game_ids';",
+            )
+            .getSingleOrNull();
     final gameCount =
         await db
             .customSelect('SELECT COUNT(*) AS count FROM games;')
@@ -117,8 +123,73 @@ void main() {
             .getSingle();
 
     expect(savedViewsTable, isNotNull);
+    expect(externalGameIdsTable, isNotNull);
     expect(gameCount, 1);
     expect(entryCount, 1);
     expect(await db.select(db.savedViews).get(), isEmpty);
+    expect(await db.select(db.externalGameIds).get(), isEmpty);
+  });
+
+  test('migrates schema 2 database to schema 3 preserving saved views', () async {
+    final executor = NativeDatabase.memory(
+      setup: (db) {
+        db
+          ..execute('''
+            CREATE TABLE games (
+              id TEXT NOT NULL PRIMARY KEY,
+              title TEXT NOT NULL,
+              sort_title TEXT NULL,
+              release_date INTEGER NULL,
+              type TEXT NOT NULL DEFAULT 'game',
+              created_at INTEGER NOT NULL,
+              updated_at INTEGER NOT NULL,
+              deleted_at INTEGER NULL
+            );
+          ''')
+          ..execute('''
+            CREATE TABLE saved_views (
+              id TEXT NOT NULL PRIMARY KEY,
+              name TEXT NOT NULL,
+              filter_json TEXT NOT NULL,
+              sort_json TEXT NOT NULL,
+              column_config_json TEXT NOT NULL,
+              created_at INTEGER NOT NULL,
+              updated_at INTEGER NOT NULL,
+              deleted_at INTEGER NULL
+            );
+          ''')
+          ..execute(
+            "INSERT INTO games (id, title, type, created_at, updated_at) VALUES ('game-1', 'Existing Game', 'game', 0, 0);",
+          )
+          ..execute(
+            "INSERT INTO saved_views (id, name, filter_json, sort_json, column_config_json, created_at, updated_at) VALUES ('view-1', 'Vista', '{}', '{}', '{}', 0, 0);",
+          )
+          ..execute('PRAGMA user_version = 2;');
+      },
+    );
+    final db = AppDatabase(executor);
+    addTearDown(db.close);
+
+    final externalGameIdsTable =
+        await db
+            .customSelect(
+              "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'external_game_ids';",
+            )
+            .getSingleOrNull();
+    final savedViewCount =
+        await db
+            .customSelect('SELECT COUNT(*) AS count FROM saved_views;')
+            .map((row) => row.read<int>('count'))
+            .getSingle();
+    final gameCount =
+        await db
+            .customSelect('SELECT COUNT(*) AS count FROM games;')
+            .map((row) => row.read<int>('count'))
+            .getSingle();
+
+    expect(externalGameIdsTable, isNotNull);
+    expect(savedViewCount, 1);
+    expect(gameCount, 1);
+    expect(await db.select(db.externalGameIds).get(), isEmpty);
   });
 }

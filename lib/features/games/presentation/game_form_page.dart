@@ -53,9 +53,10 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final detail = widget.entryId == null
-        ? const AsyncData<LibraryGameDetails?>(null)
-        : ref.watch(libraryGameProvider(widget.entryId!));
+    final detail =
+        widget.entryId == null
+            ? const AsyncData<LibraryGameDetails?>(null)
+            : ref.watch(libraryGameProvider(widget.entryId!));
     final platforms = ref.watch(catalogRepositoryProvider).watchPlatforms();
     final genres = ref.watch(catalogRepositoryProvider).watchGenres();
 
@@ -85,7 +86,9 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                       children: [
                         TextFormField(
                           controller: _titleController,
-                          decoration: const InputDecoration(labelText: 'Nombre'),
+                          decoration: const InputDecoration(
+                            labelText: 'Nombre',
+                          ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return 'El nombre es obligatorio.';
@@ -104,7 +107,9 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                         const SizedBox(height: 12),
                         DropdownButtonFormField<GameStatus>(
                           initialValue: _status,
-                          decoration: const InputDecoration(labelText: 'Estado'),
+                          decoration: const InputDecoration(
+                            labelText: 'Estado',
+                          ),
                           items: [
                             for (final status in GameStatus.values)
                               DropdownMenuItem(
@@ -130,12 +135,30 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                             labelText: 'Puntaje personal',
                           ),
                           items: const [
-                            DropdownMenuItem(value: null, child: Text('Sin puntaje')),
-                            DropdownMenuItem(value: 1, child: Text('1 estrella')),
-                            DropdownMenuItem(value: 2, child: Text('2 estrellas')),
-                            DropdownMenuItem(value: 3, child: Text('3 estrellas')),
-                            DropdownMenuItem(value: 4, child: Text('4 estrellas')),
-                            DropdownMenuItem(value: 5, child: Text('5 estrellas')),
+                            DropdownMenuItem(
+                              value: null,
+                              child: Text('Sin puntaje'),
+                            ),
+                            DropdownMenuItem(
+                              value: 1,
+                              child: Text('1 estrella'),
+                            ),
+                            DropdownMenuItem(
+                              value: 2,
+                              child: Text('2 estrellas'),
+                            ),
+                            DropdownMenuItem(
+                              value: 3,
+                              child: Text('3 estrellas'),
+                            ),
+                            DropdownMenuItem(
+                              value: 4,
+                              child: Text('4 estrellas'),
+                            ),
+                            DropdownMenuItem(
+                              value: 5,
+                              child: Text('5 estrellas'),
+                            ),
                           ],
                           onChanged: (value) => setState(() => _rating = value),
                         ),
@@ -185,7 +208,8 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                           addLabel: 'Agregar género',
                           controller: _newGenreController,
                           items: {
-                            for (final genre in genreItems) genre.id: genre.name,
+                            for (final genre in genreItems)
+                              genre.id: genre.name,
                           },
                           selectedIds: _selectedGenreIds,
                           onToggle: (id, selected) {
@@ -233,12 +257,15 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                         const SizedBox(height: 24),
                         FilledButton.icon(
                           onPressed: _saving ? null : () => _save(item),
-                          icon: _saving
-                              ? const SizedBox.square(
-                                  dimension: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Icon(Icons.save_outlined),
+                          icon:
+                              _saving
+                                  ? const SizedBox.square(
+                                    dimension: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : const Icon(Icons.save_outlined),
                           label: const Text('Guardar'),
                         ),
                       ],
@@ -264,7 +291,8 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
     _notesController.text = item.entry.personalNotes ?? '';
     _selectedPlatformIds.addAll(item.platforms.map((platform) => platform.id));
     _selectedGenreIds.addAll(item.genres.map((genre) => genre.id));
-    _completedPlatformId = item.platforms.isEmpty ? null : item.platforms.first.id;
+    _completedPlatformId =
+        item.platforms.isEmpty ? null : item.platforms.first.id;
   }
 
   Future<void> _save(LibraryGameDetails? existing) async {
@@ -285,13 +313,16 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
       );
       final entryId = await ref.read(gameRepositoryProvider).save(model);
 
-      final wasCompleted = existing != null &&
+      final wasCompleted =
+          existing != null &&
           parseGameStatus(existing.entry.status) == GameStatus.completed;
       if (_status == GameStatus.completed && !wasCompleted) {
         _completedHours = double.tryParse(
           _completedHoursController.text.trim().replaceAll(',', '.'),
         );
-        await ref.read(gameRepositoryProvider).completeGame(
+        await ref
+            .read(gameRepositoryProvider)
+            .completeGame(
               CompletionFormModel(
                 libraryEntryId: entryId,
                 completedAt: _completedAt ?? DateTime.now(),
@@ -307,9 +338,9 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
       context.go('/games/$entryId');
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -446,7 +477,10 @@ class _CompletionFields extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Datos de completado', style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          'Datos de completado',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(height: 12),
         _DateField(
           label: 'Fecha de completado',
@@ -480,7 +514,10 @@ class _CompletionFields extends StatelessWidget {
           items: [
             const DropdownMenuItem(value: null, child: Text('Sin plataforma')),
             for (final platform in platforms.entries)
-              DropdownMenuItem(value: platform.key, child: Text(platform.value)),
+              DropdownMenuItem(
+                value: platform.key,
+                child: Text(platform.value),
+              ),
           ],
           onChanged: onPlatformChanged,
         ),

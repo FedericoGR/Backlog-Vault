@@ -107,3 +107,19 @@ class SavedViews extends Table {
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
+
+class ExternalGameIds extends Table {
+  TextColumn get id => text()();
+  TextColumn get gameId => text().references(Games, #id)();
+  TextColumn get provider => text()();
+  TextColumn get externalId => text()();
+  TextColumn get externalSlug => text().nullable()();
+  TextColumn get externalUrl => text().nullable()();
+  TextColumn get matchedTitle => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}

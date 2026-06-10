@@ -5,19 +5,13 @@ import 'package:test/test.dart';
 void main() {
   group('GameFormModel', () {
     test('accepts a minimal valid manual game', () {
-      final model = GameFormModel(
-        title: 'Hades',
-        status: GameStatus.backlog,
-      );
+      final model = GameFormModel(title: 'Hades', status: GameStatus.backlog);
 
       expect(model.validate, returnsNormally);
     });
 
     test('rejects empty title', () {
-      final model = GameFormModel(
-        title: '   ',
-        status: GameStatus.backlog,
-      );
+      final model = GameFormModel(title: '   ', status: GameStatus.backlog);
 
       expect(model.validate, throwsArgumentError);
     });

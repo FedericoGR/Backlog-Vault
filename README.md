@@ -58,11 +58,22 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
 - Resumen de horas totales, último completado, cantidad de playthroughs y partida activa/pausada.
 - Operaciones de progreso transaccionales para mantener consistencia entre `LibraryEntry` y `Playthrough`.
 
+## Alcance del Entregable 5
+
+- Metadata automática opcional con provider RAWG.
+- Configuración local de API key RAWG desde Ajustes.
+- Guardado de API key mediante secure storage del sistema.
+- Búsqueda de candidatos desde la ficha del juego.
+- Preview/diff de metadata antes de aplicar.
+- Aplicación selectiva de campos.
+- Guardado de external IDs en `external_game_ids`.
+- Creación/reuso de géneros y plataformas sin duplicar.
+- Protección de datos manuales/personales: no se pisan estado, puntaje personal, notas ni playthroughs.
+
 ## Fuera de alcance
 
 - Notion API.
-- Metadata automática.
-- Providers externos como RAWG, IGDB, SteamGridDB o Steam.
+- Providers externos adicionales como IGDB, SteamGridDB o Steam.
 - Covers descargados o cache de imágenes externas.
 - Sync.
 - SQLCipher.
@@ -147,6 +158,14 @@ Para desactivar analytics de Flutter y Dart en la instalación local:
 flutter --disable-analytics
 dart --disable-analytics
 ```
+
+## Metadata externa y API keys
+
+La metadata externa es opcional. Sin API key de RAWG, Backlog Vault sigue funcionando offline con la biblioteca local.
+
+La API key se configura desde Ajustes y se guarda localmente mediante `flutter_secure_storage`. No agregues claves reales a README, tests, fixtures, logs, issues ni commits.
+
+En Windows, el plugin `flutter_secure_storage_windows` está vendorizado en `third_party/` mediante `dependency_overrides` porque la versión compatible con `file_picker` requiere ATL (`atlstr.h`) en algunos toolchains. El parche local usa conversiones Win32 estándar para mantener `flutter build windows` funcionando.
 
 ## Nota de setup actual
 

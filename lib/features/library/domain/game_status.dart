@@ -10,14 +10,14 @@ enum GameStatus {
 
 extension GameStatusLabels on GameStatus {
   String get label => switch (this) {
-        GameStatus.wishlist => 'Lista de deseos',
-        GameStatus.backlog => 'Pendiente',
-        GameStatus.playing => 'Jugando',
-        GameStatus.paused => 'Pausado',
-        GameStatus.completed => 'Completado',
-        GameStatus.dropped => 'Abandonado',
-        GameStatus.retired => 'Retirado',
-      };
+    GameStatus.wishlist => 'Lista de deseos',
+    GameStatus.backlog => 'Pendiente',
+    GameStatus.playing => 'Jugando',
+    GameStatus.paused => 'Pausado',
+    GameStatus.completed => 'Completado',
+    GameStatus.dropped => 'Abandonado',
+    GameStatus.retired => 'Retirado',
+  };
 }
 
 GameStatus parseGameStatus(String value) {

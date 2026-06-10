@@ -6,6 +6,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../../library/domain/game_status.dart';
 import '../../library/domain/rating.dart';
+import '../../metadata/presentation/metadata_search_dialog.dart';
 import '../../playthroughs/application/completion_form_model.dart';
 import '../../playthroughs/application/playthrough_form_model.dart';
 import '../../playthroughs/domain/playthrough_status.dart';
@@ -36,6 +37,11 @@ class GameDetailPage extends ConsumerWidget {
           appBar: AppBar(
             title: Text(item.game.title),
             actions: [
+              IconButton(
+                tooltip: 'Buscar metadata',
+                onPressed: () => _showMetadataDialog(context, ref, item),
+                icon: const Icon(Icons.travel_explore_outlined),
+              ),
               IconButton(
                 tooltip: 'Editar juego',
                 onPressed: () => context.go('/games/${item.entry.id}/edit'),
@@ -446,6 +452,22 @@ class _InfoChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Chip(label: Text('$label: $value'));
   }
+}
+
+Future<void> _showMetadataDialog(
+  BuildContext context,
+  WidgetRef ref,
+  LibraryGameDetails item,
+) async {
+  final applied = await showDialog<bool>(
+    context: context,
+    builder: (context) => MetadataSearchDialog(item: item),
+  );
+  if (applied != true || !context.mounted) return;
+  ref.invalidate(libraryGameProvider(item.entry.id));
+  ScaffoldMessenger.of(
+    context,
+  ).showSnackBar(const SnackBar(content: Text('Metadata aplicada.')));
 }
 
 Future<void> _runProgressAction(

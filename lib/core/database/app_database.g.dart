@@ -4009,6 +4009,646 @@ class SavedViewsCompanion extends UpdateCompanion<SavedView> {
   }
 }
 
+class $ExternalGameIdsTable extends ExternalGameIds
+    with TableInfo<$ExternalGameIdsTable, ExternalGameId> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExternalGameIdsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _gameIdMeta = const VerificationMeta('gameId');
+  @override
+  late final GeneratedColumn<String> gameId = GeneratedColumn<String>(
+    'game_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES games (id)',
+    ),
+  );
+  static const VerificationMeta _providerMeta = const VerificationMeta(
+    'provider',
+  );
+  @override
+  late final GeneratedColumn<String> provider = GeneratedColumn<String>(
+    'provider',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _externalIdMeta = const VerificationMeta(
+    'externalId',
+  );
+  @override
+  late final GeneratedColumn<String> externalId = GeneratedColumn<String>(
+    'external_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _externalSlugMeta = const VerificationMeta(
+    'externalSlug',
+  );
+  @override
+  late final GeneratedColumn<String> externalSlug = GeneratedColumn<String>(
+    'external_slug',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _externalUrlMeta = const VerificationMeta(
+    'externalUrl',
+  );
+  @override
+  late final GeneratedColumn<String> externalUrl = GeneratedColumn<String>(
+    'external_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _matchedTitleMeta = const VerificationMeta(
+    'matchedTitle',
+  );
+  @override
+  late final GeneratedColumn<String> matchedTitle = GeneratedColumn<String>(
+    'matched_title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    gameId,
+    provider,
+    externalId,
+    externalSlug,
+    externalUrl,
+    matchedTitle,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'external_game_ids';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ExternalGameId> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('game_id')) {
+      context.handle(
+        _gameIdMeta,
+        gameId.isAcceptableOrUnknown(data['game_id']!, _gameIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_gameIdMeta);
+    }
+    if (data.containsKey('provider')) {
+      context.handle(
+        _providerMeta,
+        provider.isAcceptableOrUnknown(data['provider']!, _providerMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_providerMeta);
+    }
+    if (data.containsKey('external_id')) {
+      context.handle(
+        _externalIdMeta,
+        externalId.isAcceptableOrUnknown(data['external_id']!, _externalIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_externalIdMeta);
+    }
+    if (data.containsKey('external_slug')) {
+      context.handle(
+        _externalSlugMeta,
+        externalSlug.isAcceptableOrUnknown(
+          data['external_slug']!,
+          _externalSlugMeta,
+        ),
+      );
+    }
+    if (data.containsKey('external_url')) {
+      context.handle(
+        _externalUrlMeta,
+        externalUrl.isAcceptableOrUnknown(
+          data['external_url']!,
+          _externalUrlMeta,
+        ),
+      );
+    }
+    if (data.containsKey('matched_title')) {
+      context.handle(
+        _matchedTitleMeta,
+        matchedTitle.isAcceptableOrUnknown(
+          data['matched_title']!,
+          _matchedTitleMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ExternalGameId map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ExternalGameId(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      gameId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}game_id'],
+          )!,
+      provider:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}provider'],
+          )!,
+      externalId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}external_id'],
+          )!,
+      externalSlug: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}external_slug'],
+      ),
+      externalUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}external_url'],
+      ),
+      matchedTitle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}matched_title'],
+      ),
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $ExternalGameIdsTable createAlias(String alias) {
+    return $ExternalGameIdsTable(attachedDatabase, alias);
+  }
+}
+
+class ExternalGameId extends DataClass implements Insertable<ExternalGameId> {
+  final String id;
+  final String gameId;
+  final String provider;
+  final String externalId;
+  final String? externalSlug;
+  final String? externalUrl;
+  final String? matchedTitle;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const ExternalGameId({
+    required this.id,
+    required this.gameId,
+    required this.provider,
+    required this.externalId,
+    this.externalSlug,
+    this.externalUrl,
+    this.matchedTitle,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['game_id'] = Variable<String>(gameId);
+    map['provider'] = Variable<String>(provider);
+    map['external_id'] = Variable<String>(externalId);
+    if (!nullToAbsent || externalSlug != null) {
+      map['external_slug'] = Variable<String>(externalSlug);
+    }
+    if (!nullToAbsent || externalUrl != null) {
+      map['external_url'] = Variable<String>(externalUrl);
+    }
+    if (!nullToAbsent || matchedTitle != null) {
+      map['matched_title'] = Variable<String>(matchedTitle);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  ExternalGameIdsCompanion toCompanion(bool nullToAbsent) {
+    return ExternalGameIdsCompanion(
+      id: Value(id),
+      gameId: Value(gameId),
+      provider: Value(provider),
+      externalId: Value(externalId),
+      externalSlug:
+          externalSlug == null && nullToAbsent
+              ? const Value.absent()
+              : Value(externalSlug),
+      externalUrl:
+          externalUrl == null && nullToAbsent
+              ? const Value.absent()
+              : Value(externalUrl),
+      matchedTitle:
+          matchedTitle == null && nullToAbsent
+              ? const Value.absent()
+              : Value(matchedTitle),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt:
+          deletedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(deletedAt),
+    );
+  }
+
+  factory ExternalGameId.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ExternalGameId(
+      id: serializer.fromJson<String>(json['id']),
+      gameId: serializer.fromJson<String>(json['gameId']),
+      provider: serializer.fromJson<String>(json['provider']),
+      externalId: serializer.fromJson<String>(json['externalId']),
+      externalSlug: serializer.fromJson<String?>(json['externalSlug']),
+      externalUrl: serializer.fromJson<String?>(json['externalUrl']),
+      matchedTitle: serializer.fromJson<String?>(json['matchedTitle']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'gameId': serializer.toJson<String>(gameId),
+      'provider': serializer.toJson<String>(provider),
+      'externalId': serializer.toJson<String>(externalId),
+      'externalSlug': serializer.toJson<String?>(externalSlug),
+      'externalUrl': serializer.toJson<String?>(externalUrl),
+      'matchedTitle': serializer.toJson<String?>(matchedTitle),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  ExternalGameId copyWith({
+    String? id,
+    String? gameId,
+    String? provider,
+    String? externalId,
+    Value<String?> externalSlug = const Value.absent(),
+    Value<String?> externalUrl = const Value.absent(),
+    Value<String?> matchedTitle = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => ExternalGameId(
+    id: id ?? this.id,
+    gameId: gameId ?? this.gameId,
+    provider: provider ?? this.provider,
+    externalId: externalId ?? this.externalId,
+    externalSlug: externalSlug.present ? externalSlug.value : this.externalSlug,
+    externalUrl: externalUrl.present ? externalUrl.value : this.externalUrl,
+    matchedTitle: matchedTitle.present ? matchedTitle.value : this.matchedTitle,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  ExternalGameId copyWithCompanion(ExternalGameIdsCompanion data) {
+    return ExternalGameId(
+      id: data.id.present ? data.id.value : this.id,
+      gameId: data.gameId.present ? data.gameId.value : this.gameId,
+      provider: data.provider.present ? data.provider.value : this.provider,
+      externalId:
+          data.externalId.present ? data.externalId.value : this.externalId,
+      externalSlug:
+          data.externalSlug.present
+              ? data.externalSlug.value
+              : this.externalSlug,
+      externalUrl:
+          data.externalUrl.present ? data.externalUrl.value : this.externalUrl,
+      matchedTitle:
+          data.matchedTitle.present
+              ? data.matchedTitle.value
+              : this.matchedTitle,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExternalGameId(')
+          ..write('id: $id, ')
+          ..write('gameId: $gameId, ')
+          ..write('provider: $provider, ')
+          ..write('externalId: $externalId, ')
+          ..write('externalSlug: $externalSlug, ')
+          ..write('externalUrl: $externalUrl, ')
+          ..write('matchedTitle: $matchedTitle, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    gameId,
+    provider,
+    externalId,
+    externalSlug,
+    externalUrl,
+    matchedTitle,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ExternalGameId &&
+          other.id == this.id &&
+          other.gameId == this.gameId &&
+          other.provider == this.provider &&
+          other.externalId == this.externalId &&
+          other.externalSlug == this.externalSlug &&
+          other.externalUrl == this.externalUrl &&
+          other.matchedTitle == this.matchedTitle &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class ExternalGameIdsCompanion extends UpdateCompanion<ExternalGameId> {
+  final Value<String> id;
+  final Value<String> gameId;
+  final Value<String> provider;
+  final Value<String> externalId;
+  final Value<String?> externalSlug;
+  final Value<String?> externalUrl;
+  final Value<String?> matchedTitle;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const ExternalGameIdsCompanion({
+    this.id = const Value.absent(),
+    this.gameId = const Value.absent(),
+    this.provider = const Value.absent(),
+    this.externalId = const Value.absent(),
+    this.externalSlug = const Value.absent(),
+    this.externalUrl = const Value.absent(),
+    this.matchedTitle = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ExternalGameIdsCompanion.insert({
+    required String id,
+    required String gameId,
+    required String provider,
+    required String externalId,
+    this.externalSlug = const Value.absent(),
+    this.externalUrl = const Value.absent(),
+    this.matchedTitle = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       gameId = Value(gameId),
+       provider = Value(provider),
+       externalId = Value(externalId),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ExternalGameId> custom({
+    Expression<String>? id,
+    Expression<String>? gameId,
+    Expression<String>? provider,
+    Expression<String>? externalId,
+    Expression<String>? externalSlug,
+    Expression<String>? externalUrl,
+    Expression<String>? matchedTitle,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (gameId != null) 'game_id': gameId,
+      if (provider != null) 'provider': provider,
+      if (externalId != null) 'external_id': externalId,
+      if (externalSlug != null) 'external_slug': externalSlug,
+      if (externalUrl != null) 'external_url': externalUrl,
+      if (matchedTitle != null) 'matched_title': matchedTitle,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ExternalGameIdsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? gameId,
+    Value<String>? provider,
+    Value<String>? externalId,
+    Value<String?>? externalSlug,
+    Value<String?>? externalUrl,
+    Value<String?>? matchedTitle,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return ExternalGameIdsCompanion(
+      id: id ?? this.id,
+      gameId: gameId ?? this.gameId,
+      provider: provider ?? this.provider,
+      externalId: externalId ?? this.externalId,
+      externalSlug: externalSlug ?? this.externalSlug,
+      externalUrl: externalUrl ?? this.externalUrl,
+      matchedTitle: matchedTitle ?? this.matchedTitle,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (gameId.present) {
+      map['game_id'] = Variable<String>(gameId.value);
+    }
+    if (provider.present) {
+      map['provider'] = Variable<String>(provider.value);
+    }
+    if (externalId.present) {
+      map['external_id'] = Variable<String>(externalId.value);
+    }
+    if (externalSlug.present) {
+      map['external_slug'] = Variable<String>(externalSlug.value);
+    }
+    if (externalUrl.present) {
+      map['external_url'] = Variable<String>(externalUrl.value);
+    }
+    if (matchedTitle.present) {
+      map['matched_title'] = Variable<String>(matchedTitle.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExternalGameIdsCompanion(')
+          ..write('id: $id, ')
+          ..write('gameId: $gameId, ')
+          ..write('provider: $provider, ')
+          ..write('externalId: $externalId, ')
+          ..write('externalSlug: $externalSlug, ')
+          ..write('externalUrl: $externalUrl, ')
+          ..write('matchedTitle: $matchedTitle, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4021,6 +4661,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $GameGenresTable gameGenres = $GameGenresTable(this);
   late final $PlaythroughsTable playthroughs = $PlaythroughsTable(this);
   late final $SavedViewsTable savedViews = $SavedViewsTable(this);
+  late final $ExternalGameIdsTable externalGameIds = $ExternalGameIdsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4034,6 +4677,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     gameGenres,
     playthroughs,
     savedViews,
+    externalGameIds,
   ];
 }
 
@@ -4097,6 +4741,26 @@ final class $$GamesTableReferences
     ).filter((f) => f.gameId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_gameGenresRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ExternalGameIdsTable, List<ExternalGameId>>
+  _externalGameIdsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.externalGameIds,
+    aliasName: $_aliasNameGenerator(db.games.id, db.externalGameIds.gameId),
+  );
+
+  $$ExternalGameIdsTableProcessedTableManager get externalGameIdsRefs {
+    final manager = $$ExternalGameIdsTableTableManager(
+      $_db,
+      $_db.externalGameIds,
+    ).filter((f) => f.gameId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _externalGameIdsRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -4192,6 +4856,31 @@ class $$GamesTableFilterComposer extends Composer<_$AppDatabase, $GamesTable> {
           }) => $$GameGenresTableFilterComposer(
             $db: $db,
             $table: $db.gameGenres,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> externalGameIdsRefs(
+    Expression<bool> Function($$ExternalGameIdsTableFilterComposer f) f,
+  ) {
+    final $$ExternalGameIdsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.externalGameIds,
+      getReferencedColumn: (t) => t.gameId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExternalGameIdsTableFilterComposer(
+            $db: $db,
+            $table: $db.externalGameIds,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4336,6 +5025,31 @@ class $$GamesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> externalGameIdsRefs<T extends Object>(
+    Expression<T> Function($$ExternalGameIdsTableAnnotationComposer a) f,
+  ) {
+    final $$ExternalGameIdsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.externalGameIds,
+      getReferencedColumn: (t) => t.gameId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExternalGameIdsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.externalGameIds,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$GamesTableTableManager
@@ -4351,7 +5065,11 @@ class $$GamesTableTableManager
           $$GamesTableUpdateCompanionBuilder,
           (Game, $$GamesTableReferences),
           Game,
-          PrefetchHooks Function({bool libraryEntriesRefs, bool gameGenresRefs})
+          PrefetchHooks Function({
+            bool libraryEntriesRefs,
+            bool gameGenresRefs,
+            bool externalGameIdsRefs,
+          })
         > {
   $$GamesTableTableManager(_$AppDatabase db, $GamesTable table)
     : super(
@@ -4421,12 +5139,14 @@ class $$GamesTableTableManager
           prefetchHooksCallback: ({
             libraryEntriesRefs = false,
             gameGenresRefs = false,
+            externalGameIdsRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
                 if (libraryEntriesRefs) db.libraryEntries,
                 if (gameGenresRefs) db.gameGenres,
+                if (externalGameIdsRefs) db.externalGameIds,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -4465,6 +5185,27 @@ class $$GamesTableTableManager
                               referencedItems.where((e) => e.gameId == item.id),
                       typedResults: items,
                     ),
+                  if (externalGameIdsRefs)
+                    await $_getPrefetchedData<
+                      Game,
+                      $GamesTable,
+                      ExternalGameId
+                    >(
+                      currentTable: table,
+                      referencedTable: $$GamesTableReferences
+                          ._externalGameIdsRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$GamesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).externalGameIdsRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) =>
+                              referencedItems.where((e) => e.gameId == item.id),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -4485,7 +5226,11 @@ typedef $$GamesTableProcessedTableManager =
       $$GamesTableUpdateCompanionBuilder,
       (Game, $$GamesTableReferences),
       Game,
-      PrefetchHooks Function({bool libraryEntriesRefs, bool gameGenresRefs})
+      PrefetchHooks Function({
+        bool libraryEntriesRefs,
+        bool gameGenresRefs,
+        bool externalGameIdsRefs,
+      })
     >;
 typedef $$LibraryEntriesTableCreateCompanionBuilder =
     LibraryEntriesCompanion Function({
@@ -7556,6 +8301,443 @@ typedef $$SavedViewsTableProcessedTableManager =
       SavedView,
       PrefetchHooks Function()
     >;
+typedef $$ExternalGameIdsTableCreateCompanionBuilder =
+    ExternalGameIdsCompanion Function({
+      required String id,
+      required String gameId,
+      required String provider,
+      required String externalId,
+      Value<String?> externalSlug,
+      Value<String?> externalUrl,
+      Value<String?> matchedTitle,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$ExternalGameIdsTableUpdateCompanionBuilder =
+    ExternalGameIdsCompanion Function({
+      Value<String> id,
+      Value<String> gameId,
+      Value<String> provider,
+      Value<String> externalId,
+      Value<String?> externalSlug,
+      Value<String?> externalUrl,
+      Value<String?> matchedTitle,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+final class $$ExternalGameIdsTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $ExternalGameIdsTable, ExternalGameId> {
+  $$ExternalGameIdsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $GamesTable _gameIdTable(_$AppDatabase db) => db.games.createAlias(
+    $_aliasNameGenerator(db.externalGameIds.gameId, db.games.id),
+  );
+
+  $$GamesTableProcessedTableManager get gameId {
+    final $_column = $_itemColumn<String>('game_id')!;
+
+    final manager = $$GamesTableTableManager(
+      $_db,
+      $_db.games,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_gameIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ExternalGameIdsTableFilterComposer
+    extends Composer<_$AppDatabase, $ExternalGameIdsTable> {
+  $$ExternalGameIdsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get provider => $composableBuilder(
+    column: $table.provider,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get externalId => $composableBuilder(
+    column: $table.externalId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get externalSlug => $composableBuilder(
+    column: $table.externalSlug,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get externalUrl => $composableBuilder(
+    column: $table.externalUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get matchedTitle => $composableBuilder(
+    column: $table.matchedTitle,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$GamesTableFilterComposer get gameId {
+    final $$GamesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gameId,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableFilterComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ExternalGameIdsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ExternalGameIdsTable> {
+  $$ExternalGameIdsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get provider => $composableBuilder(
+    column: $table.provider,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get externalId => $composableBuilder(
+    column: $table.externalId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get externalSlug => $composableBuilder(
+    column: $table.externalSlug,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get externalUrl => $composableBuilder(
+    column: $table.externalUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get matchedTitle => $composableBuilder(
+    column: $table.matchedTitle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$GamesTableOrderingComposer get gameId {
+    final $$GamesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gameId,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableOrderingComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ExternalGameIdsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ExternalGameIdsTable> {
+  $$ExternalGameIdsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get provider =>
+      $composableBuilder(column: $table.provider, builder: (column) => column);
+
+  GeneratedColumn<String> get externalId => $composableBuilder(
+    column: $table.externalId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get externalSlug => $composableBuilder(
+    column: $table.externalSlug,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get externalUrl => $composableBuilder(
+    column: $table.externalUrl,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get matchedTitle => $composableBuilder(
+    column: $table.matchedTitle,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$GamesTableAnnotationComposer get gameId {
+    final $$GamesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gameId,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ExternalGameIdsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ExternalGameIdsTable,
+          ExternalGameId,
+          $$ExternalGameIdsTableFilterComposer,
+          $$ExternalGameIdsTableOrderingComposer,
+          $$ExternalGameIdsTableAnnotationComposer,
+          $$ExternalGameIdsTableCreateCompanionBuilder,
+          $$ExternalGameIdsTableUpdateCompanionBuilder,
+          (ExternalGameId, $$ExternalGameIdsTableReferences),
+          ExternalGameId,
+          PrefetchHooks Function({bool gameId})
+        > {
+  $$ExternalGameIdsTableTableManager(
+    _$AppDatabase db,
+    $ExternalGameIdsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () =>
+                  $$ExternalGameIdsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$ExternalGameIdsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$ExternalGameIdsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> gameId = const Value.absent(),
+                Value<String> provider = const Value.absent(),
+                Value<String> externalId = const Value.absent(),
+                Value<String?> externalSlug = const Value.absent(),
+                Value<String?> externalUrl = const Value.absent(),
+                Value<String?> matchedTitle = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ExternalGameIdsCompanion(
+                id: id,
+                gameId: gameId,
+                provider: provider,
+                externalId: externalId,
+                externalSlug: externalSlug,
+                externalUrl: externalUrl,
+                matchedTitle: matchedTitle,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String gameId,
+                required String provider,
+                required String externalId,
+                Value<String?> externalSlug = const Value.absent(),
+                Value<String?> externalUrl = const Value.absent(),
+                Value<String?> matchedTitle = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ExternalGameIdsCompanion.insert(
+                id: id,
+                gameId: gameId,
+                provider: provider,
+                externalId: externalId,
+                externalSlug: externalSlug,
+                externalUrl: externalUrl,
+                matchedTitle: matchedTitle,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$ExternalGameIdsTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({gameId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (gameId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.gameId,
+                            referencedTable: $$ExternalGameIdsTableReferences
+                                ._gameIdTable(db),
+                            referencedColumn:
+                                $$ExternalGameIdsTableReferences
+                                    ._gameIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ExternalGameIdsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ExternalGameIdsTable,
+      ExternalGameId,
+      $$ExternalGameIdsTableFilterComposer,
+      $$ExternalGameIdsTableOrderingComposer,
+      $$ExternalGameIdsTableAnnotationComposer,
+      $$ExternalGameIdsTableCreateCompanionBuilder,
+      $$ExternalGameIdsTableUpdateCompanionBuilder,
+      (ExternalGameId, $$ExternalGameIdsTableReferences),
+      ExternalGameId,
+      PrefetchHooks Function({bool gameId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -7576,4 +8758,6 @@ class $AppDatabaseManager {
       $$PlaythroughsTableTableManager(_db, _db.playthroughs);
   $$SavedViewsTableTableManager get savedViews =>
       $$SavedViewsTableTableManager(_db, _db.savedViews);
+  $$ExternalGameIdsTableTableManager get externalGameIds =>
+      $$ExternalGameIdsTableTableManager(_db, _db.externalGameIds);
 }

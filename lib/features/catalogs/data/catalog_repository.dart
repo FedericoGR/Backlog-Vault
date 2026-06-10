@@ -19,12 +19,9 @@ final genresProvider = StreamProvider.autoDispose<List<Genre>>((ref) {
 });
 
 class CatalogRepository {
-  CatalogRepository(
-    this._db, {
-    IdGenerator? ids,
-    Clock clock = systemClock,
-  })  : _ids = ids ?? defaultIdGenerator,
-        _clock = clock;
+  CatalogRepository(this._db, {IdGenerator? ids, Clock clock = systemClock})
+    : _ids = ids ?? defaultIdGenerator,
+      _clock = clock;
 
   final AppDatabase _db;
   final IdGenerator _ids;
@@ -52,23 +49,25 @@ class CatalogRepository {
 
     final existing = _firstOrNull(
       (await ((_db.select(_db.platforms)
-                ..where((table) => table.deletedAt.isNull()))
-              .get()))
+            ..where((table) => table.deletedAt.isNull())).get()))
           .where(
-        (platform) => platform.name.toLowerCase() == normalized.toLowerCase(),
-      ),
+            (platform) =>
+                platform.name.toLowerCase() == normalized.toLowerCase(),
+          ),
     );
     if (existing != null) return existing.id;
 
     final now = _clock.now();
     final id = _ids.newId();
-    await _db.into(_db.platforms).insert(
+    await _db
+        .into(_db.platforms)
+        .insert(
           PlatformsCompanion.insert(
             id: id,
             name: normalized,
-            shortName: Value(shortName?.trim().isEmpty ?? true
-                ? null
-                : shortName!.trim()),
+            shortName: Value(
+              shortName?.trim().isEmpty ?? true ? null : shortName!.trim(),
+            ),
             createdAt: now,
             updatedAt: now,
           ),
@@ -84,15 +83,18 @@ class CatalogRepository {
 
     final existing = _firstOrNull(
       (await ((_db.select(_db.genres)
-                ..where((table) => table.deletedAt.isNull()))
-              .get()))
-          .where((genre) => genre.name.toLowerCase() == normalized.toLowerCase()),
+            ..where((table) => table.deletedAt.isNull())).get()))
+          .where(
+            (genre) => genre.name.toLowerCase() == normalized.toLowerCase(),
+          ),
     );
     if (existing != null) return existing.id;
 
     final now = _clock.now();
     final id = _ids.newId();
-    await _db.into(_db.genres).insert(
+    await _db
+        .into(_db.genres)
+        .insert(
           GenresCompanion.insert(
             id: id,
             name: normalized,
@@ -104,22 +106,26 @@ class CatalogRepository {
   }
 
   Future<void> seedDefaultsIfEmpty() async {
-    final platformCount = await (_db.select(_db.platforms)
-          ..where((table) => table.deletedAt.isNull()))
-        .get()
-        .then((rows) => rows.length);
+    final platformCount = await (_db.select(_db.platforms)..where(
+      (table) => table.deletedAt.isNull(),
+    )).get().then((rows) => rows.length);
     if (platformCount == 0) {
       for (final name in ['PC', 'Nintendo Switch', 'PlayStation', 'Xbox']) {
         await createPlatform(name);
       }
     }
 
-    final genreCount = await (_db.select(_db.genres)
-          ..where((table) => table.deletedAt.isNull()))
-        .get()
-        .then((rows) => rows.length);
+    final genreCount = await (_db.select(_db.genres)..where(
+      (table) => table.deletedAt.isNull(),
+    )).get().then((rows) => rows.length);
     if (genreCount == 0) {
-      for (final name in ['Acción', 'Aventura', 'RPG', 'Puzzle', 'Estrategia']) {
+      for (final name in [
+        'Acción',
+        'Aventura',
+        'RPG',
+        'Puzzle',
+        'Estrategia',
+      ]) {
         await createGenre(name);
       }
     }

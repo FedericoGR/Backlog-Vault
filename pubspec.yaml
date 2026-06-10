@@ -19,6 +19,8 @@ dependencies:
   file_picker: 11.0.2
   csv: 8.0.0
   data_table_2: ^2.7.2
+  http: ^1.6.0
+  flutter_secure_storage: ^10.3.1
 
 dev_dependencies:
   build_runner: ^2.10.4
@@ -28,6 +30,10 @@ dev_dependencies:
     sdk: flutter
   mocktail: ^1.0.4
   test: ^1.26.3
+
+dependency_overrides:
+  flutter_secure_storage_windows:
+    path: third_party/flutter_secure_storage_windows
 
 flutter:
   uses-material-design: true

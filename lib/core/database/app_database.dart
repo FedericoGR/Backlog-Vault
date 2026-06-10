@@ -15,13 +15,14 @@ part 'app_database.g.dart';
     GameGenres,
     Playthroughs,
     SavedViews,
+    ExternalGameIds,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -29,6 +30,9 @@ class AppDatabase extends _$AppDatabase {
     onUpgrade: (migrator, from, to) async {
       if (from < 2) {
         await migrator.createTable(savedViews);
+      }
+      if (from < 3) {
+        await migrator.createTable(externalGameIds);
       }
     },
   );
