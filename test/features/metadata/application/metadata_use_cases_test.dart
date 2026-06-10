@@ -85,6 +85,9 @@ class _FakeApiKeyStorage implements MetadataApiKeyStorage {
   Future<void> deleteSteamGridDbApiKey() async {}
 
   @override
+  Future<void> deleteAllExternalApiKeys() async {}
+
+  @override
   Future<String?> readRawgApiKey() async => null;
 
   @override

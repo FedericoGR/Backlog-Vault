@@ -102,6 +102,21 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
 - Sin hard delete y sin borrar media actual durante restore.
 - No exporta API keys ni secure storage.
 
+## Alcance del Entregable 8A
+
+- Backups cifrados opcionales `.vaultbackup.enc`.
+- Restore de backups cifrados con password.
+- Cifrado del ZIP completo del backup lógico existente.
+- Formato cifrado versionado con header `BVE1`, PBKDF2-HMAC-SHA256 y AES-256-GCM.
+- Backups normales `.vaultbackup` mantenidos por compatibilidad, pero siguen sin cifrar.
+- Sección de privacidad en Ajustes con estado real:
+  - DB local cifrada: no;
+  - media local cifrada: no;
+  - backups cifrados: disponible;
+  - API keys externas: secure storage del sistema.
+- Borrado centralizado de claves externas RAWG y SteamGridDB.
+- Redacción centralizada de API keys, bearer tokens, URLs sensibles y paths absolutos en mensajes visibles.
+
 ## Fuera de alcance
 
 - Notion API.
@@ -110,7 +125,8 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
 - Bulk download automático de covers.
 - Sync.
 - SQLCipher.
-- Backup cifrado.
+- Cifrado de DB local.
+- Cifrado de media local.
 - Backup cloud.
 - Scheduler automático de backups.
 - Estadísticas.
@@ -213,13 +229,19 @@ En Windows, el plugin `flutter_secure_storage_windows` está vendorizado en `thi
 Desde Ajustes > Datos y backups podés:
 
 - crear un backup completo `.vaultbackup`;
+- crear un backup cifrado `.vaultbackup.enc`;
 - restaurar un `.vaultbackup`;
+- restaurar un `.vaultbackup.enc`;
 - exportar JSON lógico;
 - exportar CSV básico.
 
-El formato `.vaultbackup` no está cifrado en el Entregable 7. Puede contener nombres de juegos, notas personales, estados, playthroughs, external IDs, rutas relativas de media y archivos de portadas. No incluye API keys de RAWG/SteamGridDB ni valores de secure storage.
+El formato `.vaultbackup` no está cifrado. Puede contener nombres de juegos, notas personales, estados, playthroughs, external IDs, rutas relativas de media y archivos de portadas. No incluye API keys de RAWG/SteamGridDB ni valores de secure storage.
+
+El formato `.vaultbackup.enc` cifra el backup completo con una password usando una librería criptográfica mantenida. La password no se guarda en la app: si la perdés, el archivo cifrado no se puede recuperar. El backup cifrado tampoco incluye API keys ni secure storage.
 
 La restauración es completa y conservadora: no hace merge avanzado ni resolución campo por campo. Antes de restaurar, la app crea automáticamente un backup previo. Los registros actuales que no existan en el backup se marcan con `deletedAt`; no se eliminan físicamente. Los archivos de media actuales no se borran durante restore.
+
+En E8A la DB SQLite local y la carpeta `media/` siguen sin cifrado at-rest. Para mover o compartir datos sensibles, usá `.vaultbackup.enc`; para protección del dispositivo, usá también las protecciones del sistema operativo.
 
 ## Nota de setup actual
 

@@ -97,6 +97,55 @@ void main() {
     expect(manifest.warnings, isEmpty);
   });
 
+  test(
+    'encrypted backup roundtrips and does not expose clear ZIP entries',
+    () async {
+      await _insertCompleteLibrary(db, mediaBase: tempDir);
+
+      final result = await backupService.createEncryptedBackup(
+        password: 'correct horse battery staple',
+      );
+      final encryptedText = String.fromCharCodes(result.bytes);
+
+      expect(result.fileName, endsWith('.vaultbackup.enc'));
+      expect(result.bytes.take(4), [0x42, 0x56, 0x45, 0x31]);
+      expect(encryptedText, isNot(contains('manifest.json')));
+      expect(encryptedText, isNot(contains('data/library.json')));
+      expect(encryptedText, isNot(contains('Nota privada')));
+
+      final preview = await backupService.previewEncryptedBackup(
+        result.bytes,
+        password: 'correct horse battery staple',
+      );
+      expect(preview.manifest.appName, backupAppName);
+      expect(preview.manifest.counts.games, 1);
+    },
+  );
+
+  test(
+    'encrypted backup rejects wrong passwords and corrupt payloads',
+    () async {
+      await _insertCompleteLibrary(db, mediaBase: tempDir);
+      final result = await backupService.createEncryptedBackup(
+        password: 'correct horse battery staple',
+      );
+
+      await expectLater(
+        backupService.previewEncryptedBackup(result.bytes, password: 'wrong'),
+        throwsA(isA<BackupException>()),
+      );
+
+      final corrupt = [...result.bytes]..[result.bytes.length - 1] ^= 0xFF;
+      await expectLater(
+        backupService.previewEncryptedBackup(
+          corrupt,
+          password: 'correct horse battery staple',
+        ),
+        throwsA(isA<BackupException>()),
+      );
+    },
+  );
+
   test('backup with missing media keeps JSON and emits warning', () async {
     await _insertCompleteLibrary(
       db,
@@ -318,6 +367,120 @@ void main() {
         final visibleRows =
             await LibraryQueryRepository(targetDb).watchRows().first;
         expect(visibleRows.map((row) => row.title), ['Hades']);
+      } finally {
+        await targetDb.close();
+        if (await targetTempDir.exists()) {
+          await targetTempDir.delete(recursive: true);
+        }
+      }
+    },
+  );
+
+  test(
+    'encrypted restore rebuilds data and writes encrypted pre-restore backup',
+    () async {
+      await _insertCompleteLibrary(db, mediaBase: tempDir);
+      final backup = await backupService.createEncryptedBackup(
+        password: 'correct horse battery staple',
+      );
+      await db.close();
+      dbClosed = true;
+
+      final targetDb = AppDatabase(NativeDatabase.memory());
+      final targetTempDir = await io.Directory.systemTemp.createTemp(
+        'backlog_vault_encrypted_restore_',
+      );
+      try {
+        await _insertDeletedCandidateAsActive(
+          targetDb,
+          mediaBase: targetTempDir,
+        );
+        final targetService = BackupService(
+          exportRepository: ExportRepository(targetDb, clock: _FixedClock()),
+          baseDirectoryLoader: () async => targetTempDir,
+          ids: _FixedIds(),
+          clock: _FixedClock(),
+        );
+
+        final result = await targetService.restoreEncryptedBackup(
+          backup.bytes,
+          password: 'correct horse battery staple',
+          confirmation: 'RESTAURAR',
+        );
+
+        final visibleRows =
+            await LibraryQueryRepository(targetDb).watchRows().first;
+        final oldGame =
+            await (targetDb.select(targetDb.games)
+              ..where((table) => table.id.equals('old-game'))).getSingle();
+        final preRestoreFile = io.File(result.preRestoreBackupPath);
+        final preRestoreBytes = await preRestoreFile.readAsBytes();
+
+        expect(visibleRows.map((row) => row.title), ['Hades']);
+        expect(oldGame.deletedAt, isNotNull);
+        expect(result.preRestoreBackupPath, endsWith('.vaultbackup.enc'));
+        expect(preRestoreBytes.take(4), [0x42, 0x56, 0x45, 0x31]);
+        expect(
+          String.fromCharCodes(preRestoreBytes),
+          isNot(contains('manifest.json')),
+        );
+      } finally {
+        await targetDb.close();
+        if (await targetTempDir.exists()) {
+          await targetTempDir.delete(recursive: true);
+        }
+      }
+    },
+  );
+
+  test(
+    'encrypted restore with wrong password does not modify DB or media',
+    () async {
+      await _insertCompleteLibrary(db, mediaBase: tempDir);
+      final backup = await backupService.createEncryptedBackup(
+        password: 'correct horse battery staple',
+      );
+      await db.close();
+      dbClosed = true;
+
+      final targetDb = AppDatabase(NativeDatabase.memory());
+      final targetTempDir = await io.Directory.systemTemp.createTemp(
+        'backlog_vault_encrypted_restore_wrong_password_',
+      );
+      try {
+        await _insertDeletedCandidateAsActive(
+          targetDb,
+          mediaBase: targetTempDir,
+        );
+        final targetService = BackupService(
+          exportRepository: ExportRepository(targetDb, clock: _FixedClock()),
+          baseDirectoryLoader: () async => targetTempDir,
+          ids: _FixedIds(),
+          clock: _FixedClock(),
+        );
+
+        await expectLater(
+          targetService.restoreEncryptedBackup(
+            backup.bytes,
+            password: 'wrong',
+            confirmation: 'RESTAURAR',
+          ),
+          throwsA(isA<BackupException>()),
+        );
+
+        final oldGame =
+            await (targetDb.select(targetDb.games)
+              ..where((table) => table.id.equals('old-game'))).getSingle();
+        final oldMedia = io.File(
+          '${targetTempDir.path}${io.Platform.pathSeparator}media${io.Platform.pathSeparator}games${io.Platform.pathSeparator}old-game${io.Platform.pathSeparator}old-cover.png',
+        );
+        final preRestoreDirectory = io.Directory(
+          '${targetTempDir.path}${io.Platform.pathSeparator}backups${io.Platform.pathSeparator}pre-restore',
+        );
+
+        expect(oldGame.deletedAt, isNull);
+        expect(await oldMedia.exists(), isTrue);
+        expect(await preRestoreDirectory.exists(), isFalse);
       } finally {
         await targetDb.close();
         if (await targetTempDir.exists()) {

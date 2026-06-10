@@ -17,16 +17,18 @@ abstract class MetadataApiKeyStorage {
   Future<void> saveSteamGridDbApiKey(String apiKey);
 
   Future<void> deleteSteamGridDbApiKey();
+
+  Future<void> deleteAllExternalApiKeys();
 }
 
 class SecureMetadataApiKeyStorage implements MetadataApiKeyStorage {
-  SecureMetadataApiKeyStorage({FlutterSecureStorage? storage})
-    : _storage = storage ?? const FlutterSecureStorage();
+  SecureMetadataApiKeyStorage({SecureKeyValueStore? storage})
+    : _storage = storage ?? FlutterSecureKeyValueStore();
 
   static const _rawgApiKey = 'metadata.rawg.api_key';
   static const _steamGridDbApiKey = 'media.steamgriddb.api_key';
 
-  final FlutterSecureStorage _storage;
+  final SecureKeyValueStore _storage;
 
   @override
   Future<String?> readRawgApiKey() async {
@@ -60,5 +62,40 @@ class SecureMetadataApiKeyStorage implements MetadataApiKeyStorage {
   @override
   Future<void> deleteSteamGridDbApiKey() {
     return _storage.delete(key: _steamGridDbApiKey);
+  }
+
+  @override
+  Future<void> deleteAllExternalApiKeys() async {
+    await Future.wait([deleteRawgApiKey(), deleteSteamGridDbApiKey()]);
+  }
+}
+
+abstract class SecureKeyValueStore {
+  Future<String?> read({required String key});
+
+  Future<void> write({required String key, required String value});
+
+  Future<void> delete({required String key});
+}
+
+class FlutterSecureKeyValueStore implements SecureKeyValueStore {
+  FlutterSecureKeyValueStore({FlutterSecureStorage? storage})
+    : _storage = storage ?? const FlutterSecureStorage();
+
+  final FlutterSecureStorage _storage;
+
+  @override
+  Future<String?> read({required String key}) {
+    return _storage.read(key: key);
+  }
+
+  @override
+  Future<void> write({required String key, required String value}) {
+    return _storage.write(key: key, value: value);
+  }
+
+  @override
+  Future<void> delete({required String key}) {
+    return _storage.delete(key: key);
   }
 }

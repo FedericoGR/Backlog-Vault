@@ -16,6 +16,17 @@ class BackupFilePickerService {
     return result.files.single.path;
   }
 
+  Future<String?> pickEncryptedBackupPath() async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['enc'],
+      allowMultiple: false,
+      withData: false,
+    );
+    if (result == null || result.files.isEmpty) return null;
+    return result.files.single.path;
+  }
+
   Future<String?> pickSavePath({
     required String fileName,
     required List<String> allowedExtensions,

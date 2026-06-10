@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../../core/ids/id_generator.dart';
 import '../../../core/time/clock.dart';
 import '../domain/backup_models.dart';
+import 'encrypted_backup_codec.dart';
 import 'export_repository.dart';
 
 typedef BackupBaseDirectoryLoader = Future<Directory> Function();
@@ -21,16 +22,19 @@ class BackupService {
   BackupService({
     required ExportRepository exportRepository,
     BackupBaseDirectoryLoader? baseDirectoryLoader,
+    EncryptedBackupCodec? encryptedBackupCodec,
     IdGenerator? ids,
     Clock clock = systemClock,
   }) : _exportRepository = exportRepository,
        _baseDirectoryLoader =
            baseDirectoryLoader ?? getApplicationSupportDirectory,
+       _encryptedBackupCodec = encryptedBackupCodec ?? EncryptedBackupCodec(),
        _ids = ids ?? defaultIdGenerator,
        _clock = clock;
 
   final ExportRepository _exportRepository;
   final BackupBaseDirectoryLoader _baseDirectoryLoader;
+  final EncryptedBackupCodec _encryptedBackupCodec;
   final IdGenerator _ids;
   final Clock _clock;
 
@@ -86,6 +90,22 @@ class BackupService {
     );
   }
 
+  Future<ExportResult> createEncryptedBackup({required String password}) async {
+    final backup = await createBackup();
+    final encryptedBytes = await _encryptedBackupCodec.encrypt(
+      backup.bytes,
+      password,
+    );
+    BackupPackageReader().read(
+      await _encryptedBackupCodec.decrypt(encryptedBytes, password),
+    );
+    return ExportResult(
+      fileName: _timestampedFileName('backlog-vault', encryptedBackupExtension),
+      bytes: encryptedBytes,
+      warnings: backup.warnings,
+    );
+  }
+
   Future<BackupPreview> previewBackup(List<int> bytes) async {
     final package = BackupPackageReader().read(bytes);
     return BackupPreview(
@@ -93,6 +113,13 @@ class BackupService {
       checksumValid: true,
       warnings: package.manifest.warnings,
     );
+  }
+
+  Future<BackupPreview> previewEncryptedBackup(
+    List<int> bytes, {
+    required String password,
+  }) async {
+    return previewBackup(await _encryptedBackupCodec.decrypt(bytes, password));
   }
 
   Future<RestoreResult> restoreBackup(
@@ -107,7 +134,38 @@ class BackupService {
 
     final package = BackupPackageReader().read(bytes);
     final preRestoreBackup = await createBackup();
-    final preRestorePath = await _writePreRestoreBackup(preRestoreBackup.bytes);
+    final preRestorePath = await _writePreRestoreBackup(
+      preRestoreBackup.bytes,
+      extension: 'vaultbackup',
+    );
+    return _restoreDecodedPackage(package, preRestorePath: preRestorePath);
+  }
+
+  Future<RestoreResult> restoreEncryptedBackup(
+    List<int> bytes, {
+    required String password,
+    required String confirmation,
+  }) async {
+    if (confirmation.trim() != 'RESTAURAR') {
+      throw const BackupException(
+        'Para restaurar tenés que confirmar escribiendo RESTAURAR.',
+      );
+    }
+
+    final decrypted = await _encryptedBackupCodec.decrypt(bytes, password);
+    final package = BackupPackageReader().read(decrypted);
+    final preRestoreBackup = await createEncryptedBackup(password: password);
+    final preRestorePath = await _writePreRestoreBackup(
+      preRestoreBackup.bytes,
+      extension: encryptedBackupExtension,
+    );
+    return _restoreDecodedPackage(package, preRestorePath: preRestorePath);
+  }
+
+  Future<RestoreResult> _restoreDecodedPackage(
+    DecodedBackupPackage package, {
+    required String preRestorePath,
+  }) async {
     final createdMediaFiles = <File>[];
 
     try {
@@ -178,14 +236,17 @@ class BackupService {
     return _MediaCollection(files: files, warnings: warnings);
   }
 
-  Future<String> _writePreRestoreBackup(List<int> bytes) async {
+  Future<String> _writePreRestoreBackup(
+    List<int> bytes, {
+    required String extension,
+  }) async {
     final base = await _baseDirectoryLoader();
     final directory = Directory(
       '${base.path}${Platform.pathSeparator}backups${Platform.pathSeparator}pre-restore',
     );
     await directory.create(recursive: true);
     final file = File(
-      '${directory.path}${Platform.pathSeparator}${_timestampedFileName('backlog-vault-pre-restore', 'vaultbackup')}',
+      '${directory.path}${Platform.pathSeparator}${_timestampedFileName('backlog-vault-pre-restore', extension)}',
     );
     await file.writeAsBytes(bytes, flush: true);
     return file.path;

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/formatting/date_formatters.dart';
+import '../../../core/privacy/privacy_redactor.dart';
 import '../../games/application/library_game_details.dart';
 import '../application/metadata_providers.dart';
 import '../domain/apply_metadata_request.dart';
@@ -254,8 +255,12 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
   }
 
   String _safeMessage(Object error) {
-    if (error is MetadataException) return error.message;
-    return 'No se pudo completar la operación de metadata.';
+    if (error is MetadataException) {
+      return privacyRedactor.redact(error.message);
+    }
+    return privacyRedactor.redact(
+      'No se pudo completar la operación de metadata.',
+    );
   }
 }
 

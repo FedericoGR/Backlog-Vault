@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/privacy/privacy_redactor.dart';
 import '../../games/application/library_game_details.dart';
 import '../application/media_providers.dart';
 import '../domain/media_asset_models.dart';
@@ -251,8 +252,10 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
   }
 
   String _safeMessage(Object error) {
-    if (error is MediaException) return error.message;
-    return 'No se pudo completar la operación de portada.';
+    if (error is MediaException) return privacyRedactor.redact(error.message);
+    return privacyRedactor.redact(
+      'No se pudo completar la operación de portada.',
+    );
   }
 }
 
