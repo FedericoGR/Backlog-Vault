@@ -219,6 +219,34 @@ void main() {
       'pc',
     });
   });
+
+  test(
+    'default platform views stay safely empty when catalogs are missing',
+    () {
+      final views = buildDefaultLibraryViews(platforms: const []);
+      final pcView = views.singleWhere((view) => view.name == 'PC');
+      final switchView = views.singleWhere(
+        (view) => view.name == 'Nintendo Switch',
+      );
+
+      expect(
+        processor
+            .apply(rows: _rows, filter: pcView.filter, sort: pcView.sort)
+            .rows,
+        isEmpty,
+      );
+      expect(
+        processor
+            .apply(
+              rows: _rows,
+              filter: switchView.filter,
+              sort: switchView.sort,
+            )
+            .rows,
+        isEmpty,
+      );
+    },
+  );
 }
 
 final _rows = [
