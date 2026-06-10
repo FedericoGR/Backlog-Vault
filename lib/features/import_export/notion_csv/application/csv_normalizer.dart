@@ -57,6 +57,23 @@ class CsvNormalizer {
       );
     }
 
+    final englishMonthMatch = RegExp(
+      r'^([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})$',
+    ).firstMatch(text);
+    if (englishMonthMatch != null) {
+      final month = _englishMonths[englishMonthMatch.group(1)!.toLowerCase()];
+      if (month != null) {
+        return _buildDate(
+          int.parse(englishMonthMatch.group(3)!),
+          month,
+          int.parse(englishMonthMatch.group(2)!),
+          issues,
+          field,
+          text,
+        );
+      }
+    }
+
     issues.add(
       ImportRowIssue(
         severity: ImportIssueSeverity.warning,
@@ -95,6 +112,21 @@ class CsvNormalizer {
   int? parseRating(String value, List<ImportRowIssue> issues) {
     final text = value.trim();
     if (text.isEmpty) return null;
+
+    final starCount = '⭐'.allMatches(text).length;
+    if (starCount > 0) {
+      if (starCount >= 1 && starCount <= 5) {
+        return starCount;
+      }
+      issues.add(
+        ImportRowIssue(
+          severity: ImportIssueSeverity.warning,
+          field: 'personalRating',
+          message: 'Puntaje con estrellas inválido "$value"; se dejó vacío.',
+        ),
+      );
+      return null;
+    }
 
     final parsed = int.tryParse(text);
     if (parsed == null || parsed < 1 || parsed > 5) {
@@ -141,7 +173,7 @@ class CsvNormalizer {
   List<String> splitMultiValue(String value) {
     final seen = <String>{};
     final result = <String>[];
-    for (final part in value.split(RegExp(r'[,;|]'))) {
+    for (final part in value.split(RegExp(r'\s*[,;]\s*|\s+\|\s+'))) {
       final trimmed = part.trim();
       if (trimmed.isEmpty) continue;
       final key = normalizeToken(trimmed);
@@ -202,6 +234,8 @@ final _statusByToken = <String, GameStatus>{
   'playing': GameStatus.playing,
   'jugando': GameStatus.playing,
   'en curso': GameStatus.playing,
+  'jugando actualmente': GameStatus.playing,
+  'actualmente jugando': GameStatus.playing,
   'paused': GameStatus.paused,
   'pausado': GameStatus.paused,
   'completed': GameStatus.completed,
@@ -212,4 +246,19 @@ final _statusByToken = <String, GameStatus>{
   'abandonado': GameStatus.dropped,
   'retired': GameStatus.retired,
   'retirado': GameStatus.retired,
+};
+
+const _englishMonths = <String, int>{
+  'january': 1,
+  'february': 2,
+  'march': 3,
+  'april': 4,
+  'may': 5,
+  'june': 6,
+  'july': 7,
+  'august': 8,
+  'september': 9,
+  'october': 10,
+  'november': 11,
+  'december': 12,
 };

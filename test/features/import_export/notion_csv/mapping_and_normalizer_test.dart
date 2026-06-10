@@ -12,6 +12,7 @@ void main() {
         'Nombre',
         'Fecha de salida',
         'Duración',
+        'Duracion ( en horas )',
         'Puntaje',
         'Género',
         'Plataformas',
@@ -48,6 +49,10 @@ void main() {
         normalizer.parseDate('03/04/2024', issues, 'releaseDate'),
         DateTime(2024, 4, 3),
       );
+      expect(
+        normalizer.parseDate('January 2, 2026', issues, 'completedAt'),
+        DateTime(2026, 1, 2),
+      );
       expect(issues.any((issue) => issue.message.contains('ambigua')), isTrue);
     });
 
@@ -70,6 +75,14 @@ void main() {
       expect(issues, isEmpty);
     });
 
+    test('parses Notion star ratings', () {
+      final issues = <ImportRowIssue>[];
+
+      expect(normalizer.parseRating('⭐⭐⭐⭐', issues), 4);
+      expect(normalizer.parseRating('⭐️⭐️⭐️', issues), 3);
+      expect(issues, isEmpty);
+    });
+
     test('warns for invalid duration and rating', () {
       final issues = <ImportRowIssue>[];
 
@@ -87,6 +100,10 @@ void main() {
       );
       expect(normalizer.parseStatus('pendiente', issues), GameStatus.backlog);
       expect(normalizer.parseStatus('en curso', issues), GameStatus.playing);
+      expect(
+        normalizer.parseStatus('Jugando Actualmente', issues),
+        GameStatus.playing,
+      );
       expect(normalizer.parseStatus('finished', issues), GameStatus.completed);
       expect(normalizer.parseStatus('???', issues), GameStatus.backlog);
       expect(issues.single.isWarning, isTrue);
@@ -98,6 +115,10 @@ void main() {
         'Action',
         'Puzzle',
       ]);
+      expect(
+        normalizer.splitMultiValue('PC, Xbox Series X|S, PC | Steam Deck'),
+        ['PC', 'Xbox Series X|S', 'Steam Deck'],
+      );
     });
   });
 }
