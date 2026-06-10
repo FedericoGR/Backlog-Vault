@@ -19,6 +19,7 @@ class LibraryGameRow {
     required this.playthroughCount,
     required this.updatedAt,
     this.sortTitle,
+    this.selectedCoverLocalPath,
     this.releaseDate,
     this.completedAt,
     this.hoursPlayed,
@@ -30,6 +31,7 @@ class LibraryGameRow {
   final String libraryEntryId;
   final String title;
   final String? sortTitle;
+  final String? selectedCoverLocalPath;
   final GameStatus status;
   final DateTime? releaseDate;
   final DateTime? completedAt;

@@ -53,6 +53,7 @@ class LibraryQueryRepository {
     final platformsByEntryId = await _loadPlatformsByEntryId(entryIds);
     final genresByGameId = await _loadGenresByGameId(gameIds);
     final playthroughsByEntryId = await _loadPlaythroughsByEntryId(entryIds);
+    final selectedCoverByGameId = await _loadSelectedCoverByGameId(gameIds);
 
     return [
       for (final entry in entries)
@@ -63,6 +64,7 @@ class LibraryQueryRepository {
             platforms: platformsByEntryId[entry.id] ?? const [],
             genres: genresByGameId[game.id] ?? const [],
             playthroughs: playthroughsByEntryId[entry.id] ?? const [],
+            selectedCover: selectedCoverByGameId[game.id],
           ),
     ];
   }
@@ -152,12 +154,27 @@ class LibraryQueryRepository {
     return result;
   }
 
+  Future<Map<String, MediaAsset>> _loadSelectedCoverByGameId(
+    List<String> gameIds,
+  ) async {
+    if (gameIds.isEmpty) return const {};
+    final assets =
+        await ((_db.select(_db.mediaAssets)
+              ..where((table) => table.gameId.isIn(gameIds))
+              ..where((table) => table.kind.equals('cover'))
+              ..where((table) => table.isSelected.equals(true))
+              ..where((table) => table.deletedAt.isNull()))
+            .get());
+    return {for (final asset in assets) asset.gameId: asset};
+  }
+
   LibraryGameRow _toRow({
     required LibraryEntry entry,
     required Game game,
     required List<LibraryCatalogItem> platforms,
     required List<LibraryCatalogItem> genres,
     required List<Playthrough> playthroughs,
+    required MediaAsset? selectedCover,
   }) {
     DateTime? completedAt;
     var hoursPlayed = 0.0;
@@ -181,6 +198,7 @@ class LibraryQueryRepository {
       libraryEntryId: entry.id,
       title: game.title,
       sortTitle: game.sortTitle,
+      selectedCoverLocalPath: selectedCover?.localPath,
       status: parseGameStatus(entry.status),
       releaseDate: game.releaseDate,
       completedAt: completedAt,

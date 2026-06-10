@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": 9001,
+      "score": 87.5,
+      "style": "alternate",
+      "url": "https://cdn.example.test/grid/hades-cover.png",
+      "thumb": "https://cdn.example.test/grid/hades-cover-thumb.png",
+      "width": 600,
+      "height": 900,
+      "mime": "image/png",
+      "author": {
+        "name": "Fixture Artist"
+      }
+    },
+    {
+      "id": 9002,
+      "score": 40.0,
+      "style": "alternate",
+      "url": "https://cdn.example.test/grid/hades-wide.png",
+      "thumb": "https://cdn.example.test/grid/hades-wide-thumb.png",
+      "width": 920,
+      "height": 430,
+      "mime": "image/png"
+    }
+  ]
+}

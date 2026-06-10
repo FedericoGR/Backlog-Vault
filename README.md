@@ -70,11 +70,26 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
 - Creación/reuso de géneros y plataformas sin duplicar.
 - Protección de datos manuales/personales: no se pisan estado, puntaje personal, notas ni playthroughs.
 
+## Alcance del Entregable 6
+
+- Covers/media local para juegos.
+- Provider SteamGridDB para buscar portadas.
+- Configuración local de API key SteamGridDB desde Ajustes.
+- Guardado de API keys mediante secure storage del sistema.
+- Selección manual de portada desde la ficha del juego.
+- Carga manual desde archivo local.
+- Descarga/copia controlada a la carpeta local de la app.
+- Persistencia de media en `media_assets` con soft delete.
+- Paths relativos y filenames por UUID/hash, sin usar títulos de juegos.
+- Visualización offline de portada guardada en la ficha.
+- Miniaturas en lista mobile/cards y columna opcional de portada en tabla desktop.
+
 ## Fuera de alcance
 
 - Notion API.
-- Providers externos adicionales como IGDB, SteamGridDB o Steam.
-- Covers descargados o cache de imágenes externas.
+- Providers externos adicionales como IGDB o Steam.
+- Galería visual completa.
+- Bulk download automático de covers.
 - Sync.
 - SQLCipher.
 - Backup/export.
@@ -159,11 +174,15 @@ flutter --disable-analytics
 dart --disable-analytics
 ```
 
-## Metadata externa y API keys
+## Metadata externa, media y API keys
 
-La metadata externa es opcional. Sin API key de RAWG, Backlog Vault sigue funcionando offline con la biblioteca local.
+La metadata externa y la búsqueda de portadas son opcionales. Sin API key de RAWG o SteamGridDB, Backlog Vault sigue funcionando offline con la biblioteca local y las portadas ya guardadas.
 
-La API key se configura desde Ajustes y se guarda localmente mediante `flutter_secure_storage`. No agregues claves reales a README, tests, fixtures, logs, issues ni commits.
+Las API keys se configuran desde Ajustes y se guardan localmente mediante `flutter_secure_storage`. No agregues claves reales a README, tests, fixtures, logs, issues ni commits.
+
+SteamGridDB se usa solo cuando elegís buscar una portada. Backlog Vault no descarga portadas automáticamente para toda la biblioteca.
+
+Las imágenes seleccionadas se copian a la carpeta de soporte de la app y la base SQLite guarda paths relativos. Los backups futuros deberán incluir tanto la DB como la carpeta `media/`.
 
 En Windows, el plugin `flutter_secure_storage_windows` está vendorizado en `third_party/` mediante `dependency_overrides` porque la versión compatible con `file_picker` requiere ATL (`atlstr.h`) en algunos toolchains. El parche local usa conversiones Win32 estándar para mantener `flutter build windows` funcionando.
 

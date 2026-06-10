@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../../catalogs/data/catalog_repository.dart';
 import '../../games/data/game_repository.dart';
+import '../../media/data/media_repository.dart';
 import '../application/library_default_views.dart';
 import '../application/library_table_providers.dart';
 import '../application/library_table_state.dart';
@@ -395,6 +398,60 @@ class _LibrarySummary extends StatelessWidget {
   }
 }
 
+class _CoverThumbnail extends ConsumerWidget {
+  const _CoverThumbnail({
+    required this.localPath,
+    required this.width,
+    required this.height,
+  });
+
+  final String? localPath;
+  final double width;
+  final double height;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final path = localPath;
+    if (path == null || path.trim().isEmpty) {
+      return _placeholder(context);
+    }
+
+    return FutureBuilder<File>(
+      future: ref.watch(mediaRepositoryProvider).resolveLocalFile(path),
+      builder: (context, snapshot) {
+        final file = snapshot.data;
+        if (file == null) return _placeholder(context);
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: Image.file(
+            file,
+            width: width,
+            height: height,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => _placeholder(context),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _placeholder(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      ),
+      child: Icon(
+        Icons.image_outlined,
+        size: width * 0.45,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    );
+  }
+}
+
 class _LibraryDataTable extends ConsumerWidget {
   const _LibraryDataTable({required this.rows});
 
@@ -422,6 +479,8 @@ class _LibraryDataTable extends ConsumerWidget {
               size:
                   column == LibraryColumnKey.title
                       ? ColumnSize.L
+                      : column == LibraryColumnKey.cover
+                      ? ColumnSize.S
                       : ColumnSize.M,
               onSort:
                   _sortFieldForColumn(column) == null
@@ -468,6 +527,11 @@ class _LibraryCardList extends ConsumerWidget {
           shape: RoundedRectangleBorder(
             side: BorderSide(color: Theme.of(context).dividerColor),
             borderRadius: BorderRadius.circular(8),
+          ),
+          leading: _CoverThumbnail(
+            localPath: row.selectedCoverLocalPath,
+            width: 48,
+            height: 64,
           ),
           title: Text(row.title),
           subtitle: Text(
@@ -1204,6 +1268,16 @@ Widget _tableCell(
   LibraryGameRow row,
   LibraryColumnKey column,
 ) {
+  if (column == LibraryColumnKey.cover) {
+    return Center(
+      child: _CoverThumbnail(
+        localPath: row.selectedCoverLocalPath,
+        width: 36,
+        height: 48,
+      ),
+    );
+  }
+
   final text = switch (column) {
     LibraryColumnKey.title => row.title,
     LibraryColumnKey.status => row.status.label,
@@ -1223,6 +1297,7 @@ Widget _tableCell(
           : row.personalNotes!.trim(),
     LibraryColumnKey.updatedAt => formatVisibleDate(row.updatedAt),
     LibraryColumnKey.playthroughs => row.playthroughCount.toString(),
+    LibraryColumnKey.cover => '',
   };
 
   return Tooltip(
@@ -1274,6 +1349,7 @@ LibrarySortField? _sortFieldForColumn(LibraryColumnKey column) {
     LibraryColumnKey.completedDate => LibrarySortField.completedDate,
     LibraryColumnKey.hours => LibrarySortField.hours,
     LibraryColumnKey.updatedAt => LibrarySortField.updatedAt,
+    LibraryColumnKey.cover ||
     LibraryColumnKey.platforms ||
     LibraryColumnKey.genres ||
     LibraryColumnKey.type ||

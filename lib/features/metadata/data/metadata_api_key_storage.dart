@@ -11,6 +11,12 @@ abstract class MetadataApiKeyStorage {
   Future<void> saveRawgApiKey(String apiKey);
 
   Future<void> deleteRawgApiKey();
+
+  Future<String?> readSteamGridDbApiKey();
+
+  Future<void> saveSteamGridDbApiKey(String apiKey);
+
+  Future<void> deleteSteamGridDbApiKey();
 }
 
 class SecureMetadataApiKeyStorage implements MetadataApiKeyStorage {
@@ -18,6 +24,7 @@ class SecureMetadataApiKeyStorage implements MetadataApiKeyStorage {
     : _storage = storage ?? const FlutterSecureStorage();
 
   static const _rawgApiKey = 'metadata.rawg.api_key';
+  static const _steamGridDbApiKey = 'media.steamgriddb.api_key';
 
   final FlutterSecureStorage _storage;
 
@@ -36,5 +43,22 @@ class SecureMetadataApiKeyStorage implements MetadataApiKeyStorage {
   @override
   Future<void> deleteRawgApiKey() {
     return _storage.delete(key: _rawgApiKey);
+  }
+
+  @override
+  Future<String?> readSteamGridDbApiKey() async {
+    final value = await _storage.read(key: _steamGridDbApiKey);
+    final trimmed = value?.trim();
+    return trimmed == null || trimmed.isEmpty ? null : trimmed;
+  }
+
+  @override
+  Future<void> saveSteamGridDbApiKey(String apiKey) {
+    return _storage.write(key: _steamGridDbApiKey, value: apiKey.trim());
+  }
+
+  @override
+  Future<void> deleteSteamGridDbApiKey() {
+    return _storage.delete(key: _steamGridDbApiKey);
   }
 }

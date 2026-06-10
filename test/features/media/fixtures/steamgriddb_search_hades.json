@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": 123,
+      "name": "Hades",
+      "types": ["Game"],
+      "verified": true
+    },
+    {
+      "id": 456,
+      "name": "Hades II",
+      "types": ["Game"],
+      "verified": true
+    }
+  ]
+}

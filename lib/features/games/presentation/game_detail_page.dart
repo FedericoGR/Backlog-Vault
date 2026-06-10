@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,10 @@ import '../../../core/database/app_database.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../../library/domain/game_status.dart';
 import '../../library/domain/rating.dart';
+import '../../library/data/library_query_repository.dart';
+import '../../media/application/media_providers.dart';
+import '../../media/data/media_repository.dart';
+import '../../media/presentation/media_search_dialog.dart';
 import '../../metadata/presentation/metadata_search_dialog.dart';
 import '../../playthroughs/application/completion_form_model.dart';
 import '../../playthroughs/application/playthrough_form_model.dart';
@@ -37,6 +43,14 @@ class GameDetailPage extends ConsumerWidget {
           appBar: AppBar(
             title: Text(item.game.title),
             actions: [
+              IconButton(
+                tooltip:
+                    item.selectedCover == null
+                        ? 'Buscar portada'
+                        : 'Cambiar portada',
+                onPressed: () => _showMediaDialog(context, ref, item),
+                icon: const Icon(Icons.image_search_outlined),
+              ),
               IconButton(
                 tooltip: 'Buscar metadata',
                 onPressed: () => _showMetadataDialog(context, ref, item),
@@ -142,6 +156,8 @@ class _GameDetailHeader extends ConsumerWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
+              _GameCoverPanel(item: item),
+              const SizedBox(width: 4),
               Chip(label: Text(status.label)),
               Chip(
                 label: Text(
@@ -160,6 +176,81 @@ class _GameDetailHeader extends ConsumerWidget {
           const SizedBox(height: 12),
           _QuickProgressActions(item: item),
         ],
+      ),
+    );
+  }
+}
+
+class _GameCoverPanel extends ConsumerWidget {
+  const _GameCoverPanel({required this.item});
+
+  final LibraryGameDetails item;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cover = item.selectedCover;
+    return SizedBox(
+      width: 168,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AspectRatio(
+            aspectRatio: 2 / 3,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child:
+                  cover == null
+                      ? _coverPlaceholder(context)
+                      : FutureBuilder<File>(
+                        future: ref
+                            .watch(mediaRepositoryProvider)
+                            .resolveLocalFile(cover.localPath),
+                        builder: (context, snapshot) {
+                          final file = snapshot.data;
+                          if (file == null) return _coverPlaceholder(context);
+                          return Image.file(
+                            file,
+                            fit: BoxFit.cover,
+                            errorBuilder:
+                                (context, error, stackTrace) =>
+                                    _coverPlaceholder(context),
+                          );
+                        },
+                      ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton.icon(
+                onPressed: () => _showMediaDialog(context, ref, item),
+                icon: const Icon(Icons.image_search_outlined),
+                label: Text(cover == null ? 'Buscar portada' : 'Cambiar'),
+              ),
+              if (cover != null)
+                IconButton.outlined(
+                  tooltip: 'Quitar portada',
+                  onPressed: () => _confirmDeleteCover(context, ref, item),
+                  icon: const Icon(Icons.delete_outline),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _coverPlaceholder(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      ),
+      child: Icon(
+        Icons.image_outlined,
+        size: 48,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
   }
@@ -468,6 +559,60 @@ Future<void> _showMetadataDialog(
   ScaffoldMessenger.of(
     context,
   ).showSnackBar(const SnackBar(content: Text('Metadata aplicada.')));
+}
+
+Future<void> _showMediaDialog(
+  BuildContext context,
+  WidgetRef ref,
+  LibraryGameDetails item,
+) async {
+  final saved = await showDialog<bool>(
+    context: context,
+    builder: (context) => MediaSearchDialog(item: item),
+  );
+  if (saved != true || !context.mounted) return;
+  ref.invalidate(libraryGameProvider(item.entry.id));
+  ref.invalidate(libraryRowsProvider);
+  ScaffoldMessenger.of(
+    context,
+  ).showSnackBar(const SnackBar(content: Text('Portada actualizada.')));
+}
+
+Future<void> _confirmDeleteCover(
+  BuildContext context,
+  WidgetRef ref,
+  LibraryGameDetails item,
+) async {
+  final cover = item.selectedCover;
+  if (cover == null) return;
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder:
+        (context) => AlertDialog(
+          title: const Text('Quitar portada'),
+          content: const Text(
+            'La portada se ocultará del juego, sin borrar físicamente tu historial de media.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Quitar'),
+            ),
+          ],
+        ),
+  );
+  if (confirmed != true || !context.mounted) return;
+  await ref.read(deleteMediaAssetUseCaseProvider).call(cover.id);
+  ref.invalidate(libraryGameProvider(item.entry.id));
+  ref.invalidate(libraryRowsProvider);
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(
+    context,
+  ).showSnackBar(const SnackBar(content: Text('Portada quitada.')));
 }
 
 Future<void> _runProgressAction(

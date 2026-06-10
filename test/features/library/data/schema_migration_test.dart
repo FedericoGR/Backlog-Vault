@@ -3,7 +3,7 @@ import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('migrates schema 1 database to schema 3 preserving library data', () async {
+  test('migrates schema 1 database to schema 4 preserving library data', () async {
     final executor = NativeDatabase.memory(
       setup: (db) {
         db
@@ -111,6 +111,12 @@ void main() {
               "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'external_game_ids';",
             )
             .getSingleOrNull();
+    final mediaAssetsTable =
+        await db
+            .customSelect(
+              "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'media_assets';",
+            )
+            .getSingleOrNull();
     final gameCount =
         await db
             .customSelect('SELECT COUNT(*) AS count FROM games;')
@@ -124,13 +130,15 @@ void main() {
 
     expect(savedViewsTable, isNotNull);
     expect(externalGameIdsTable, isNotNull);
+    expect(mediaAssetsTable, isNotNull);
     expect(gameCount, 1);
     expect(entryCount, 1);
     expect(await db.select(db.savedViews).get(), isEmpty);
     expect(await db.select(db.externalGameIds).get(), isEmpty);
+    expect(await db.select(db.mediaAssets).get(), isEmpty);
   });
 
-  test('migrates schema 2 database to schema 3 preserving saved views', () async {
+  test('migrates schema 2 database to schema 4 preserving saved views', () async {
     final executor = NativeDatabase.memory(
       setup: (db) {
         db
@@ -176,6 +184,12 @@ void main() {
               "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'external_game_ids';",
             )
             .getSingleOrNull();
+    final mediaAssetsTable =
+        await db
+            .customSelect(
+              "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'media_assets';",
+            )
+            .getSingleOrNull();
     final savedViewCount =
         await db
             .customSelect('SELECT COUNT(*) AS count FROM saved_views;')
@@ -188,8 +202,69 @@ void main() {
             .getSingle();
 
     expect(externalGameIdsTable, isNotNull);
+    expect(mediaAssetsTable, isNotNull);
     expect(savedViewCount, 1);
     expect(gameCount, 1);
     expect(await db.select(db.externalGameIds).get(), isEmpty);
+    expect(await db.select(db.mediaAssets).get(), isEmpty);
+  });
+
+  test('migrates schema 3 database to schema 4 preserving external ids', () async {
+    final executor = NativeDatabase.memory(
+      setup: (db) {
+        db
+          ..execute('''
+            CREATE TABLE games (
+              id TEXT NOT NULL PRIMARY KEY,
+              title TEXT NOT NULL,
+              sort_title TEXT NULL,
+              release_date INTEGER NULL,
+              type TEXT NOT NULL DEFAULT 'game',
+              created_at INTEGER NOT NULL,
+              updated_at INTEGER NOT NULL,
+              deleted_at INTEGER NULL
+            );
+          ''')
+          ..execute('''
+            CREATE TABLE external_game_ids (
+              id TEXT NOT NULL PRIMARY KEY,
+              game_id TEXT NOT NULL REFERENCES games(id),
+              provider TEXT NOT NULL,
+              external_id TEXT NOT NULL,
+              external_slug TEXT NULL,
+              external_url TEXT NULL,
+              matched_title TEXT NULL,
+              created_at INTEGER NOT NULL,
+              updated_at INTEGER NOT NULL,
+              deleted_at INTEGER NULL
+            );
+          ''')
+          ..execute(
+            "INSERT INTO games (id, title, type, created_at, updated_at) VALUES ('game-1', 'Existing Game', 'game', 0, 0);",
+          )
+          ..execute(
+            "INSERT INTO external_game_ids (id, game_id, provider, external_id, created_at, updated_at) VALUES ('external-1', 'game-1', 'rawg', '123', 0, 0);",
+          )
+          ..execute('PRAGMA user_version = 3;');
+      },
+    );
+    final db = AppDatabase(executor);
+    addTearDown(db.close);
+
+    final mediaAssetsTable =
+        await db
+            .customSelect(
+              "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'media_assets';",
+            )
+            .getSingleOrNull();
+    final externalIdCount =
+        await db
+            .customSelect('SELECT COUNT(*) AS count FROM external_game_ids;')
+            .map((row) => row.read<int>('count'))
+            .getSingle();
+
+    expect(mediaAssetsTable, isNotNull);
+    expect(externalIdCount, 1);
+    expect(await db.select(db.mediaAssets).get(), isEmpty);
   });
 }

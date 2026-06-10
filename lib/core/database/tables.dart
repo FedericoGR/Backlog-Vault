@@ -123,3 +123,27 @@ class ExternalGameIds extends Table {
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
+
+class MediaAssets extends Table {
+  TextColumn get id => text()();
+  TextColumn get gameId => text().references(Games, #id)();
+  TextColumn get kind => text()();
+  TextColumn get source => text()();
+  TextColumn get provider => text().nullable()();
+  TextColumn get externalId => text().nullable()();
+  TextColumn get remoteUrl => text().nullable()();
+  TextColumn get localPath => text()();
+  TextColumn get fileName => text()();
+  TextColumn get mimeType => text().nullable()();
+  IntColumn get width => integer().nullable()();
+  IntColumn get height => integer().nullable()();
+  TextColumn get hash => text().nullable()();
+  BoolColumn get isSelected => boolean().withDefault(const Constant(false))();
+  TextColumn get attribution => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}

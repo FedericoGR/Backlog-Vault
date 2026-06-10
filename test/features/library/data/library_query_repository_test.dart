@@ -117,6 +117,21 @@ void main() {
             ),
           );
       await db
+          .into(db.mediaAssets)
+          .insert(
+            MediaAssetsCompanion.insert(
+              id: 'cover-1',
+              gameId: 'game-1',
+              kind: 'cover',
+              source: 'local',
+              localPath: 'media/games/game-1/cover-1.png',
+              fileName: 'cover-1.png',
+              isSelected: const Value(true),
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await db
           .into(db.games)
           .insert(
             GamesCompanion.insert(
@@ -150,6 +165,10 @@ void main() {
       expect(rows.single.hoursPlayed, 30);
       expect(rows.single.playthroughCount, 2);
       expect(rows.single.updatedAt, now);
+      expect(
+        rows.single.selectedCoverLocalPath,
+        'media/games/game-1/cover-1.png',
+      );
     },
   );
 }

@@ -1,4 +1,5 @@
 enum LibraryColumnKey {
+  cover,
   title,
   status,
   platforms,
@@ -15,6 +16,7 @@ enum LibraryColumnKey {
 
 extension LibraryColumnKeyLabels on LibraryColumnKey {
   String get label => switch (this) {
+    LibraryColumnKey.cover => 'Portada',
     LibraryColumnKey.title => 'Título',
     LibraryColumnKey.status => 'Estado',
     LibraryColumnKey.platforms => 'Plataformas',
@@ -64,6 +66,7 @@ class LibraryColumnConfig {
 
   static const allColumns = [
     LibraryColumnKey.title,
+    LibraryColumnKey.cover,
     LibraryColumnKey.status,
     LibraryColumnKey.platforms,
     LibraryColumnKey.genres,

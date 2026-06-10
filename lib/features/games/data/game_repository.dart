@@ -447,6 +447,14 @@ class GameRepository {
                 ..where((table) => table.deletedAt.isNull())
                 ..orderBy([(table) => OrderingTerm.desc(table.updatedAt)]))
               .get());
+      final selectedCover =
+          await ((_db.select(_db.mediaAssets)
+                ..where((table) => table.gameId.equals(game.id))
+                ..where((table) => table.kind.equals('cover'))
+                ..where((table) => table.isSelected.equals(true))
+                ..where((table) => table.deletedAt.isNull())
+                ..limit(1))
+              .getSingleOrNull());
 
       details.add(
         LibraryGameDetails(
@@ -455,6 +463,7 @@ class GameRepository {
           platforms: platforms,
           genres: genres,
           playthroughs: playthroughs,
+          selectedCover: selectedCover,
         ),
       );
     }

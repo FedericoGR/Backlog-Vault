@@ -12,8 +12,10 @@ class SettingsPage extends ConsumerStatefulWidget {
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   final _rawgApiKeyController = TextEditingController();
+  final _steamGridDbApiKeyController = TextEditingController();
   bool _loading = true;
   bool _rawgConfigured = false;
+  bool _steamGridDbConfigured = false;
 
   @override
   void initState() {
@@ -24,6 +26,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   void dispose() {
     _rawgApiKeyController.dispose();
+    _steamGridDbApiKeyController.dispose();
     super.dispose();
   }
 
@@ -112,17 +115,75 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ),
             ),
           ),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.image_search_outlined),
+                    title: const Text('SteamGridDB API key'),
+                    subtitle: Text(
+                      _loading
+                          ? 'Cargando estado...'
+                          : _steamGridDbConfigured
+                          ? 'Configurada localmente.'
+                          : 'No configurada.',
+                    ),
+                  ),
+                  TextField(
+                    controller: _steamGridDbApiKeyController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Nueva API key',
+                      helperText:
+                          'Se usa solo para buscar portadas y se guarda localmente.',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      FilledButton.icon(
+                        onPressed: _loading ? null : _saveSteamGridDbApiKey,
+                        icon: const Icon(Icons.save_outlined),
+                        label: const Text('Guardar'),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed:
+                            _loading || !_steamGridDbConfigured
+                                ? null
+                                : _deleteSteamGridDbApiKey,
+                        icon: const Icon(Icons.delete_outline),
+                        label: const Text('Borrar'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Backlog Vault no descarga portadas automáticamente: vos elegís qué guardar localmente.',
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
   Future<void> _loadApiKeyState() async {
-    final value =
-        await ref.read(metadataApiKeyStorageProvider).readRawgApiKey();
+    final storage = ref.read(metadataApiKeyStorageProvider);
+    final rawgValue = await storage.readRawgApiKey();
+    final steamGridDbValue = await storage.readSteamGridDbApiKey();
     if (!mounted) return;
     setState(() {
-      _rawgConfigured = value != null;
+      _rawgConfigured = rawgValue != null;
+      _steamGridDbConfigured = steamGridDbValue != null;
       _loading = false;
     });
   }
@@ -153,6 +214,34 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _loading = false;
     });
     _showMessage('API key de RAWG borrada.');
+  }
+
+  Future<void> _saveSteamGridDbApiKey() async {
+    final value = _steamGridDbApiKeyController.text.trim();
+    if (value.isEmpty) {
+      _showMessage('Ingresá una API key antes de guardar.');
+      return;
+    }
+    setState(() => _loading = true);
+    await ref.read(metadataApiKeyStorageProvider).saveSteamGridDbApiKey(value);
+    _steamGridDbApiKeyController.clear();
+    if (!mounted) return;
+    setState(() {
+      _steamGridDbConfigured = true;
+      _loading = false;
+    });
+    _showMessage('API key de SteamGridDB guardada localmente.');
+  }
+
+  Future<void> _deleteSteamGridDbApiKey() async {
+    setState(() => _loading = true);
+    await ref.read(metadataApiKeyStorageProvider).deleteSteamGridDbApiKey();
+    if (!mounted) return;
+    setState(() {
+      _steamGridDbConfigured = false;
+      _loading = false;
+    });
+    _showMessage('API key de SteamGridDB borrada.');
   }
 
   void _showMessage(String message) {

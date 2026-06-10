@@ -7,6 +7,7 @@ class LibraryGameDetails {
     required this.platforms,
     required this.genres,
     required this.playthroughs,
+    this.selectedCover,
   });
 
   final Game game;
@@ -14,4 +15,5 @@ class LibraryGameDetails {
   final List<Platform> platforms;
   final List<Genre> genres;
   final List<Playthrough> playthroughs;
+  final MediaAsset? selectedCover;
 }

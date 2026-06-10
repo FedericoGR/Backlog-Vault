@@ -4649,6 +4649,1016 @@ class ExternalGameIdsCompanion extends UpdateCompanion<ExternalGameId> {
   }
 }
 
+class $MediaAssetsTable extends MediaAssets
+    with TableInfo<$MediaAssetsTable, MediaAsset> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MediaAssetsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _gameIdMeta = const VerificationMeta('gameId');
+  @override
+  late final GeneratedColumn<String> gameId = GeneratedColumn<String>(
+    'game_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES games (id)',
+    ),
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _providerMeta = const VerificationMeta(
+    'provider',
+  );
+  @override
+  late final GeneratedColumn<String> provider = GeneratedColumn<String>(
+    'provider',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _externalIdMeta = const VerificationMeta(
+    'externalId',
+  );
+  @override
+  late final GeneratedColumn<String> externalId = GeneratedColumn<String>(
+    'external_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _remoteUrlMeta = const VerificationMeta(
+    'remoteUrl',
+  );
+  @override
+  late final GeneratedColumn<String> remoteUrl = GeneratedColumn<String>(
+    'remote_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localPathMeta = const VerificationMeta(
+    'localPath',
+  );
+  @override
+  late final GeneratedColumn<String> localPath = GeneratedColumn<String>(
+    'local_path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fileNameMeta = const VerificationMeta(
+    'fileName',
+  );
+  @override
+  late final GeneratedColumn<String> fileName = GeneratedColumn<String>(
+    'file_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mimeTypeMeta = const VerificationMeta(
+    'mimeType',
+  );
+  @override
+  late final GeneratedColumn<String> mimeType = GeneratedColumn<String>(
+    'mime_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _widthMeta = const VerificationMeta('width');
+  @override
+  late final GeneratedColumn<int> width = GeneratedColumn<int>(
+    'width',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _heightMeta = const VerificationMeta('height');
+  @override
+  late final GeneratedColumn<int> height = GeneratedColumn<int>(
+    'height',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _hashMeta = const VerificationMeta('hash');
+  @override
+  late final GeneratedColumn<String> hash = GeneratedColumn<String>(
+    'hash',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isSelectedMeta = const VerificationMeta(
+    'isSelected',
+  );
+  @override
+  late final GeneratedColumn<bool> isSelected = GeneratedColumn<bool>(
+    'is_selected',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_selected" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _attributionMeta = const VerificationMeta(
+    'attribution',
+  );
+  @override
+  late final GeneratedColumn<String> attribution = GeneratedColumn<String>(
+    'attribution',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    gameId,
+    kind,
+    source,
+    provider,
+    externalId,
+    remoteUrl,
+    localPath,
+    fileName,
+    mimeType,
+    width,
+    height,
+    hash,
+    isSelected,
+    attribution,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'media_assets';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MediaAsset> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('game_id')) {
+      context.handle(
+        _gameIdMeta,
+        gameId.isAcceptableOrUnknown(data['game_id']!, _gameIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_gameIdMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceMeta);
+    }
+    if (data.containsKey('provider')) {
+      context.handle(
+        _providerMeta,
+        provider.isAcceptableOrUnknown(data['provider']!, _providerMeta),
+      );
+    }
+    if (data.containsKey('external_id')) {
+      context.handle(
+        _externalIdMeta,
+        externalId.isAcceptableOrUnknown(data['external_id']!, _externalIdMeta),
+      );
+    }
+    if (data.containsKey('remote_url')) {
+      context.handle(
+        _remoteUrlMeta,
+        remoteUrl.isAcceptableOrUnknown(data['remote_url']!, _remoteUrlMeta),
+      );
+    }
+    if (data.containsKey('local_path')) {
+      context.handle(
+        _localPathMeta,
+        localPath.isAcceptableOrUnknown(data['local_path']!, _localPathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_localPathMeta);
+    }
+    if (data.containsKey('file_name')) {
+      context.handle(
+        _fileNameMeta,
+        fileName.isAcceptableOrUnknown(data['file_name']!, _fileNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fileNameMeta);
+    }
+    if (data.containsKey('mime_type')) {
+      context.handle(
+        _mimeTypeMeta,
+        mimeType.isAcceptableOrUnknown(data['mime_type']!, _mimeTypeMeta),
+      );
+    }
+    if (data.containsKey('width')) {
+      context.handle(
+        _widthMeta,
+        width.isAcceptableOrUnknown(data['width']!, _widthMeta),
+      );
+    }
+    if (data.containsKey('height')) {
+      context.handle(
+        _heightMeta,
+        height.isAcceptableOrUnknown(data['height']!, _heightMeta),
+      );
+    }
+    if (data.containsKey('hash')) {
+      context.handle(
+        _hashMeta,
+        hash.isAcceptableOrUnknown(data['hash']!, _hashMeta),
+      );
+    }
+    if (data.containsKey('is_selected')) {
+      context.handle(
+        _isSelectedMeta,
+        isSelected.isAcceptableOrUnknown(data['is_selected']!, _isSelectedMeta),
+      );
+    }
+    if (data.containsKey('attribution')) {
+      context.handle(
+        _attributionMeta,
+        attribution.isAcceptableOrUnknown(
+          data['attribution']!,
+          _attributionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MediaAsset map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MediaAsset(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      gameId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}game_id'],
+          )!,
+      kind:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}kind'],
+          )!,
+      source:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}source'],
+          )!,
+      provider: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}provider'],
+      ),
+      externalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}external_id'],
+      ),
+      remoteUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_url'],
+      ),
+      localPath:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}local_path'],
+          )!,
+      fileName:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}file_name'],
+          )!,
+      mimeType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mime_type'],
+      ),
+      width: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}width'],
+      ),
+      height: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}height'],
+      ),
+      hash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}hash'],
+      ),
+      isSelected:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_selected'],
+          )!,
+      attribution: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}attribution'],
+      ),
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $MediaAssetsTable createAlias(String alias) {
+    return $MediaAssetsTable(attachedDatabase, alias);
+  }
+}
+
+class MediaAsset extends DataClass implements Insertable<MediaAsset> {
+  final String id;
+  final String gameId;
+  final String kind;
+  final String source;
+  final String? provider;
+  final String? externalId;
+  final String? remoteUrl;
+  final String localPath;
+  final String fileName;
+  final String? mimeType;
+  final int? width;
+  final int? height;
+  final String? hash;
+  final bool isSelected;
+  final String? attribution;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const MediaAsset({
+    required this.id,
+    required this.gameId,
+    required this.kind,
+    required this.source,
+    this.provider,
+    this.externalId,
+    this.remoteUrl,
+    required this.localPath,
+    required this.fileName,
+    this.mimeType,
+    this.width,
+    this.height,
+    this.hash,
+    required this.isSelected,
+    this.attribution,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['game_id'] = Variable<String>(gameId);
+    map['kind'] = Variable<String>(kind);
+    map['source'] = Variable<String>(source);
+    if (!nullToAbsent || provider != null) {
+      map['provider'] = Variable<String>(provider);
+    }
+    if (!nullToAbsent || externalId != null) {
+      map['external_id'] = Variable<String>(externalId);
+    }
+    if (!nullToAbsent || remoteUrl != null) {
+      map['remote_url'] = Variable<String>(remoteUrl);
+    }
+    map['local_path'] = Variable<String>(localPath);
+    map['file_name'] = Variable<String>(fileName);
+    if (!nullToAbsent || mimeType != null) {
+      map['mime_type'] = Variable<String>(mimeType);
+    }
+    if (!nullToAbsent || width != null) {
+      map['width'] = Variable<int>(width);
+    }
+    if (!nullToAbsent || height != null) {
+      map['height'] = Variable<int>(height);
+    }
+    if (!nullToAbsent || hash != null) {
+      map['hash'] = Variable<String>(hash);
+    }
+    map['is_selected'] = Variable<bool>(isSelected);
+    if (!nullToAbsent || attribution != null) {
+      map['attribution'] = Variable<String>(attribution);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  MediaAssetsCompanion toCompanion(bool nullToAbsent) {
+    return MediaAssetsCompanion(
+      id: Value(id),
+      gameId: Value(gameId),
+      kind: Value(kind),
+      source: Value(source),
+      provider:
+          provider == null && nullToAbsent
+              ? const Value.absent()
+              : Value(provider),
+      externalId:
+          externalId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(externalId),
+      remoteUrl:
+          remoteUrl == null && nullToAbsent
+              ? const Value.absent()
+              : Value(remoteUrl),
+      localPath: Value(localPath),
+      fileName: Value(fileName),
+      mimeType:
+          mimeType == null && nullToAbsent
+              ? const Value.absent()
+              : Value(mimeType),
+      width:
+          width == null && nullToAbsent ? const Value.absent() : Value(width),
+      height:
+          height == null && nullToAbsent ? const Value.absent() : Value(height),
+      hash: hash == null && nullToAbsent ? const Value.absent() : Value(hash),
+      isSelected: Value(isSelected),
+      attribution:
+          attribution == null && nullToAbsent
+              ? const Value.absent()
+              : Value(attribution),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt:
+          deletedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(deletedAt),
+    );
+  }
+
+  factory MediaAsset.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MediaAsset(
+      id: serializer.fromJson<String>(json['id']),
+      gameId: serializer.fromJson<String>(json['gameId']),
+      kind: serializer.fromJson<String>(json['kind']),
+      source: serializer.fromJson<String>(json['source']),
+      provider: serializer.fromJson<String?>(json['provider']),
+      externalId: serializer.fromJson<String?>(json['externalId']),
+      remoteUrl: serializer.fromJson<String?>(json['remoteUrl']),
+      localPath: serializer.fromJson<String>(json['localPath']),
+      fileName: serializer.fromJson<String>(json['fileName']),
+      mimeType: serializer.fromJson<String?>(json['mimeType']),
+      width: serializer.fromJson<int?>(json['width']),
+      height: serializer.fromJson<int?>(json['height']),
+      hash: serializer.fromJson<String?>(json['hash']),
+      isSelected: serializer.fromJson<bool>(json['isSelected']),
+      attribution: serializer.fromJson<String?>(json['attribution']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'gameId': serializer.toJson<String>(gameId),
+      'kind': serializer.toJson<String>(kind),
+      'source': serializer.toJson<String>(source),
+      'provider': serializer.toJson<String?>(provider),
+      'externalId': serializer.toJson<String?>(externalId),
+      'remoteUrl': serializer.toJson<String?>(remoteUrl),
+      'localPath': serializer.toJson<String>(localPath),
+      'fileName': serializer.toJson<String>(fileName),
+      'mimeType': serializer.toJson<String?>(mimeType),
+      'width': serializer.toJson<int?>(width),
+      'height': serializer.toJson<int?>(height),
+      'hash': serializer.toJson<String?>(hash),
+      'isSelected': serializer.toJson<bool>(isSelected),
+      'attribution': serializer.toJson<String?>(attribution),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  MediaAsset copyWith({
+    String? id,
+    String? gameId,
+    String? kind,
+    String? source,
+    Value<String?> provider = const Value.absent(),
+    Value<String?> externalId = const Value.absent(),
+    Value<String?> remoteUrl = const Value.absent(),
+    String? localPath,
+    String? fileName,
+    Value<String?> mimeType = const Value.absent(),
+    Value<int?> width = const Value.absent(),
+    Value<int?> height = const Value.absent(),
+    Value<String?> hash = const Value.absent(),
+    bool? isSelected,
+    Value<String?> attribution = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => MediaAsset(
+    id: id ?? this.id,
+    gameId: gameId ?? this.gameId,
+    kind: kind ?? this.kind,
+    source: source ?? this.source,
+    provider: provider.present ? provider.value : this.provider,
+    externalId: externalId.present ? externalId.value : this.externalId,
+    remoteUrl: remoteUrl.present ? remoteUrl.value : this.remoteUrl,
+    localPath: localPath ?? this.localPath,
+    fileName: fileName ?? this.fileName,
+    mimeType: mimeType.present ? mimeType.value : this.mimeType,
+    width: width.present ? width.value : this.width,
+    height: height.present ? height.value : this.height,
+    hash: hash.present ? hash.value : this.hash,
+    isSelected: isSelected ?? this.isSelected,
+    attribution: attribution.present ? attribution.value : this.attribution,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  MediaAsset copyWithCompanion(MediaAssetsCompanion data) {
+    return MediaAsset(
+      id: data.id.present ? data.id.value : this.id,
+      gameId: data.gameId.present ? data.gameId.value : this.gameId,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      source: data.source.present ? data.source.value : this.source,
+      provider: data.provider.present ? data.provider.value : this.provider,
+      externalId:
+          data.externalId.present ? data.externalId.value : this.externalId,
+      remoteUrl: data.remoteUrl.present ? data.remoteUrl.value : this.remoteUrl,
+      localPath: data.localPath.present ? data.localPath.value : this.localPath,
+      fileName: data.fileName.present ? data.fileName.value : this.fileName,
+      mimeType: data.mimeType.present ? data.mimeType.value : this.mimeType,
+      width: data.width.present ? data.width.value : this.width,
+      height: data.height.present ? data.height.value : this.height,
+      hash: data.hash.present ? data.hash.value : this.hash,
+      isSelected:
+          data.isSelected.present ? data.isSelected.value : this.isSelected,
+      attribution:
+          data.attribution.present ? data.attribution.value : this.attribution,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MediaAsset(')
+          ..write('id: $id, ')
+          ..write('gameId: $gameId, ')
+          ..write('kind: $kind, ')
+          ..write('source: $source, ')
+          ..write('provider: $provider, ')
+          ..write('externalId: $externalId, ')
+          ..write('remoteUrl: $remoteUrl, ')
+          ..write('localPath: $localPath, ')
+          ..write('fileName: $fileName, ')
+          ..write('mimeType: $mimeType, ')
+          ..write('width: $width, ')
+          ..write('height: $height, ')
+          ..write('hash: $hash, ')
+          ..write('isSelected: $isSelected, ')
+          ..write('attribution: $attribution, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    gameId,
+    kind,
+    source,
+    provider,
+    externalId,
+    remoteUrl,
+    localPath,
+    fileName,
+    mimeType,
+    width,
+    height,
+    hash,
+    isSelected,
+    attribution,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MediaAsset &&
+          other.id == this.id &&
+          other.gameId == this.gameId &&
+          other.kind == this.kind &&
+          other.source == this.source &&
+          other.provider == this.provider &&
+          other.externalId == this.externalId &&
+          other.remoteUrl == this.remoteUrl &&
+          other.localPath == this.localPath &&
+          other.fileName == this.fileName &&
+          other.mimeType == this.mimeType &&
+          other.width == this.width &&
+          other.height == this.height &&
+          other.hash == this.hash &&
+          other.isSelected == this.isSelected &&
+          other.attribution == this.attribution &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class MediaAssetsCompanion extends UpdateCompanion<MediaAsset> {
+  final Value<String> id;
+  final Value<String> gameId;
+  final Value<String> kind;
+  final Value<String> source;
+  final Value<String?> provider;
+  final Value<String?> externalId;
+  final Value<String?> remoteUrl;
+  final Value<String> localPath;
+  final Value<String> fileName;
+  final Value<String?> mimeType;
+  final Value<int?> width;
+  final Value<int?> height;
+  final Value<String?> hash;
+  final Value<bool> isSelected;
+  final Value<String?> attribution;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const MediaAssetsCompanion({
+    this.id = const Value.absent(),
+    this.gameId = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.source = const Value.absent(),
+    this.provider = const Value.absent(),
+    this.externalId = const Value.absent(),
+    this.remoteUrl = const Value.absent(),
+    this.localPath = const Value.absent(),
+    this.fileName = const Value.absent(),
+    this.mimeType = const Value.absent(),
+    this.width = const Value.absent(),
+    this.height = const Value.absent(),
+    this.hash = const Value.absent(),
+    this.isSelected = const Value.absent(),
+    this.attribution = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MediaAssetsCompanion.insert({
+    required String id,
+    required String gameId,
+    required String kind,
+    required String source,
+    this.provider = const Value.absent(),
+    this.externalId = const Value.absent(),
+    this.remoteUrl = const Value.absent(),
+    required String localPath,
+    required String fileName,
+    this.mimeType = const Value.absent(),
+    this.width = const Value.absent(),
+    this.height = const Value.absent(),
+    this.hash = const Value.absent(),
+    this.isSelected = const Value.absent(),
+    this.attribution = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       gameId = Value(gameId),
+       kind = Value(kind),
+       source = Value(source),
+       localPath = Value(localPath),
+       fileName = Value(fileName),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<MediaAsset> custom({
+    Expression<String>? id,
+    Expression<String>? gameId,
+    Expression<String>? kind,
+    Expression<String>? source,
+    Expression<String>? provider,
+    Expression<String>? externalId,
+    Expression<String>? remoteUrl,
+    Expression<String>? localPath,
+    Expression<String>? fileName,
+    Expression<String>? mimeType,
+    Expression<int>? width,
+    Expression<int>? height,
+    Expression<String>? hash,
+    Expression<bool>? isSelected,
+    Expression<String>? attribution,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (gameId != null) 'game_id': gameId,
+      if (kind != null) 'kind': kind,
+      if (source != null) 'source': source,
+      if (provider != null) 'provider': provider,
+      if (externalId != null) 'external_id': externalId,
+      if (remoteUrl != null) 'remote_url': remoteUrl,
+      if (localPath != null) 'local_path': localPath,
+      if (fileName != null) 'file_name': fileName,
+      if (mimeType != null) 'mime_type': mimeType,
+      if (width != null) 'width': width,
+      if (height != null) 'height': height,
+      if (hash != null) 'hash': hash,
+      if (isSelected != null) 'is_selected': isSelected,
+      if (attribution != null) 'attribution': attribution,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MediaAssetsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? gameId,
+    Value<String>? kind,
+    Value<String>? source,
+    Value<String?>? provider,
+    Value<String?>? externalId,
+    Value<String?>? remoteUrl,
+    Value<String>? localPath,
+    Value<String>? fileName,
+    Value<String?>? mimeType,
+    Value<int?>? width,
+    Value<int?>? height,
+    Value<String?>? hash,
+    Value<bool>? isSelected,
+    Value<String?>? attribution,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return MediaAssetsCompanion(
+      id: id ?? this.id,
+      gameId: gameId ?? this.gameId,
+      kind: kind ?? this.kind,
+      source: source ?? this.source,
+      provider: provider ?? this.provider,
+      externalId: externalId ?? this.externalId,
+      remoteUrl: remoteUrl ?? this.remoteUrl,
+      localPath: localPath ?? this.localPath,
+      fileName: fileName ?? this.fileName,
+      mimeType: mimeType ?? this.mimeType,
+      width: width ?? this.width,
+      height: height ?? this.height,
+      hash: hash ?? this.hash,
+      isSelected: isSelected ?? this.isSelected,
+      attribution: attribution ?? this.attribution,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (gameId.present) {
+      map['game_id'] = Variable<String>(gameId.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (provider.present) {
+      map['provider'] = Variable<String>(provider.value);
+    }
+    if (externalId.present) {
+      map['external_id'] = Variable<String>(externalId.value);
+    }
+    if (remoteUrl.present) {
+      map['remote_url'] = Variable<String>(remoteUrl.value);
+    }
+    if (localPath.present) {
+      map['local_path'] = Variable<String>(localPath.value);
+    }
+    if (fileName.present) {
+      map['file_name'] = Variable<String>(fileName.value);
+    }
+    if (mimeType.present) {
+      map['mime_type'] = Variable<String>(mimeType.value);
+    }
+    if (width.present) {
+      map['width'] = Variable<int>(width.value);
+    }
+    if (height.present) {
+      map['height'] = Variable<int>(height.value);
+    }
+    if (hash.present) {
+      map['hash'] = Variable<String>(hash.value);
+    }
+    if (isSelected.present) {
+      map['is_selected'] = Variable<bool>(isSelected.value);
+    }
+    if (attribution.present) {
+      map['attribution'] = Variable<String>(attribution.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MediaAssetsCompanion(')
+          ..write('id: $id, ')
+          ..write('gameId: $gameId, ')
+          ..write('kind: $kind, ')
+          ..write('source: $source, ')
+          ..write('provider: $provider, ')
+          ..write('externalId: $externalId, ')
+          ..write('remoteUrl: $remoteUrl, ')
+          ..write('localPath: $localPath, ')
+          ..write('fileName: $fileName, ')
+          ..write('mimeType: $mimeType, ')
+          ..write('width: $width, ')
+          ..write('height: $height, ')
+          ..write('hash: $hash, ')
+          ..write('isSelected: $isSelected, ')
+          ..write('attribution: $attribution, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4664,6 +5674,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ExternalGameIdsTable externalGameIds = $ExternalGameIdsTable(
     this,
   );
+  late final $MediaAssetsTable mediaAssets = $MediaAssetsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4678,6 +5689,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     playthroughs,
     savedViews,
     externalGameIds,
+    mediaAssets,
   ];
 }
 
@@ -4761,6 +5773,24 @@ final class $$GamesTableReferences
     final cache = $_typedResult.readTableOrNull(
       _externalGameIdsRefsTable($_db),
     );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$MediaAssetsTable, List<MediaAsset>>
+  _mediaAssetsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.mediaAssets,
+    aliasName: $_aliasNameGenerator(db.games.id, db.mediaAssets.gameId),
+  );
+
+  $$MediaAssetsTableProcessedTableManager get mediaAssetsRefs {
+    final manager = $$MediaAssetsTableTableManager(
+      $_db,
+      $_db.mediaAssets,
+    ).filter((f) => f.gameId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_mediaAssetsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -4881,6 +5911,31 @@ class $$GamesTableFilterComposer extends Composer<_$AppDatabase, $GamesTable> {
           }) => $$ExternalGameIdsTableFilterComposer(
             $db: $db,
             $table: $db.externalGameIds,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> mediaAssetsRefs(
+    Expression<bool> Function($$MediaAssetsTableFilterComposer f) f,
+  ) {
+    final $$MediaAssetsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.mediaAssets,
+      getReferencedColumn: (t) => t.gameId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MediaAssetsTableFilterComposer(
+            $db: $db,
+            $table: $db.mediaAssets,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5050,6 +6105,31 @@ class $$GamesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> mediaAssetsRefs<T extends Object>(
+    Expression<T> Function($$MediaAssetsTableAnnotationComposer a) f,
+  ) {
+    final $$MediaAssetsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.mediaAssets,
+      getReferencedColumn: (t) => t.gameId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MediaAssetsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.mediaAssets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$GamesTableTableManager
@@ -5069,6 +6149,7 @@ class $$GamesTableTableManager
             bool libraryEntriesRefs,
             bool gameGenresRefs,
             bool externalGameIdsRefs,
+            bool mediaAssetsRefs,
           })
         > {
   $$GamesTableTableManager(_$AppDatabase db, $GamesTable table)
@@ -5140,6 +6221,7 @@ class $$GamesTableTableManager
             libraryEntriesRefs = false,
             gameGenresRefs = false,
             externalGameIdsRefs = false,
+            mediaAssetsRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
@@ -5147,6 +6229,7 @@ class $$GamesTableTableManager
                 if (libraryEntriesRefs) db.libraryEntries,
                 if (gameGenresRefs) db.gameGenres,
                 if (externalGameIdsRefs) db.externalGameIds,
+                if (mediaAssetsRefs) db.mediaAssets,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -5206,6 +6289,23 @@ class $$GamesTableTableManager
                               referencedItems.where((e) => e.gameId == item.id),
                       typedResults: items,
                     ),
+                  if (mediaAssetsRefs)
+                    await $_getPrefetchedData<Game, $GamesTable, MediaAsset>(
+                      currentTable: table,
+                      referencedTable: $$GamesTableReferences
+                          ._mediaAssetsRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$GamesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).mediaAssetsRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) =>
+                              referencedItems.where((e) => e.gameId == item.id),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -5230,6 +6330,7 @@ typedef $$GamesTableProcessedTableManager =
         bool libraryEntriesRefs,
         bool gameGenresRefs,
         bool externalGameIdsRefs,
+        bool mediaAssetsRefs,
       })
     >;
 typedef $$LibraryEntriesTableCreateCompanionBuilder =
@@ -8738,6 +9839,580 @@ typedef $$ExternalGameIdsTableProcessedTableManager =
       ExternalGameId,
       PrefetchHooks Function({bool gameId})
     >;
+typedef $$MediaAssetsTableCreateCompanionBuilder =
+    MediaAssetsCompanion Function({
+      required String id,
+      required String gameId,
+      required String kind,
+      required String source,
+      Value<String?> provider,
+      Value<String?> externalId,
+      Value<String?> remoteUrl,
+      required String localPath,
+      required String fileName,
+      Value<String?> mimeType,
+      Value<int?> width,
+      Value<int?> height,
+      Value<String?> hash,
+      Value<bool> isSelected,
+      Value<String?> attribution,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$MediaAssetsTableUpdateCompanionBuilder =
+    MediaAssetsCompanion Function({
+      Value<String> id,
+      Value<String> gameId,
+      Value<String> kind,
+      Value<String> source,
+      Value<String?> provider,
+      Value<String?> externalId,
+      Value<String?> remoteUrl,
+      Value<String> localPath,
+      Value<String> fileName,
+      Value<String?> mimeType,
+      Value<int?> width,
+      Value<int?> height,
+      Value<String?> hash,
+      Value<bool> isSelected,
+      Value<String?> attribution,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+final class $$MediaAssetsTableReferences
+    extends BaseReferences<_$AppDatabase, $MediaAssetsTable, MediaAsset> {
+  $$MediaAssetsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $GamesTable _gameIdTable(_$AppDatabase db) => db.games.createAlias(
+    $_aliasNameGenerator(db.mediaAssets.gameId, db.games.id),
+  );
+
+  $$GamesTableProcessedTableManager get gameId {
+    final $_column = $_itemColumn<String>('game_id')!;
+
+    final manager = $$GamesTableTableManager(
+      $_db,
+      $_db.games,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_gameIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$MediaAssetsTableFilterComposer
+    extends Composer<_$AppDatabase, $MediaAssetsTable> {
+  $$MediaAssetsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get provider => $composableBuilder(
+    column: $table.provider,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get externalId => $composableBuilder(
+    column: $table.externalId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteUrl => $composableBuilder(
+    column: $table.remoteUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fileName => $composableBuilder(
+    column: $table.fileName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mimeType => $composableBuilder(
+    column: $table.mimeType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get width => $composableBuilder(
+    column: $table.width,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get height => $composableBuilder(
+    column: $table.height,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get hash => $composableBuilder(
+    column: $table.hash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isSelected => $composableBuilder(
+    column: $table.isSelected,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get attribution => $composableBuilder(
+    column: $table.attribution,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$GamesTableFilterComposer get gameId {
+    final $$GamesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gameId,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableFilterComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MediaAssetsTableOrderingComposer
+    extends Composer<_$AppDatabase, $MediaAssetsTable> {
+  $$MediaAssetsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get provider => $composableBuilder(
+    column: $table.provider,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get externalId => $composableBuilder(
+    column: $table.externalId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remoteUrl => $composableBuilder(
+    column: $table.remoteUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fileName => $composableBuilder(
+    column: $table.fileName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mimeType => $composableBuilder(
+    column: $table.mimeType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get width => $composableBuilder(
+    column: $table.width,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get height => $composableBuilder(
+    column: $table.height,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get hash => $composableBuilder(
+    column: $table.hash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isSelected => $composableBuilder(
+    column: $table.isSelected,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get attribution => $composableBuilder(
+    column: $table.attribution,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$GamesTableOrderingComposer get gameId {
+    final $$GamesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gameId,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableOrderingComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MediaAssetsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MediaAssetsTable> {
+  $$MediaAssetsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<String> get provider =>
+      $composableBuilder(column: $table.provider, builder: (column) => column);
+
+  GeneratedColumn<String> get externalId => $composableBuilder(
+    column: $table.externalId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get remoteUrl =>
+      $composableBuilder(column: $table.remoteUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get localPath =>
+      $composableBuilder(column: $table.localPath, builder: (column) => column);
+
+  GeneratedColumn<String> get fileName =>
+      $composableBuilder(column: $table.fileName, builder: (column) => column);
+
+  GeneratedColumn<String> get mimeType =>
+      $composableBuilder(column: $table.mimeType, builder: (column) => column);
+
+  GeneratedColumn<int> get width =>
+      $composableBuilder(column: $table.width, builder: (column) => column);
+
+  GeneratedColumn<int> get height =>
+      $composableBuilder(column: $table.height, builder: (column) => column);
+
+  GeneratedColumn<String> get hash =>
+      $composableBuilder(column: $table.hash, builder: (column) => column);
+
+  GeneratedColumn<bool> get isSelected => $composableBuilder(
+    column: $table.isSelected,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get attribution => $composableBuilder(
+    column: $table.attribution,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$GamesTableAnnotationComposer get gameId {
+    final $$GamesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gameId,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MediaAssetsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MediaAssetsTable,
+          MediaAsset,
+          $$MediaAssetsTableFilterComposer,
+          $$MediaAssetsTableOrderingComposer,
+          $$MediaAssetsTableAnnotationComposer,
+          $$MediaAssetsTableCreateCompanionBuilder,
+          $$MediaAssetsTableUpdateCompanionBuilder,
+          (MediaAsset, $$MediaAssetsTableReferences),
+          MediaAsset,
+          PrefetchHooks Function({bool gameId})
+        > {
+  $$MediaAssetsTableTableManager(_$AppDatabase db, $MediaAssetsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$MediaAssetsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$MediaAssetsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () =>
+                  $$MediaAssetsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> gameId = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String?> provider = const Value.absent(),
+                Value<String?> externalId = const Value.absent(),
+                Value<String?> remoteUrl = const Value.absent(),
+                Value<String> localPath = const Value.absent(),
+                Value<String> fileName = const Value.absent(),
+                Value<String?> mimeType = const Value.absent(),
+                Value<int?> width = const Value.absent(),
+                Value<int?> height = const Value.absent(),
+                Value<String?> hash = const Value.absent(),
+                Value<bool> isSelected = const Value.absent(),
+                Value<String?> attribution = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MediaAssetsCompanion(
+                id: id,
+                gameId: gameId,
+                kind: kind,
+                source: source,
+                provider: provider,
+                externalId: externalId,
+                remoteUrl: remoteUrl,
+                localPath: localPath,
+                fileName: fileName,
+                mimeType: mimeType,
+                width: width,
+                height: height,
+                hash: hash,
+                isSelected: isSelected,
+                attribution: attribution,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String gameId,
+                required String kind,
+                required String source,
+                Value<String?> provider = const Value.absent(),
+                Value<String?> externalId = const Value.absent(),
+                Value<String?> remoteUrl = const Value.absent(),
+                required String localPath,
+                required String fileName,
+                Value<String?> mimeType = const Value.absent(),
+                Value<int?> width = const Value.absent(),
+                Value<int?> height = const Value.absent(),
+                Value<String?> hash = const Value.absent(),
+                Value<bool> isSelected = const Value.absent(),
+                Value<String?> attribution = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MediaAssetsCompanion.insert(
+                id: id,
+                gameId: gameId,
+                kind: kind,
+                source: source,
+                provider: provider,
+                externalId: externalId,
+                remoteUrl: remoteUrl,
+                localPath: localPath,
+                fileName: fileName,
+                mimeType: mimeType,
+                width: width,
+                height: height,
+                hash: hash,
+                isSelected: isSelected,
+                attribution: attribution,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$MediaAssetsTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({gameId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (gameId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.gameId,
+                            referencedTable: $$MediaAssetsTableReferences
+                                ._gameIdTable(db),
+                            referencedColumn:
+                                $$MediaAssetsTableReferences
+                                    ._gameIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$MediaAssetsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MediaAssetsTable,
+      MediaAsset,
+      $$MediaAssetsTableFilterComposer,
+      $$MediaAssetsTableOrderingComposer,
+      $$MediaAssetsTableAnnotationComposer,
+      $$MediaAssetsTableCreateCompanionBuilder,
+      $$MediaAssetsTableUpdateCompanionBuilder,
+      (MediaAsset, $$MediaAssetsTableReferences),
+      MediaAsset,
+      PrefetchHooks Function({bool gameId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -8760,4 +10435,6 @@ class $AppDatabaseManager {
       $$SavedViewsTableTableManager(_db, _db.savedViews);
   $$ExternalGameIdsTableTableManager get externalGameIds =>
       $$ExternalGameIdsTableTableManager(_db, _db.externalGameIds);
+  $$MediaAssetsTableTableManager get mediaAssets =>
+      $$MediaAssetsTableTableManager(_db, _db.mediaAssets);
 }
