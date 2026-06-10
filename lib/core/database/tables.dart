@@ -93,3 +93,17 @@ class Playthroughs extends Table {
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
+
+class SavedViews extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get filterJson => text()();
+  TextColumn get sortJson => text()();
+  TextColumn get columnConfigJson => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}

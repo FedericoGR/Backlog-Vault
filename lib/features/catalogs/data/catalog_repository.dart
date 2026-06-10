@@ -10,6 +10,14 @@ final catalogRepositoryProvider = Provider<CatalogRepository>((ref) {
   return CatalogRepository(ref.watch(appDatabaseProvider));
 });
 
+final platformsProvider = StreamProvider.autoDispose<List<Platform>>((ref) {
+  return ref.watch(catalogRepositoryProvider).watchPlatforms();
+});
+
+final genresProvider = StreamProvider.autoDispose<List<Genre>>((ref) {
+  return ref.watch(catalogRepositoryProvider).watchGenres();
+});
+
 class CatalogRepository {
   CatalogRepository(
     this._db, {

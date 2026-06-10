@@ -3483,6 +3483,532 @@ class PlaythroughsCompanion extends UpdateCompanion<Playthrough> {
   }
 }
 
+class $SavedViewsTable extends SavedViews
+    with TableInfo<$SavedViewsTable, SavedView> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SavedViewsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _filterJsonMeta = const VerificationMeta(
+    'filterJson',
+  );
+  @override
+  late final GeneratedColumn<String> filterJson = GeneratedColumn<String>(
+    'filter_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sortJsonMeta = const VerificationMeta(
+    'sortJson',
+  );
+  @override
+  late final GeneratedColumn<String> sortJson = GeneratedColumn<String>(
+    'sort_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _columnConfigJsonMeta = const VerificationMeta(
+    'columnConfigJson',
+  );
+  @override
+  late final GeneratedColumn<String> columnConfigJson = GeneratedColumn<String>(
+    'column_config_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    filterJson,
+    sortJson,
+    columnConfigJson,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'saved_views';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SavedView> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('filter_json')) {
+      context.handle(
+        _filterJsonMeta,
+        filterJson.isAcceptableOrUnknown(data['filter_json']!, _filterJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_filterJsonMeta);
+    }
+    if (data.containsKey('sort_json')) {
+      context.handle(
+        _sortJsonMeta,
+        sortJson.isAcceptableOrUnknown(data['sort_json']!, _sortJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sortJsonMeta);
+    }
+    if (data.containsKey('column_config_json')) {
+      context.handle(
+        _columnConfigJsonMeta,
+        columnConfigJson.isAcceptableOrUnknown(
+          data['column_config_json']!,
+          _columnConfigJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_columnConfigJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SavedView map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SavedView(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      name:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}name'],
+          )!,
+      filterJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}filter_json'],
+          )!,
+      sortJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}sort_json'],
+          )!,
+      columnConfigJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}column_config_json'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $SavedViewsTable createAlias(String alias) {
+    return $SavedViewsTable(attachedDatabase, alias);
+  }
+}
+
+class SavedView extends DataClass implements Insertable<SavedView> {
+  final String id;
+  final String name;
+  final String filterJson;
+  final String sortJson;
+  final String columnConfigJson;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const SavedView({
+    required this.id,
+    required this.name,
+    required this.filterJson,
+    required this.sortJson,
+    required this.columnConfigJson,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['filter_json'] = Variable<String>(filterJson);
+    map['sort_json'] = Variable<String>(sortJson);
+    map['column_config_json'] = Variable<String>(columnConfigJson);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  SavedViewsCompanion toCompanion(bool nullToAbsent) {
+    return SavedViewsCompanion(
+      id: Value(id),
+      name: Value(name),
+      filterJson: Value(filterJson),
+      sortJson: Value(sortJson),
+      columnConfigJson: Value(columnConfigJson),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt:
+          deletedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(deletedAt),
+    );
+  }
+
+  factory SavedView.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SavedView(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      filterJson: serializer.fromJson<String>(json['filterJson']),
+      sortJson: serializer.fromJson<String>(json['sortJson']),
+      columnConfigJson: serializer.fromJson<String>(json['columnConfigJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'filterJson': serializer.toJson<String>(filterJson),
+      'sortJson': serializer.toJson<String>(sortJson),
+      'columnConfigJson': serializer.toJson<String>(columnConfigJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  SavedView copyWith({
+    String? id,
+    String? name,
+    String? filterJson,
+    String? sortJson,
+    String? columnConfigJson,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => SavedView(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    filterJson: filterJson ?? this.filterJson,
+    sortJson: sortJson ?? this.sortJson,
+    columnConfigJson: columnConfigJson ?? this.columnConfigJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  SavedView copyWithCompanion(SavedViewsCompanion data) {
+    return SavedView(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      filterJson:
+          data.filterJson.present ? data.filterJson.value : this.filterJson,
+      sortJson: data.sortJson.present ? data.sortJson.value : this.sortJson,
+      columnConfigJson:
+          data.columnConfigJson.present
+              ? data.columnConfigJson.value
+              : this.columnConfigJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SavedView(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('filterJson: $filterJson, ')
+          ..write('sortJson: $sortJson, ')
+          ..write('columnConfigJson: $columnConfigJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    filterJson,
+    sortJson,
+    columnConfigJson,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SavedView &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.filterJson == this.filterJson &&
+          other.sortJson == this.sortJson &&
+          other.columnConfigJson == this.columnConfigJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class SavedViewsCompanion extends UpdateCompanion<SavedView> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> filterJson;
+  final Value<String> sortJson;
+  final Value<String> columnConfigJson;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const SavedViewsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.filterJson = const Value.absent(),
+    this.sortJson = const Value.absent(),
+    this.columnConfigJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SavedViewsCompanion.insert({
+    required String id,
+    required String name,
+    required String filterJson,
+    required String sortJson,
+    required String columnConfigJson,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       filterJson = Value(filterJson),
+       sortJson = Value(sortJson),
+       columnConfigJson = Value(columnConfigJson),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<SavedView> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? filterJson,
+    Expression<String>? sortJson,
+    Expression<String>? columnConfigJson,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (filterJson != null) 'filter_json': filterJson,
+      if (sortJson != null) 'sort_json': sortJson,
+      if (columnConfigJson != null) 'column_config_json': columnConfigJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SavedViewsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? filterJson,
+    Value<String>? sortJson,
+    Value<String>? columnConfigJson,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return SavedViewsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      filterJson: filterJson ?? this.filterJson,
+      sortJson: sortJson ?? this.sortJson,
+      columnConfigJson: columnConfigJson ?? this.columnConfigJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (filterJson.present) {
+      map['filter_json'] = Variable<String>(filterJson.value);
+    }
+    if (sortJson.present) {
+      map['sort_json'] = Variable<String>(sortJson.value);
+    }
+    if (columnConfigJson.present) {
+      map['column_config_json'] = Variable<String>(columnConfigJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SavedViewsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('filterJson: $filterJson, ')
+          ..write('sortJson: $sortJson, ')
+          ..write('columnConfigJson: $columnConfigJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3494,6 +4020,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $GenresTable genres = $GenresTable(this);
   late final $GameGenresTable gameGenres = $GameGenresTable(this);
   late final $PlaythroughsTable playthroughs = $PlaythroughsTable(this);
+  late final $SavedViewsTable savedViews = $SavedViewsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3506,6 +4033,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     genres,
     gameGenres,
     playthroughs,
+    savedViews,
   ];
 }
 
@@ -6763,6 +7291,271 @@ typedef $$PlaythroughsTableProcessedTableManager =
       Playthrough,
       PrefetchHooks Function({bool libraryEntryId, bool platformId})
     >;
+typedef $$SavedViewsTableCreateCompanionBuilder =
+    SavedViewsCompanion Function({
+      required String id,
+      required String name,
+      required String filterJson,
+      required String sortJson,
+      required String columnConfigJson,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$SavedViewsTableUpdateCompanionBuilder =
+    SavedViewsCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String> filterJson,
+      Value<String> sortJson,
+      Value<String> columnConfigJson,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+class $$SavedViewsTableFilterComposer
+    extends Composer<_$AppDatabase, $SavedViewsTable> {
+  $$SavedViewsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get filterJson => $composableBuilder(
+    column: $table.filterJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sortJson => $composableBuilder(
+    column: $table.sortJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get columnConfigJson => $composableBuilder(
+    column: $table.columnConfigJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SavedViewsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SavedViewsTable> {
+  $$SavedViewsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get filterJson => $composableBuilder(
+    column: $table.filterJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sortJson => $composableBuilder(
+    column: $table.sortJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get columnConfigJson => $composableBuilder(
+    column: $table.columnConfigJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SavedViewsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SavedViewsTable> {
+  $$SavedViewsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get filterJson => $composableBuilder(
+    column: $table.filterJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sortJson =>
+      $composableBuilder(column: $table.sortJson, builder: (column) => column);
+
+  GeneratedColumn<String> get columnConfigJson => $composableBuilder(
+    column: $table.columnConfigJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
+class $$SavedViewsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SavedViewsTable,
+          SavedView,
+          $$SavedViewsTableFilterComposer,
+          $$SavedViewsTableOrderingComposer,
+          $$SavedViewsTableAnnotationComposer,
+          $$SavedViewsTableCreateCompanionBuilder,
+          $$SavedViewsTableUpdateCompanionBuilder,
+          (
+            SavedView,
+            BaseReferences<_$AppDatabase, $SavedViewsTable, SavedView>,
+          ),
+          SavedView,
+          PrefetchHooks Function()
+        > {
+  $$SavedViewsTableTableManager(_$AppDatabase db, $SavedViewsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$SavedViewsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$SavedViewsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$SavedViewsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> filterJson = const Value.absent(),
+                Value<String> sortJson = const Value.absent(),
+                Value<String> columnConfigJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SavedViewsCompanion(
+                id: id,
+                name: name,
+                filterJson: filterJson,
+                sortJson: sortJson,
+                columnConfigJson: columnConfigJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                required String filterJson,
+                required String sortJson,
+                required String columnConfigJson,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SavedViewsCompanion.insert(
+                id: id,
+                name: name,
+                filterJson: filterJson,
+                sortJson: sortJson,
+                columnConfigJson: columnConfigJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SavedViewsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SavedViewsTable,
+      SavedView,
+      $$SavedViewsTableFilterComposer,
+      $$SavedViewsTableOrderingComposer,
+      $$SavedViewsTableAnnotationComposer,
+      $$SavedViewsTableCreateCompanionBuilder,
+      $$SavedViewsTableUpdateCompanionBuilder,
+      (SavedView, BaseReferences<_$AppDatabase, $SavedViewsTable, SavedView>),
+      SavedView,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6781,4 +7574,6 @@ class $AppDatabaseManager {
       $$GameGenresTableTableManager(_db, _db.gameGenres);
   $$PlaythroughsTableTableManager get playthroughs =>
       $$PlaythroughsTableTableManager(_db, _db.playthroughs);
+  $$SavedViewsTableTableManager get savedViews =>
+      $$SavedViewsTableTableManager(_db, _db.savedViews);
 }

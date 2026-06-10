@@ -34,6 +34,18 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
 - Importación confirmada y transaccional.
 - Resumen final de importación.
 
+## Alcance del Entregable 3
+
+- Tabla avanzada desktop para biblioteca con `data_table_2`.
+- Lista responsive compacta para pantallas chicas.
+- Búsqueda global por título, plataformas, géneros, tipo y notas.
+- Filtros por estado, plataforma, género, puntaje, fechas, horas, tipo y datos faltantes.
+- Ordenamiento por título, estado, puntaje, fecha de salida, fecha de completado, horas y actualización.
+- Columnas visibles configurables con título obligatorio.
+- Vistas default en memoria.
+- Vistas custom persistidas localmente en `saved_views` con soft delete.
+- Resumen/totales de la vista visible.
+
 ## Fuera de alcance
 
 - Notion API.
@@ -43,7 +55,6 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
 - Sync.
 - SQLCipher.
 - Backup/export.
-- Tabla avanzada tipo Notion.
 - Estadísticas.
 - Recomendador.
 
