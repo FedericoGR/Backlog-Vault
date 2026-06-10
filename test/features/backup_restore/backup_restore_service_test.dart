@@ -541,6 +541,58 @@ void main() {
       }
     },
   );
+
+  test(
+    'encrypted restore does not continue if encrypted pre-restore backup fails',
+    () async {
+      await _insertCompleteLibrary(db, mediaBase: tempDir);
+      final backup = await backupService.createEncryptedBackup(
+        password: 'correct horse battery staple',
+      );
+      await db.close();
+      dbClosed = true;
+
+      final targetDb = AppDatabase(NativeDatabase.memory());
+      final targetTempDir = await io.Directory.systemTemp.createTemp(
+        'backlog_vault_encrypted_restore_prebackup_failure_',
+      );
+      try {
+        await _insertDeletedCandidateAsActive(
+          targetDb,
+          mediaBase: targetTempDir,
+        );
+        final service = BackupService(
+          exportRepository: _FailingExportRepository(targetDb),
+          baseDirectoryLoader: () async => targetTempDir,
+          ids: _FixedIds(),
+          clock: _FixedClock(),
+        );
+
+        await expectLater(
+          service.restoreEncryptedBackup(
+            backup.bytes,
+            password: 'correct horse battery staple',
+            confirmation: 'RESTAURAR',
+          ),
+          throwsA(isA<StateError>()),
+        );
+
+        final oldGame =
+            await (targetDb.select(targetDb.games)
+              ..where((table) => table.id.equals('old-game'))).getSingle();
+        final preRestoreDirectory = io.Directory(
+          '${targetTempDir.path}${io.Platform.pathSeparator}backups${io.Platform.pathSeparator}pre-restore',
+        );
+        expect(oldGame.deletedAt, isNull);
+        expect(await preRestoreDirectory.exists(), isFalse);
+      } finally {
+        await targetDb.close();
+        if (await targetTempDir.exists()) {
+          await targetTempDir.delete(recursive: true);
+        }
+      }
+    },
+  );
 }
 
 Future<void> _insertCompleteLibrary(
