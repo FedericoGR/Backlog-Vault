@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/games/presentation/game_detail_page.dart';
 import '../features/games/presentation/game_form_page.dart';
+import '../features/backup_restore/presentation/backup_restore_page.dart';
 import '../features/import_export/notion_csv/presentation/import_notion_csv_page.dart';
 import '../features/library/presentation/game_list_page.dart';
 import '../features/settings/presentation/settings_page.dart';
@@ -48,6 +49,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/settings',
             builder: (context, state) => const SettingsPage(),
+            routes: [
+              GoRoute(
+                path: 'backups',
+                builder: (context, state) => const BackupRestorePage(),
+              ),
+            ],
           ),
         ],
       ),

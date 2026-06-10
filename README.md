@@ -85,6 +85,23 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
 - Visualización offline de portada guardada en la ficha.
 - Miniaturas en lista mobile/cards y columna opcional de portada en tabla desktop.
 
+## Alcance del Entregable 7
+
+- Export JSON lógico completo de la biblioteca.
+- Export CSV básico de biblioteca activa.
+- Backups completos `.vaultbackup` como ZIP con:
+  - `manifest.json`;
+  - `data/library.json`;
+  - `media/...`.
+- Inclusión de `media_assets` y archivos media locales referenciados.
+- Warnings si un archivo de media referenciado falta o no puede leerse.
+- Validación de manifest, versión, checksums y rutas antes de restaurar.
+- Restore completo con confirmación fuerte (`RESTAURAR`).
+- Backup previo automático antes de restaurar.
+- Restore conservador: upsert de filas del backup y soft-delete de filas actuales ausentes.
+- Sin hard delete y sin borrar media actual durante restore.
+- No exporta API keys ni secure storage.
+
 ## Fuera de alcance
 
 - Notion API.
@@ -93,7 +110,9 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
 - Bulk download automático de covers.
 - Sync.
 - SQLCipher.
-- Backup/export.
+- Backup cifrado.
+- Backup cloud.
+- Scheduler automático de backups.
 - Estadísticas.
 - Recomendador.
 - Achievements/trophies.
@@ -188,6 +207,19 @@ Las imágenes seleccionadas se copian a la carpeta de soporte de la app y la bas
 Backlog Vault no referencia el path original del archivo que elegiste. Al cargar una portada local, la imagen se copia a la carpeta `media/` de la app y puede seguir funcionando aunque borres o muevas el archivo original. Las rutas absolutas o con `..` no se consideran válidas para resolver media local.
 
 En Windows, el plugin `flutter_secure_storage_windows` está vendorizado en `third_party/` mediante `dependency_overrides` porque la versión compatible con `file_picker` requiere ATL (`atlstr.h`) en algunos toolchains. El parche local usa conversiones Win32 estándar para mantener `flutter build windows` funcionando.
+
+## Backups y exportación
+
+Desde Ajustes > Datos y backups podés:
+
+- crear un backup completo `.vaultbackup`;
+- restaurar un `.vaultbackup`;
+- exportar JSON lógico;
+- exportar CSV básico.
+
+El formato `.vaultbackup` no está cifrado en el Entregable 7. Puede contener nombres de juegos, notas personales, estados, playthroughs, external IDs, rutas relativas de media y archivos de portadas. No incluye API keys de RAWG/SteamGridDB ni valores de secure storage.
+
+La restauración es completa y conservadora: no hace merge avanzado ni resolución campo por campo. Antes de restaurar, la app crea automáticamente un backup previo. Los registros actuales que no existan en el backup se marcan con `deletedAt`; no se eliminan físicamente. Los archivos de media actuales no se borran durante restore.
 
 ## Nota de setup actual
 

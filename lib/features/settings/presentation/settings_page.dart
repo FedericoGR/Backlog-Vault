@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../metadata/data/metadata_api_key_storage.dart';
 
@@ -53,6 +54,23 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             leading: Icon(Icons.storage_outlined),
             title: Text('Base local'),
             subtitle: Text('Los datos se guardan en SQLite mediante Drift.'),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Datos y backups',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.archive_outlined),
+              title: const Text('Backup, exportación y restauración'),
+              subtitle: const Text(
+                'Exportá JSON/CSV, creá .vaultbackup y restaurá backups locales.',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.go('/settings/backups'),
+            ),
           ),
           const SizedBox(height: 12),
           Text(
