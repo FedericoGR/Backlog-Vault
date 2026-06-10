@@ -70,9 +70,11 @@ void main() {
 
     final covers = await repository.coversForGame('game-1');
     final firstReloaded = covers.singleWhere((cover) => cover.id == first.id);
+    final selectedCount = covers.where((cover) => cover.isSelected).length;
 
     expect(second.id, isNot(first.id));
     expect(firstReloaded.isSelected, isFalse);
+    expect(selectedCount, 1);
     expect((await repository.selectedCoverForGame('game-1'))!.id, second.id);
   });
 
@@ -84,6 +86,20 @@ void main() {
     final second = await repository.saveRemoteCover(
       gameId: 'game-1',
       asset: _asset('external-1', 'https://cdn.example.test/cover.png'),
+    );
+
+    expect(second.id, first.id);
+    expect(await repository.coversForGame('game-1'), hasLength(1));
+  });
+
+  test('same hash is reused even with a different external id', () async {
+    final first = await repository.saveRemoteCover(
+      gameId: 'game-1',
+      asset: _asset('external-1', 'https://cdn.example.test/cover.png'),
+    );
+    final second = await repository.saveRemoteCover(
+      gameId: 'game-1',
+      asset: _asset('external-2', 'https://cdn.example.test/cover-copy.png'),
     );
 
     expect(second.id, first.id);

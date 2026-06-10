@@ -81,6 +81,7 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
 - Descarga/copia controlada a la carpeta local de la app.
 - Persistencia de media en `media_assets` con soft delete.
 - Paths relativos y filenames por UUID/hash, sin usar títulos de juegos.
+- Formatos aceptados: JPG/JPEG, PNG y WebP validados por firma de bytes.
 - Visualización offline de portada guardada en la ficha.
 - Miniaturas en lista mobile/cards y columna opcional de portada en tabla desktop.
 
@@ -183,6 +184,8 @@ Las API keys se configuran desde Ajustes y se guardan localmente mediante `flutt
 SteamGridDB se usa solo cuando elegís buscar una portada. Backlog Vault no descarga portadas automáticamente para toda la biblioteca.
 
 Las imágenes seleccionadas se copian a la carpeta de soporte de la app y la base SQLite guarda paths relativos. Los backups futuros deberán incluir tanto la DB como la carpeta `media/`.
+
+Backlog Vault no referencia el path original del archivo que elegiste. Al cargar una portada local, la imagen se copia a la carpeta `media/` de la app y puede seguir funcionando aunque borres o muevas el archivo original. Las rutas absolutas o con `..` no se consideran válidas para resolver media local.
 
 En Windows, el plugin `flutter_secure_storage_windows` está vendorizado en `third_party/` mediante `dependency_overrides` porque la versión compatible con `file_picker` requiere ATL (`atlstr.h`) en algunos toolchains. El parche local usa conversiones Win32 estándar para mantener `flutter build windows` funcionando.
 

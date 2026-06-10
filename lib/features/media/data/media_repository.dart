@@ -98,8 +98,6 @@ class MediaRepository {
       gameId: gameId,
       assetId: assetId,
       bytes: bytes,
-      mimeType: asset.mimeType,
-      originalFileName: asset.remoteUrl,
     );
     final existingWithHash = await _activeByHash(
       gameId: gameId,

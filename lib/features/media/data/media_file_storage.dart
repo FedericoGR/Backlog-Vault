@@ -34,11 +34,8 @@ class MediaFileStorage {
     required String gameId,
     required String assetId,
     required Uint8List bytes,
-    String? mimeType,
-    String? originalFileName,
   }) async {
-    final detectedMimeType =
-        _detectMimeType(bytes) ?? _mimeTypeFromName(originalFileName);
+    final detectedMimeType = _detectMimeType(bytes);
     if (!_isSupportedMimeType(detectedMimeType)) {
       throw const MediaException(
         'El formato de imagen no está soportado.',
@@ -89,7 +86,6 @@ class MediaFileStorage {
         gameId: gameId,
         assetId: assetId,
         bytes: Uint8List.fromList(bytes),
-        originalFileName: source.uri.pathSegments.lastOrNull,
       );
     } on MediaException {
       rethrow;
@@ -102,6 +98,12 @@ class MediaFileStorage {
   }
 
   Future<File> resolveFile(String localPath) async {
+    if (_isUnsafeRelativePath(localPath)) {
+      throw const MediaException(
+        'La ruta local de la imagen no es válida.',
+        type: MediaErrorType.fileSystem,
+      );
+    }
     final base = await _baseDirectoryLoader();
     final segments = localPath.split('/').where((part) => part.isNotEmpty);
     var path = base.path;
@@ -112,8 +114,12 @@ class MediaFileStorage {
   }
 }
 
-extension _LastOrNull<T> on List<T> {
-  T? get lastOrNull => isEmpty ? null : last;
+bool _isUnsafeRelativePath(String localPath) {
+  final trimmed = localPath.trim();
+  if (trimmed.isEmpty) return true;
+  if (trimmed.startsWith('/') || trimmed.startsWith(r'\')) return true;
+  if (trimmed.contains(':')) return true;
+  return trimmed.split('/').any((part) => part == '..');
 }
 
 String? _detectMimeType(Uint8List bytes) {
@@ -139,15 +145,6 @@ String? _detectMimeType(Uint8List bytes) {
       ascii.decode(bytes.sublist(8, 12), allowInvalid: true) == 'WEBP') {
     return 'image/webp';
   }
-  return null;
-}
-
-String? _mimeTypeFromName(String? fileName) {
-  final lower = fileName?.toLowerCase();
-  if (lower == null) return null;
-  if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
-  if (lower.endsWith('.png')) return 'image/png';
-  if (lower.endsWith('.webp')) return 'image/webp';
   return null;
 }
 
