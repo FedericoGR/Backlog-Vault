@@ -6,6 +6,7 @@ import '../features/games/presentation/game_form_page.dart';
 import '../features/backup_restore/presentation/backup_restore_page.dart';
 import '../features/import_export/notion_csv/presentation/import_notion_csv_page.dart';
 import '../features/library/presentation/game_list_page.dart';
+import '../features/library/presentation/home_page.dart';
 import '../features/settings/presentation/settings_page.dart';
 import 'app_shell.dart';
 
@@ -16,6 +17,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ShellRoute(
         builder: (context, state, child) => AppShell(child: child),
         routes: [
+          GoRoute(path: '/home', builder: (context, state) => const HomePage()),
           GoRoute(
             path: '/',
             builder: (context, state) => const GameListPage(),

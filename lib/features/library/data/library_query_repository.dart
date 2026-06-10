@@ -54,6 +54,9 @@ class LibraryQueryRepository {
     final genresByGameId = await _loadGenresByGameId(gameIds);
     final playthroughsByEntryId = await _loadPlaythroughsByEntryId(entryIds);
     final selectedCoverByGameId = await _loadSelectedCoverByGameId(gameIds);
+    final gamesWithExternalMetadata = await _loadGamesWithExternalMetadata(
+      gameIds,
+    );
 
     return [
       for (final entry in entries)
@@ -65,6 +68,7 @@ class LibraryQueryRepository {
             genres: genresByGameId[game.id] ?? const [],
             playthroughs: playthroughsByEntryId[entry.id] ?? const [],
             selectedCover: selectedCoverByGameId[game.id],
+            hasExternalMetadata: gamesWithExternalMetadata.contains(game.id),
           ),
     ];
   }
@@ -168,6 +172,18 @@ class LibraryQueryRepository {
     return {for (final asset in assets) asset.gameId: asset};
   }
 
+  Future<Set<String>> _loadGamesWithExternalMetadata(
+    List<String> gameIds,
+  ) async {
+    if (gameIds.isEmpty) return const {};
+    final externalIds =
+        await ((_db.select(_db.externalGameIds)
+              ..where((table) => table.gameId.isIn(gameIds))
+              ..where((table) => table.deletedAt.isNull()))
+            .get());
+    return {for (final externalId in externalIds) externalId.gameId};
+  }
+
   LibraryGameRow _toRow({
     required LibraryEntry entry,
     required Game game,
@@ -175,6 +191,7 @@ class LibraryQueryRepository {
     required List<LibraryCatalogItem> genres,
     required List<Playthrough> playthroughs,
     required MediaAsset? selectedCover,
+    required bool hasExternalMetadata,
   }) {
     DateTime? completedAt;
     var hoursPlayed = 0.0;
@@ -199,6 +216,7 @@ class LibraryQueryRepository {
       title: game.title,
       sortTitle: game.sortTitle,
       selectedCoverLocalPath: selectedCover?.localPath,
+      hasExternalMetadata: hasExternalMetadata,
       status: parseGameStatus(entry.status),
       releaseDate: game.releaseDate,
       completedAt: completedAt,

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../../catalogs/data/catalog_repository.dart';
 import '../../games/data/game_repository.dart';
-import '../../media/data/media_repository.dart';
 import '../application/library_default_views.dart';
 import '../application/library_table_providers.dart';
 import '../application/library_table_state.dart';
@@ -18,10 +15,12 @@ import '../domain/game_status.dart';
 import '../domain/library_column_config.dart';
 import '../domain/library_filter_state.dart';
 import '../domain/library_game_row.dart';
+import '../domain/library_layout_mode.dart';
 import '../domain/library_sort_state.dart';
 import '../domain/library_table_summary.dart';
 import '../domain/rating.dart';
 import '../domain/saved_library_view.dart';
+import 'widgets/library_cover_thumbnail.dart';
 
 class GameListPage extends ConsumerStatefulWidget {
   const GameListPage({super.key});
@@ -79,6 +78,7 @@ class _GameListPageState extends ConsumerState<GameListPage> {
     final defaultViews = buildDefaultLibraryViews(platforms: platforms);
     final views = [...defaultViews, ...customViews];
     final tableState = ref.watch(libraryTableStateProvider);
+    final layoutMode = ref.watch(libraryLayoutModeProvider);
     final processor = ref.watch(libraryTableProcessorProvider);
 
     return Scaffold(
@@ -104,6 +104,7 @@ class _GameListPageState extends ConsumerState<GameListPage> {
                     platforms: platforms,
                     genres: genres,
                     isWide: isWide,
+                    layoutMode: layoutMode,
                   ),
                   _ActiveFilterChips(
                     filter: tableState.filter,
@@ -117,6 +118,8 @@ class _GameListPageState extends ConsumerState<GameListPage> {
                             ? const _EmptyLibraryState()
                             : result.rows.isEmpty
                             ? const _EmptyFilteredState()
+                            : layoutMode == LibraryLayoutMode.gallery
+                            ? _LibraryGalleryGrid(rows: result.rows)
                             : isWide
                             ? _LibraryDataTable(rows: result.rows)
                             : _LibraryCardList(rows: result.rows),
@@ -142,6 +145,7 @@ class _LibraryToolbar extends ConsumerStatefulWidget {
     required this.platforms,
     required this.genres,
     required this.isWide,
+    required this.layoutMode,
   });
 
   final List<SavedLibraryView> views;
@@ -151,6 +155,7 @@ class _LibraryToolbar extends ConsumerStatefulWidget {
   final List<LibraryCatalogItem> platforms;
   final List<LibraryCatalogItem> genres;
   final bool isWide;
+  final LibraryLayoutMode layoutMode;
 
   @override
   ConsumerState<_LibraryToolbar> createState() => _LibraryToolbarState();
@@ -248,6 +253,28 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
                 ),
             icon: const Icon(Icons.filter_alt_outlined),
             label: Text('Filtros (${widget.filter.activeCount})'),
+          ),
+          SegmentedButton<LibraryLayoutMode>(
+            showSelectedIcon: false,
+            segments: const [
+              ButtonSegment(
+                value: LibraryLayoutMode.table,
+                icon: Icon(Icons.table_rows_outlined),
+                label: Text('Tabla'),
+              ),
+              ButtonSegment(
+                value: LibraryLayoutMode.gallery,
+                icon: Icon(Icons.grid_view_outlined),
+                label: Text('Galería'),
+              ),
+            ],
+            selected: {widget.layoutMode},
+            onSelectionChanged: (selection) {
+              if (selection.isEmpty) return;
+              ref
+                  .read(libraryLayoutModeProvider.notifier)
+                  .setMode(selection.first);
+            },
           ),
           OutlinedButton.icon(
             onPressed: () => _showColumnsDialog(context, ref),
@@ -398,60 +425,6 @@ class _LibrarySummary extends StatelessWidget {
   }
 }
 
-class _CoverThumbnail extends ConsumerWidget {
-  const _CoverThumbnail({
-    required this.localPath,
-    required this.width,
-    required this.height,
-  });
-
-  final String? localPath;
-  final double width;
-  final double height;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final path = localPath;
-    if (path == null || path.trim().isEmpty) {
-      return _placeholder(context);
-    }
-
-    return FutureBuilder<File>(
-      future: ref.watch(mediaRepositoryProvider).resolveLocalFile(path),
-      builder: (context, snapshot) {
-        final file = snapshot.data;
-        if (file == null) return _placeholder(context);
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(6),
-          child: Image.file(
-            file,
-            width: width,
-            height: height,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => _placeholder(context),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _placeholder(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(6),
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      ),
-      child: Icon(
-        Icons.image_outlined,
-        size: width * 0.45,
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
-    );
-  }
-}
-
 class _LibraryDataTable extends ConsumerWidget {
   const _LibraryDataTable({required this.rows});
 
@@ -528,7 +501,7 @@ class _LibraryCardList extends ConsumerWidget {
             side: BorderSide(color: Theme.of(context).dividerColor),
             borderRadius: BorderRadius.circular(8),
           ),
-          leading: _CoverThumbnail(
+          leading: LibraryCoverThumbnail(
             localPath: row.selectedCoverLocalPath,
             width: 48,
             height: 64,
@@ -549,6 +522,166 @@ class _LibraryCardList extends ConsumerWidget {
           trailing: _RowActions(row: row, compact: true),
         );
       },
+    );
+  }
+}
+
+class _LibraryGalleryGrid extends StatelessWidget {
+  const _LibraryGalleryGrid({required this.rows});
+
+  final List<LibraryGameRow> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 240,
+        mainAxisExtent: 390,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+      ),
+      itemCount: rows.length,
+      itemBuilder: (context, index) => _LibraryGameCard(row: rows[index]),
+    );
+  }
+}
+
+class _LibraryGameCard extends StatelessWidget {
+  const _LibraryGameCard({required this.row});
+
+  final LibraryGameRow row;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        onTap: () => context.go('/games/${row.libraryEntryId}'),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 210,
+              width: double.infinity,
+              child: LayoutBuilder(
+                builder:
+                    (context, constraints) => LibraryCoverThumbnail(
+                      localPath: row.selectedCoverLocalPath,
+                      width: constraints.maxWidth,
+                      height: 210,
+                      borderRadius: 0,
+                    ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            row.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleMedium,
+                          ),
+                        ),
+                        _RowActions(row: row, compact: true),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        _compactChip(context, row.status.label),
+                        if (row.personalRating != null)
+                          _compactChip(
+                            context,
+                            formatStarRating(row.personalRating),
+                          ),
+                        if (row.hoursPlayed != null)
+                          _compactChip(
+                            context,
+                            '${row.hoursPlayed!.toStringAsFixed(1)} h',
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    _metadataLine(
+                      context,
+                      Icons.sports_esports_outlined,
+                      _limitedNames(
+                        row.platforms.map((platform) => platform.name),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    _metadataLine(
+                      context,
+                      Icons.category_outlined,
+                      _limitedNames(row.genres.map((genre) => genre.name)),
+                    ),
+                    if (row.completedAt != null) ...[
+                      const SizedBox(height: 4),
+                      _metadataLine(
+                        context,
+                        Icons.emoji_events_outlined,
+                        formatVisibleDate(row.completedAt),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _compactChip(BuildContext context, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        color: Theme.of(context).colorScheme.secondaryContainer,
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: Theme.of(context).colorScheme.onSecondaryContainer,
+        ),
+      ),
+    );
+  }
+
+  Widget _metadataLine(BuildContext context, IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1270,7 +1403,7 @@ Widget _tableCell(
 ) {
   if (column == LibraryColumnKey.cover) {
     return Center(
-      child: _CoverThumbnail(
+      child: LibraryCoverThumbnail(
         localPath: row.selectedCoverLocalPath,
         width: 36,
         height: 48,
@@ -1375,6 +1508,14 @@ String _names(Iterable<String> values) {
   final list = values.toList();
   if (list.isEmpty) return '-';
   return list.join(', ');
+}
+
+String _limitedNames(Iterable<String> values, {int limit = 2}) {
+  final list = values.toList();
+  if (list.isEmpty) return '-';
+  final visible = list.take(limit).join(', ');
+  final remaining = list.length - limit;
+  return remaining > 0 ? '$visible +$remaining' : visible;
 }
 
 String _namesForIds(Set<String> ids, List<LibraryCatalogItem> items) {

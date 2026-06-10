@@ -9,7 +9,12 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
-    final selectedIndex = location.startsWith('/settings') ? 1 : 0;
+    final selectedIndex =
+        location.startsWith('/home')
+            ? 0
+            : location.startsWith('/settings')
+            ? 2
+            : 1;
 
     return Scaffold(
       body: LayoutBuilder(
@@ -21,9 +26,18 @@ class AppShell extends StatelessWidget {
                   selectedIndex: selectedIndex,
                   labelType: NavigationRailLabelType.all,
                   onDestinationSelected: (index) {
-                    context.go(index == 0 ? '/' : '/settings');
+                    context.go(switch (index) {
+                      0 => '/home',
+                      1 => '/',
+                      _ => '/settings',
+                    });
                   },
                   destinations: const [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.home_outlined),
+                      selectedIcon: Icon(Icons.home),
+                      label: Text('Inicio'),
+                    ),
                     NavigationRailDestination(
                       icon: Icon(Icons.library_books_outlined),
                       selectedIcon: Icon(Icons.library_books),
@@ -47,9 +61,18 @@ class AppShell extends StatelessWidget {
             bottomNavigationBar: NavigationBar(
               selectedIndex: selectedIndex,
               onDestinationSelected: (index) {
-                context.go(index == 0 ? '/' : '/settings');
+                context.go(switch (index) {
+                  0 => '/home',
+                  1 => '/',
+                  _ => '/settings',
+                });
               },
               destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home),
+                  label: 'Inicio',
+                ),
                 NavigationDestination(
                   icon: Icon(Icons.library_books_outlined),
                   selectedIcon: Icon(Icons.library_books),

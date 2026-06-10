@@ -132,6 +132,31 @@ void main() {
             ),
           );
       await db
+          .into(db.externalGameIds)
+          .insert(
+            ExternalGameIdsCompanion.insert(
+              id: 'external-1',
+              gameId: 'game-1',
+              provider: 'rawg',
+              externalId: '123',
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await db
+          .into(db.externalGameIds)
+          .insert(
+            ExternalGameIdsCompanion.insert(
+              id: 'external-deleted',
+              gameId: 'game-1',
+              provider: 'steamgriddb',
+              externalId: '456',
+              createdAt: now,
+              updatedAt: now,
+              deletedAt: Value(now),
+            ),
+          );
+      await db
           .into(db.games)
           .insert(
             GamesCompanion.insert(
@@ -169,6 +194,7 @@ void main() {
         rows.single.selectedCoverLocalPath,
         'media/games/game-1/cover-1.png',
       );
+      expect(rows.single.hasExternalMetadata, isTrue);
     },
   );
 }
