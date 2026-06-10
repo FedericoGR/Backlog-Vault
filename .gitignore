@@ -14,6 +14,7 @@ coverage/
 .vscode/
 
 *.log
+devtools_options.yaml
 
 # Generated locally by Flutter platform tooling.
 android/.gradle/

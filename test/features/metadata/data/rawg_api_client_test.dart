@@ -76,6 +76,24 @@ void main() {
     );
   });
 
+  test('unexpected JSON fails with controlled error', () async {
+    final client = RawgApiClient(
+      apiKey: 'test-key',
+      httpClient: MockClient((request) async => http.Response('[]', 200)),
+    );
+
+    await expectLater(
+      client.searchGames('Hades'),
+      throwsA(
+        isA<MetadataException>().having(
+          (error) => error.type,
+          'type',
+          MetadataErrorType.unexpectedResponse,
+        ),
+      ),
+    );
+  });
+
   test('empty API key fails before making a request', () async {
     var called = false;
     final client = RawgApiClient(

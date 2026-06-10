@@ -193,13 +193,17 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
             width: widget.isWide ? 220 : MediaQuery.sizeOf(context).width - 32,
             child: DropdownButtonFormField<String>(
               initialValue: selectedViewId,
+              isExpanded: true,
               decoration: const InputDecoration(
                 labelText: 'Vista',
                 prefixIcon: Icon(Icons.view_column_outlined),
               ),
               items: [
                 for (final view in widget.views)
-                  DropdownMenuItem(value: view.id, child: Text(view.name)),
+                  DropdownMenuItem(
+                    value: view.id,
+                    child: Text(view.name, overflow: TextOverflow.ellipsis),
+                  ),
               ],
               onChanged: (id) {
                 if (id == null) return;

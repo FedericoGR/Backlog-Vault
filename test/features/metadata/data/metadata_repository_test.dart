@@ -86,6 +86,32 @@ void main() {
   });
 
   test(
+    'apply deduplicates repeated RAWG catalog names case-insensitively',
+    () async {
+      await repository.applyMetadata(
+        ApplyMetadataRequest(
+          gameId: 'game-1',
+          libraryEntryId: 'entry-1',
+          details: const ExternalGameDetails(
+            providerId: 'rawg',
+            providerName: 'RAWG',
+            externalId: '3498',
+            title: 'Grand Theft Auto V',
+            genres: ['RPG', 'rpg', 'Action', ' action '],
+            platforms: ['PC', 'pc', 'Nintendo Switch', ' nintendo switch '],
+          ),
+          selectedFields: const {MetadataField.genres, MetadataField.platforms},
+        ),
+      );
+
+      expect(await db.select(db.platforms).get(), hasLength(2));
+      expect(await db.select(db.genres).get(), hasLength(2));
+      expect(await db.select(db.libraryEntryPlatforms).get(), hasLength(2));
+      expect(await db.select(db.gameGenres).get(), hasLength(2));
+    },
+  );
+
+  test(
     'different external id for same provider requires explicit replacement',
     () async {
       await repository.applyMetadata(
