@@ -48,11 +48,6 @@ class GameDetailPage extends ConsumerWidget {
               ),
             ],
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showPlaythroughDialog(context, ref, item),
-            icon: const Icon(Icons.add),
-            label: const Text('Partida'),
-          ),
           body: LayoutBuilder(
             builder: (context, constraints) {
               final isWide = constraints.maxWidth >= 920;
@@ -194,7 +189,7 @@ class _GameProgressSection extends StatelessWidget {
                 value: formatVisibleDate(summary.latestCompletedAt),
               ),
               _InfoChip(
-                label: 'Playthroughs',
+                label: 'Partidas',
                 value: summary.playthroughCount.toString(),
               ),
               _InfoChip(
@@ -324,7 +319,7 @@ class _PlaythroughSection extends ConsumerWidget {
     final playthroughs = [...item.playthroughs]
       ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     return _Section(
-      title: 'Playthroughs',
+      title: 'Partidas',
       trailing: FilledButton.icon(
         onPressed: () => _showPlaythroughDialog(context, ref, item),
         icon: const Icon(Icons.add),
@@ -917,18 +912,20 @@ class _PlatformField extends StatelessWidget {
 }
 
 String _playthroughSubtitle(Playthrough playthrough, List<Platform> platforms) {
-  return [
-    _platformName(platforms, playthrough.platformId),
-    if (playthrough.startedAt != null)
-      'Inicio ${formatVisibleDate(playthrough.startedAt)}',
-    if (playthrough.completedAt != null)
-      'Fin ${formatVisibleDate(playthrough.completedAt)}',
-    if (playthrough.hoursPlayed != null)
-      '${playthrough.hoursPlayed!.toStringAsFixed(1)} h',
-    if (playthrough.rating != null) '${playthrough.rating}/5',
-    if (playthrough.notes?.trim().isNotEmpty ?? false)
-      playthrough.notes!.trim(),
-  ].where((value) => value != '-').join(' · ');
+  final parts =
+      [
+        _platformName(platforms, playthrough.platformId),
+        if (playthrough.startedAt != null)
+          'Inicio ${formatVisibleDate(playthrough.startedAt)}',
+        if (playthrough.completedAt != null)
+          'Fin ${formatVisibleDate(playthrough.completedAt)}',
+        if (playthrough.hoursPlayed != null)
+          '${playthrough.hoursPlayed!.toStringAsFixed(1)} h',
+        if (playthrough.rating != null) '${playthrough.rating}/5',
+        if (playthrough.notes?.trim().isNotEmpty ?? false)
+          playthrough.notes!.trim(),
+      ].where((value) => value != '-').toList();
+  return parts.isEmpty ? '-' : parts.join(' · ');
 }
 
 String _platformName(List<Platform> platforms, String? platformId) {

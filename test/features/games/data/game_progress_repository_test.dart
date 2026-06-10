@@ -118,6 +118,64 @@ void main() {
     expect(playthroughs.single.deletedAt, isNull);
   });
 
+  test('paused to backlog preserves paused playthrough history', () async {
+    await _seedGame(db, status: GameStatus.paused);
+    await _seedPlaythrough(db, status: PlaythroughStatus.paused);
+
+    await repository.markBacklog('entry-1');
+
+    expect((await _entry(db)).status, GameStatus.backlog.name);
+    final playthroughs = await db.select(db.playthroughs).get();
+    expect(playthroughs.single.status, PlaythroughStatus.paused.name);
+    expect(playthroughs.single.deletedAt, isNull);
+  });
+
+  test('quick actions do not rewrite completed and dropped history', () async {
+    await _seedGame(db, status: GameStatus.playing);
+    await _insertPlaythrough(
+      db,
+      id: 'active-playthrough',
+      status: PlaythroughStatus.active,
+      hoursPlayed: 2,
+    );
+    await _insertPlaythrough(
+      db,
+      id: 'completed-history',
+      status: PlaythroughStatus.completed,
+      completedAt: DateTime(2026, 5, 20),
+      hoursPlayed: 10,
+    );
+    await _insertPlaythrough(
+      db,
+      id: 'dropped-history',
+      status: PlaythroughStatus.dropped,
+      hoursPlayed: 1,
+    );
+
+    await repository.markDropped('entry-1');
+
+    final playthroughs = {
+      for (final playthrough in await db.select(db.playthroughs).get())
+        playthrough.id: playthrough,
+    };
+    expect(
+      playthroughs['active-playthrough']!.status,
+      PlaythroughStatus.dropped.name,
+    );
+    expect(
+      playthroughs['completed-history']!.status,
+      PlaythroughStatus.completed.name,
+    );
+    expect(
+      playthroughs['completed-history']!.completedAt,
+      DateTime(2026, 5, 20),
+    );
+    expect(
+      playthroughs['dropped-history']!.status,
+      PlaythroughStatus.dropped.name,
+    );
+  });
+
   test('editing playthrough updates fields', () async {
     await _seedGame(db, status: GameStatus.playing);
     await _seedPlaythrough(db, status: PlaythroughStatus.active);
@@ -162,6 +220,28 @@ void main() {
     expect(summary.playthroughCount, 0);
     expect(summary.totalHours, isNull);
     expect(summary.latestCompletedAt, isNull);
+  });
+
+  test('advanced table projection ignores soft-deleted playthroughs', () async {
+    await _seedGame(db, status: GameStatus.completed);
+    await _seedPlaythrough(
+      db,
+      status: PlaythroughStatus.completed,
+      completedAt: DateTime(2026, 6, 9),
+      hoursPlayed: 10,
+    );
+
+    var rows = await queryRepository.watchRows().first;
+    expect(rows.single.playthroughCount, 1);
+    expect(rows.single.hoursPlayed, 10);
+    expect(rows.single.completedAt, DateTime(2026, 6, 9));
+
+    await repository.softDeletePlaythrough('playthrough-1');
+
+    rows = await queryRepository.watchRows().first;
+    expect(rows.single.playthroughCount, 0);
+    expect(rows.single.hoursPlayed, isNull);
+    expect(rows.single.completedAt, isNull);
   });
 
   test('advanced table projection reflects progress changes', () async {
@@ -249,11 +329,27 @@ Future<void> _seedPlaythrough(
   DateTime? completedAt,
   double? hoursPlayed,
 }) async {
+  await _insertPlaythrough(
+    db,
+    id: 'playthrough-1',
+    status: status,
+    completedAt: completedAt,
+    hoursPlayed: hoursPlayed,
+  );
+}
+
+Future<void> _insertPlaythrough(
+  AppDatabase db, {
+  required String id,
+  required PlaythroughStatus status,
+  DateTime? completedAt,
+  double? hoursPlayed,
+}) async {
   await db
       .into(db.playthroughs)
       .insert(
         PlaythroughsCompanion.insert(
-          id: 'playthrough-1',
+          id: id,
           libraryEntryId: 'entry-1',
           platformId: const Value('pc'),
           status: status.name,
