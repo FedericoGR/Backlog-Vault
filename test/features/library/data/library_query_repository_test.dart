@@ -132,6 +132,27 @@ void main() {
             ),
           );
       await db
+          .into(db.games)
+          .insert(
+            GamesCompanion.insert(
+              id: 'game-2',
+              title: 'Celeste',
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await db
+          .into(db.libraryEntries)
+          .insert(
+            LibraryEntriesCompanion.insert(
+              id: 'entry-2',
+              gameId: 'game-2',
+              status: GameStatus.backlog.name,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await db
           .into(db.externalGameIds)
           .insert(
             ExternalGameIdsCompanion.insert(
@@ -151,6 +172,19 @@ void main() {
               gameId: 'game-1',
               provider: 'steamgriddb',
               externalId: '456',
+              createdAt: now,
+              updatedAt: now,
+              deletedAt: Value(now),
+            ),
+          );
+      await db
+          .into(db.externalGameIds)
+          .insert(
+            ExternalGameIdsCompanion.insert(
+              id: 'external-only-deleted',
+              gameId: 'game-2',
+              provider: 'rawg',
+              externalId: '789',
               createdAt: now,
               updatedAt: now,
               deletedAt: Value(now),
@@ -182,19 +216,18 @@ void main() {
 
       final rows = await repository.watchRows().first;
 
-      expect(rows, hasLength(1));
-      expect(rows.single.title, 'Hades');
-      expect(rows.single.platforms.single.name, 'PC');
-      expect(rows.single.genres.single.name, 'Roguelite');
-      expect(rows.single.completedAt, DateTime(2026, 2, 2));
-      expect(rows.single.hoursPlayed, 30);
-      expect(rows.single.playthroughCount, 2);
-      expect(rows.single.updatedAt, now);
-      expect(
-        rows.single.selectedCoverLocalPath,
-        'media/games/game-1/cover-1.png',
-      );
-      expect(rows.single.hasExternalMetadata, isTrue);
+      expect(rows, hasLength(2));
+      final hades = rows.singleWhere((row) => row.title == 'Hades');
+      final celeste = rows.singleWhere((row) => row.title == 'Celeste');
+      expect(hades.platforms.single.name, 'PC');
+      expect(hades.genres.single.name, 'Roguelite');
+      expect(hades.completedAt, DateTime(2026, 2, 2));
+      expect(hades.hoursPlayed, 30);
+      expect(hades.playthroughCount, 2);
+      expect(hades.updatedAt, now);
+      expect(hades.selectedCoverLocalPath, 'media/games/game-1/cover-1.png');
+      expect(hades.hasExternalMetadata, isTrue);
+      expect(celeste.hasExternalMetadata, isFalse);
     },
   );
 }
