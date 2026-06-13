@@ -131,6 +131,92 @@ void main() {
     expect(details.imageUrl, isNull);
   });
 
+  test('uses protocol-relative cover url when image id is missing', () async {
+    final client = IgdbApiClient(
+      clientId: 'test_client_id',
+      accessToken: 'test_access_token',
+      httpClient: MockClient((request) async {
+        return http.Response('''
+[
+  {
+    "id": 123,
+    "name": "Hades",
+    "cover": {
+      "id": 456,
+      "url": "//images.igdb.com/igdb/image/upload/t_thumb/cofallback.jpg",
+      "width": 300,
+      "height": 400
+    }
+  }
+]
+''', 200);
+      }),
+    );
+
+    final details = await client.getGameDetails('123');
+
+    expect(details.cover, isNotNull);
+    expect(details.cover!.externalId, '456');
+    expect(details.cover!.imageId, isNull);
+    expect(
+      details.cover!.remoteUrl,
+      'https://images.igdb.com/igdb/image/upload/t_thumb/cofallback.jpg',
+    );
+  });
+
+  test('ignores invalid cover url without failing detail parsing', () async {
+    final client = IgdbApiClient(
+      clientId: 'test_client_id',
+      accessToken: 'test_access_token',
+      httpClient: MockClient((request) async {
+        return http.Response('''
+[
+  {
+    "id": 123,
+    "name": "Hades",
+    "cover": {
+      "id": 456,
+      "url": "not-a-valid-absolute-url"
+    }
+  }
+]
+''', 200);
+      }),
+    );
+
+    final details = await client.getGameDetails('123');
+
+    expect(details.cover, isNull);
+    expect(details.imageUrl, isNull);
+  });
+
+  test('parses cover with optional width and height missing', () async {
+    final client = IgdbApiClient(
+      clientId: 'test_client_id',
+      accessToken: 'test_access_token',
+      httpClient: MockClient((request) async {
+        return http.Response('''
+[
+  {
+    "id": 123,
+    "name": "Hades",
+    "cover": {
+      "id": 456,
+      "image_id": "cofixture"
+    }
+  }
+]
+''', 200);
+      }),
+    );
+
+    final details = await client.getGameDetails('123');
+
+    expect(details.cover, isNotNull);
+    expect(details.cover!.width, isNull);
+    expect(details.cover!.height, isNull);
+  });
+
   test('maps auth errors without leaking bearer token', () async {
     final client = IgdbApiClient(
       clientId: 'test_client_id',

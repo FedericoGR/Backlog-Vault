@@ -94,6 +94,64 @@ void main() {
     expect((await repository.selectedCoverForGame('game-1'))!.id, second.id);
   });
 
+  test(
+    'replacing SteamGridDB cover with IGDB cover keeps previous file',
+    () async {
+      final first = await repository.saveRemoteCover(
+        gameId: 'game-1',
+        asset: _asset('steam-cover-1', 'https://cdn.example.test/cover.png'),
+      );
+      final firstFile = await repository.resolveLocalFile(first.localPath);
+      expect(await firstFile.exists(), isTrue);
+
+      final second = await repository.saveRemoteCover(
+        gameId: 'game-1',
+        asset: _asset(
+          'igdb-cover-1',
+          'https://images.igdb.com/igdb/image/upload/t_cover_big/cofixture.jpg?second=true',
+          providerId: 'igdb',
+          providerName: 'IGDB',
+        ),
+      );
+
+      final covers = await repository.coversForGame('game-1');
+      final firstReloaded = covers.singleWhere((cover) => cover.id == first.id);
+
+      expect(firstReloaded.isSelected, isFalse);
+      expect(second.source, MediaAssetSource.igdb.name);
+      expect(second.isSelected, isTrue);
+      expect(await firstFile.exists(), isTrue);
+    },
+  );
+
+  test(
+    'replacing IGDB cover with SteamGridDB cover keeps providers distinct',
+    () async {
+      final first = await repository.saveRemoteCover(
+        gameId: 'game-1',
+        asset: _asset(
+          'igdb-cover-1',
+          'https://images.igdb.com/igdb/image/upload/t_cover_big/cofixture.jpg',
+          providerId: 'igdb',
+          providerName: 'IGDB',
+        ),
+      );
+      final second = await repository.saveRemoteCover(
+        gameId: 'game-1',
+        asset: _asset('steam-cover-1', 'https://cdn.example.test/second.png'),
+      );
+
+      final covers = await repository.coversForGame('game-1');
+      final firstReloaded = covers.singleWhere((cover) => cover.id == first.id);
+
+      expect(firstReloaded.provider, 'igdb');
+      expect(firstReloaded.isSelected, isFalse);
+      expect(second.provider, 'steamgriddb');
+      expect(second.source, MediaAssetSource.steamgriddb.name);
+      expect(second.isSelected, isTrue);
+    },
+  );
+
   test('same provider external id is reused for the same game', () async {
     final first = await repository.saveRemoteCover(
       gameId: 'game-1',

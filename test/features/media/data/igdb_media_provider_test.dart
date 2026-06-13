@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:backlog_vault/core/time/clock.dart';
 import 'package:backlog_vault/features/media/data/igdb_media_provider.dart';
 import 'package:backlog_vault/features/media/domain/media_exception.dart';
 import 'package:backlog_vault/features/metadata/data/metadata_api_key_storage.dart';
@@ -75,6 +76,61 @@ void main() {
     expect(assets, isEmpty);
   });
 
+  test('renews expired token before searching covers', () async {
+    var tokenRequests = 0;
+    var gameRequests = 0;
+    final storage = _FakeMetadataApiKeyStorage(
+      token: IgdbCachedToken(
+        accessToken: 'expired_access_token',
+        expiresAt: DateTime(2026, 6, 13, 9),
+      ),
+    );
+    final provider = IgdbMediaProvider(
+      apiKeyStorage: storage,
+      clock: _FixedClock(DateTime(2026, 6, 13, 10)),
+      httpClient: MockClient((request) async {
+        if (request.url.host == 'id.twitch.tv') {
+          tokenRequests++;
+          return http.Response(
+            File('test/fixtures/igdb_token.json').readAsStringSync(),
+            200,
+          );
+        }
+        gameRequests++;
+        expect(request.headers['Authorization'], 'Bearer test_access_token');
+        return http.Response(
+          File('test/fixtures/igdb_details_with_cover.json').readAsStringSync(),
+          200,
+        );
+      }),
+    );
+
+    final assets = await provider.searchCoverAssets('123');
+
+    expect(assets, hasLength(1));
+    expect(tokenRequests, 1);
+    expect(gameRequests, 1);
+    expect(storage.token?.accessToken, 'test_access_token');
+  });
+
+  test('maps IGDB rate limit to controlled media error', () async {
+    final provider = IgdbMediaProvider(
+      apiKeyStorage: _FakeMetadataApiKeyStorage(),
+      httpClient: MockClient((request) async => http.Response('[]', 429)),
+    );
+
+    await expectLater(
+      provider.searchCoverAssets('123'),
+      throwsA(
+        isA<MediaException>().having(
+          (error) => error.type,
+          'type',
+          MediaErrorType.rateLimited,
+        ),
+      ),
+    );
+  });
+
   test(
     'missing IGDB credentials fail safely without leaking secrets',
     () async {
@@ -106,18 +162,30 @@ void main() {
   );
 }
 
+class _FixedClock extends Clock {
+  const _FixedClock(this.value);
+
+  final DateTime value;
+
+  @override
+  DateTime now() => value;
+}
+
 class _FakeMetadataApiKeyStorage implements MetadataApiKeyStorage {
   _FakeMetadataApiKeyStorage({
     this.clientId = 'test_client_id',
     this.clientSecret = 'test_client_secret',
-  });
+    IgdbCachedToken? token,
+  }) : token =
+           token ??
+           IgdbCachedToken(
+             accessToken: 'test_access_token',
+             expiresAt: DateTime(2099),
+           );
 
   final String? clientId;
   final String? clientSecret;
-  IgdbCachedToken? token = IgdbCachedToken(
-    accessToken: 'test_access_token',
-    expiresAt: DateTime(2099),
-  );
+  IgdbCachedToken? token;
 
   @override
   Future<void> deleteAllExternalApiKeys() async {}

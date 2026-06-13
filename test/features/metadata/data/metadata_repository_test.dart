@@ -172,6 +172,12 @@ void main() {
             title: 'Hades',
             genres: ['Role-playing (RPG)'],
             platforms: ['PC (Microsoft Windows)'],
+            cover: ExternalGameCover(
+              externalId: '456',
+              imageId: 'cofixture',
+              remoteUrl:
+                  'https://images.igdb.com/igdb/image/upload/t_cover_big/cofixture.jpg',
+            ),
           ),
           selectedFields: const {MetadataField.genres, MetadataField.platforms},
         ),
@@ -180,10 +186,12 @@ void main() {
       final entry = await db.select(db.libraryEntries).getSingle();
       final playthrough = await db.select(db.playthroughs).getSingle();
       final externalIds = await db.select(db.externalGameIds).get();
+      final mediaAssets = await db.select(db.mediaAssets).get();
 
       expect(externalIds.single.provider, 'igdb');
       expect(externalIds.single.externalId, '123');
       expect(externalIds.single.externalSlug, 'hades');
+      expect(mediaAssets, isEmpty);
       expect(entry.status, GameStatus.playing.name);
       expect(entry.personalRating, 4);
       expect(entry.personalNotes, 'Manual note');
