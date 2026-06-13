@@ -89,7 +89,7 @@ void main() {
       const scorer = BulkMatchScorer();
       final scored = scorer.scoreCandidates(
         row: _row(title: 'Hades'),
-        candidates: const [
+        candidates: [
           MetadataSearchCandidate(
             providerId: 'igdb',
             providerName: 'IGDB',
@@ -107,7 +107,7 @@ void main() {
       const scorer = BulkMatchScorer();
       final scored = scorer.scoreCandidates(
         row: _row(title: 'Hades'),
-        candidates: const [
+        candidates: [
           MetadataSearchCandidate(
             providerId: 'igdb',
             providerName: 'IGDB',
@@ -125,6 +125,91 @@ void main() {
 
       expect(scored.first.confidence, BulkMetadataConfidence.ambiguous);
     });
+
+    test('existing external id makes the matching candidate safe', () {
+      const scorer = BulkMatchScorer();
+      final scored = scorer.scoreCandidates(
+        row: _row(title: 'Local title'),
+        existingExternalId: '2',
+        candidates: [
+          MetadataSearchCandidate(
+            providerId: 'igdb',
+            providerName: 'IGDB',
+            externalId: '1',
+            title: 'Local Title',
+          ),
+          MetadataSearchCandidate(
+            providerId: 'igdb',
+            providerName: 'IGDB',
+            externalId: '2',
+            title: 'Different Provider Title',
+          ),
+        ],
+      );
+
+      expect(scored.first.candidate.externalId, '2');
+      expect(scored.first.confidence, BulkMetadataConfidence.safe);
+      expect(scored.first.reasons, contains('external ID existente'));
+    });
+
+    test('similar title with secondary signals is probable, not safe', () {
+      const scorer = BulkMatchScorer();
+      final scored = scorer.scoreCandidates(
+        row: _row(
+          title: 'Final Fantasy XIII-2',
+          releaseDate: DateTime(2012),
+          platforms: const [
+            LibraryCatalogItem(id: 'ps3', name: 'PlayStation 3'),
+          ],
+        ),
+        candidates: [
+          MetadataSearchCandidate(
+            providerId: 'igdb',
+            providerName: 'IGDB',
+            externalId: 'ff',
+            title: 'Final Fantasy XIII-2 HD',
+            releaseDate: DateTime(2012),
+            platforms: ['PlayStation 3'],
+          ),
+        ],
+      );
+
+      expect(scored.single.confidence, BulkMetadataConfidence.probable);
+    });
+
+    test(
+      'normalizes safe edition suffixes without creating obvious false positives',
+      () {
+        expect(
+          normalizeTitle('Hades Definitive Edition'),
+          normalizeTitle('Hades'),
+        );
+        expect(
+          normalizeTitle("Hades Collector's Edition"),
+          normalizeTitle('Hades'),
+        );
+        expect(
+          normalizeTitle('Hades Game of the Year'),
+          normalizeTitle('Hades'),
+        );
+        expect(normalizeTitle('Hades Remastered'), normalizeTitle('Hades'));
+
+        const scorer = BulkMatchScorer();
+        final scored = scorer.scoreCandidates(
+          row: _row(title: 'Hades'),
+          candidates: const [
+            MetadataSearchCandidate(
+              providerId: 'igdb',
+              providerName: 'IGDB',
+              externalId: 'halo',
+              title: 'Halo Infinite',
+            ),
+          ],
+        );
+
+        expect(scored.single.confidence, isNot(BulkMetadataConfidence.safe));
+      },
+    );
   });
 
   group('BuildBulkMetadataPlanUseCase', () {
@@ -196,6 +281,36 @@ void main() {
       expect(plan.items.single.coverPlan?.selected, isFalse);
     });
 
+    test('allows cover replacement only with explicit option', () async {
+      final provider = _FakeMetadataProvider(
+        candidates: {
+          'Hades': const [
+            MetadataSearchCandidate(
+              providerId: 'igdb',
+              providerName: 'IGDB',
+              externalId: '1',
+              title: 'Hades',
+            ),
+          ],
+        },
+        details: {'1': _details()},
+      );
+
+      final plan = await const BuildBulkMetadataPlanUseCase().call(
+        rows: [
+          _row(title: 'Hades', selectedCoverLocalPath: 'media/existing.png'),
+        ],
+        provider: provider,
+        options: const BulkMetadataImportOptions(
+          providerId: 'igdb',
+          replaceExistingCovers: true,
+        ),
+      );
+
+      expect(plan.items.single.coverPlan?.canApply, isTrue);
+      expect(plan.items.single.coverPlan?.selected, isTrue);
+    });
+
     test(
       'probable or ambiguous matches are not included automatically',
       () async {
@@ -227,6 +342,71 @@ void main() {
         );
       },
     );
+
+    test(
+      'existing external id can select a safe candidate despite local title drift',
+      () async {
+        final provider = _FakeMetadataProvider(
+          candidates: {
+            'Local title': const [
+              MetadataSearchCandidate(
+                providerId: 'igdb',
+                providerName: 'IGDB',
+                externalId: '1',
+                title: 'Local Title',
+              ),
+              MetadataSearchCandidate(
+                providerId: 'igdb',
+                providerName: 'IGDB',
+                externalId: '2',
+                title: 'Canonical Title',
+              ),
+            ],
+          },
+          details: {'2': _details(title: 'Canonical Title', externalId: '2')},
+        );
+
+        final plan = await const BuildBulkMetadataPlanUseCase().call(
+          rows: [_row(title: 'Local title')],
+          provider: provider,
+          options: const BulkMetadataImportOptions(providerId: 'igdb'),
+          loadExternalIds: (_) async => [_externalId('2')],
+        );
+
+        final item = plan.items.single;
+        expect(item.included, isTrue);
+        expect(item.candidates.first.candidate.externalId, '2');
+        expect(item.candidates.first.confidence, BulkMetadataConfidence.safe);
+      },
+    );
+
+    test('different existing external id blocks bulk replacement', () async {
+      final provider = _FakeMetadataProvider(
+        candidates: {
+          'Hades': const [
+            MetadataSearchCandidate(
+              providerId: 'igdb',
+              providerName: 'IGDB',
+              externalId: '1',
+              title: 'Hades',
+            ),
+          ],
+        },
+        details: {'1': _details()},
+      );
+
+      final plan = await const BuildBulkMetadataPlanUseCase().call(
+        rows: [_row(title: 'Hades')],
+        provider: provider,
+        options: const BulkMetadataImportOptions(providerId: 'igdb'),
+        loadExternalIds: (_) async => [_externalId('different')],
+      );
+
+      final item = plan.items.single;
+      expect(item.included, isFalse);
+      expect(item.hasErrorIssue, isTrue);
+      expect(item.issues.single.message, contains('otro match externo'));
+    });
 
     test('provider errors are reported per item with secrets redacted', () async {
       final provider = _FakeMetadataProvider(
@@ -355,6 +535,101 @@ void main() {
       );
       expect(result.errors.single.message, contains('Bearer [REDACTED]'));
     });
+
+    test('metadata can succeed when cover fails', () async {
+      var metadataCalls = 0;
+      final useCase = ApplyBulkMetadataPlanUseCase(
+        applyMetadata: (request) async {
+          metadataCalls++;
+        },
+        saveCover: ({required gameId, required asset}) async {
+          throw Exception('download failed token=test_access_token');
+        },
+      );
+
+      final result = await useCase.call(
+        BulkMetadataImportPlan(
+          options: const BulkMetadataImportOptions(providerId: 'igdb'),
+          items: [
+            _applyItem('game-ok', 'entry-ok').copyWith(
+              coverPlan: BulkCoverPlan(
+                asset: _coverAsset(),
+                selected: true,
+                canApply: true,
+              ),
+            ),
+          ],
+        ),
+      );
+
+      expect(metadataCalls, 1);
+      expect(result.metadataApplied, 1);
+      expect(result.coversSaved, 0);
+      expect(result.errors.single.message, contains('portada no guardada'));
+      expect(
+        result.errors.single.message,
+        isNot(contains('test_access_token')),
+      );
+    });
+
+    test('cover can be omitted while metadata applies', () async {
+      var metadataCalls = 0;
+      var coverCalls = 0;
+      final useCase = ApplyBulkMetadataPlanUseCase(
+        applyMetadata: (request) async {
+          metadataCalls++;
+        },
+        saveCover: ({required gameId, required asset}) async {
+          coverCalls++;
+        },
+      );
+
+      final result = await useCase.call(
+        BulkMetadataImportPlan(
+          options: const BulkMetadataImportOptions(providerId: 'igdb'),
+          items: [
+            _applyItem('game-ok', 'entry-ok').copyWith(
+              coverPlan: BulkCoverPlan(
+                asset: _coverAsset(),
+                selected: false,
+                canApply: true,
+              ),
+            ),
+          ],
+        ),
+      );
+
+      expect(metadataCalls, 1);
+      expect(coverCalls, 0);
+      expect(result.metadataApplied, 1);
+      expect(result.coversSaved, 0);
+    });
+
+    test('skipped warnings are included in final result', () async {
+      final useCase = ApplyBulkMetadataPlanUseCase(
+        applyMetadata: (request) async {},
+        saveCover: ({required gameId, required asset}) async {},
+      );
+
+      final result = await useCase.call(
+        BulkMetadataImportPlan(
+          options: const BulkMetadataImportOptions(providerId: 'igdb'),
+          items: [
+            BulkMetadataImportItem(
+              row: _row(title: 'Ambiguous'),
+              included: false,
+              issues: const [
+                BulkImportIssue(message: 'Match ambiguo: requiere revisión.'),
+              ],
+            ),
+          ],
+        ),
+      );
+
+      expect(result.skipped, 1);
+      expect(result.warnings.single.message, contains('Match ambiguo'));
+      expect(result.errors, isEmpty);
+    });
   });
 }
 
@@ -384,11 +659,14 @@ LibraryGameRow _row({
   );
 }
 
-ExternalGameDetails _details({String title = 'Hades'}) {
+ExternalGameDetails _details({
+  String title = 'Hades',
+  String externalId = '1',
+}) {
   return ExternalGameDetails(
     providerId: 'igdb',
     providerName: 'IGDB',
-    externalId: '1',
+    externalId: externalId,
     externalSlug: 'hades',
     externalUrl: 'https://www.igdb.com/games/hades',
     title: title,
@@ -415,6 +693,22 @@ ExternalMediaAsset _coverAsset() {
     remoteUrl:
         'https://images.igdb.com/igdb/image/upload/t_cover_big/cofixture.jpg',
     mimeType: 'image/jpeg',
+  );
+}
+
+ExternalGameId _externalId(String externalId) {
+  final now = DateTime(2026, 6, 13);
+  return ExternalGameId(
+    id: 'external-$externalId',
+    gameId: 'game-1',
+    provider: 'igdb',
+    externalId: externalId,
+    externalSlug: null,
+    externalUrl: null,
+    matchedTitle: null,
+    createdAt: now,
+    updatedAt: now,
+    deletedAt: null,
   );
 }
 

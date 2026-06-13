@@ -232,6 +232,7 @@ class BulkImportResult {
     required this.metadataApplied,
     required this.coversSaved,
     required this.skipped,
+    this.warnings = const [],
     required this.errors,
   });
 
@@ -239,5 +240,6 @@ class BulkImportResult {
   final int metadataApplied;
   final int coversSaved;
   final int skipped;
+  final List<BulkImportIssue> warnings;
   final List<BulkImportIssue> errors;
 }

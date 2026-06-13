@@ -8,10 +8,18 @@ class BulkMatchScorer {
   List<BulkMetadataCandidate> scoreCandidates({
     required LibraryGameRow row,
     required List<MetadataSearchCandidate> candidates,
+    String? existingExternalId,
   }) {
     final scored = <BulkMetadataCandidate>[];
     for (var index = 0; index < candidates.length; index++) {
-      scored.add(_score(row: row, candidate: candidates[index], index: index));
+      scored.add(
+        _score(
+          row: row,
+          candidate: candidates[index],
+          index: index,
+          existingExternalId: existingExternalId,
+        ),
+      );
     }
     scored.sort((a, b) {
       final scoreCompare = b.score.compareTo(a.score);
@@ -25,9 +33,16 @@ class BulkMatchScorer {
     required LibraryGameRow row,
     required MetadataSearchCandidate candidate,
     required int index,
+    required String? existingExternalId,
   }) {
     final reasons = <String>[];
     var score = 0;
+
+    if (existingExternalId != null &&
+        existingExternalId == candidate.externalId) {
+      score += 100;
+      reasons.add('external ID existente');
+    }
 
     final localTitle = normalizeTitle(row.title);
     final externalTitle = normalizeTitle(candidate.title);
@@ -85,6 +100,7 @@ class BulkMatchScorer {
       if (index == 0 &&
           scored.length > 1 &&
           current.confidence == BulkMetadataConfidence.safe &&
+          !current.reasons.contains('external ID existente') &&
           current.score - scored[1].score < 12) {
         confidence = BulkMetadataConfidence.ambiguous;
       }
@@ -121,6 +137,7 @@ String normalizeTitle(String value) {
     'definitive edition',
     'collectors edition',
     'collector edition',
+    'game of the year',
     'remastered',
     'remaster',
     'edition',

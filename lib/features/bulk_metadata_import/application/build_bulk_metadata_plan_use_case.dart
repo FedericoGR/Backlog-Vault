@@ -77,6 +77,14 @@ class BuildBulkMetadataPlanUseCase {
     required BulkExternalIdsLoader? loadExternalIds,
   }) async {
     try {
+      final externalIds =
+          loadExternalIds == null
+              ? const <ExternalGameId>[]
+              : await loadExternalIds(row.gameId);
+      final existingForSelectedProvider = _existingExternalIdForProvider(
+        externalIds,
+        options.providerId,
+      );
       final candidates = await provider.searchGames(row.title);
       if (candidates.isEmpty) {
         return BulkMetadataImportItem(
@@ -94,6 +102,7 @@ class BuildBulkMetadataPlanUseCase {
       final scored = matchScorer.scoreCandidates(
         row: row,
         candidates: candidates,
+        existingExternalId: existingForSelectedProvider?.externalId,
       );
       final best = scored.first;
       if (best.confidence != BulkMetadataConfidence.safe) {
@@ -119,7 +128,7 @@ class BuildBulkMetadataPlanUseCase {
         options: options,
         selectedCandidate: best,
         candidates: scored,
-        loadExternalIds: loadExternalIds,
+        externalIds: externalIds,
       );
     } catch (error) {
       return BulkMetadataImportItem(
@@ -142,18 +151,20 @@ class BuildBulkMetadataPlanUseCase {
     required BulkMetadataCandidate selectedCandidate,
     required List<BulkMetadataCandidate> candidates,
     BulkExternalIdsLoader? loadExternalIds,
+    List<ExternalGameId>? externalIds,
   }) async {
     try {
       final details = await provider.getGameDetails(
         selectedCandidate.candidate.externalId,
       );
       final issues = <BulkImportIssue>[];
-      final externalIds =
-          loadExternalIds == null
+      final loadedExternalIds =
+          externalIds ??
+          (loadExternalIds == null
               ? const <ExternalGameId>[]
-              : await loadExternalIds(row.gameId);
+              : await loadExternalIds(row.gameId));
       final existingForProvider = _existingExternalIdForProvider(
-        externalIds,
+        loadedExternalIds,
         details.providerId,
       );
       final hasDifferentExternalId =

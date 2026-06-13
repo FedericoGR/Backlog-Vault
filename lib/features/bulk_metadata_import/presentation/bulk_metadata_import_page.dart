@@ -795,11 +795,18 @@ class _ResultCard extends StatelessWidget {
                 _chip('Metadata', result.metadataApplied.toString()),
                 _chip('Covers', result.coversSaved.toString()),
                 _chip('Omitidos', result.skipped.toString()),
+                _chip('Warnings', result.warnings.length.toString()),
                 _chip('Errores', result.errors.length.toString()),
               ],
             ),
+            if (result.warnings.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text('Warnings', style: Theme.of(context).textTheme.titleSmall),
+              for (final warning in result.warnings) Text(warning.message),
+            ],
             if (result.errors.isNotEmpty) ...[
               const SizedBox(height: 12),
+              Text('Errores', style: Theme.of(context).textTheme.titleSmall),
               for (final error in result.errors) Text(error.message),
             ],
           ],

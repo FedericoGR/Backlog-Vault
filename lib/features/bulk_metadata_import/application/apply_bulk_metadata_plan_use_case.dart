@@ -28,13 +28,24 @@ class ApplyBulkMetadataPlanUseCase {
     var metadataApplied = 0;
     var coversSaved = 0;
     var skipped = 0;
+    final warnings = <BulkImportIssue>[];
     final errors = <BulkImportIssue>[];
 
     for (final item in plan.items) {
       if (!item.canApply) {
         skipped++;
+        warnings.addAll(
+          item.issues.where(
+            (issue) => issue.severity != BulkImportIssueSeverity.error,
+          ),
+        );
         continue;
       }
+      warnings.addAll(
+        item.issues.where(
+          (issue) => issue.severity != BulkImportIssueSeverity.error,
+        ),
+      );
       processed++;
       final details = item.selectedDetails!;
       final selectedFields = _selectedFields(item);
@@ -81,6 +92,7 @@ class ApplyBulkMetadataPlanUseCase {
       metadataApplied: metadataApplied,
       coversSaved: coversSaved,
       skipped: skipped,
+      warnings: warnings,
       errors: errors,
     );
   }
