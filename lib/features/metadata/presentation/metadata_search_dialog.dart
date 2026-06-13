@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/formatting/date_formatters.dart';
 import '../../../core/privacy/privacy_redactor.dart';
+import '../../media/application/media_providers.dart';
+import '../../media/data/igdb_media_provider.dart';
 import '../application/get_metadata_details_use_case.dart';
 import '../../games/application/library_game_details.dart';
 import '../application/metadata_providers.dart';
@@ -36,6 +38,7 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
   ExternalGameDetails? _details;
   MetadataDiff? _diff;
   Set<MetadataField> _selectedFields = {};
+  bool _saveIncludedCover = false;
 
   @override
   void initState() {
@@ -98,6 +101,7 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
                             _details = null;
                             _diff = null;
                             _selectedFields = {};
+                            _saveIncludedCover = false;
                           });
                         },
               ),
@@ -118,12 +122,17 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
                   details: _details!,
                   diff: _diff!,
                   selectedFields: _selectedFields,
+                  saveIncludedCover: _saveIncludedCover,
+                  hasCurrentCover: widget.item.selectedCover != null,
                   onChanged: (field, selected) {
                     setState(() {
                       selected
                           ? _selectedFields.add(field)
                           : _selectedFields.remove(field);
                     });
+                  },
+                  onCoverChanged: (selected) {
+                    setState(() => _saveIncludedCover = selected);
                   },
                 )
               else if (_candidates.isEmpty)
@@ -169,6 +178,7 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
       _details = null;
       _diff = null;
       _selectedFields = {};
+      _saveIncludedCover = false;
     });
     try {
       final provider = _providerById(
@@ -201,6 +211,7 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
       _details = null;
       _diff = null;
       _selectedFields = {};
+      _saveIncludedCover = false;
     });
     try {
       final provider = _providerById(
@@ -222,6 +233,10 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
                 .where((change) => change.selectedByDefault && change.canApply)
                 .map((change) => change.field)
                 .toSet();
+        _saveIncludedCover =
+            details.providerId == 'igdb' &&
+            details.cover != null &&
+            widget.item.selectedCover == null;
       });
     } catch (error) {
       if (!mounted) return;
@@ -234,6 +249,11 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
   Future<void> _apply({required bool replace}) async {
     final details = _details;
     if (details == null) return;
+    if (_shouldSaveIncludedCover(details) &&
+        widget.item.selectedCover != null &&
+        !await _confirmReplaceCover()) {
+      return;
+    }
     setState(() {
       _applying = true;
       _error = null;
@@ -250,6 +270,22 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
               replaceExistingExternalId: replace,
             ),
           );
+      final coverAsset = externalGameCoverToMediaAsset(details.cover);
+      if (_shouldSaveIncludedCover(details) && coverAsset != null) {
+        try {
+          await ref
+              .read(saveSelectedMediaAssetUseCaseProvider)
+              .fromRemoteCover(gameId: widget.item.game.id, asset: coverAsset);
+        } catch (error) {
+          if (!mounted) return;
+          setState(
+            () =>
+                _error =
+                    'Metadata aplicada, pero no se pudo guardar la portada. ${privacyRedactor.redact(error.toString())}',
+          );
+          return;
+        }
+      }
       if (!mounted) return;
       Navigator.pop(context, true);
     } catch (error) {
@@ -266,6 +302,36 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
     } finally {
       if (mounted) setState(() => _applying = false);
     }
+  }
+
+  bool _shouldSaveIncludedCover(ExternalGameDetails details) {
+    return _saveIncludedCover &&
+        details.providerId == 'igdb' &&
+        details.cover != null;
+  }
+
+  Future<bool> _confirmReplaceCover() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Reemplazar portada'),
+            content: const Text(
+              'Este juego ya tiene portada seleccionada. ¿Querés reemplazarla por la portada incluida en IGDB?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Reemplazar portada'),
+              ),
+            ],
+          ),
+    );
+    return result == true;
   }
 
   bool _canConfirmReplacement(String message) {
@@ -358,13 +424,19 @@ class _DiffPreview extends StatelessWidget {
     required this.details,
     required this.diff,
     required this.selectedFields,
+    required this.saveIncludedCover,
+    required this.hasCurrentCover,
     required this.onChanged,
+    required this.onCoverChanged,
   });
 
   final ExternalGameDetails details;
   final MetadataDiff diff;
   final Set<MetadataField> selectedFields;
+  final bool saveIncludedCover;
+  final bool hasCurrentCover;
   final void Function(MetadataField field, bool selected) onChanged;
+  final ValueChanged<bool> onCoverChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -376,8 +448,16 @@ class _DiffPreview extends StatelessWidget {
         Text('${details.providerName} · ID ${details.externalId}'),
         if (details.providerId == 'igdb' && details.cover != null) ...[
           const SizedBox(height: 8),
-          const Text(
-            'Este resultado incluye portada disponible. Podés guardarla desde Cambiar portada.',
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            value: saveIncludedCover,
+            onChanged: (value) => onCoverChanged(value ?? false),
+            title: const Text('Guardar portada incluida'),
+            subtitle: Text(
+              hasCurrentCover
+                  ? 'Este juego ya tiene portada. Se pedirá confirmación antes de reemplazarla.'
+                  : 'La portada se guardará localmente y quedará disponible offline.',
+            ),
           ),
         ],
         const SizedBox(height: 12),

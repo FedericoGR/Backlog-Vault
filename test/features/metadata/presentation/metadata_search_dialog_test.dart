@@ -1,6 +1,10 @@
 import 'package:backlog_vault/core/database/app_database.dart';
 import 'package:backlog_vault/features/games/application/library_game_details.dart';
 import 'package:backlog_vault/features/library/domain/game_status.dart';
+import 'package:backlog_vault/features/metadata/application/metadata_providers.dart';
+import 'package:backlog_vault/features/metadata/domain/external_game_details.dart';
+import 'package:backlog_vault/features/metadata/domain/metadata_provider.dart';
+import 'package:backlog_vault/features/metadata/domain/metadata_search_candidate.dart';
 import 'package:backlog_vault/features/metadata/presentation/metadata_search_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,6 +39,33 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('shows an explicit option to save included IGDB cover', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          metadataProviderListProvider.overrideWith(
+            (ref) => const [_FakeIgdbProvider()],
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(body: MetadataSearchDialog(item: _details())),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Buscar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hades').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Guardar portada incluida'), findsOneWidget);
+    expect(find.byType(CheckboxListTile), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 final _now = DateTime(2026, 6, 13);
@@ -65,4 +96,47 @@ LibraryGameDetails _details() {
     genres: const [],
     playthroughs: const [],
   );
+}
+
+class _FakeIgdbProvider implements MetadataProvider {
+  const _FakeIgdbProvider();
+
+  @override
+  String get providerId => 'igdb';
+
+  @override
+  String get displayName => 'IGDB';
+
+  @override
+  bool get requiresApiKey => true;
+
+  @override
+  Future<List<MetadataSearchCandidate>> searchGames(String query) async {
+    return const [
+      MetadataSearchCandidate(
+        providerId: 'igdb',
+        providerName: 'IGDB',
+        externalId: '1',
+        title: 'Hades',
+      ),
+    ];
+  }
+
+  @override
+  Future<ExternalGameDetails> getGameDetails(String externalId) async {
+    return ExternalGameDetails(
+      providerId: 'igdb',
+      providerName: 'IGDB',
+      externalId: externalId,
+      title: 'Hades',
+      releaseDate: DateTime(2020, 9, 17),
+      genres: const ['Roguelite'],
+      platforms: const ['PC'],
+      cover: const ExternalGameCover(
+        externalId: 'cover-1',
+        remoteUrl:
+            'https://images.igdb.com/igdb/image/upload/t_cover_big/cofixture.jpg',
+      ),
+    );
+  }
 }

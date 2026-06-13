@@ -214,39 +214,32 @@ void main() {
     );
 
     expect(views.map((view) => view.name), contains('Todos los juegos'));
-    expect(views.map((view) => view.name), contains('Completados 2026'));
-    expect(views.singleWhere((view) => view.name == 'PC').filter.platformIds, {
-      'pc',
-    });
+    expect(views.map((view) => view.name), [
+      'Todos los juegos',
+      'Pendientes',
+      'Completados',
+      'Filtrar por año',
+    ]);
+    expect(
+      views.singleWhere((view) => view.name == 'Pendientes').filter.statuses,
+      {GameStatus.backlog},
+    );
+    expect(
+      views.singleWhere((view) => view.name == 'Completados').filter.statuses,
+      {GameStatus.completed},
+    );
   });
 
-  test(
-    'default platform views stay safely empty when catalogs are missing',
-    () {
-      final views = buildDefaultLibraryViews(platforms: const []);
-      final pcView = views.singleWhere((view) => view.name == 'PC');
-      final switchView = views.singleWhere(
-        (view) => view.name == 'Nintendo Switch',
-      );
+  test('completed year default view filters by completion year', () {
+    final views = buildDefaultLibraryViews(platforms: const []);
+    final yearView = views.singleWhere(
+      (view) => view.name == 'Filtrar por año',
+    );
 
-      expect(
-        processor
-            .apply(rows: _rows, filter: pcView.filter, sort: pcView.sort)
-            .rows,
-        isEmpty,
-      );
-      expect(
-        processor
-            .apply(
-              rows: _rows,
-              filter: switchView.filter,
-              sort: switchView.sort,
-            )
-            .rows,
-        isEmpty,
-      );
-    },
-  );
+    expect(yearView.filter.statuses, {GameStatus.completed});
+    expect(yearView.filter.completedDateFrom, isNotNull);
+    expect(yearView.filter.completedDateTo, isNotNull);
+  });
 }
 
 final _rows = [

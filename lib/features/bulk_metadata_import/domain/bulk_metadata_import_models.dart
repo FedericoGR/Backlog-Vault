@@ -66,10 +66,31 @@ class BulkImportIssue {
   const BulkImportIssue({
     required this.message,
     this.severity = BulkImportIssueSeverity.warning,
+    this.gameTitle,
+    this.providerId,
+    this.providerName,
+    this.isGlobal = false,
   });
 
   final String message;
   final BulkImportIssueSeverity severity;
+  final String? gameTitle;
+  final String? providerId;
+  final String? providerName;
+  final bool isGlobal;
+
+  String get displayMessage {
+    if (isGlobal) return 'Global: $message';
+    final parts = [
+      if (gameTitle != null && gameTitle!.trim().isNotEmpty) gameTitle!.trim(),
+      if (providerName != null && providerName!.trim().isNotEmpty)
+        providerName!.trim()
+      else if (providerId != null && providerId!.trim().isNotEmpty)
+        providerId!.trim(),
+      message,
+    ];
+    return parts.join(' · ');
+  }
 }
 
 class BulkMetadataCandidate {
@@ -230,6 +251,8 @@ class BulkImportResult {
   const BulkImportResult({
     required this.processed,
     required this.metadataApplied,
+    this.fieldChangesApplied = 0,
+    this.externalLinksSaved = 0,
     required this.coversSaved,
     required this.skipped,
     this.warnings = const [],
@@ -238,6 +261,8 @@ class BulkImportResult {
 
   final int processed;
   final int metadataApplied;
+  final int fieldChangesApplied;
+  final int externalLinksSaved;
   final int coversSaved;
   final int skipped;
   final List<BulkImportIssue> warnings;

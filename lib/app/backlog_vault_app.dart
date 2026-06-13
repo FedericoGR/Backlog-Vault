@@ -15,6 +15,8 @@ class BacklogVaultApp extends ConsumerWidget {
       title: 'Backlog Vault',
       debugShowCheckedModeBanner: false,
       theme: buildBacklogVaultTheme(),
+      darkTheme: buildBacklogVaultDarkTheme(),
+      themeMode: ThemeMode.system,
       routerConfig: router,
     );
   }

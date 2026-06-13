@@ -26,25 +26,57 @@ class ApplyBulkMetadataPlanUseCase {
   Future<BulkImportResult> call(BulkMetadataImportPlan plan) async {
     var processed = 0;
     var metadataApplied = 0;
+    var fieldChangesApplied = 0;
+    var externalLinksSaved = 0;
     var coversSaved = 0;
     var skipped = 0;
-    final warnings = <BulkImportIssue>[];
+    final warnings = <BulkImportIssue>[
+      for (final issue in plan.globalIssues)
+        _withContext(
+          issue,
+          providerId: plan.options.providerId,
+          isGlobal: true,
+        ),
+    ];
     final errors = <BulkImportIssue>[];
 
     for (final item in plan.items) {
       if (!item.canApply) {
         skipped++;
         warnings.addAll(
-          item.issues.where(
-            (issue) => issue.severity != BulkImportIssueSeverity.error,
-          ),
+          item.issues
+              .where((issue) => issue.severity != BulkImportIssueSeverity.error)
+              .map(
+                (issue) => _withContext(
+                  issue,
+                  item: item,
+                  providerId: plan.options.providerId,
+                ),
+              ),
+        );
+        errors.addAll(
+          item.issues
+              .where((issue) => issue.severity == BulkImportIssueSeverity.error)
+              .map(
+                (issue) => _withContext(
+                  issue,
+                  item: item,
+                  providerId: plan.options.providerId,
+                ),
+              ),
         );
         continue;
       }
       warnings.addAll(
-        item.issues.where(
-          (issue) => issue.severity != BulkImportIssueSeverity.error,
-        ),
+        item.issues
+            .where((issue) => issue.severity != BulkImportIssueSeverity.error)
+            .map(
+              (issue) => _withContext(
+                issue,
+                item: item,
+                providerId: plan.options.providerId,
+              ),
+            ),
       );
       processed++;
       final details = item.selectedDetails!;
@@ -58,13 +90,17 @@ class ApplyBulkMetadataPlanUseCase {
             selectedFields: selectedFields,
           ),
         );
-        metadataApplied++;
+        if (selectedFields.isNotEmpty) metadataApplied++;
+        fieldChangesApplied += selectedFields.length;
+        externalLinksSaved++;
       } catch (error) {
         errors.add(
           BulkImportIssue(
-            message:
-                '${item.row.title}: ${privacyRedactor.redact(error.toString())}',
+            message: privacyRedactor.redact(error.toString()),
             severity: BulkImportIssueSeverity.error,
+            gameTitle: item.row.title,
+            providerId: details.providerId,
+            providerName: details.providerName,
           ),
         );
         continue;
@@ -79,8 +115,11 @@ class ApplyBulkMetadataPlanUseCase {
           errors.add(
             BulkImportIssue(
               message:
-                  '${item.row.title}: portada no guardada. ${privacyRedactor.redact(error.toString())}',
+                  'portada no guardada. ${privacyRedactor.redact(error.toString())}',
               severity: BulkImportIssueSeverity.error,
+              gameTitle: item.row.title,
+              providerId: coverAsset.providerId,
+              providerName: coverAsset.providerName,
             ),
           );
         }
@@ -90,6 +129,8 @@ class ApplyBulkMetadataPlanUseCase {
     return BulkImportResult(
       processed: processed,
       metadataApplied: metadataApplied,
+      fieldChangesApplied: fieldChangesApplied,
+      externalLinksSaved: externalLinksSaved,
       coversSaved: coversSaved,
       skipped: skipped,
       warnings: warnings,
@@ -102,5 +143,22 @@ class ApplyBulkMetadataPlanUseCase {
       for (final plan in item.fieldPlans)
         if (plan.selected && plan.canApply && !plan.isProtected) plan.field,
     };
+  }
+
+  BulkImportIssue _withContext(
+    BulkImportIssue issue, {
+    BulkMetadataImportItem? item,
+    String? providerId,
+    bool isGlobal = false,
+  }) {
+    final details = item?.selectedDetails;
+    return BulkImportIssue(
+      message: privacyRedactor.redact(issue.message),
+      severity: issue.severity,
+      gameTitle: issue.gameTitle ?? item?.row.title,
+      providerId: issue.providerId ?? details?.providerId ?? providerId,
+      providerName: issue.providerName ?? details?.providerName,
+      isGlobal: issue.isGlobal || isGlobal,
+    );
   }
 }

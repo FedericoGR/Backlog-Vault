@@ -7,8 +7,8 @@ import '../application/library_home_summary.dart';
 import '../data/library_query_repository.dart';
 import '../domain/game_status.dart';
 import '../domain/library_game_row.dart';
-import '../domain/rating.dart';
 import 'widgets/library_cover_thumbnail.dart';
+import 'widgets/rating_stars.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -180,7 +180,7 @@ class _HomeSection extends StatelessWidget {
             Text(emptyText, style: Theme.of(context).textTheme.bodyMedium)
           else
             SizedBox(
-              height: 176,
+              height: 206,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: rows.length,
@@ -207,7 +207,7 @@ class _HomeGameCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 132,
+      width: 154,
       child: Card(
         clipBehavior: Clip.antiAlias,
         margin: EdgeInsets.zero,
@@ -218,38 +218,38 @@ class _HomeGameCard extends StatelessWidget {
             children: [
               LibraryCoverThumbnail(
                 localPath: row.selectedCoverLocalPath,
-                width: 132,
-                height: 92,
+                width: 154,
+                height: 104,
                 borderRadius: 0,
               ),
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      row.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle ?? row.status.label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    if (row.personalRating != null) ...[
-                      const SizedBox(height: 2),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        formatStarRating(row.personalRating),
+                        row.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle ?? row.status.label,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
+                      if (row.personalRating != null) ...[
+                        const SizedBox(height: 2),
+                        DefaultTextStyle.merge(
+                          style: Theme.of(context).textTheme.bodySmall,
+                          child: RatingStars(rating: row.personalRating),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ],

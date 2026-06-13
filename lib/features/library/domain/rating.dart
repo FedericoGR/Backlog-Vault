@@ -5,5 +5,6 @@ bool isValidStarRating(int? value) {
 
 String formatStarRating(int? value) {
   if (value == null) return '-';
-  return '$value/5';
+  if (!isValidStarRating(value)) return '-';
+  return List.filled(value, '⭐').join();
 }

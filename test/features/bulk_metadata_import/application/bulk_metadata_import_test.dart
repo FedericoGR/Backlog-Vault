@@ -494,6 +494,8 @@ void main() {
         final externalIds = await db.select(db.externalGameIds).get();
 
         expect(result.metadataApplied, 1);
+        expect(result.fieldChangesApplied, 1);
+        expect(result.externalLinksSaved, 1);
         expect(result.coversSaved, 1);
         expect(savedCovers.single.providerId, 'igdb');
         expect(game.releaseDate, DateTime(2020, 9, 17));
@@ -628,8 +630,44 @@ void main() {
 
       expect(result.skipped, 1);
       expect(result.warnings.single.message, contains('Match ambiguo'));
+      expect(result.warnings.single.displayMessage, contains('Ambiguous'));
+      expect(result.warnings.single.displayMessage, contains('igdb'));
+      expect(result.warnings.single.displayMessage, contains('Match ambiguo'));
       expect(result.errors, isEmpty);
     });
+
+    test(
+      'separates external links, field changes and covers in result',
+      () async {
+        final useCase = ApplyBulkMetadataPlanUseCase(
+          applyMetadata: (request) async {},
+          saveCover: ({required gameId, required asset}) async {},
+        );
+
+        final result = await useCase.call(
+          BulkMetadataImportPlan(
+            options: const BulkMetadataImportOptions(providerId: 'igdb'),
+            items: [
+              BulkMetadataImportItem(
+                row: _row(title: 'Link only'),
+                included: true,
+                selectedDetails: _details(title: 'Link only'),
+                coverPlan: BulkCoverPlan(
+                  asset: _coverAsset(),
+                  selected: true,
+                  canApply: true,
+                ),
+              ),
+            ],
+          ),
+        );
+
+        expect(result.metadataApplied, 0);
+        expect(result.fieldChangesApplied, 0);
+        expect(result.externalLinksSaved, 1);
+        expect(result.coversSaved, 1);
+      },
+    );
   });
 }
 

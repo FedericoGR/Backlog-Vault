@@ -1,17 +1,23 @@
 import 'package:backlog_vault/features/library/domain/rating.dart';
-import 'package:test/test.dart';
+import 'package:backlog_vault/features/library/presentation/widgets/rating_stars.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('rating', () {
-    test('accepts null and values from 1 to 5', () {
-      expect(isValidStarRating(null), isTrue);
-      expect(isValidStarRating(1), isTrue);
-      expect(isValidStarRating(5), isTrue);
-    });
+  test('formats ratings as stars', () {
+    expect(formatStarRating(3), '⭐⭐⭐');
+    expect(formatStarRating(5), '⭐⭐⭐⭐⭐');
+    expect(formatStarRating(null), '-');
+    expect(formatStarRating(6), '-');
+  });
 
-    test('rejects values outside 1 to 5', () {
-      expect(isValidStarRating(0), isFalse);
-      expect(isValidStarRating(6), isFalse);
-    });
+  testWidgets('RatingStars renders a readable empty label', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: RatingStars(rating: null, emptyLabel: 'Sin puntaje'),
+      ),
+    );
+
+    expect(find.text('Sin puntaje'), findsOneWidget);
   });
 }

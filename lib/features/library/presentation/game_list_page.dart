@@ -223,6 +223,12 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
               },
             ),
           ),
+          if (selectedViewId == defaultCompletedYearViewId)
+            SizedBox(
+              width:
+                  widget.isWide ? 150 : MediaQuery.sizeOf(context).width - 32,
+              child: _CompletedYearSelector(filter: widget.filter),
+            ),
           SizedBox(
             width: widget.isWide ? 320 : MediaQuery.sizeOf(context).width - 32,
             child: TextField(
@@ -337,6 +343,50 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _CompletedYearSelector extends ConsumerWidget {
+  const _CompletedYearSelector({required this.filter});
+
+  final LibraryFilterState filter;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentYear = DateTime.now().year;
+    final selectedYear = filter.completedDateFrom?.year ?? currentYear;
+    final years = [
+      for (var year = currentYear + 1; year >= currentYear - 20; year--) year,
+    ];
+    final safeYear = years.contains(selectedYear) ? selectedYear : currentYear;
+
+    return DropdownButtonFormField<int>(
+      initialValue: safeYear,
+      isExpanded: true,
+      decoration: const InputDecoration(
+        labelText: 'Año',
+        prefixIcon: Icon(Icons.event_outlined),
+      ),
+      items: [
+        for (final year in years)
+          DropdownMenuItem(value: year, child: Text(year.toString())),
+      ],
+      onChanged: (year) {
+        if (year == null) return;
+        final current = ref.read(libraryTableStateProvider);
+        ref
+            .read(libraryTableStateProvider.notifier)
+            .setTableState(
+              current.copyWith(
+                filter: current.filter.copyWith(
+                  statuses: const {GameStatus.completed},
+                  completedDateFrom: DateTime(year),
+                  completedDateTo: DateTime(year, 12, 31),
+                ),
+              ),
+            );
+      },
     );
   }
 }

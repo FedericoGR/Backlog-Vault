@@ -792,7 +792,8 @@ class _ResultCard extends StatelessWidget {
               runSpacing: 8,
               children: [
                 _chip('Procesados', result.processed.toString()),
-                _chip('Metadata', result.metadataApplied.toString()),
+                _chip('Metadata', result.fieldChangesApplied.toString()),
+                _chip('Vínculos', result.externalLinksSaved.toString()),
                 _chip('Covers', result.coversSaved.toString()),
                 _chip('Omitidos', result.skipped.toString()),
                 _chip('Warnings', result.warnings.length.toString()),
@@ -802,12 +803,13 @@ class _ResultCard extends StatelessWidget {
             if (result.warnings.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text('Warnings', style: Theme.of(context).textTheme.titleSmall),
-              for (final warning in result.warnings) Text(warning.message),
+              for (final warning in result.warnings)
+                Text(warning.displayMessage),
             ],
             if (result.errors.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text('Errores', style: Theme.of(context).textTheme.titleSmall),
-              for (final error in result.errors) Text(error.message),
+              for (final error in result.errors) Text(error.displayMessage),
             ],
           ],
         ),
