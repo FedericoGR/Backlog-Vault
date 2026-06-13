@@ -1,0 +1,24 @@
+[
+  {
+    "id": 123,
+    "name": "Hades",
+    "slug": "hades",
+    "url": "https://www.igdb.com/games/hades",
+    "first_release_date": 1601424000,
+    "platforms": [
+      {"id": 6, "name": "PC (Microsoft Windows)"},
+      {"id": 130, "name": "Nintendo Switch"}
+    ],
+    "genres": [
+      {"id": 12, "name": "Role-playing (RPG)"}
+    ],
+    "game_type": 0,
+    "cover": {
+      "id": 456,
+      "image_id": "cofixture",
+      "url": "//images.igdb.com/igdb/image/upload/t_thumb/cofixture.jpg",
+      "width": 600,
+      "height": 800
+    }
+  }
+]

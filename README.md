@@ -132,6 +132,15 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
 - Redacción de `client_id`, `client_secret`, access tokens, refresh tokens, bearer tokens y headers sensibles.
 - RAWG sigue disponible; IGDB no lo reemplaza ni lo elimina.
 
+## Alcance del Entregable 12
+
+- IGDB también puede usarse como fuente de portadas.
+- El flujo de media permite elegir provider SteamGridDB o IGDB.
+- Las portadas IGDB se descargan solo después de confirmación explícita.
+- Las imágenes seleccionadas se guardan localmente mediante `media_assets`, con path relativo y sin usar títulos como filename.
+- SteamGridDB sigue disponible; IGDB no lo reemplaza ni lo elimina.
+- No hay bulk download automático de covers.
+
 ## Fuera de alcance
 
 - Notion API.
@@ -233,7 +242,7 @@ Las API keys y credenciales se configuran desde Ajustes y se guardan localmente 
 
 IGDB usa OAuth de Twitch con client credentials. El Client Secret y el access token se guardan en secure storage, no en SQLite, y no se incluyen en exports ni backups.
 
-SteamGridDB se usa solo cuando elegís buscar una portada. Backlog Vault no descarga portadas automáticamente para toda la biblioteca.
+SteamGridDB e IGDB se usan solo cuando elegís buscar una portada. Backlog Vault no descarga portadas automáticamente para toda la biblioteca.
 
 Las imágenes seleccionadas se copian a la carpeta de soporte de la app y la base SQLite guarda paths relativos. Los backups futuros deberán incluir tanto la DB como la carpeta `media/`.
 

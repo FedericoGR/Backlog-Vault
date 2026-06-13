@@ -115,7 +115,7 @@ class MediaRepository {
           id: assetId,
           gameId: gameId,
           kind: asset.kind.name,
-          source: MediaAssetSource.steamgriddb.name,
+          source: _sourceForProvider(asset.providerId).name,
           provider: Value(asset.providerId),
           externalId: Value(asset.externalId),
           remoteUrl: Value(asset.remoteUrl),
@@ -352,6 +352,14 @@ class MediaRepository {
     await (_db.update(_db.games)..where(
       (table) => table.id.equals(gameId),
     )).write(GamesCompanion(updatedAt: Value(now)));
+  }
+
+  MediaAssetSource _sourceForProvider(String providerId) {
+    return switch (providerId) {
+      'igdb' => MediaAssetSource.igdb,
+      'steamgriddb' => MediaAssetSource.steamgriddb,
+      _ => MediaAssetSource.steamgriddb,
+    };
   }
 
   Future<void> _deleteStoredFileIfExists(String localPath) async {

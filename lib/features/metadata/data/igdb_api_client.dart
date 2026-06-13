@@ -33,7 +33,7 @@ class IgdbApiClient {
   Future<List<MetadataSearchCandidate>> searchGames(String query) async {
     final response = await _postGames('''
 search "${_escapeSearch(query)}";
-fields id,name,slug,url,first_release_date,platforms.name,genres.name,game_type;
+fields id,name,slug,url,first_release_date,platforms.name,genres.name,game_type,cover.id,cover.image_id,cover.url,cover.width,cover.height;
 limit 10;
 ''');
     final decoded = _decodeList(response);
@@ -52,7 +52,7 @@ limit 10;
       );
     }
     final response = await _postGames('''
-fields id,name,slug,url,first_release_date,platforms.name,genres.name,game_type,summary,storyline;
+fields id,name,slug,url,first_release_date,platforms.name,genres.name,game_type,summary,storyline,cover.id,cover.image_id,cover.url,cover.width,cover.height;
 where id = $id;
 limit 1;
 ''');
@@ -186,6 +186,7 @@ limit 1;
       );
     }
     final slug = _stringOrNull(json['slug']);
+    final cover = _coverFromJson(json['cover']);
     return ExternalGameDetails(
       providerId: providerId,
       providerName: providerName,
@@ -197,6 +198,28 @@ limit 1;
       type: _typeFromGameType(json['game_type']),
       genres: _nameList(json['genres']),
       platforms: _nameList(json['platforms']),
+      imageUrl: cover?.remoteUrl,
+      cover: cover,
+    );
+  }
+
+  ExternalGameCover? _coverFromJson(Object? value) {
+    if (value is! Map<String, Object?>) return null;
+    final imageId = _stringOrNull(value['image_id']);
+    final rawUrl = _stringOrNull(value['url']);
+    final remoteUrl =
+        imageId == null ? _normalizeIgdbImageUrl(rawUrl) : _imageUrl(imageId);
+    if (remoteUrl == null) return null;
+    final id = _stringOrNull(value['id']) ?? imageId;
+    if (id == null || id.isEmpty) return null;
+    return ExternalGameCover(
+      externalId: id,
+      imageId: imageId,
+      remoteUrl: remoteUrl,
+      thumbnailUrl:
+          imageId == null ? _normalizeIgdbImageUrl(rawUrl) : remoteUrl,
+      width: _intOrNull(value['width']),
+      height: _intOrNull(value['height']),
     );
   }
 
@@ -254,8 +277,30 @@ limit 1;
     return 'https://www.igdb.com/games/$slug';
   }
 
+  String _imageUrl(String imageId) {
+    return 'https://images.igdb.com/igdb/image/upload/t_cover_big/$imageId.jpg';
+  }
+
+  String? _normalizeIgdbImageUrl(String? value) {
+    if (value == null || value.isEmpty) return null;
+    if (value.startsWith('//')) return 'https:$value';
+    final uri = Uri.tryParse(value);
+    if (uri == null) return null;
+    if (uri.scheme == 'https') return value;
+    if (uri.scheme == 'http') {
+      return uri.replace(scheme: 'https').toString();
+    }
+    return null;
+  }
+
   String? _stringOrNull(Object? value) {
     final text = value?.toString().trim();
     return text == null || text.isEmpty ? null : text;
+  }
+
+  int? _intOrNull(Object? value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '');
   }
 }

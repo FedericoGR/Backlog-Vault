@@ -15,10 +15,12 @@ MediaAssetKind parseMediaAssetKind(String value) {
 
 enum MediaAssetSource {
   steamgriddb,
+  igdb,
   local;
 
   String get label => switch (this) {
     MediaAssetSource.steamgriddb => 'SteamGridDB',
+    MediaAssetSource.igdb => 'IGDB',
     MediaAssetSource.local => 'Archivo local',
   };
 }

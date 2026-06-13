@@ -58,6 +58,22 @@ void main() {
     expect(await repository.selectedCoverForGame('game-1'), isNotNull);
   });
 
+  test('saves an IGDB remote cover with IGDB source', () async {
+    final saved = await repository.saveRemoteCover(
+      gameId: 'game-1',
+      asset: _asset(
+        'igdb-cover-1',
+        'https://images.igdb.com/igdb/image/upload/t_cover_big/cofixture.jpg',
+        providerId: 'igdb',
+        providerName: 'IGDB',
+      ),
+    );
+
+    expect(saved.source, MediaAssetSource.igdb.name);
+    expect(saved.provider, 'igdb');
+    expect(saved.externalId, 'igdb-cover-1');
+  });
+
   test('replacing a cover deselects the previous cover', () async {
     final first = await repository.saveRemoteCover(
       gameId: 'game-1',
@@ -143,10 +159,15 @@ void main() {
   });
 }
 
-ExternalMediaAsset _asset(String externalId, String url) {
+ExternalMediaAsset _asset(
+  String externalId,
+  String url, {
+  String providerId = 'steamgriddb',
+  String providerName = 'SteamGridDB',
+}) {
   return ExternalMediaAsset(
-    providerId: 'steamgriddb',
-    providerName: 'SteamGridDB',
+    providerId: providerId,
+    providerName: providerName,
     externalId: externalId,
     kind: MediaAssetKind.cover,
     remoteUrl: url,

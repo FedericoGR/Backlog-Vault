@@ -77,6 +77,58 @@ void main() {
       details.genres,
       containsAll(['Role-playing (RPG)', 'Hack and slash/Beat \'em up']),
     );
+    expect(details.cover, isNull);
+  });
+
+  test('parses IGDB detail cover fixture', () async {
+    final client = IgdbApiClient(
+      clientId: 'test_client_id',
+      accessToken: 'test_access_token',
+      httpClient: MockClient((request) async {
+        expect(request.body, contains('cover.image_id'));
+        return http.Response(
+          File('test/fixtures/igdb_details_with_cover.json').readAsStringSync(),
+          200,
+        );
+      }),
+    );
+
+    final details = await client.getGameDetails('123');
+
+    expect(details.imageUrl, contains('t_cover_big/cofixture.jpg'));
+    expect(details.cover, isNotNull);
+    expect(details.cover!.externalId, '456');
+    expect(details.cover!.imageId, 'cofixture');
+    expect(
+      details.cover!.remoteUrl,
+      'https://images.igdb.com/igdb/image/upload/t_cover_big/cofixture.jpg',
+    );
+    expect(
+      details.cover!.thumbnailUrl,
+      'https://images.igdb.com/igdb/image/upload/t_cover_big/cofixture.jpg',
+    );
+    expect(details.cover!.width, 600);
+    expect(details.cover!.height, 800);
+  });
+
+  test('IGDB detail without cover does not fail', () async {
+    final client = IgdbApiClient(
+      clientId: 'test_client_id',
+      accessToken: 'test_access_token',
+      httpClient: MockClient((request) async {
+        return http.Response(
+          File(
+            'test/fixtures/igdb_details_without_cover.json',
+          ).readAsStringSync(),
+          200,
+        );
+      }),
+    );
+
+    final details = await client.getGameDetails('123');
+
+    expect(details.cover, isNull);
+    expect(details.imageUrl, isNull);
   });
 
   test('maps auth errors without leaking bearer token', () async {

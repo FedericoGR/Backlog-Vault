@@ -6,8 +6,10 @@ import 'package:go_router/go_router.dart';
 import '../../../core/privacy/privacy_redactor.dart';
 import '../../games/application/library_game_details.dart';
 import '../application/media_providers.dart';
+import '../application/media_use_cases.dart';
 import '../domain/media_asset_models.dart';
 import '../domain/media_exception.dart';
+import '../domain/media_provider.dart';
 
 class MediaSearchDialog extends ConsumerStatefulWidget {
   const MediaSearchDialog({required this.item, super.key});
@@ -23,6 +25,7 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
   bool _loading = false;
   bool _saving = false;
   String? _error;
+  String _selectedProviderId = 'steamgriddb';
   List<MediaSearchCandidate> _candidates = const [];
   MediaSearchCandidate? _selectedCandidate;
   List<ExternalMediaAsset> _assets = const [];
@@ -42,6 +45,9 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final providers = ref.watch(mediaProviderListProvider);
+    final selectedProvider = _providerById(providers, _selectedProviderId);
+    final providerName = selectedProvider.displayName;
     return AlertDialog(
       title: Text(
         widget.item.selectedCover == null
@@ -58,7 +64,7 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
               TextField(
                 controller: _queryController,
                 decoration: InputDecoration(
-                  labelText: 'Buscar en SteamGridDB',
+                  labelText: 'Buscar en $providerName',
                   suffixIcon: IconButton(
                     tooltip: 'Buscar',
                     onPressed: _loading || _saving ? null : _searchGames,
@@ -68,6 +74,32 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
                 onSubmitted: (_) {
                   if (!_loading && !_saving) _searchGames();
                 },
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: selectedProvider.providerId,
+                decoration: const InputDecoration(labelText: 'Proveedor'),
+                items: [
+                  for (final provider in providers)
+                    DropdownMenuItem(
+                      value: provider.providerId,
+                      child: Text(provider.displayName),
+                    ),
+                ],
+                onChanged:
+                    _loading || _saving
+                        ? null
+                        : (value) {
+                          if (value == null) return;
+                          setState(() {
+                            _selectedProviderId = value;
+                            _error = null;
+                            _candidates = const [];
+                            _selectedCandidate = null;
+                            _assets = const [];
+                            _selectedAsset = null;
+                          });
+                        },
               ),
               const SizedBox(height: 12),
               Wrap(
@@ -102,7 +134,10 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
                 _MediaError(
                   message: _error!,
                   onSettings: _goToSettings,
-                  showSettings: _error!.contains('API key'),
+                  showSettings:
+                      _error!.contains('API key') ||
+                      _error!.contains('Client ID') ||
+                      _error!.contains('Client Secret'),
                 )
               else if (_assets.isNotEmpty)
                 _AssetGrid(
@@ -116,8 +151,8 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
                   onSelected: _selectCandidate,
                 )
               else
-                const Text(
-                  'Buscá un juego para ver portadas, o elegí un archivo local.',
+                Text(
+                  'Buscá un juego en $providerName para ver portadas, o elegí un archivo local.',
                 ),
             ],
           ),
@@ -155,13 +190,20 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
       _selectedAsset = null;
     });
     try {
-      final result = await ref
-          .read(searchMediaGamesUseCaseProvider)
-          .call(_queryController.text);
+      final provider = _providerById(
+        ref.read(mediaProviderListProvider),
+        _selectedProviderId,
+      );
+      final result = await _searchMediaGamesUseCase(
+        provider,
+      ).call(_queryController.text);
       if (!mounted) return;
       setState(() {
         _candidates = result;
-        _error = result.isEmpty ? 'SteamGridDB no devolvió candidatos.' : null;
+        _error =
+            result.isEmpty
+                ? '${provider.displayName} no devolvió candidatos.'
+                : null;
       });
     } catch (error) {
       if (!mounted) return;
@@ -180,13 +222,20 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
       _selectedAsset = null;
     });
     try {
-      final result = await ref
-          .read(searchCoverAssetsUseCaseProvider)
-          .call(candidate.externalId);
+      final provider = _providerById(
+        ref.read(mediaProviderListProvider),
+        candidate.providerId,
+      );
+      final result = await _searchCoverAssetsUseCase(
+        provider,
+      ).call(candidate.externalId);
       if (!mounted) return;
       setState(() {
         _assets = result;
-        _error = result.isEmpty ? 'SteamGridDB no devolvió portadas.' : null;
+        _error =
+            result.isEmpty
+                ? '${provider.displayName} no devolvió portadas.'
+                : null;
       });
     } catch (error) {
       if (!mounted) return;
@@ -256,6 +305,24 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
     return privacyRedactor.redact(
       'No se pudo completar la operación de portada.',
     );
+  }
+
+  SearchMediaGamesUseCase _searchMediaGamesUseCase(MediaProvider provider) {
+    return SearchMediaGamesUseCase(provider);
+  }
+
+  SearchCoverAssetsUseCase _searchCoverAssetsUseCase(MediaProvider provider) {
+    return SearchCoverAssetsUseCase(provider);
+  }
+
+  MediaProvider _providerById(
+    List<MediaProvider> providers,
+    String providerId,
+  ) {
+    for (final provider in providers) {
+      if (provider.providerId == providerId) return provider;
+    }
+    return providers.first;
   }
 }
 

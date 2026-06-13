@@ -374,6 +374,12 @@ class _DiffPreview extends StatelessWidget {
         Text(details.title, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 4),
         Text('${details.providerName} · ID ${details.externalId}'),
+        if (details.providerId == 'igdb' && details.cover != null) ...[
+          const SizedBox(height: 8),
+          const Text(
+            'Este resultado incluye portada disponible. Podés guardarla desde Cambiar portada.',
+          ),
+        ],
         const SizedBox(height: 12),
         if (diff.changes.isEmpty)
           const Text(
