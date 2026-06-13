@@ -474,7 +474,7 @@ class _LibraryDataTable extends ConsumerWidget {
                             ? () => context.go('/games/${row.libraryEntryId}')
                             : null,
                   ),
-                DataCell(_RowActions(row: row)),
+                DataCell(LibraryRowActions(row: row)),
               ],
             ),
         ],
@@ -519,7 +519,7 @@ class _LibraryCardList extends ConsumerWidget {
             ].join(' · '),
           ),
           onTap: () => context.go('/games/${row.libraryEntryId}'),
-          trailing: _RowActions(row: row, compact: true),
+          trailing: LibraryRowActions(row: row, compact: true),
         );
       },
     );
@@ -593,7 +593,7 @@ class _LibraryGameCard extends StatelessWidget {
                             style: theme.textTheme.titleMedium,
                           ),
                         ),
-                        _RowActions(row: row, compact: true),
+                        LibraryRowActions(row: row, compact: true),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -686,16 +686,60 @@ class _LibraryGameCard extends StatelessWidget {
   }
 }
 
-class _RowActions extends ConsumerWidget {
-  const _RowActions({required this.row, this.compact = false});
+class LibraryRowActions extends ConsumerWidget {
+  const LibraryRowActions({required this.row, this.compact = false, super.key});
 
   final LibraryGameRow row;
   final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (compact) {
-      return PopupMenuButton<String>(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final shouldCompact =
+            compact ||
+            (constraints.hasBoundedWidth && constraints.maxWidth < 120);
+        if (shouldCompact) {
+          return _RowActionsMenu(row: row, ref: ref);
+        }
+
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              tooltip: 'Abrir detalle',
+              onPressed: () => context.go('/games/${row.libraryEntryId}'),
+              icon: const Icon(Icons.open_in_new),
+            ),
+            IconButton(
+              tooltip: 'Editar',
+              onPressed: () => context.go('/games/${row.libraryEntryId}/edit'),
+              icon: const Icon(Icons.edit_outlined),
+            ),
+            IconButton(
+              tooltip: 'Eliminar',
+              onPressed: () => _confirmDelete(context, ref, row),
+              icon: const Icon(Icons.delete_outline),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _RowActionsMenu extends StatelessWidget {
+  const _RowActionsMenu({required this.row, required this.ref});
+
+  final LibraryGameRow row;
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: PopupMenuButton<String>(
+        tooltip: 'Acciones',
         onSelected: (value) {
           if (value == 'open') context.go('/games/${row.libraryEntryId}');
           if (value == 'edit') context.go('/games/${row.libraryEntryId}/edit');
@@ -707,28 +751,7 @@ class _RowActions extends ConsumerWidget {
               PopupMenuItem(value: 'edit', child: Text('Editar')),
               PopupMenuItem(value: 'delete', child: Text('Eliminar')),
             ],
-      );
-    }
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          tooltip: 'Abrir detalle',
-          onPressed: () => context.go('/games/${row.libraryEntryId}'),
-          icon: const Icon(Icons.open_in_new),
-        ),
-        IconButton(
-          tooltip: 'Editar',
-          onPressed: () => context.go('/games/${row.libraryEntryId}/edit'),
-          icon: const Icon(Icons.edit_outlined),
-        ),
-        IconButton(
-          tooltip: 'Eliminar',
-          onPressed: () => _confirmDelete(context, ref, row),
-          icon: const Icon(Icons.delete_outline),
-        ),
-      ],
+      ),
     );
   }
 }
