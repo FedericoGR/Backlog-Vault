@@ -1,0 +1,32 @@
+[
+  {
+    "id": 123,
+    "name": "Hades",
+    "slug": "hades",
+    "url": "https://www.igdb.com/games/hades",
+    "first_release_date": 1601424000,
+    "platforms": [
+      {"id": 6, "name": "PC (Microsoft Windows)"},
+      {"id": 130, "name": "Nintendo Switch"}
+    ],
+    "genres": [
+      {"id": 12, "name": "Role-playing (RPG)"},
+      {"id": 25, "name": "Hack and slash/Beat 'em up"}
+    ],
+    "game_type": 0
+  },
+  {
+    "id": 456,
+    "name": "Hades II",
+    "slug": "hades-ii",
+    "url": "https://www.igdb.com/games/hades-ii",
+    "first_release_date": 1714953600,
+    "platforms": [
+      {"id": 6, "name": "PC (Microsoft Windows)"}
+    ],
+    "genres": [
+      {"id": 12, "name": "Role-playing (RPG)"}
+    ],
+    "game_type": 0
+  }
+]

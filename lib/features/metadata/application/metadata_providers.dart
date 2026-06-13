@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
 import '../data/metadata_api_key_storage.dart';
+import '../data/igdb_metadata_provider.dart';
 import '../data/metadata_repository.dart';
 import '../data/rawg_metadata_provider.dart';
 import '../domain/metadata_provider.dart';
@@ -21,6 +22,17 @@ final rawgMetadataProvider = Provider<MetadataProvider>((ref) {
     apiKeyStorage: ref.watch(metadataApiKeyStorageProvider),
     httpClient: ref.watch(metadataHttpClientProvider),
   );
+});
+
+final igdbMetadataProvider = Provider<MetadataProvider>((ref) {
+  return IgdbMetadataProvider(
+    apiKeyStorage: ref.watch(metadataApiKeyStorageProvider),
+    httpClient: ref.watch(metadataHttpClientProvider),
+  );
+});
+
+final metadataProviderListProvider = Provider<List<MetadataProvider>>((ref) {
+  return [ref.watch(rawgMetadataProvider), ref.watch(igdbMetadataProvider)];
 });
 
 final searchMetadataUseCaseProvider = Provider<SearchMetadataUseCase>((ref) {

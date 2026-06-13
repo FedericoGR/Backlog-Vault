@@ -1,0 +1,20 @@
+[
+  {
+    "id": 123,
+    "name": "Hades",
+    "slug": "hades",
+    "url": "https://www.igdb.com/games/hades",
+    "first_release_date": 1601424000,
+    "platforms": [
+      {"id": 6, "name": "PC (Microsoft Windows)"},
+      {"id": 48, "name": "PlayStation 4"},
+      {"id": 130, "name": "Nintendo Switch"}
+    ],
+    "genres": [
+      {"id": 12, "name": "Role-playing (RPG)"},
+      {"id": 25, "name": "Hack and slash/Beat 'em up"}
+    ],
+    "summary": "A sanitized fixture summary.",
+    "game_type": 0
+  }
+]

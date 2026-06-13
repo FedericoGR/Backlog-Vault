@@ -7,7 +7,8 @@ void main() {
   test('redacts sensitive query parameters', () {
     final text =
         'https://api.rawg.io/api/games?search=Hades&key=rawg-secret '
-        'https://example.com/?api_key=abc&apikey=def&token=ghi&access_token=jkl';
+        'https://example.com/?api_key=abc&apikey=def&token=ghi&access_token=jkl'
+        '&client_id=mno&client_secret=pqr&refresh_token=stu';
 
     final redacted = redactor.redact(text);
 
@@ -16,24 +17,33 @@ void main() {
     expect(redacted, contains('apikey=[REDACTED]'));
     expect(redacted, contains('token=[REDACTED]'));
     expect(redacted, contains('access_token=[REDACTED]'));
+    expect(redacted, contains('client_id=[REDACTED]'));
+    expect(redacted, contains('client_secret=[REDACTED]'));
+    expect(redacted, contains('refresh_token=[REDACTED]'));
     expect(redacted, isNot(contains('rawg-secret')));
     expect(redacted, isNot(contains('abc')));
     expect(redacted, isNot(contains('def')));
     expect(redacted, isNot(contains('ghi')));
     expect(redacted, isNot(contains('jkl')));
+    expect(redacted, isNot(contains('mno')));
+    expect(redacted, isNot(contains('pqr')));
+    expect(redacted, isNot(contains('stu')));
   });
 
   test('redacts bearer tokens and authorization headers', () {
     final text =
         'Authorization: Bearer steam-secret\n'
-        'Request failed with Bearer another-secret';
+        'Request failed with Bearer another-secret\n'
+        'Client-ID: test_client_id';
 
     final redacted = redactor.redact(text);
 
     expect(redacted, contains('Authorization: Bearer [REDACTED]'));
     expect(redacted, contains('Bearer [REDACTED]'));
+    expect(redacted, contains('Client-ID: [REDACTED]'));
     expect(redacted, isNot(contains('steam-secret')));
     expect(redacted, isNot(contains('another-secret')));
+    expect(redacted, isNot(contains('test_client_id')));
   });
 
   test('redacts absolute paths but keeps relative media paths', () {

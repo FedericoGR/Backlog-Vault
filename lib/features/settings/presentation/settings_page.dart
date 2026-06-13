@@ -13,9 +13,12 @@ class SettingsPage extends ConsumerStatefulWidget {
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   final _rawgApiKeyController = TextEditingController();
+  final _igdbClientIdController = TextEditingController();
+  final _igdbClientSecretController = TextEditingController();
   final _steamGridDbApiKeyController = TextEditingController();
   bool _loading = true;
   bool _rawgConfigured = false;
+  bool _igdbConfigured = false;
   bool _steamGridDbConfigured = false;
 
   @override
@@ -27,6 +30,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   void dispose() {
     _rawgApiKeyController.dispose();
+    _igdbClientIdController.dispose();
+    _igdbClientSecretController.dispose();
     _steamGridDbApiKeyController.dispose();
     super.dispose();
   }
@@ -120,7 +125,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   OutlinedButton.icon(
                     onPressed:
                         _loading ||
-                                (!_rawgConfigured && !_steamGridDbConfigured)
+                                (!_rawgConfigured &&
+                                    !_igdbConfigured &&
+                                    !_steamGridDbConfigured)
                             ? null
                             : _deleteAllExternalApiKeys,
                     icon: const Icon(Icons.key_off_outlined),
@@ -200,6 +207,72 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 children: [
                   ListTile(
                     contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.cloud_sync_outlined),
+                    title: const Text('IGDB / Twitch credentials'),
+                    subtitle: Text(
+                      _loading
+                          ? 'Cargando estado...'
+                          : _igdbConfigured
+                          ? 'Configuradas localmente.'
+                          : 'No configuradas.',
+                    ),
+                  ),
+                  TextField(
+                    controller: _igdbClientIdController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Client ID',
+                      helperText:
+                          'Se guarda localmente en el storage seguro del sistema.',
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _igdbClientSecretController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Client Secret',
+                      helperText:
+                          'No se exporta en backups ni se muestra en claro.',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      FilledButton.icon(
+                        onPressed: _loading ? null : _saveIgdbCredentials,
+                        icon: const Icon(Icons.save_outlined),
+                        label: const Text('Guardar'),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed:
+                            _loading || !_igdbConfigured
+                                ? null
+                                : _deleteIgdbCredentials,
+                        icon: const Icon(Icons.delete_outline),
+                        label: const Text('Borrar'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'IGDB usa OAuth de Twitch con client credentials. No pegues Client Secret en issues, logs, README, tests ni commits.',
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.image_search_outlined),
                     title: const Text('SteamGridDB API key'),
                     subtitle: Text(
@@ -255,10 +328,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Future<void> _loadApiKeyState() async {
     final storage = ref.read(metadataApiKeyStorageProvider);
     final rawgValue = await storage.readRawgApiKey();
+    final igdbClientId = await storage.readIgdbClientId();
+    final igdbClientSecret = await storage.readIgdbClientSecret();
     final steamGridDbValue = await storage.readSteamGridDbApiKey();
     if (!mounted) return;
     setState(() {
       _rawgConfigured = rawgValue != null;
+      _igdbConfigured = igdbClientId != null && igdbClientSecret != null;
       _steamGridDbConfigured = steamGridDbValue != null;
       _loading = false;
     });
@@ -290,6 +366,42 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _loading = false;
     });
     _showMessage('API key de RAWG borrada.');
+  }
+
+  Future<void> _saveIgdbCredentials() async {
+    final clientId = _igdbClientIdController.text.trim();
+    final clientSecret = _igdbClientSecretController.text.trim();
+    if (clientId.isEmpty || clientSecret.isEmpty) {
+      _showMessage('Ingresá Client ID y Client Secret antes de guardar.');
+      return;
+    }
+    setState(() => _loading = true);
+    final storage = ref.read(metadataApiKeyStorageProvider);
+    await storage.saveIgdbClientId(clientId);
+    await storage.saveIgdbClientSecret(clientSecret);
+    await storage.deleteIgdbAccessToken();
+    _igdbClientIdController.clear();
+    _igdbClientSecretController.clear();
+    if (!mounted) return;
+    setState(() {
+      _igdbConfigured = true;
+      _loading = false;
+    });
+    _showMessage('Credenciales de IGDB guardadas localmente.');
+  }
+
+  Future<void> _deleteIgdbCredentials() async {
+    setState(() => _loading = true);
+    final storage = ref.read(metadataApiKeyStorageProvider);
+    await storage.deleteIgdbClientId();
+    await storage.deleteIgdbClientSecret();
+    await storage.deleteIgdbAccessToken();
+    if (!mounted) return;
+    setState(() {
+      _igdbConfigured = false;
+      _loading = false;
+    });
+    _showMessage('Credenciales de IGDB borradas.');
   }
 
   Future<void> _saveSteamGridDbApiKey() async {
@@ -327,7 +439,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           (context) => AlertDialog(
             title: const Text('Borrar claves externas'),
             content: const Text(
-              'Se borrarán las API keys de RAWG y SteamGridDB guardadas localmente. No se modifican tus juegos, metadata aplicada, external IDs ni portadas.',
+              'Se borrarán las claves de RAWG, IGDB y SteamGridDB guardadas localmente. No se modifican tus juegos, metadata aplicada, external IDs ni portadas.',
             ),
             actions: [
               TextButton(
@@ -345,10 +457,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     setState(() => _loading = true);
     await ref.read(metadataApiKeyStorageProvider).deleteAllExternalApiKeys();
     _rawgApiKeyController.clear();
+    _igdbClientIdController.clear();
+    _igdbClientSecretController.clear();
     _steamGridDbApiKeyController.clear();
     if (!mounted) return;
     setState(() {
       _rawgConfigured = false;
+      _igdbConfigured = false;
       _steamGridDbConfigured = false;
       _loading = false;
     });

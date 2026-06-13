@@ -79,6 +79,15 @@ class _FakeProvider implements MetadataProvider {
 
 class _FakeApiKeyStorage implements MetadataApiKeyStorage {
   @override
+  Future<void> deleteIgdbAccessToken() async {}
+
+  @override
+  Future<void> deleteIgdbClientId() async {}
+
+  @override
+  Future<void> deleteIgdbClientSecret() async {}
+
+  @override
   Future<void> deleteRawgApiKey() async {}
 
   @override
@@ -88,6 +97,15 @@ class _FakeApiKeyStorage implements MetadataApiKeyStorage {
   Future<void> deleteAllExternalApiKeys() async {}
 
   @override
+  Future<IgdbCachedToken?> readIgdbAccessToken() async => null;
+
+  @override
+  Future<String?> readIgdbClientId() async => null;
+
+  @override
+  Future<String?> readIgdbClientSecret() async => null;
+
+  @override
   Future<String?> readRawgApiKey() async => null;
 
   @override
@@ -95,6 +113,15 @@ class _FakeApiKeyStorage implements MetadataApiKeyStorage {
 
   @override
   Future<void> saveRawgApiKey(String apiKey) async {}
+
+  @override
+  Future<void> saveIgdbAccessToken(IgdbCachedToken token) async {}
+
+  @override
+  Future<void> saveIgdbClientId(String clientId) async {}
+
+  @override
+  Future<void> saveIgdbClientSecret(String clientSecret) async {}
 
   @override
   Future<void> saveSteamGridDbApiKey(String apiKey) async {}

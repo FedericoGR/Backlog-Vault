@@ -4,13 +4,16 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/formatting/date_formatters.dart';
 import '../../../core/privacy/privacy_redactor.dart';
+import '../application/get_metadata_details_use_case.dart';
 import '../../games/application/library_game_details.dart';
 import '../application/metadata_providers.dart';
+import '../application/search_metadata_use_case.dart';
 import '../domain/apply_metadata_request.dart';
 import '../domain/external_game_details.dart';
 import '../domain/metadata_diff.dart';
 import '../domain/metadata_exception.dart';
 import '../domain/metadata_field.dart';
+import '../domain/metadata_provider.dart';
 import '../domain/metadata_search_candidate.dart';
 
 class MetadataSearchDialog extends ConsumerStatefulWidget {
@@ -28,6 +31,7 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
   bool _loading = false;
   bool _applying = false;
   String? _error;
+  String _selectedProviderId = 'rawg';
   List<MetadataSearchCandidate> _candidates = const [];
   ExternalGameDetails? _details;
   MetadataDiff? _diff;
@@ -47,6 +51,9 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final providers = ref.watch(metadataProviderListProvider);
+    final selectedProvider = _providerById(providers, _selectedProviderId);
+    final providerName = selectedProvider.displayName;
     return AlertDialog(
       title: const Text('Buscar metadata'),
       content: SizedBox(
@@ -69,13 +76,42 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
                 onSubmitted: (_) => _loading ? null : _search(),
               ),
               const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: selectedProvider.providerId,
+                decoration: const InputDecoration(labelText: 'Proveedor'),
+                items: [
+                  for (final provider in providers)
+                    DropdownMenuItem(
+                      value: provider.providerId,
+                      child: Text(provider.displayName),
+                    ),
+                ],
+                onChanged:
+                    _loading || _applying
+                        ? null
+                        : (value) {
+                          if (value == null) return;
+                          setState(() {
+                            _selectedProviderId = value;
+                            _error = null;
+                            _candidates = const [];
+                            _details = null;
+                            _diff = null;
+                            _selectedFields = {};
+                          });
+                        },
+              ),
+              const SizedBox(height: 12),
               if (_loading)
                 const Center(child: CircularProgressIndicator())
               else if (_error != null)
                 _MetadataError(
                   message: _error!,
                   onSettings: _goToSettings,
-                  showSettings: _error!.contains('API key'),
+                  showSettings:
+                      _error!.contains('API key') ||
+                      _error!.contains('Client ID') ||
+                      _error!.contains('Client Secret'),
                 )
               else if (_details != null && _diff != null)
                 _DiffPreview(
@@ -91,7 +127,7 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
                   },
                 )
               else if (_candidates.isEmpty)
-                const Text('Buscá un juego para ver candidatos de RAWG.')
+                Text('Buscá un juego para ver candidatos de $providerName.')
               else
                 _CandidateList(
                   candidates: _candidates,
@@ -135,13 +171,20 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
       _selectedFields = {};
     });
     try {
-      final result = await ref
-          .read(searchMetadataUseCaseProvider)
-          .call(_queryController.text);
+      final provider = _providerById(
+        ref.read(metadataProviderListProvider),
+        _selectedProviderId,
+      );
+      final result = await SearchMetadataUseCase(
+        provider,
+      ).call(_queryController.text);
       if (!mounted) return;
       setState(() {
         _candidates = result;
-        _error = result.isEmpty ? 'RAWG no devolvió candidatos.' : null;
+        _error =
+            result.isEmpty
+                ? '${provider.displayName} no devolvió candidatos.'
+                : null;
       });
     } catch (error) {
       if (!mounted) return;
@@ -160,9 +203,13 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
       _selectedFields = {};
     });
     try {
-      final details = await ref
-          .read(getMetadataDetailsUseCaseProvider)
-          .call(candidate.externalId);
+      final provider = _providerById(
+        ref.read(metadataProviderListProvider),
+        candidate.providerId,
+      );
+      final details = await GetMetadataDetailsUseCase(
+        provider,
+      ).call(candidate.externalId);
       final diff = ref
           .read(buildMetadataDiffUseCaseProvider)
           .call(local: widget.item, external: details);
@@ -232,7 +279,7 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
           (context) => AlertDialog(
             title: const Text('Reemplazar match externo'),
             content: const Text(
-              'Este juego ya tiene un match RAWG distinto. ¿Querés reemplazarlo por el candidato seleccionado?',
+              'Este juego ya tiene otro match externo para este proveedor. ¿Querés reemplazarlo por el candidato seleccionado?',
             ),
             actions: [
               TextButton(
@@ -261,6 +308,16 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
     return privacyRedactor.redact(
       'No se pudo completar la operación de metadata.',
     );
+  }
+
+  MetadataProvider _providerById(
+    List<MetadataProvider> providers,
+    String providerId,
+  ) {
+    for (final provider in providers) {
+      if (provider.providerId == providerId) return provider;
+    }
+    return providers.first;
   }
 }
 
@@ -333,7 +390,7 @@ class _DiffPreview extends StatelessWidget {
                       : null,
               title: Text(change.field.label),
               subtitle: Text(
-                'Actual: ${change.currentValue}\nRAWG: ${change.externalValue}',
+                'Actual: ${change.currentValue}\n${details.providerName}: ${change.externalValue}',
               ),
             ),
       ],

@@ -155,6 +155,41 @@ void main() {
       expect(externalIds.single.externalId, '9999');
     },
   );
+
+  test(
+    'apply can store IGDB external id without touching personal data',
+    () async {
+      await repository.applyMetadata(
+        ApplyMetadataRequest(
+          gameId: 'game-1',
+          libraryEntryId: 'entry-1',
+          details: const ExternalGameDetails(
+            providerId: 'igdb',
+            providerName: 'IGDB',
+            externalId: '123',
+            externalSlug: 'hades',
+            externalUrl: 'https://www.igdb.com/games/hades',
+            title: 'Hades',
+            genres: ['Role-playing (RPG)'],
+            platforms: ['PC (Microsoft Windows)'],
+          ),
+          selectedFields: const {MetadataField.genres, MetadataField.platforms},
+        ),
+      );
+
+      final entry = await db.select(db.libraryEntries).getSingle();
+      final playthrough = await db.select(db.playthroughs).getSingle();
+      final externalIds = await db.select(db.externalGameIds).get();
+
+      expect(externalIds.single.provider, 'igdb');
+      expect(externalIds.single.externalId, '123');
+      expect(externalIds.single.externalSlug, 'hades');
+      expect(entry.status, GameStatus.playing.name);
+      expect(entry.personalRating, 4);
+      expect(entry.personalNotes, 'Manual note');
+      expect(playthrough.status, PlaythroughStatus.active.name);
+    },
+  );
 }
 
 final _now = DateTime(2026, 6, 10);

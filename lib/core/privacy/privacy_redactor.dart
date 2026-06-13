@@ -2,7 +2,11 @@ class PrivacyRedactor {
   const PrivacyRedactor();
 
   static final _sensitiveQueryParam = RegExp(
-    r'([?&](?:key|api_key|apikey|token|access_token)=)([^&#\s]+)',
+    r'([?&](?:key|api_key|apikey|token|access_token|refresh_token|client_id|client_secret)=)([^&#\s]+)',
+    caseSensitive: false,
+  );
+  static final _clientIdHeader = RegExp(
+    r'(Client-ID\s*:\s*)([^\s,;]+)',
     caseSensitive: false,
   );
   static final _authorizationHeader = RegExp(
@@ -28,6 +32,10 @@ class PrivacyRedactor {
     );
     output = output.replaceAllMapped(
       _authorizationHeader,
+      (match) => '${match.group(1)}[REDACTED]',
+    );
+    output = output.replaceAllMapped(
+      _clientIdHeader,
       (match) => '${match.group(1)}[REDACTED]',
     );
     output = output.replaceAll(_bearerToken, 'Bearer [REDACTED]');

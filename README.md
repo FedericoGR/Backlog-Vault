@@ -114,13 +114,28 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
   - media local cifrada: no;
   - backups cifrados: disponible;
   - API keys externas: secure storage del sistema.
-- Borrado centralizado de claves externas RAWG y SteamGridDB.
+- Borrado centralizado de claves externas RAWG, IGDB y SteamGridDB.
 - Redacción centralizada de API keys, bearer tokens, URLs sensibles y paths absolutos en mensajes visibles.
+
+## Alcance del Entregable 11
+
+- Provider IGDB como alternativa a RAWG para metadata de juegos.
+- Configuración local de credenciales IGDB/Twitch desde Ajustes:
+  - Client ID;
+  - Client Secret.
+- Guardado de credenciales y access token mediante secure storage del sistema.
+- OAuth client credentials para obtener y cachear token con expiración.
+- Selector de provider RAWG/IGDB en el diálogo de metadata.
+- Búsqueda de candidatos IGDB y carga de detalle externo.
+- Reutilización del preview/diff y aplicación selectiva existentes.
+- Guardado de external IDs con `provider = igdb`.
+- Redacción de `client_id`, `client_secret`, access tokens, refresh tokens, bearer tokens y headers sensibles.
+- RAWG sigue disponible; IGDB no lo reemplaza ni lo elimina.
 
 ## Fuera de alcance
 
 - Notion API.
-- Providers externos adicionales como IGDB o Steam.
+- Providers externos adicionales fuera de RAWG, IGDB y SteamGridDB.
 - Galería visual completa.
 - Bulk download automático de covers.
 - Sync.
@@ -129,7 +144,7 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
 - Cifrado de media local.
 - Backup cloud.
 - Scheduler automático de backups.
-- Estadísticas.
+- Dashboard estadístico avanzado.
 - Recomendador.
 - Achievements/trophies.
 - Session logs avanzados.
@@ -212,9 +227,11 @@ dart --disable-analytics
 
 ## Metadata externa, media y API keys
 
-La metadata externa y la búsqueda de portadas son opcionales. Sin API key de RAWG o SteamGridDB, Backlog Vault sigue funcionando offline con la biblioteca local y las portadas ya guardadas.
+La metadata externa y la búsqueda de portadas son opcionales. Sin API key de RAWG, credenciales IGDB/Twitch o API key de SteamGridDB, Backlog Vault sigue funcionando offline con la biblioteca local y las portadas ya guardadas.
 
-Las API keys se configuran desde Ajustes y se guardan localmente mediante `flutter_secure_storage`. No agregues claves reales a README, tests, fixtures, logs, issues ni commits.
+Las API keys y credenciales se configuran desde Ajustes y se guardan localmente mediante `flutter_secure_storage`. No agregues claves reales, Client Secret, bearer tokens ni access tokens a README, tests, fixtures, logs, issues ni commits.
+
+IGDB usa OAuth de Twitch con client credentials. El Client Secret y el access token se guardan en secure storage, no en SQLite, y no se incluyen en exports ni backups.
 
 SteamGridDB se usa solo cuando elegís buscar una portada. Backlog Vault no descarga portadas automáticamente para toda la biblioteca.
 
@@ -235,9 +252,9 @@ Desde Ajustes > Datos y backups podés:
 - exportar JSON lógico;
 - exportar CSV básico.
 
-El formato `.vaultbackup` no está cifrado. Puede contener nombres de juegos, notas personales, estados, playthroughs, external IDs, rutas relativas de media y archivos de portadas. No incluye API keys de RAWG/SteamGridDB ni valores de secure storage.
+El formato `.vaultbackup` no está cifrado. Puede contener nombres de juegos, notas personales, estados, playthroughs, external IDs, rutas relativas de media y archivos de portadas. No incluye API keys de RAWG/SteamGridDB, credenciales IGDB/Twitch, access tokens ni valores de secure storage.
 
-El formato `.vaultbackup.enc` cifra el backup completo con una password usando una librería criptográfica mantenida. La password no se guarda en la app: si la perdés, el archivo cifrado no se puede recuperar. El backup cifrado tampoco incluye API keys ni secure storage.
+El formato `.vaultbackup.enc` cifra el backup completo con una password usando una librería criptográfica mantenida. La password no se guarda en la app: si la perdés, el archivo cifrado no se puede recuperar. El backup cifrado tampoco incluye API keys, credenciales IGDB/Twitch, access tokens ni secure storage.
 
 La restauración es completa y conservadora: no hace merge avanzado ni resolución campo por campo. Antes de restaurar, la app crea automáticamente un backup previo. Los registros actuales que no existan en el backup se marcan con `deletedAt`; no se eliminan físicamente. Los archivos de media actuales no se borran durante restore.
 

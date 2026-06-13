@@ -59,6 +59,8 @@ void main() {
     expect((entities['external_game_ids'] as List), hasLength(1));
     expect(utf8.decode(bytes), isNot(contains('rawg-secret')));
     expect(utf8.decode(bytes), isNot(contains('steamgriddb-secret')));
+    expect(utf8.decode(bytes), isNot(contains('test_client_secret')));
+    expect(utf8.decode(bytes), isNot(contains('test_access_token')));
   });
 
   test('CSV exports active library rows with BOM and visible dates', () async {
