@@ -213,6 +213,18 @@ dart run build_runner build --delete-conflicting-outputs
 flutter run -d windows
 ```
 
+## Empaquetar Windows portable
+
+Generar build release y ZIP portable:
+
+```powershell
+.\tool\package_windows.ps1
+```
+
+El ZIP queda en `dist/` e incluye el contenido completo de `build/windows/x64/runner/Release`.
+
+Notas de instalacion, actualizacion y portabilidad: [docs/install_and_portability.md](docs/install_and_portability.md).
+
 ## Preparar Android
 
 Verificar entorno:
@@ -241,6 +253,16 @@ Correr en un dispositivo o emulador Android:
 ```bash
 flutter run -d android
 ```
+
+Generar APK local:
+
+```bash
+flutter build apk
+```
+
+El APK generado en E15 usa signing local/debug para instalacion personal. No es un paquete publicable en Play Store.
+
+Checklist QA manual para Windows y Android: [docs/qa_v1_checklist.md](docs/qa_v1_checklist.md).
 
 ## Tests
 

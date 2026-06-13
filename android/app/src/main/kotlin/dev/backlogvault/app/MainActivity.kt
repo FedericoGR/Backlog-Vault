@@ -1,4 +1,4 @@
-package com.example.backlog_vault
+package dev.backlogvault.app
 
 import io.flutter.embedding.android.FlutterActivity
 
