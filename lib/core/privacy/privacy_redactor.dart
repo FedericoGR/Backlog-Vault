@@ -9,6 +9,10 @@ class PrivacyRedactor {
     r'(Client-ID\s*:\s*)([^\s,;]+)',
     caseSensitive: false,
   );
+  static final _sensitiveKeyValue = RegExp(
+    r'\b(client_id|client_secret|access_token|refresh_token|api_key|apikey|token)\s*=\s*([^\s,;&]+)',
+    caseSensitive: false,
+  );
   static final _authorizationHeader = RegExp(
     r'(Authorization\s*:\s*Bearer\s+)([^\s,;]+)',
     caseSensitive: false,
@@ -37,6 +41,10 @@ class PrivacyRedactor {
     output = output.replaceAllMapped(
       _clientIdHeader,
       (match) => '${match.group(1)}[REDACTED]',
+    );
+    output = output.replaceAllMapped(
+      _sensitiveKeyValue,
+      (match) => '${match.group(1)}=[REDACTED]',
     );
     output = output.replaceAll(_bearerToken, 'Bearer [REDACTED]');
     output = output.replaceAll(_windowsAbsolutePath, '[ruta local]');

@@ -325,6 +325,11 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
             icon: const Icon(Icons.upload_file_outlined),
             label: const Text('Importar CSV'),
           ),
+          OutlinedButton.icon(
+            onPressed: () => context.go('/metadata/bulk-import'),
+            icon: const Icon(Icons.auto_fix_high_outlined),
+            label: const Text('Importar metadata'),
+          ),
           FilledButton.icon(
             onPressed: () => context.go('/games/new'),
             icon: const Icon(Icons.add),

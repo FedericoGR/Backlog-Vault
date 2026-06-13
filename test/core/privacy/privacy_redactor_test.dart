@@ -46,6 +46,23 @@ void main() {
     expect(redacted, isNot(contains('test_client_id')));
   });
 
+  test('redacts loose sensitive key value pairs', () {
+    const text =
+        'client_id=test_client_id client_secret=test_client_secret '
+        'access_token=test_access_token refresh_token=test_refresh_token';
+
+    final redacted = redactor.redact(text);
+
+    expect(redacted, contains('client_id=[REDACTED]'));
+    expect(redacted, contains('client_secret=[REDACTED]'));
+    expect(redacted, contains('access_token=[REDACTED]'));
+    expect(redacted, contains('refresh_token=[REDACTED]'));
+    expect(redacted, isNot(contains('test_client_id')));
+    expect(redacted, isNot(contains('test_client_secret')));
+    expect(redacted, isNot(contains('test_access_token')));
+    expect(redacted, isNot(contains('test_refresh_token')));
+  });
+
   test('redacts absolute paths but keeps relative media paths', () {
     final text =
         r'C:\Users\Feder\Documents\Backlog Vault\backup.vaultbackup '

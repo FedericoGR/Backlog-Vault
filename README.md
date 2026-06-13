@@ -141,6 +141,29 @@ Backlog Vault es una app personal local-first para gestionar un backlog de video
 - SteamGridDB sigue disponible; IGDB no lo reemplaza ni lo elimina.
 - No hay bulk download automático de covers.
 
+## Alcance del Entregable 13
+
+- Importación masiva de metadata y covers desde la biblioteca.
+- Botón "Importar metadata" en Biblioteca.
+- Selector de provider RAWG/IGDB y alcance:
+  - toda la biblioteca;
+  - solo juegos sin metadata;
+  - solo juegos sin portada;
+  - solo juegos con campos incompletos.
+- Scan con progreso y concurrencia limitada.
+- Cálculo de confianza de matches.
+- Solo los matches seguros quedan seleccionados por default.
+- Matches probables o ambiguos requieren revisión explícita.
+- Preview masivo antes de escribir en DB.
+- Selección por juego, por campo y por cover.
+- Aplicación confirmada con texto `APLICAR`.
+- Metadata aplicada mediante el flujo existente de diff/apply.
+- Covers faltantes guardados mediante `media_assets` y `MediaRepository`.
+- No pisa estado, puntaje personal, notas, playthroughs, horas ni completados.
+- No reemplaza covers existentes por default.
+- Errores por juego no frenan todo el lote.
+- No usa credenciales reales en tests ni fixtures.
+
 ## Fuera de alcance
 
 - Notion API.
