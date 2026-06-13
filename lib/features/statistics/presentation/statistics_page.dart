@@ -139,8 +139,14 @@ class _SummaryCards extends StatelessWidget {
         _StatCard(label: 'Juegos', value: stats.totalGames.toString()),
         _StatCard(label: 'Backlog', value: stats.backlogCount.toString()),
         _StatCard(label: 'Jugando', value: stats.playingCount.toString()),
-        _StatCard(label: 'Completados', value: stats.completedCount.toString()),
-        _StatCard(label: 'Horas', value: _formatHours(stats.totalHours)),
+        _StatCard(
+          label: 'Completados totales',
+          value: stats.completedCount.toString(),
+        ),
+        _StatCard(
+          label: 'Horas registradas',
+          value: _formatHours(stats.totalHours),
+        ),
         _StatCard(
           label: 'Rating promedio',
           value:
@@ -289,6 +295,11 @@ class _YearProgress extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(
+          'El desglose anual usa playthroughs completados con fecha. Las horas sin fecha quedan fuera del año.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
         for (final year in stats.yearlyStatistics)
           _StatBar(
             label: year.year.toString(),
@@ -416,10 +427,22 @@ class _LatestCompletedList extends StatelessWidget {
         for (final item in items)
           ListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text(item.row.title),
+            title: Text(
+              item.row.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
             subtitle: Text(formatVisibleDate(item.completedAt)),
-            trailing: Text(
-              item.hoursPlayed == null ? '-' : _formatHours(item.hoursPlayed!),
+            trailing: SizedBox(
+              width: 72,
+              child: Text(
+                item.hoursPlayed == null
+                    ? '-'
+                    : _formatHours(item.hoursPlayed!),
+                textAlign: TextAlign.end,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             onTap: () => context.go('/games/${item.row.libraryEntryId}'),
           ),

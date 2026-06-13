@@ -67,6 +67,46 @@ void main() {
     expect(stats.latestCompleted.last.completedAt, DateTime(2026, 2, 2));
   });
 
+  test('uses completed status and dated completed playthroughs distinctly', () {
+    final stats = calculator.calculate(
+      rows: [
+        ..._rows,
+        LibraryGameRow(
+          gameId: 'g6',
+          libraryEntryId: 'e6',
+          title: 'Retired Game',
+          status: GameStatus.retired,
+          type: 'game',
+          platforms: const [],
+          genres: const [],
+          playthroughCount: 1,
+          updatedAt: DateTime(2026, 6, 6),
+        ),
+      ],
+      playthroughs: [
+        ..._playthroughs,
+        StatisticsPlaythrough(
+          libraryEntryId: 'e5',
+          status: PlaythroughStatus.dropped,
+          completedAt: DateTime(2026, 5, 1),
+          hoursPlayed: 7,
+        ),
+        StatisticsPlaythrough(
+          libraryEntryId: 'e6',
+          status: PlaythroughStatus.completed,
+          hoursPlayed: 11,
+        ),
+      ],
+    );
+
+    expect(stats.completedCount, 2);
+    expect(stats.statusCounts[GameStatus.retired], 1);
+    expect(stats.completedByYear[2026], 3);
+    expect(stats.hoursByYear[2026], 60);
+    expect(stats.totalHours, 95);
+    expect(stats.qualityStats.completedWithoutDate, 1);
+  });
+
   test('handles an empty library without ugly values', () {
     final stats = calculator.calculate(rows: const [], playthroughs: const []);
 
