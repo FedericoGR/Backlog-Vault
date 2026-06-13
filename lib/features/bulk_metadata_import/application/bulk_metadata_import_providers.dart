@@ -25,3 +25,5 @@ final applyBulkMetadataPlanUseCaseProvider =
 final bulkMetadataProviderListProvider = metadataProviderListProvider;
 
 final bulkMetadataRepositoryProvider = metadataRepositoryProvider;
+
+final bulkMediaProviderListProvider = mediaProviderListProvider;

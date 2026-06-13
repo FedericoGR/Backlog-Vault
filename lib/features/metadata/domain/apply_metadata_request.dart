@@ -7,6 +7,7 @@ class ApplyMetadataRequest {
     required this.libraryEntryId,
     required this.details,
     required this.selectedFields,
+    this.replaceFields = const {},
     this.replaceExistingExternalId = false,
   });
 
@@ -14,5 +15,6 @@ class ApplyMetadataRequest {
   final String libraryEntryId;
   final ExternalGameDetails details;
   final Set<MetadataField> selectedFields;
+  final Set<MetadataField> replaceFields;
   final bool replaceExistingExternalId;
 }

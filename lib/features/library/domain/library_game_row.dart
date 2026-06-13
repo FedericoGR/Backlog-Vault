@@ -20,6 +20,7 @@ class LibraryGameRow {
     required this.updatedAt,
     this.sortTitle,
     this.selectedCoverLocalPath,
+    this.selectedCoverProvider,
     this.hasExternalMetadata = false,
     this.releaseDate,
     this.completedAt,
@@ -33,6 +34,7 @@ class LibraryGameRow {
   final String title;
   final String? sortTitle;
   final String? selectedCoverLocalPath;
+  final String? selectedCoverProvider;
   final bool hasExternalMetadata;
   final GameStatus status;
   final DateTime? releaseDate;

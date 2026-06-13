@@ -44,10 +44,51 @@ enum BulkImportIssueSeverity {
   };
 }
 
+enum BulkMetadataApplyMode {
+  completeMissing,
+  reviewAndReplace;
+
+  String get label => switch (this) {
+    BulkMetadataApplyMode.completeMissing => 'Completar faltantes',
+    BulkMetadataApplyMode.reviewAndReplace => 'Revisar y reemplazar',
+  };
+}
+
+enum BulkCoverProviderMode {
+  none,
+  igdb,
+  steamgriddb,
+  igdbThenSteamGridDb,
+  steamGridDbThenIgdb;
+
+  String get label => switch (this) {
+    BulkCoverProviderMode.none => 'No importar covers',
+    BulkCoverProviderMode.igdb => 'IGDB',
+    BulkCoverProviderMode.steamgriddb => 'SteamGridDB',
+    BulkCoverProviderMode.igdbThenSteamGridDb =>
+      'IGDB primero + SteamGridDB fallback',
+    BulkCoverProviderMode.steamGridDbThenIgdb =>
+      'SteamGridDB primero + IGDB fallback',
+  };
+}
+
+enum BulkExistingCoverMode {
+  keepExisting,
+  allowReplace;
+
+  String get label => switch (this) {
+    BulkExistingCoverMode.keepExisting => 'Mantener portadas existentes',
+    BulkExistingCoverMode.allowReplace => 'Permitir reemplazo con confirmación',
+  };
+}
+
 class BulkMetadataImportOptions {
   const BulkMetadataImportOptions({
     required this.providerId,
     this.scope = BulkMetadataImportScope.onlyIncompleteFields,
+    this.applyMode = BulkMetadataApplyMode.completeMissing,
+    this.coverProviderMode = BulkCoverProviderMode.igdb,
+    this.existingCoverMode = BulkExistingCoverMode.keepExisting,
     this.includeMetadata = true,
     this.includeMissingCovers = true,
     this.replaceExistingCovers = false,
@@ -56,10 +97,23 @@ class BulkMetadataImportOptions {
 
   final String providerId;
   final BulkMetadataImportScope scope;
+  final BulkMetadataApplyMode applyMode;
+  final BulkCoverProviderMode coverProviderMode;
+  final BulkExistingCoverMode existingCoverMode;
   final bool includeMetadata;
   final bool includeMissingCovers;
   final bool replaceExistingCovers;
   final int maxConcurrency;
+
+  bool get shouldImportCovers =>
+      includeMissingCovers && coverProviderMode != BulkCoverProviderMode.none;
+
+  bool get allowCoverReplacement =>
+      replaceExistingCovers ||
+      existingCoverMode == BulkExistingCoverMode.allowReplace;
+
+  bool get allowMetadataReplacement =>
+      applyMode == BulkMetadataApplyMode.reviewAndReplace;
 }
 
 class BulkImportIssue {
@@ -115,6 +169,7 @@ class BulkMetadataFieldPlan {
     required this.selected,
     this.canApply = true,
     this.isProtected = false,
+    this.replacesExisting = false,
   });
 
   final MetadataField field;
@@ -123,6 +178,7 @@ class BulkMetadataFieldPlan {
   final bool selected;
   final bool canApply;
   final bool isProtected;
+  final bool replacesExisting;
 
   BulkMetadataFieldPlan copyWith({bool? selected}) {
     return BulkMetadataFieldPlan(
@@ -132,6 +188,7 @@ class BulkMetadataFieldPlan {
       selected: selected ?? this.selected,
       canApply: canApply,
       isProtected: isProtected,
+      replacesExisting: replacesExisting,
     );
   }
 }
@@ -141,12 +198,16 @@ class BulkCoverPlan {
     required this.asset,
     required this.selected,
     required this.canApply,
+    this.replacesExisting = false,
+    this.currentProviderName,
     this.reason,
   });
 
   final ExternalMediaAsset? asset;
   final bool selected;
   final bool canApply;
+  final bool replacesExisting;
+  final String? currentProviderName;
   final String? reason;
 
   BulkCoverPlan copyWith({bool? selected}) {
@@ -154,6 +215,8 @@ class BulkCoverPlan {
       asset: asset,
       selected: selected ?? this.selected,
       canApply: canApply,
+      replacesExisting: replacesExisting,
+      currentProviderName: currentProviderName,
       reason: reason,
     );
   }
@@ -233,7 +296,43 @@ class BulkMetadataImportPlan {
     (sum, item) => sum + item.fieldPlans.where((plan) => plan.selected).length,
   );
 
+  int get selectedNewFieldChanges => items.fold(
+    0,
+    (sum, item) =>
+        sum +
+        item.fieldPlans
+            .where((plan) => plan.selected && !plan.replacesExisting)
+            .length,
+  );
+
+  int get selectedReplacementFieldChanges => items.fold(
+    0,
+    (sum, item) =>
+        sum +
+        item.fieldPlans
+            .where((plan) => plan.selected && plan.replacesExisting)
+            .length,
+  );
+
   int get selectedCovers => items.where((item) => item.hasSelectedCover).length;
+
+  int get selectedNewCovers =>
+      items
+          .where(
+            (item) =>
+                item.hasSelectedCover && !item.coverPlan!.replacesExisting,
+          )
+          .length;
+
+  int get selectedReplacementCovers =>
+      items
+          .where(
+            (item) => item.hasSelectedCover && item.coverPlan!.replacesExisting,
+          )
+          .length;
+
+  bool get hasReplacements =>
+      selectedReplacementFieldChanges > 0 || selectedReplacementCovers > 0;
 
   BulkMetadataImportPlan copyWith({
     List<BulkMetadataImportItem>? items,
@@ -252,8 +351,12 @@ class BulkImportResult {
     required this.processed,
     required this.metadataApplied,
     this.fieldChangesApplied = 0,
+    this.newFieldChangesApplied = 0,
+    this.replacedFieldChangesApplied = 0,
     this.externalLinksSaved = 0,
     required this.coversSaved,
+    this.newCoversSaved = 0,
+    this.replacedCoversSaved = 0,
     required this.skipped,
     this.warnings = const [],
     required this.errors,
@@ -262,8 +365,12 @@ class BulkImportResult {
   final int processed;
   final int metadataApplied;
   final int fieldChangesApplied;
+  final int newFieldChangesApplied;
+  final int replacedFieldChangesApplied;
   final int externalLinksSaved;
   final int coversSaved;
+  final int newCoversSaved;
+  final int replacedCoversSaved;
   final int skipped;
   final List<BulkImportIssue> warnings;
   final List<BulkImportIssue> errors;

@@ -10,8 +10,10 @@ class BulkMetadataDiffBuilder {
     required LibraryGameRow row,
     required ExternalGameDetails details,
     required bool includeMetadata,
+    BulkMetadataApplyMode applyMode = BulkMetadataApplyMode.completeMissing,
   }) {
     if (!includeMetadata) return const [];
+    final allowReplacement = applyMode.allowReplacement;
     final plans = <BulkMetadataFieldPlan>[];
     _addText(
       plans,
@@ -19,12 +21,14 @@ class BulkMetadataDiffBuilder {
       currentValue: row.title,
       externalValue: details.title,
       selectedByDefault: false,
+      allowReplacement: allowReplacement,
     );
     _addDate(
       plans,
       field: MetadataField.releaseDate,
       currentValue: row.releaseDate,
       externalValue: details.releaseDate,
+      allowReplacement: allowReplacement,
     );
     _addText(
       plans,
@@ -32,18 +36,21 @@ class BulkMetadataDiffBuilder {
       currentValue: row.type,
       externalValue: details.type,
       selectedByDefault: row.type.trim().isEmpty,
+      allowReplacement: allowReplacement,
     );
     _addList(
       plans,
       field: MetadataField.genres,
       currentValues: row.genres.map((genre) => genre.name),
       externalValues: details.genres,
+      allowReplacement: allowReplacement,
     );
     _addList(
       plans,
       field: MetadataField.platforms,
       currentValues: row.platforms.map((platform) => platform.name),
       externalValues: details.platforms,
+      allowReplacement: allowReplacement,
     );
     return plans;
   }
@@ -54,18 +61,23 @@ class BulkMetadataDiffBuilder {
     required String currentValue,
     required String externalValue,
     required bool selectedByDefault,
+    required bool allowReplacement,
   }) {
     final current = currentValue.trim();
     final external = externalValue.trim();
     if (external.isEmpty || current.toLowerCase() == external.toLowerCase()) {
       return;
     }
+    final hasCurrent = current.isNotEmpty;
     plans.add(
       BulkMetadataFieldPlan(
         field: field,
         currentValue: current.isEmpty ? '-' : current,
         externalValue: external,
-        selected: current.isEmpty && selectedByDefault,
+        selected: !hasCurrent && selectedByDefault,
+        canApply: !hasCurrent || allowReplacement,
+        isProtected: hasCurrent && !allowReplacement,
+        replacesExisting: hasCurrent,
       ),
     );
   }
@@ -75,16 +87,21 @@ class BulkMetadataDiffBuilder {
     required MetadataField field,
     required DateTime? currentValue,
     required DateTime? externalValue,
+    required bool allowReplacement,
   }) {
     if (externalValue == null || _sameDate(currentValue, externalValue)) {
       return;
     }
+    final hasCurrent = currentValue != null;
     plans.add(
       BulkMetadataFieldPlan(
         field: field,
         currentValue: _displayDate(currentValue),
         externalValue: _displayDate(externalValue),
-        selected: currentValue == null,
+        selected: !hasCurrent,
+        canApply: !hasCurrent || allowReplacement,
+        isProtected: hasCurrent && !allowReplacement,
+        replacesExisting: hasCurrent,
       ),
     );
   }
@@ -94,6 +111,7 @@ class BulkMetadataDiffBuilder {
     required MetadataField field,
     required Iterable<String> currentValues,
     required Iterable<String> externalValues,
+    required bool allowReplacement,
   }) {
     final current = _unique(currentValues);
     final external = _unique(externalValues);
@@ -110,12 +128,19 @@ class BulkMetadataDiffBuilder {
             )
             .toList();
     if (additions.isEmpty) return;
+    final hasCurrent = current.isNotEmpty;
     plans.add(
       BulkMetadataFieldPlan(
         field: field,
         currentValue: current.isEmpty ? '-' : current.join(', '),
-        externalValue: additions.join(', '),
-        selected: current.isEmpty,
+        externalValue:
+            hasCurrent && allowReplacement
+                ? external.join(', ')
+                : additions.join(', '),
+        selected: !hasCurrent,
+        canApply: !hasCurrent || allowReplacement,
+        isProtected: hasCurrent && !allowReplacement,
+        replacesExisting: hasCurrent && allowReplacement,
       ),
     );
   }
@@ -147,4 +172,8 @@ class BulkMetadataDiffBuilder {
     final month = value.month.toString().padLeft(2, '0');
     return '$day-$month-${value.year}';
   }
+}
+
+extension on BulkMetadataApplyMode {
+  bool get allowReplacement => this == BulkMetadataApplyMode.reviewAndReplace;
 }

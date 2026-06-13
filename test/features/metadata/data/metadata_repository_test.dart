@@ -198,6 +198,43 @@ void main() {
       expect(playthrough.status, PlaythroughStatus.active.name);
     },
   );
+
+  test(
+    'replace fields soft-deletes old catalog links and keeps personal data',
+    () async {
+      await repository.applyMetadata(
+        ApplyMetadataRequest(
+          gameId: 'game-1',
+          libraryEntryId: 'entry-1',
+          details: _details(),
+          selectedFields: const {MetadataField.genres, MetadataField.platforms},
+          replaceFields: const {MetadataField.genres, MetadataField.platforms},
+        ),
+      );
+
+      final entry = await db.select(db.libraryEntries).getSingle();
+      final activePlatformLinks =
+          await ((db.select(db.libraryEntryPlatforms)
+            ..where((table) => table.deletedAt.isNull())).get());
+      final deletedPlatformLinks =
+          await ((db.select(db.libraryEntryPlatforms)
+            ..where((table) => table.deletedAt.isNotNull())).get());
+      final activeGenreLinks =
+          await ((db.select(db.gameGenres)
+            ..where((table) => table.deletedAt.isNull())).get());
+      final deletedGenreLinks =
+          await ((db.select(db.gameGenres)
+            ..where((table) => table.deletedAt.isNotNull())).get());
+
+      expect(entry.status, GameStatus.playing.name);
+      expect(entry.personalRating, 4);
+      expect(entry.personalNotes, 'Manual note');
+      expect(activePlatformLinks, hasLength(2));
+      expect(deletedPlatformLinks, hasLength(1));
+      expect(activeGenreLinks, hasLength(2));
+      expect(deletedGenreLinks, hasLength(1));
+    },
+  );
 }
 
 final _now = DateTime(2026, 6, 10);

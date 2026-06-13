@@ -5,6 +5,7 @@ import '../../../core/privacy/privacy_redactor.dart';
 import '../../library/data/library_query_repository.dart';
 import '../../library/domain/library_game_row.dart';
 import '../../metadata/domain/metadata_provider.dart';
+import '../application/bulk_cover_plan_resolver.dart';
 import '../application/bulk_metadata_import_providers.dart';
 import '../domain/bulk_metadata_import_models.dart';
 
@@ -40,9 +41,10 @@ class _BulkMetadataImportPageState
     extends ConsumerState<BulkMetadataImportPage> {
   String _providerId = 'igdb';
   BulkMetadataImportScope _scope = BulkMetadataImportScope.onlyIncompleteFields;
+  BulkMetadataApplyMode _applyMode = BulkMetadataApplyMode.completeMissing;
+  BulkCoverProviderMode _coverProviderMode = BulkCoverProviderMode.igdb;
+  BulkExistingCoverMode _existingCoverMode = BulkExistingCoverMode.keepExisting;
   bool _includeMetadata = true;
-  bool _includeCovers = true;
-  bool _replaceCovers = false;
   bool _scanning = false;
   bool _applying = false;
   bool _cancelRequested = false;
@@ -71,19 +73,22 @@ class _BulkMetadataImportPageState
                   providers: providers,
                   selectedProviderId: selectedProvider.providerId,
                   scope: _scope,
+                  applyMode: _applyMode,
+                  coverProviderMode: _coverProviderMode,
+                  existingCoverMode: _existingCoverMode,
                   includeMetadata: _includeMetadata,
-                  includeCovers: _includeCovers,
-                  replaceCovers: _replaceCovers,
                   busy: _scanning || _applying,
                   onProviderChanged:
                       (value) => setState(() => _providerId = value),
                   onScopeChanged: (value) => setState(() => _scope = value),
+                  onApplyModeChanged:
+                      (value) => setState(() => _applyMode = value),
+                  onCoverProviderModeChanged:
+                      (value) => setState(() => _coverProviderMode = value),
+                  onExistingCoverModeChanged:
+                      (value) => setState(() => _existingCoverMode = value),
                   onIncludeMetadataChanged:
                       (value) => setState(() => _includeMetadata = value),
-                  onIncludeCoversChanged:
-                      (value) => setState(() => _includeCovers = value),
-                  onReplaceCoversChanged:
-                      (value) => setState(() => _replaceCovers = value),
                   onScan: () => _scan(libraryRows, selectedProvider),
                 ),
                 if (_scanning) ...[
@@ -151,9 +156,13 @@ class _BulkMetadataImportPageState
     final options = BulkMetadataImportOptions(
       providerId: provider.providerId,
       scope: _scope,
+      applyMode: _applyMode,
+      coverProviderMode: _coverProviderMode,
+      existingCoverMode: _existingCoverMode,
       includeMetadata: _includeMetadata,
-      includeMissingCovers: _includeCovers,
-      replaceExistingCovers: _replaceCovers,
+      includeMissingCovers: _coverProviderMode != BulkCoverProviderMode.none,
+      replaceExistingCovers:
+          _existingCoverMode == BulkExistingCoverMode.allowReplace,
       maxConcurrency: 2,
     );
 
@@ -166,6 +175,10 @@ class _BulkMetadataImportPageState
             options: options,
             loadExternalIds:
                 ref.read(bulkMetadataRepositoryProvider).externalIdsForGame,
+            resolveCoverPlan:
+                BulkCoverPlanResolver(
+                  mediaProviders: ref.read(bulkMediaProviderListProvider),
+                ).call,
             onProgress: ({required processed, required total, title}) {
               if (!mounted) return;
               setState(() {
@@ -212,6 +225,10 @@ class _BulkMetadataImportPageState
             candidates: item.candidates,
             loadExternalIds:
                 ref.read(bulkMetadataRepositoryProvider).externalIdsForGame,
+            resolveCoverPlan:
+                BulkCoverPlanResolver(
+                  mediaProviders: ref.read(bulkMediaProviderListProvider),
+                ).call,
           );
       final nextItem =
           rebuilt.hasErrorIssue ? rebuilt : rebuilt.copyWith(included: true);
@@ -253,6 +270,9 @@ class _BulkMetadataImportPageState
 
   Future<bool> _confirmApply() async {
     final controller = TextEditingController();
+    final plan = _plan;
+    final requiredText =
+        plan?.hasReplacements == true ? 'REEMPLAZAR' : 'APLICAR';
     final result = await showDialog<bool>(
       context: context,
       builder:
@@ -265,8 +285,20 @@ class _BulkMetadataImportPageState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Se aplicarán solo los juegos y campos seleccionados. Escribí APLICAR para confirmar.',
+                        'Se aplicarán solo los juegos, campos y covers seleccionados.',
                       ),
+                      if (plan != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Juegos: ${plan.selectedItems}\n'
+                          'Campos nuevos: ${plan.selectedNewFieldChanges}\n'
+                          'Campos reemplazados: ${plan.selectedReplacementFieldChanges}\n'
+                          'Covers nuevos: ${plan.selectedNewCovers}\n'
+                          'Covers reemplazados: ${plan.selectedReplacementCovers}',
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      Text('Escribí $requiredText para confirmar.'),
                       const SizedBox(height: 12),
                       TextField(
                         controller: controller,
@@ -284,10 +316,12 @@ class _BulkMetadataImportPageState
                     ),
                     FilledButton(
                       onPressed:
-                          controller.text.trim().toUpperCase() == 'APLICAR'
+                          controller.text.trim().toUpperCase() == requiredText
                               ? () => Navigator.pop(context, true)
                               : null,
-                      child: const Text('Aplicar'),
+                      child: Text(
+                        requiredText == 'REEMPLAZAR' ? 'Reemplazar' : 'Aplicar',
+                      ),
                     ),
                   ],
                 ),
@@ -351,30 +385,34 @@ class _OptionsCard extends StatelessWidget {
     required this.providers,
     required this.selectedProviderId,
     required this.scope,
+    required this.applyMode,
+    required this.coverProviderMode,
+    required this.existingCoverMode,
     required this.includeMetadata,
-    required this.includeCovers,
-    required this.replaceCovers,
     required this.busy,
     required this.onProviderChanged,
     required this.onScopeChanged,
+    required this.onApplyModeChanged,
+    required this.onCoverProviderModeChanged,
+    required this.onExistingCoverModeChanged,
     required this.onIncludeMetadataChanged,
-    required this.onIncludeCoversChanged,
-    required this.onReplaceCoversChanged,
     required this.onScan,
   });
 
   final List<MetadataProvider> providers;
   final String selectedProviderId;
   final BulkMetadataImportScope scope;
+  final BulkMetadataApplyMode applyMode;
+  final BulkCoverProviderMode coverProviderMode;
+  final BulkExistingCoverMode existingCoverMode;
   final bool includeMetadata;
-  final bool includeCovers;
-  final bool replaceCovers;
   final bool busy;
   final ValueChanged<String> onProviderChanged;
   final ValueChanged<BulkMetadataImportScope> onScopeChanged;
+  final ValueChanged<BulkMetadataApplyMode> onApplyModeChanged;
+  final ValueChanged<BulkCoverProviderMode> onCoverProviderModeChanged;
+  final ValueChanged<BulkExistingCoverMode> onExistingCoverModeChanged;
   final ValueChanged<bool> onIncludeMetadataChanged;
-  final ValueChanged<bool> onIncludeCoversChanged;
-  final ValueChanged<bool> onReplaceCoversChanged;
   final VoidCallback onScan;
 
   @override
@@ -431,6 +469,76 @@ class _OptionsCard extends StatelessWidget {
                             },
                   ),
                 ),
+                SizedBox(
+                  width: 280,
+                  child: DropdownButtonFormField<BulkMetadataApplyMode>(
+                    initialValue: applyMode,
+                    decoration: const InputDecoration(
+                      labelText: 'Modo metadata',
+                    ),
+                    items: [
+                      for (final value in BulkMetadataApplyMode.values)
+                        DropdownMenuItem(
+                          value: value,
+                          child: Text(value.label),
+                        ),
+                    ],
+                    onChanged:
+                        busy
+                            ? null
+                            : (value) {
+                              if (value != null) onApplyModeChanged(value);
+                            },
+                  ),
+                ),
+                SizedBox(
+                  width: 320,
+                  child: DropdownButtonFormField<BulkCoverProviderMode>(
+                    initialValue: coverProviderMode,
+                    decoration: const InputDecoration(
+                      labelText: 'Fuente de portada',
+                    ),
+                    items: [
+                      for (final value in BulkCoverProviderMode.values)
+                        DropdownMenuItem(
+                          value: value,
+                          child: Text(value.label),
+                        ),
+                    ],
+                    onChanged:
+                        busy
+                            ? null
+                            : (value) {
+                              if (value != null) {
+                                onCoverProviderModeChanged(value);
+                              }
+                            },
+                  ),
+                ),
+                SizedBox(
+                  width: 320,
+                  child: DropdownButtonFormField<BulkExistingCoverMode>(
+                    initialValue: existingCoverMode,
+                    decoration: const InputDecoration(
+                      labelText: 'Portadas existentes',
+                    ),
+                    items: [
+                      for (final value in BulkExistingCoverMode.values)
+                        DropdownMenuItem(
+                          value: value,
+                          child: Text(value.label),
+                        ),
+                    ],
+                    onChanged:
+                        busy
+                            ? null
+                            : (value) {
+                              if (value != null) {
+                                onExistingCoverModeChanged(value);
+                              }
+                            },
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -442,16 +550,6 @@ class _OptionsCard extends StatelessWidget {
                   label: const Text('Metadata'),
                   selected: includeMetadata,
                   onSelected: busy ? null : onIncludeMetadataChanged,
-                ),
-                FilterChip(
-                  label: const Text('Covers faltantes'),
-                  selected: includeCovers,
-                  onSelected: busy ? null : onIncludeCoversChanged,
-                ),
-                FilterChip(
-                  label: const Text('Reemplazar covers existentes'),
-                  selected: replaceCovers,
-                  onSelected: busy ? null : onReplaceCoversChanged,
                 ),
               ],
             ),
@@ -560,8 +658,19 @@ class _PreviewCard extends StatelessWidget {
               children: [
                 _statChip('Analizados', plan.items.length.toString()),
                 _statChip('Seleccionados', plan.selectedItems.toString()),
-                _statChip('Campos', plan.selectedFieldChanges.toString()),
-                _statChip('Covers', plan.selectedCovers.toString()),
+                _statChip(
+                  'Campos nuevos',
+                  plan.selectedNewFieldChanges.toString(),
+                ),
+                _statChip(
+                  'Campos reemplazados',
+                  plan.selectedReplacementFieldChanges.toString(),
+                ),
+                _statChip('Covers nuevos', plan.selectedNewCovers.toString()),
+                _statChip(
+                  'Covers reemplazados',
+                  plan.selectedReplacementCovers.toString(),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -651,7 +760,7 @@ class _PreviewItemTile extends StatelessWidget {
           item.confidence.label,
           if (best != null) best.candidate.title,
           if (item.issues.isNotEmpty)
-            item.issues.map((issue) => issue.message).join(' · '),
+            item.issues.map((issue) => issue.displayMessage).join(' · '),
         ].join(' · '),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
@@ -698,7 +807,17 @@ class _PreviewItemTile extends StatelessWidget {
                                 !item.fieldPlans[index].isProtected
                             ? (value) => onFieldChanged(index, value ?? false)
                             : null,
-                    title: Text(item.fieldPlans[index].field.label),
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(item.fieldPlans[index].field.label),
+                        ),
+                        if (item.fieldPlans[index].replacesExisting)
+                          const _Badge(label: 'reemplaza'),
+                        if (item.fieldPlans[index].isProtected)
+                          const _Badge(label: 'protegido'),
+                      ],
+                    ),
                     subtitle: Text(
                       'Actual: ${item.fieldPlans[index].currentValue}\nExterno: ${item.fieldPlans[index].externalValue}',
                     ),
@@ -717,7 +836,11 @@ class _PreviewItemTile extends StatelessWidget {
                   title: const Text('Guardar portada'),
                   subtitle: Text(
                     item.coverPlan!.canApply
-                        ? item.coverPlan!.asset!.providerName
+                        ? [
+                          item.coverPlan!.asset!.providerName,
+                          if (item.coverPlan!.replacesExisting)
+                            'reemplaza ${item.coverPlan!.currentProviderName ?? 'portada actual'}',
+                        ].join(' · ')
                         : item.coverPlan!.reason ?? 'No disponible',
                   ),
                 ),
@@ -750,7 +873,11 @@ class _ConfirmCard extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                '${plan.selectedItems} juegos seleccionados, ${plan.selectedFieldChanges} campos y ${plan.selectedCovers} covers.',
+                '${plan.selectedItems} juegos · '
+                '${plan.selectedNewFieldChanges} campos nuevos · '
+                '${plan.selectedReplacementFieldChanges} reemplazos · '
+                '${plan.selectedNewCovers} covers nuevos · '
+                '${plan.selectedReplacementCovers} covers reemplazados.',
               ),
             ),
             FilledButton.icon(
@@ -766,6 +893,34 @@ class _ConfirmCard extends StatelessWidget {
               label: const Text('Aplicar cambios'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  const _Badge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.secondaryContainer,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSecondaryContainer,
+            ),
+          ),
         ),
       ),
     );
@@ -792,9 +947,20 @@ class _ResultCard extends StatelessWidget {
               runSpacing: 8,
               children: [
                 _chip('Procesados', result.processed.toString()),
-                _chip('Metadata', result.fieldChangesApplied.toString()),
+                _chip(
+                  'Metadata nueva',
+                  result.newFieldChangesApplied.toString(),
+                ),
+                _chip(
+                  'Metadata reemplazada',
+                  result.replacedFieldChangesApplied.toString(),
+                ),
                 _chip('Vínculos', result.externalLinksSaved.toString()),
-                _chip('Covers', result.coversSaved.toString()),
+                _chip('Covers nuevos', result.newCoversSaved.toString()),
+                _chip(
+                  'Covers reemplazados',
+                  result.replacedCoversSaved.toString(),
+                ),
                 _chip('Omitidos', result.skipped.toString()),
                 _chip('Warnings', result.warnings.length.toString()),
                 _chip('Errores', result.errors.length.toString()),

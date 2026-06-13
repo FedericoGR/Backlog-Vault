@@ -89,10 +89,16 @@ class MetadataRepository {
         touchedGame = true;
       }
       if (request.selectedFields.contains(MetadataField.genres)) {
+        if (request.replaceFields.contains(MetadataField.genres)) {
+          await _softDeleteGameGenres(request.gameId, now);
+        }
         await _addGenres(request.gameId, request.details.genres, now);
         touchedGame = true;
       }
       if (request.selectedFields.contains(MetadataField.platforms)) {
+        if (request.replaceFields.contains(MetadataField.platforms)) {
+          await _softDeleteLibraryEntryPlatforms(request.libraryEntryId, now);
+        }
         await _addPlatforms(
           request.libraryEntryId,
           request.details.platforms,
@@ -204,6 +210,15 @@ class MetadataRepository {
     }
   }
 
+  Future<void> _softDeleteGameGenres(String gameId, DateTime now) async {
+    await (_db.update(_db.gameGenres)
+          ..where((table) => table.gameId.equals(gameId))
+          ..where((table) => table.deletedAt.isNull()))
+        .write(
+          GameGenresCompanion(updatedAt: Value(now), deletedAt: Value(now)),
+        );
+  }
+
   Future<void> _addPlatforms(
     String libraryEntryId,
     List<String> platformNames,
@@ -240,6 +255,21 @@ class MetadataRepository {
           );
       insertedCount++;
     }
+  }
+
+  Future<void> _softDeleteLibraryEntryPlatforms(
+    String libraryEntryId,
+    DateTime now,
+  ) async {
+    await (_db.update(_db.libraryEntryPlatforms)
+          ..where((table) => table.libraryEntryId.equals(libraryEntryId))
+          ..where((table) => table.deletedAt.isNull()))
+        .write(
+          LibraryEntryPlatformsCompanion(
+            updatedAt: Value(now),
+            deletedAt: Value(now),
+          ),
+        );
   }
 
   Future<String?> _getOrCreateGenre(String name, DateTime now) async {

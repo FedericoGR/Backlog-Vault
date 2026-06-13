@@ -18,6 +18,13 @@ typedef BulkCancelCheck = bool Function();
 typedef BulkExternalIdsLoader =
     Future<List<ExternalGameId>> Function(String gameId);
 
+typedef BulkCoverPlanResolve =
+    Future<BulkCoverPlan?> Function({
+      required LibraryGameRow row,
+      required ExternalGameDetails details,
+      required BulkMetadataImportOptions options,
+    });
+
 class BuildBulkMetadataPlanUseCase {
   const BuildBulkMetadataPlanUseCase({
     this.scopeFilter = const BulkImportScopeFilter(),
@@ -34,6 +41,7 @@ class BuildBulkMetadataPlanUseCase {
     required MetadataProvider provider,
     required BulkMetadataImportOptions options,
     BulkExternalIdsLoader? loadExternalIds,
+    BulkCoverPlanResolve? resolveCoverPlan,
     BulkPlanProgress? onProgress,
     BulkCancelCheck? isCancelled,
   }) async {
@@ -53,6 +61,7 @@ class BuildBulkMetadataPlanUseCase {
             provider: provider,
             options: options,
             loadExternalIds: loadExternalIds,
+            resolveCoverPlan: resolveCoverPlan,
           ),
         ),
       );
@@ -75,6 +84,7 @@ class BuildBulkMetadataPlanUseCase {
     required MetadataProvider provider,
     required BulkMetadataImportOptions options,
     required BulkExternalIdsLoader? loadExternalIds,
+    required BulkCoverPlanResolve? resolveCoverPlan,
   }) async {
     try {
       final externalIds =
@@ -129,6 +139,7 @@ class BuildBulkMetadataPlanUseCase {
         selectedCandidate: best,
         candidates: scored,
         externalIds: externalIds,
+        resolveCoverPlan: resolveCoverPlan,
       );
     } catch (error) {
       return BulkMetadataImportItem(
@@ -151,6 +162,7 @@ class BuildBulkMetadataPlanUseCase {
     required BulkMetadataCandidate selectedCandidate,
     required List<BulkMetadataCandidate> candidates,
     BulkExternalIdsLoader? loadExternalIds,
+    BulkCoverPlanResolve? resolveCoverPlan,
     List<ExternalGameId>? externalIds,
   }) async {
     try {
@@ -172,10 +184,15 @@ class BuildBulkMetadataPlanUseCase {
           existingForProvider.externalId != details.externalId;
       if (hasDifferentExternalId) {
         issues.add(
-          const BulkImportIssue(
+          BulkImportIssue(
             message:
-                'Este juego ya tiene otro match externo para el proveedor. No se reemplaza en importación masiva.',
-            severity: BulkImportIssueSeverity.error,
+                options.allowMetadataReplacement
+                    ? 'Este juego ya tiene otro match externo para el proveedor. Se reemplaza solo si incluís este juego y confirmás REEMPLAZAR.'
+                    : 'Este juego ya tiene otro match externo para el proveedor. Cambiá a Revisar y reemplazar para permitir el reemplazo.',
+            severity:
+                options.allowMetadataReplacement
+                    ? BulkImportIssueSeverity.warning
+                    : BulkImportIssueSeverity.error,
           ),
         );
       }
@@ -184,12 +201,16 @@ class BuildBulkMetadataPlanUseCase {
         row: row,
         details: details,
         includeMetadata: options.includeMetadata,
+        applyMode: options.applyMode,
       );
-      final coverPlan = _coverPlan(
-        row: row,
-        details: details,
-        options: options,
-      );
+      final coverPlan =
+          resolveCoverPlan == null
+              ? await _coverPlan(row: row, details: details, options: options)
+              : await resolveCoverPlan(
+                row: row,
+                details: details,
+                options: options,
+              );
       final selectedByDefault =
           !hasDifferentExternalId &&
           selectedCandidate.confidence == BulkMetadataConfidence.safe &&
@@ -231,13 +252,13 @@ class BuildBulkMetadataPlanUseCase {
     return null;
   }
 
-  BulkCoverPlan? _coverPlan({
+  Future<BulkCoverPlan?> _coverPlan({
     required LibraryGameRow row,
     required ExternalGameDetails details,
     required BulkMetadataImportOptions options,
-  }) {
-    if (!options.includeMissingCovers) return null;
-    if (row.selectedCoverLocalPath != null && !options.replaceExistingCovers) {
+  }) async {
+    if (!options.shouldImportCovers) return null;
+    if (row.selectedCoverLocalPath != null && !options.allowCoverReplacement) {
       return const BulkCoverPlan(
         asset: null,
         selected: false,
@@ -267,9 +288,10 @@ class BuildBulkMetadataPlanUseCase {
         height: cover.height,
         attribution: details.providerName,
       ),
-      selected:
-          row.selectedCoverLocalPath == null || options.replaceExistingCovers,
+      selected: row.selectedCoverLocalPath == null,
       canApply: true,
+      replacesExisting: row.selectedCoverLocalPath != null,
+      currentProviderName: row.selectedCoverProvider,
     );
   }
 

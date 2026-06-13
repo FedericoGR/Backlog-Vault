@@ -1,13 +1,17 @@
 import 'package:backlog_vault/core/database/app_database.dart';
 import 'package:backlog_vault/features/bulk_metadata_import/application/apply_bulk_metadata_plan_use_case.dart';
 import 'package:backlog_vault/features/bulk_metadata_import/application/build_bulk_metadata_plan_use_case.dart';
+import 'package:backlog_vault/features/bulk_metadata_import/application/bulk_cover_plan_resolver.dart';
 import 'package:backlog_vault/features/bulk_metadata_import/application/bulk_import_scope_filter.dart';
 import 'package:backlog_vault/features/bulk_metadata_import/application/bulk_match_scorer.dart';
 import 'package:backlog_vault/features/bulk_metadata_import/domain/bulk_metadata_import_models.dart';
 import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/library/domain/library_game_row.dart';
 import 'package:backlog_vault/features/media/domain/media_asset_models.dart';
+import 'package:backlog_vault/features/media/domain/media_exception.dart';
+import 'package:backlog_vault/features/media/domain/media_provider.dart';
 import 'package:backlog_vault/features/metadata/data/metadata_repository.dart';
+import 'package:backlog_vault/features/metadata/domain/apply_metadata_request.dart';
 import 'package:backlog_vault/features/metadata/domain/external_game_details.dart';
 import 'package:backlog_vault/features/metadata/domain/metadata_exception.dart';
 import 'package:backlog_vault/features/metadata/domain/metadata_field.dart';
@@ -308,7 +312,106 @@ void main() {
       );
 
       expect(plan.items.single.coverPlan?.canApply, isTrue);
-      expect(plan.items.single.coverPlan?.selected, isTrue);
+      expect(plan.items.single.coverPlan?.selected, isFalse);
+      expect(plan.items.single.coverPlan?.replacesExisting, isTrue);
+    });
+
+    test(
+      'complete missing mode protects existing fields from replacement',
+      () async {
+        final provider = _FakeMetadataProvider(
+          candidates: {
+            'Hades': const [
+              MetadataSearchCandidate(
+                providerId: 'igdb',
+                providerName: 'IGDB',
+                externalId: '1',
+                title: 'Hades',
+              ),
+            ],
+          },
+          details: {'1': _details(title: 'Hades Remastered')},
+        );
+
+        final plan = await const BuildBulkMetadataPlanUseCase().call(
+          rows: [
+            _row(
+              title: 'Hades',
+              releaseDate: DateTime(2018),
+              platforms: const [LibraryCatalogItem(id: 'pc', name: 'PC')],
+              genres: const [LibraryCatalogItem(id: 'action', name: 'Action')],
+            ),
+          ],
+          provider: provider,
+          options: const BulkMetadataImportOptions(providerId: 'igdb'),
+        );
+
+        final item = plan.items.single;
+        final title = item.fieldPlans.singleWhere(
+          (plan) => plan.field == MetadataField.title,
+        );
+        final releaseDate = item.fieldPlans.singleWhere(
+          (plan) => plan.field == MetadataField.releaseDate,
+        );
+        final genres = item.fieldPlans.singleWhere(
+          (plan) => plan.field == MetadataField.genres,
+        );
+
+        expect(title.selected, isFalse);
+        expect(title.isProtected, isTrue);
+        expect(releaseDate.selected, isFalse);
+        expect(releaseDate.isProtected, isTrue);
+        expect(genres.selected, isFalse);
+        expect(genres.isProtected, isTrue);
+      },
+    );
+
+    test('review and replace mode allows selecting existing fields', () async {
+      final provider = _FakeMetadataProvider(
+        candidates: {
+          'Hades': const [
+            MetadataSearchCandidate(
+              providerId: 'igdb',
+              providerName: 'IGDB',
+              externalId: '1',
+              title: 'Hades',
+            ),
+          ],
+        },
+        details: {'1': _details(title: 'Hades Remastered')},
+      );
+
+      final plan = await const BuildBulkMetadataPlanUseCase().call(
+        rows: [
+          _row(
+            title: 'Hades',
+            releaseDate: DateTime(2018),
+            platforms: const [LibraryCatalogItem(id: 'pc', name: 'PC')],
+            genres: const [LibraryCatalogItem(id: 'action', name: 'Action')],
+          ),
+        ],
+        provider: provider,
+        options: const BulkMetadataImportOptions(
+          providerId: 'igdb',
+          applyMode: BulkMetadataApplyMode.reviewAndReplace,
+        ),
+      );
+
+      final item = plan.items.single;
+      final title = item.fieldPlans.singleWhere(
+        (plan) => plan.field == MetadataField.title,
+      );
+      final genres = item.fieldPlans.singleWhere(
+        (plan) => plan.field == MetadataField.genres,
+      );
+
+      expect(title.selected, isFalse);
+      expect(title.canApply, isTrue);
+      expect(title.replacesExisting, isTrue);
+      expect(genres.selected, isFalse);
+      expect(genres.canApply, isTrue);
+      expect(genres.externalValue, contains('Role-playing'));
+      expect(genres.replacesExisting, isTrue);
     });
 
     test(
@@ -408,6 +511,40 @@ void main() {
       expect(item.issues.single.message, contains('otro match externo'));
     });
 
+    test(
+      'different external id can be reviewed and explicitly included',
+      () async {
+        final provider = _FakeMetadataProvider(
+          candidates: {
+            'Hades': const [
+              MetadataSearchCandidate(
+                providerId: 'igdb',
+                providerName: 'IGDB',
+                externalId: '1',
+                title: 'Hades',
+              ),
+            ],
+          },
+          details: {'1': _details()},
+        );
+
+        final plan = await const BuildBulkMetadataPlanUseCase().call(
+          rows: [_row(title: 'Hades')],
+          provider: provider,
+          options: const BulkMetadataImportOptions(
+            providerId: 'igdb',
+            applyMode: BulkMetadataApplyMode.reviewAndReplace,
+          ),
+          loadExternalIds: (_) async => [_externalId('different')],
+        );
+
+        final item = plan.items.single;
+        expect(item.included, isFalse);
+        expect(item.hasErrorIssue, isFalse);
+        expect(item.issues.single.severity, BulkImportIssueSeverity.warning);
+      },
+    );
+
     test('provider errors are reported per item with secrets redacted', () async {
       final provider = _FakeMetadataProvider(
         searchError: const MetadataException(
@@ -427,6 +564,144 @@ void main() {
       expect(message, isNot(contains('test_access_token')));
       expect(message, isNot(contains('test_client_secret')));
     });
+
+    test('plans SteamGridDB cover when selected as cover provider', () async {
+      final provider = _FakeMetadataProvider(
+        candidates: {
+          'Hades': const [
+            MetadataSearchCandidate(
+              providerId: 'igdb',
+              providerName: 'IGDB',
+              externalId: '1',
+              title: 'Hades',
+            ),
+          ],
+        },
+        details: {'1': _details()},
+      );
+      final resolver = BulkCoverPlanResolver(
+        mediaProviders: [
+          _FakeMediaProvider(
+            providerId: 'steamgriddb',
+            providerName: 'SteamGridDB',
+            candidates: const [
+              MediaSearchCandidate(
+                providerId: 'steamgriddb',
+                providerName: 'SteamGridDB',
+                externalId: 'sgdb-game',
+                title: 'Hades',
+              ),
+            ],
+            assets: [_steamCoverAsset()],
+          ),
+        ],
+      );
+
+      final plan = await const BuildBulkMetadataPlanUseCase().call(
+        rows: [_row(title: 'Hades')],
+        provider: provider,
+        options: const BulkMetadataImportOptions(
+          providerId: 'igdb',
+          coverProviderMode: BulkCoverProviderMode.steamgriddb,
+        ),
+        resolveCoverPlan: resolver.call,
+      );
+
+      expect(plan.items.single.coverPlan?.asset?.providerId, 'steamgriddb');
+      expect(plan.items.single.coverPlan?.selected, isTrue);
+    });
+
+    test(
+      'IGDB first fallback uses SteamGridDB when IGDB has no cover',
+      () async {
+        final provider = _FakeMetadataProvider(
+          candidates: {
+            'Hades': const [
+              MetadataSearchCandidate(
+                providerId: 'igdb',
+                providerName: 'IGDB',
+                externalId: '1',
+                title: 'Hades',
+              ),
+            ],
+          },
+          details: {'1': _detailsWithoutCover()},
+        );
+        final resolver = BulkCoverPlanResolver(
+          mediaProviders: [
+            _FakeMediaProvider(
+              providerId: 'steamgriddb',
+              providerName: 'SteamGridDB',
+              candidates: const [
+                MediaSearchCandidate(
+                  providerId: 'steamgriddb',
+                  providerName: 'SteamGridDB',
+                  externalId: 'sgdb-game',
+                  title: 'Hades',
+                ),
+              ],
+              assets: [_steamCoverAsset()],
+            ),
+          ],
+        );
+
+        final plan = await const BuildBulkMetadataPlanUseCase().call(
+          rows: [_row(title: 'Hades')],
+          provider: provider,
+          options: const BulkMetadataImportOptions(
+            providerId: 'igdb',
+            coverProviderMode: BulkCoverProviderMode.igdbThenSteamGridDb,
+          ),
+          resolveCoverPlan: resolver.call,
+        );
+
+        expect(plan.items.single.coverPlan?.asset?.providerId, 'steamgriddb');
+      },
+    );
+
+    test(
+      'SteamGridDB credential errors become controlled cover reason',
+      () async {
+        final provider = _FakeMetadataProvider(
+          candidates: {
+            'Hades': const [
+              MetadataSearchCandidate(
+                providerId: 'igdb',
+                providerName: 'IGDB',
+                externalId: '1',
+                title: 'Hades',
+              ),
+            ],
+          },
+          details: {'1': _details()},
+        );
+        final resolver = BulkCoverPlanResolver(
+          mediaProviders: const [
+            _FakeMediaProvider(
+              providerId: 'steamgriddb',
+              providerName: 'SteamGridDB',
+              error: MediaException(
+                'Configurá una API key de SteamGridDB antes de buscar portadas.',
+                type: MediaErrorType.missingApiKey,
+              ),
+            ),
+          ],
+        );
+
+        final plan = await const BuildBulkMetadataPlanUseCase().call(
+          rows: [_row(title: 'Hades')],
+          provider: provider,
+          options: const BulkMetadataImportOptions(
+            providerId: 'igdb',
+            coverProviderMode: BulkCoverProviderMode.steamgriddb,
+          ),
+          resolveCoverPlan: resolver.call,
+        );
+
+        expect(plan.items.single.coverPlan?.canApply, isFalse);
+        expect(plan.items.single.coverPlan?.reason, contains('SteamGridDB'));
+      },
+    );
   });
 
   group('ApplyBulkMetadataPlanUseCase', () {
@@ -495,8 +770,12 @@ void main() {
 
         expect(result.metadataApplied, 1);
         expect(result.fieldChangesApplied, 1);
+        expect(result.newFieldChangesApplied, 1);
+        expect(result.replacedFieldChangesApplied, 0);
         expect(result.externalLinksSaved, 1);
         expect(result.coversSaved, 1);
+        expect(result.newCoversSaved, 1);
+        expect(result.replacedCoversSaved, 0);
         expect(savedCovers.single.providerId, 'igdb');
         expect(game.releaseDate, DateTime(2020, 9, 17));
         expect(game.title, 'Hades');
@@ -666,6 +945,47 @@ void main() {
         expect(result.fieldChangesApplied, 0);
         expect(result.externalLinksSaved, 1);
         expect(result.coversSaved, 1);
+        expect(result.newCoversSaved, 1);
+        expect(result.replacedCoversSaved, 0);
+      },
+    );
+
+    test(
+      'passes replacement fields and external id confirmation to applier',
+      () async {
+        ApplyMetadataRequest? captured;
+        final useCase = ApplyBulkMetadataPlanUseCase(
+          applyMetadata: (request) async {
+            captured = request;
+          },
+          saveCover: ({required gameId, required asset}) async {},
+        );
+
+        final result = await useCase.call(
+          BulkMetadataImportPlan(
+            options: const BulkMetadataImportOptions(
+              providerId: 'igdb',
+              applyMode: BulkMetadataApplyMode.reviewAndReplace,
+            ),
+            items: [
+              _applyItem('game-ok', 'entry-ok').copyWith(
+                fieldPlans: const [
+                  BulkMetadataFieldPlan(
+                    field: MetadataField.title,
+                    currentValue: 'Old',
+                    externalValue: 'New',
+                    selected: true,
+                    replacesExisting: true,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+
+        expect(captured?.replaceExistingExternalId, isTrue);
+        expect(captured?.replaceFields, contains(MetadataField.title));
+        expect(result.replacedFieldChangesApplied, 1);
       },
     );
   });
@@ -680,12 +1000,14 @@ LibraryGameRow _row({
   DateTime? releaseDate,
   List<LibraryCatalogItem> platforms = const [],
   List<LibraryCatalogItem> genres = const [],
+  String? selectedCoverProvider,
 }) {
   return LibraryGameRow(
     gameId: gameId,
     libraryEntryId: libraryEntryId,
     title: title,
     selectedCoverLocalPath: selectedCoverLocalPath,
+    selectedCoverProvider: selectedCoverProvider,
     hasExternalMetadata: hasExternalMetadata,
     status: GameStatus.backlog,
     releaseDate: releaseDate,
@@ -722,6 +1044,19 @@ ExternalGameDetails _details({
   );
 }
 
+ExternalGameDetails _detailsWithoutCover() {
+  return const ExternalGameDetails(
+    providerId: 'igdb',
+    providerName: 'IGDB',
+    externalId: '1',
+    externalSlug: 'hades',
+    externalUrl: 'https://www.igdb.com/games/hades',
+    title: 'Hades',
+    genres: ['Role-playing (RPG)', 'Adventure'],
+    platforms: ['PC (Microsoft Windows)'],
+  );
+}
+
 ExternalMediaAsset _coverAsset() {
   return const ExternalMediaAsset(
     providerId: 'igdb',
@@ -730,6 +1065,17 @@ ExternalMediaAsset _coverAsset() {
     kind: MediaAssetKind.cover,
     remoteUrl:
         'https://images.igdb.com/igdb/image/upload/t_cover_big/cofixture.jpg',
+    mimeType: 'image/jpeg',
+  );
+}
+
+ExternalMediaAsset _steamCoverAsset() {
+  return const ExternalMediaAsset(
+    providerId: 'steamgriddb',
+    providerName: 'SteamGridDB',
+    externalId: 'grid-1',
+    kind: MediaAssetKind.cover,
+    remoteUrl: 'https://cdn.steamgriddb.com/grid/fixture.jpg',
     mimeType: 'image/jpeg',
   );
 }
@@ -823,5 +1169,49 @@ class _FakeMetadataProvider implements MetadataProvider {
   @override
   Future<ExternalGameDetails> getGameDetails(String externalId) async {
     return details[externalId] ?? _details();
+  }
+}
+
+class _FakeMediaProvider implements MediaProvider {
+  const _FakeMediaProvider({
+    required this.providerId,
+    required this.providerName,
+    this.candidates = const [],
+    this.assets = const [],
+    this.error,
+  });
+
+  @override
+  final String providerId;
+
+  final String providerName;
+  final List<MediaSearchCandidate> candidates;
+  final List<ExternalMediaAsset> assets;
+  final MediaException? error;
+
+  @override
+  String get displayName => providerName;
+
+  @override
+  bool get requiresApiKey => true;
+
+  @override
+  MediaProviderCapabilities get capabilities =>
+      const MediaProviderCapabilities(supportsCovers: true);
+
+  @override
+  Future<List<MediaSearchCandidate>> searchGames(String query) async {
+    final thrown = error;
+    if (thrown != null) throw thrown;
+    return candidates;
+  }
+
+  @override
+  Future<List<ExternalMediaAsset>> searchCoverAssets(
+    String externalGameId,
+  ) async {
+    final thrown = error;
+    if (thrown != null) throw thrown;
+    return assets;
   }
 }

@@ -216,6 +216,7 @@ class LibraryQueryRepository {
       title: game.title,
       sortTitle: game.sortTitle,
       selectedCoverLocalPath: selectedCover?.localPath,
+      selectedCoverProvider: selectedCover?.provider ?? selectedCover?.source,
       hasExternalMetadata: hasExternalMetadata,
       status: parseGameStatus(entry.status),
       releaseDate: game.releaseDate,

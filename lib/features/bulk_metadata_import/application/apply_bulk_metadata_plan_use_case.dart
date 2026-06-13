@@ -27,8 +27,12 @@ class ApplyBulkMetadataPlanUseCase {
     var processed = 0;
     var metadataApplied = 0;
     var fieldChangesApplied = 0;
+    var newFieldChangesApplied = 0;
+    var replacedFieldChangesApplied = 0;
     var externalLinksSaved = 0;
     var coversSaved = 0;
+    var newCoversSaved = 0;
+    var replacedCoversSaved = 0;
     var skipped = 0;
     final warnings = <BulkImportIssue>[
       for (final issue in plan.globalIssues)
@@ -81,6 +85,7 @@ class ApplyBulkMetadataPlanUseCase {
       processed++;
       final details = item.selectedDetails!;
       final selectedFields = _selectedFields(item);
+      final replacementFields = _replacementFields(item);
       try {
         await _applyMetadata(
           ApplyMetadataRequest(
@@ -88,10 +93,20 @@ class ApplyBulkMetadataPlanUseCase {
             libraryEntryId: item.row.libraryEntryId,
             details: details,
             selectedFields: selectedFields,
+            replaceFields: replacementFields,
+            replaceExistingExternalId: plan.options.allowMetadataReplacement,
           ),
         );
         if (selectedFields.isNotEmpty) metadataApplied++;
         fieldChangesApplied += selectedFields.length;
+        newFieldChangesApplied +=
+            item.fieldPlans
+                .where((plan) => plan.selected && !plan.replacesExisting)
+                .length;
+        replacedFieldChangesApplied +=
+            item.fieldPlans
+                .where((plan) => plan.selected && plan.replacesExisting)
+                .length;
         externalLinksSaved++;
       } catch (error) {
         errors.add(
@@ -111,6 +126,11 @@ class ApplyBulkMetadataPlanUseCase {
         try {
           await _saveCover(gameId: item.row.gameId, asset: coverAsset);
           coversSaved++;
+          if (item.coverPlan!.replacesExisting) {
+            replacedCoversSaved++;
+          } else {
+            newCoversSaved++;
+          }
         } catch (error) {
           errors.add(
             BulkImportIssue(
@@ -130,8 +150,12 @@ class ApplyBulkMetadataPlanUseCase {
       processed: processed,
       metadataApplied: metadataApplied,
       fieldChangesApplied: fieldChangesApplied,
+      newFieldChangesApplied: newFieldChangesApplied,
+      replacedFieldChangesApplied: replacedFieldChangesApplied,
       externalLinksSaved: externalLinksSaved,
       coversSaved: coversSaved,
+      newCoversSaved: newCoversSaved,
+      replacedCoversSaved: replacedCoversSaved,
       skipped: skipped,
       warnings: warnings,
       errors: errors,
@@ -142,6 +166,17 @@ class ApplyBulkMetadataPlanUseCase {
     return {
       for (final plan in item.fieldPlans)
         if (plan.selected && plan.canApply && !plan.isProtected) plan.field,
+    };
+  }
+
+  Set<MetadataField> _replacementFields(BulkMetadataImportItem item) {
+    return {
+      for (final plan in item.fieldPlans)
+        if (plan.selected &&
+            plan.canApply &&
+            !plan.isProtected &&
+            plan.replacesExisting)
+          plan.field,
     };
   }
 
