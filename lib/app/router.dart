@@ -8,6 +8,7 @@ import '../features/import_export/notion_csv/presentation/import_notion_csv_page
 import '../features/library/presentation/game_list_page.dart';
 import '../features/library/presentation/home_page.dart';
 import '../features/settings/presentation/settings_page.dart';
+import '../features/statistics/presentation/statistics_page.dart';
 import 'app_shell.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -18,6 +19,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state, child) => AppShell(child: child),
         routes: [
           GoRoute(path: '/home', builder: (context, state) => const HomePage()),
+          GoRoute(
+            path: '/statistics',
+            builder: (context, state) => const StatisticsPage(),
+          ),
           GoRoute(
             path: '/',
             builder: (context, state) => const GameListPage(),

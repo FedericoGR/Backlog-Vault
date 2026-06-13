@@ -18,7 +18,16 @@ class HomePage extends ConsumerWidget {
     final rows = ref.watch(libraryRowsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Inicio')),
+      appBar: AppBar(
+        title: const Text('Inicio'),
+        actions: [
+          TextButton.icon(
+            onPressed: () => context.go('/statistics'),
+            icon: const Icon(Icons.bar_chart_outlined),
+            label: const Text('Estadísticas'),
+          ),
+        ],
+      ),
       body: rows.when(
         data: (items) {
           final data = buildLibraryHomeData(items);

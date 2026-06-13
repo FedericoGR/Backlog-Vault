@@ -12,8 +12,10 @@ class AppShell extends StatelessWidget {
     final selectedIndex =
         location.startsWith('/home')
             ? 0
-            : location.startsWith('/settings')
+            : location.startsWith('/statistics')
             ? 2
+            : location.startsWith('/settings')
+            ? 3
             : 1;
 
     return Scaffold(
@@ -29,6 +31,7 @@ class AppShell extends StatelessWidget {
                     context.go(switch (index) {
                       0 => '/home',
                       1 => '/',
+                      2 => '/statistics',
                       _ => '/settings',
                     });
                   },
@@ -42,6 +45,11 @@ class AppShell extends StatelessWidget {
                       icon: Icon(Icons.library_books_outlined),
                       selectedIcon: Icon(Icons.library_books),
                       label: Text('Biblioteca'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.bar_chart_outlined),
+                      selectedIcon: Icon(Icons.bar_chart),
+                      label: Text('Estadísticas'),
                     ),
                     NavigationRailDestination(
                       icon: Icon(Icons.settings_outlined),
@@ -64,6 +72,7 @@ class AppShell extends StatelessWidget {
                 context.go(switch (index) {
                   0 => '/home',
                   1 => '/',
+                  2 => '/statistics',
                   _ => '/settings',
                 });
               },
@@ -77,6 +86,11 @@ class AppShell extends StatelessWidget {
                   icon: Icon(Icons.library_books_outlined),
                   selectedIcon: Icon(Icons.library_books),
                   label: 'Biblioteca',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.bar_chart_outlined),
+                  selectedIcon: Icon(Icons.bar_chart),
+                  label: 'Estadísticas',
                 ),
                 NavigationDestination(
                   icon: Icon(Icons.settings_outlined),
