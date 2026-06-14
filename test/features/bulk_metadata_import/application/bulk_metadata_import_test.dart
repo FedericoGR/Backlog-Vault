@@ -369,6 +369,45 @@ void main() {
       expect(item.canApply, isTrue);
     });
 
+    test('bulk cover plan keeps alternative cover candidates', () async {
+      final resolver = BulkCoverPlanResolver(
+        mediaProviders: [
+          _FakeMediaProvider(
+            providerId: 'steamgriddb',
+            providerName: 'SteamGridDB',
+            candidates: const [
+              MediaSearchCandidate(
+                providerId: 'steamgriddb',
+                providerName: 'SteamGridDB',
+                externalId: 'sgdb-game',
+                title: 'Hades',
+              ),
+            ],
+            assets: [_steamCoverAsset(), _steamCoverAssetAlt()],
+          ),
+        ],
+      );
+
+      final plan = await const BuildBulkMetadataPlanUseCase().call(
+        rows: [_row(title: 'Hades')],
+        provider: const _FakeMetadataProvider(),
+        options: const BulkMetadataImportOptions(
+          providerId: 'igdb',
+          contentMode: BulkImportContentMode.coverOnly,
+          coverProviderMode: BulkCoverProviderMode.steamgriddb,
+        ),
+        resolveCoverPlan: resolver.call,
+      );
+
+      final coverPlan = plan.items.single.coverPlan!;
+      expect(coverPlan.asset?.externalId, 'grid-1');
+      expect(coverPlan.availableAssets.map((asset) => asset.externalId), [
+        'grid-1',
+        'grid-2',
+      ]);
+      expect(coverPlan.hasAlternativeAssets, isTrue);
+    });
+
     test(
       'all scope keeps games with existing cover in cover only preview',
       () async {
@@ -1087,6 +1126,41 @@ void main() {
       expect(result.coversSaved, 1);
     });
 
+    test('cover only item saves the selected cover candidate', () async {
+      final savedCovers = <ExternalMediaAsset>[];
+      final useCase = ApplyBulkMetadataPlanUseCase(
+        applyMetadata: (request) async {},
+        saveCover: ({required gameId, required asset}) async {
+          savedCovers.add(asset);
+        },
+      );
+      final selectedCover = _steamCoverAssetAlt();
+
+      final result = await useCase.call(
+        BulkMetadataImportPlan(
+          options: const BulkMetadataImportOptions(
+            providerId: 'igdb',
+            contentMode: BulkImportContentMode.coverOnly,
+          ),
+          items: [
+            BulkMetadataImportItem(
+              row: _row(gameId: 'game-ok', libraryEntryId: 'entry-ok'),
+              included: true,
+              coverPlan: BulkCoverPlan(
+                asset: selectedCover,
+                candidateAssets: [_steamCoverAsset()],
+                selected: true,
+                canApply: true,
+              ),
+            ),
+          ],
+        ),
+      );
+
+      expect(result.coversSaved, 1);
+      expect(savedCovers.single.externalId, 'grid-2');
+    });
+
     test('skipped warnings are included in final result', () async {
       final useCase = ApplyBulkMetadataPlanUseCase(
         applyMetadata: (request) async {},
@@ -1279,6 +1353,17 @@ ExternalMediaAsset _steamCoverAsset() {
     externalId: 'grid-1',
     kind: MediaAssetKind.cover,
     remoteUrl: 'https://cdn.steamgriddb.com/grid/fixture.jpg',
+    mimeType: 'image/jpeg',
+  );
+}
+
+ExternalMediaAsset _steamCoverAssetAlt() {
+  return const ExternalMediaAsset(
+    providerId: 'steamgriddb',
+    providerName: 'SteamGridDB',
+    externalId: 'grid-2',
+    kind: MediaAssetKind.cover,
+    remoteUrl: 'https://cdn.steamgriddb.com/grid/fixture-alt.jpg',
     mimeType: 'image/jpeg',
   );
 }

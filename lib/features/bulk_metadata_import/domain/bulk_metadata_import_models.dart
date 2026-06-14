@@ -226,21 +226,55 @@ class BulkCoverPlan {
     required this.asset,
     required this.selected,
     required this.canApply,
+    this.candidateAssets = const [],
     this.replacesExisting = false,
     this.currentProviderName,
     this.reason,
   });
 
   final ExternalMediaAsset? asset;
+  final List<ExternalMediaAsset> candidateAssets;
   final bool selected;
   final bool canApply;
   final bool replacesExisting;
   final String? currentProviderName;
   final String? reason;
 
-  BulkCoverPlan copyWith({bool? selected}) {
+  List<ExternalMediaAsset> get availableAssets {
+    final assets = <ExternalMediaAsset>[];
+
+    void addUnique(ExternalMediaAsset asset) {
+      final exists = assets.any(
+        (existing) =>
+            existing.providerId == asset.providerId &&
+            existing.externalId == asset.externalId &&
+            existing.remoteUrl == asset.remoteUrl,
+      );
+      if (!exists) {
+        assets.add(asset);
+      }
+    }
+
+    final selectedAsset = asset;
+    if (selectedAsset != null) {
+      addUnique(selectedAsset);
+    }
+    for (final candidate in candidateAssets) {
+      addUnique(candidate);
+    }
+    return assets;
+  }
+
+  bool get hasAlternativeAssets => availableAssets.length > 1;
+
+  BulkCoverPlan copyWith({
+    ExternalMediaAsset? asset,
+    List<ExternalMediaAsset>? candidateAssets,
+    bool? selected,
+  }) {
     return BulkCoverPlan(
-      asset: asset,
+      asset: asset ?? this.asset,
+      candidateAssets: candidateAssets ?? this.candidateAssets,
       selected: selected ?? this.selected,
       canApply: canApply,
       replacesExisting: replacesExisting,

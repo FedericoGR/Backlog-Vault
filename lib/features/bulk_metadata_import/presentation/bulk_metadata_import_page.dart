@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/privacy/privacy_redactor.dart';
 import '../../library/data/library_query_repository.dart';
 import '../../library/domain/library_game_row.dart';
+import '../../media/domain/media_asset_models.dart';
 import '../../metadata/domain/metadata_provider.dart';
 import '../application/bulk_cover_plan_resolver.dart';
 import '../application/bulk_metadata_import_providers.dart';
@@ -33,6 +34,17 @@ enum _PreviewFilter {
     _PreviewFilter.withCover => 'Con cover',
     _PreviewFilter.withReplacements => 'Con reemplazos',
   };
+}
+
+enum _BulkSelectionAction {
+  selectVisible,
+  deselectAll,
+  selectSafe,
+  selectWithCover,
+  selectNewCovers,
+  selectReplacementCovers,
+  selectNewFields,
+  selectReplacementFields,
 }
 
 class BulkMetadataImportPage extends ConsumerStatefulWidget {
@@ -119,6 +131,8 @@ class _BulkMetadataImportPageState
                     onItemIncludedChanged: _setItemIncluded,
                     onFieldChanged: _setFieldSelected,
                     onCoverChanged: _setCoverSelected,
+                    onCoverAssetChanged: _setCoverAssetSelected,
+                    onBulkSelection: _applyBulkSelection,
                     onCandidateSelected:
                         (item, candidate) =>
                             _selectCandidate(item, candidate, selectedProvider),
@@ -341,7 +355,19 @@ class _BulkMetadataImportPageState
   }
 
   void _setItemIncluded(BulkMetadataImportItem item, bool included) {
-    _replaceItem(item, item.copyWith(included: included));
+    if (included) {
+      var next = item.copyWith(included: true);
+      final cover = next.coverPlan;
+      if (_plan?.options.contentMode == BulkImportContentMode.coverOnly &&
+          cover != null &&
+          cover.canApply) {
+        next = next.copyWith(coverPlan: cover.copyWith(selected: true));
+      }
+      _replaceItem(item, next);
+      return;
+    }
+
+    _replaceItem(item, _clearItemSelection(item));
   }
 
   void _setFieldSelected(
@@ -351,7 +377,7 @@ class _BulkMetadataImportPageState
   ) {
     final fields = [...item.fieldPlans];
     fields[fieldIndex] = fields[fieldIndex].copyWith(selected: selected);
-    _replaceItem(item, item.copyWith(fieldPlans: fields));
+    _replaceItem(item, _syncItemIncluded(item.copyWith(fieldPlans: fields)));
   }
 
   void _setCoverSelected(BulkMetadataImportItem item, bool selected) {
@@ -359,7 +385,156 @@ class _BulkMetadataImportPageState
     if (cover == null) return;
     _replaceItem(
       item,
-      item.copyWith(coverPlan: cover.copyWith(selected: selected)),
+      _syncItemIncluded(
+        item.copyWith(coverPlan: cover.copyWith(selected: selected)),
+      ),
+    );
+  }
+
+  void _setCoverAssetSelected(
+    BulkMetadataImportItem item,
+    ExternalMediaAsset asset,
+  ) {
+    final cover = item.coverPlan;
+    if (cover == null) return;
+    _replaceItem(
+      item,
+      _syncItemIncluded(
+        item.copyWith(
+          coverPlan: cover.copyWith(
+            asset: asset,
+            candidateAssets: cover.availableAssets
+                .where(
+                  (candidate) =>
+                      candidate.providerId != asset.providerId ||
+                      candidate.externalId != asset.externalId ||
+                      candidate.remoteUrl != asset.remoteUrl,
+                )
+                .toList(growable: false),
+            selected: true,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _applyBulkSelection(
+    _BulkSelectionAction action,
+    List<BulkMetadataImportItem> visibleItems,
+  ) {
+    final currentPlan = _plan;
+    if (currentPlan == null) return;
+    final visibleIds =
+        visibleItems.map((item) => item.row.libraryEntryId).toSet();
+    final items =
+        currentPlan.items.map((item) {
+          final isVisible = visibleIds.contains(item.row.libraryEntryId);
+          if (action == _BulkSelectionAction.deselectAll) {
+            return _clearItemSelection(item);
+          }
+          if (!isVisible) return item;
+          return _applySelectionActionToItem(item, action, currentPlan.options);
+        }).toList();
+    setState(() => _plan = currentPlan.copyWith(items: items));
+  }
+
+  BulkMetadataImportItem _applySelectionActionToItem(
+    BulkMetadataImportItem item,
+    _BulkSelectionAction action,
+    BulkMetadataImportOptions options,
+  ) {
+    if (item.hasErrorIssue) return _clearItemSelection(item);
+
+    var fields = [...item.fieldPlans];
+    var cover = item.coverPlan;
+    var shouldInclude = item.included;
+
+    bool isSafeForDestructiveSelection() {
+      return item.confidence == BulkMetadataConfidence.safe;
+    }
+
+    void selectNewFields() {
+      for (var index = 0; index < fields.length; index++) {
+        final field = fields[index];
+        if (field.canApply && !field.isProtected && !field.replacesExisting) {
+          fields[index] = field.copyWith(selected: true);
+          shouldInclude = true;
+        }
+      }
+    }
+
+    void selectReplacementFields() {
+      if (options.applyMode != BulkMetadataApplyMode.reviewAndReplace ||
+          !isSafeForDestructiveSelection()) {
+        return;
+      }
+      for (var index = 0; index < fields.length; index++) {
+        final field = fields[index];
+        if (field.canApply && !field.isProtected && field.replacesExisting) {
+          fields[index] = field.copyWith(selected: true);
+          shouldInclude = true;
+        }
+      }
+    }
+
+    void selectCover({required bool replacements}) {
+      final current = cover;
+      if (current == null || !current.canApply) return;
+      if (current.replacesExisting != replacements) return;
+      if (replacements && !options.allowCoverReplacement) return;
+      cover = current.copyWith(selected: true);
+      shouldInclude = true;
+    }
+
+    switch (action) {
+      case _BulkSelectionAction.selectVisible:
+        selectNewFields();
+        selectCover(replacements: false);
+      case _BulkSelectionAction.selectSafe:
+        if (item.confidence == BulkMetadataConfidence.safe) {
+          selectNewFields();
+          selectCover(replacements: false);
+        }
+      case _BulkSelectionAction.selectWithCover:
+        selectCover(replacements: false);
+      case _BulkSelectionAction.selectNewCovers:
+        selectCover(replacements: false);
+      case _BulkSelectionAction.selectReplacementCovers:
+        selectCover(replacements: true);
+      case _BulkSelectionAction.selectNewFields:
+        selectNewFields();
+      case _BulkSelectionAction.selectReplacementFields:
+        selectReplacementFields();
+      case _BulkSelectionAction.deselectAll:
+        return _clearItemSelection(item);
+    }
+
+    return _syncItemIncluded(
+      item.copyWith(
+        included: shouldInclude,
+        fieldPlans: fields,
+        coverPlan: cover,
+      ),
+    );
+  }
+
+  BulkMetadataImportItem _clearItemSelection(BulkMetadataImportItem item) {
+    return item.copyWith(
+      included: false,
+      fieldPlans: [
+        for (final field in item.fieldPlans) field.copyWith(selected: false),
+      ],
+      coverPlan: item.coverPlan?.copyWith(selected: false),
+    );
+  }
+
+  BulkMetadataImportItem _syncItemIncluded(BulkMetadataImportItem item) {
+    final hasSelectedField = item.fieldPlans.any((field) => field.selected);
+    final hasSelectedCover = item.coverPlan?.selected == true;
+    final hasSelectedMetadataLink =
+        item.selectedDetails != null && item.included;
+    return item.copyWith(
+      included: hasSelectedField || hasSelectedCover || hasSelectedMetadataLink,
     );
   }
 
@@ -791,6 +966,8 @@ class _PreviewCard extends StatelessWidget {
     required this.onItemIncludedChanged,
     required this.onFieldChanged,
     required this.onCoverChanged,
+    required this.onCoverAssetChanged,
+    required this.onBulkSelection,
     required this.onCandidateSelected,
   });
 
@@ -807,6 +984,13 @@ class _PreviewCard extends StatelessWidget {
   onFieldChanged;
   final void Function(BulkMetadataImportItem item, bool selected)
   onCoverChanged;
+  final void Function(BulkMetadataImportItem item, ExternalMediaAsset asset)
+  onCoverAssetChanged;
+  final void Function(
+    _BulkSelectionAction action,
+    List<BulkMetadataImportItem> visibleItems,
+  )
+  onBulkSelection;
   final void Function(
     BulkMetadataImportItem item,
     BulkMetadataCandidate candidate,
@@ -829,20 +1013,41 @@ class _PreviewCard extends StatelessWidget {
               runSpacing: 8,
               children: [
                 _statChip('Analizados', plan.items.length.toString()),
-                _statChip('Con match', plan.matchedItems.toString()),
-                _statChip('Sin match', plan.withoutMatchItems.toString()),
-                _statChip('Seguros', plan.safeItems.toString()),
-                _statChip('Probables', plan.probableItems.toString()),
-                _statChip('Ambiguos', plan.ambiguousItems.toString()),
+                if (plan.options.contentMode !=
+                    BulkImportContentMode.coverOnly) ...[
+                  _statChip('Con match', plan.matchedItems.toString()),
+                  _statChip('Sin match', plan.withoutMatchItems.toString()),
+                  _statChip('Seguros', plan.safeItems.toString()),
+                  _statChip('Probables', plan.probableItems.toString()),
+                  _statChip('Ambiguos', plan.ambiguousItems.toString()),
+                ] else ...[
+                  _statChip(
+                    'Con cover',
+                    plan.items
+                        .where((item) => item.coverPlan?.canApply == true)
+                        .length
+                        .toString(),
+                  ),
+                  _statChip(
+                    'Sin cover',
+                    plan.items
+                        .where((item) => item.coverPlan?.canApply != true)
+                        .length
+                        .toString(),
+                  ),
+                ],
                 _statChip('Seleccionados', plan.selectedItems.toString()),
-                _statChip(
-                  'Campos nuevos',
-                  plan.selectedNewFieldChanges.toString(),
-                ),
-                _statChip(
-                  'Campos reemplazados',
-                  plan.selectedReplacementFieldChanges.toString(),
-                ),
+                if (plan.options.contentMode !=
+                    BulkImportContentMode.coverOnly) ...[
+                  _statChip(
+                    'Campos nuevos',
+                    plan.selectedNewFieldChanges.toString(),
+                  ),
+                  _statChip(
+                    'Campos reemplazados',
+                    plan.selectedReplacementFieldChanges.toString(),
+                  ),
+                ],
                 _statChip('Covers nuevos', plan.selectedNewCovers.toString()),
                 _statChip(
                   'Covers reemplazados',
@@ -855,11 +1060,101 @@ class _PreviewCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                for (final value in _PreviewFilter.values)
+                for (final value in _visibleFilters)
                   FilterChip(
                     label: Text(value.label),
                     selected: filter == value,
                     onSelected: (_) => onFilterChanged(value),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ActionChip(
+                  avatar: const Icon(Icons.select_all, size: 18),
+                  label: const Text('Seleccionar visibles'),
+                  onPressed:
+                      visibleItems.isEmpty
+                          ? null
+                          : () => onBulkSelection(
+                            _BulkSelectionAction.selectVisible,
+                            visibleItems,
+                          ),
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.clear_all, size: 18),
+                  label: const Text('Deseleccionar todos'),
+                  onPressed:
+                      () => onBulkSelection(
+                        _BulkSelectionAction.deselectAll,
+                        visibleItems,
+                      ),
+                ),
+                ActionChip(
+                  label: const Text('Seleccionar seguros'),
+                  onPressed:
+                      visibleItems.isEmpty
+                          ? null
+                          : () => onBulkSelection(
+                            _BulkSelectionAction.selectSafe,
+                            visibleItems,
+                          ),
+                ),
+                ActionChip(
+                  label: const Text('Con cover'),
+                  onPressed:
+                      visibleItems.isEmpty
+                          ? null
+                          : () => onBulkSelection(
+                            _BulkSelectionAction.selectWithCover,
+                            visibleItems,
+                          ),
+                ),
+                ActionChip(
+                  label: const Text('Portadas nuevas'),
+                  onPressed:
+                      visibleItems.isEmpty
+                          ? null
+                          : () => onBulkSelection(
+                            _BulkSelectionAction.selectNewCovers,
+                            visibleItems,
+                          ),
+                ),
+                if (plan.options.allowCoverReplacement)
+                  ActionChip(
+                    label: const Text('Reemplazos portada'),
+                    onPressed:
+                        visibleItems.isEmpty
+                            ? null
+                            : () => onBulkSelection(
+                              _BulkSelectionAction.selectReplacementCovers,
+                              visibleItems,
+                            ),
+                  ),
+                if (plan.options.shouldImportMetadata)
+                  ActionChip(
+                    label: const Text('Campos nuevos'),
+                    onPressed:
+                        visibleItems.isEmpty
+                            ? null
+                            : () => onBulkSelection(
+                              _BulkSelectionAction.selectNewFields,
+                              visibleItems,
+                            ),
+                  ),
+                if (plan.options.allowMetadataReplacement)
+                  ActionChip(
+                    label: const Text('Campos reemplazables'),
+                    onPressed:
+                        visibleItems.isEmpty
+                            ? null
+                            : () => onBulkSelection(
+                              _BulkSelectionAction.selectReplacementFields,
+                              visibleItems,
+                            ),
                   ),
               ],
             ),
@@ -870,12 +1165,15 @@ class _PreviewCard extends StatelessWidget {
               for (final item in visibleItems)
                 _PreviewItemTile(
                   item: item,
+                  contentMode: plan.options.contentMode,
                   onIncludedChanged:
                       (value) => onItemIncludedChanged(item, value),
                   onFieldChanged:
                       (index, selected) =>
                           onFieldChanged(item, index, selected),
                   onCoverChanged: (selected) => onCoverChanged(item, selected),
+                  onCoverAssetChanged:
+                      (asset) => onCoverAssetChanged(item, asset),
                   onCandidateSelected:
                       (candidate) => onCandidateSelected(item, candidate),
                 ),
@@ -905,6 +1203,19 @@ class _PreviewCard extends StatelessWidget {
     };
   }
 
+  List<_PreviewFilter> get _visibleFilters {
+    if (plan.options.contentMode != BulkImportContentMode.coverOnly) {
+      return _PreviewFilter.values;
+    }
+    return const [
+      _PreviewFilter.all,
+      _PreviewFilter.selected,
+      _PreviewFilter.errors,
+      _PreviewFilter.withCover,
+      _PreviewFilter.withReplacements,
+    ];
+  }
+
   Widget _statChip(String label, String value) {
     return InputChip(onPressed: null, label: Text('$label: $value'));
   }
@@ -913,16 +1224,20 @@ class _PreviewCard extends StatelessWidget {
 class _PreviewItemTile extends StatelessWidget {
   const _PreviewItemTile({
     required this.item,
+    required this.contentMode,
     required this.onIncludedChanged,
     required this.onFieldChanged,
     required this.onCoverChanged,
+    required this.onCoverAssetChanged,
     required this.onCandidateSelected,
   });
 
   final BulkMetadataImportItem item;
+  final BulkImportContentMode contentMode;
   final ValueChanged<bool> onIncludedChanged;
   final void Function(int index, bool selected) onFieldChanged;
   final ValueChanged<bool> onCoverChanged;
+  final ValueChanged<ExternalMediaAsset> onCoverAssetChanged;
   final ValueChanged<BulkMetadataCandidate> onCandidateSelected;
 
   @override
@@ -933,18 +1248,13 @@ class _PreviewItemTile extends StatelessWidget {
       leading: Checkbox(
         value: item.included,
         onChanged:
-            item.selectedDetails == null || item.hasErrorIssue
+            !_canToggleItem
                 ? null
                 : (value) => onIncludedChanged(value ?? false),
       ),
       title: Text(item.row.title, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(
-        [
-          item.confidence.label,
-          if (best != null) best.candidate.title,
-          if (item.issues.isNotEmpty)
-            item.issues.map((issue) => issue.displayMessage).join(' · '),
-        ].join(' · '),
+        _subtitle(best),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
@@ -954,7 +1264,8 @@ class _PreviewItemTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (item.candidates.isNotEmpty) ...[
+              if (contentMode != BulkImportContentMode.coverOnly &&
+                  item.candidates.isNotEmpty) ...[
                 Text(
                   'Candidatos',
                   style: Theme.of(context).textTheme.titleSmall,
@@ -976,9 +1287,10 @@ class _PreviewItemTile extends StatelessWidget {
                   ),
                 const SizedBox(height: 8),
               ],
-              if (item.fieldPlans.isEmpty)
+              if (contentMode != BulkImportContentMode.coverOnly &&
+                  item.fieldPlans.isEmpty)
                 const Text('No hay campos de metadata para aplicar.')
-              else ...[
+              else if (contentMode != BulkImportContentMode.coverOnly) ...[
                 Text('Campos', style: Theme.of(context).textTheme.titleSmall),
                 for (var index = 0; index < item.fieldPlans.length; index++)
                   CheckboxListTile(
@@ -1020,6 +1332,7 @@ class _PreviewItemTile extends StatelessWidget {
                   subtitle: Text(
                     item.coverPlan!.canApply
                         ? [
+                          _coverStatusLabel(item.coverPlan!),
                           item.coverPlan!.asset!.providerName,
                           if (item.coverPlan!.replacesExisting)
                             'reemplaza ${item.coverPlan!.currentProviderName ?? 'portada actual'}',
@@ -1027,12 +1340,157 @@ class _PreviewItemTile extends StatelessWidget {
                         : item.coverPlan!.reason ?? 'No disponible',
                   ),
                 ),
+                if (item.coverPlan!.canApply &&
+                    item.coverPlan!.hasAlternativeAssets)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () => _showCoverPicker(context),
+                      icon: const Icon(Icons.image_search_outlined),
+                      label: const Text('Elegir portada'),
+                    ),
+                  ),
               ],
             ],
           ),
         ),
       ],
     );
+  }
+
+  bool get _canToggleItem {
+    if (item.hasErrorIssue) return false;
+    if (item.selectedDetails != null) return true;
+    if (item.fieldPlans.any((field) => field.canApply)) return true;
+    if (item.coverPlan?.canApply == true) return true;
+    return false;
+  }
+
+  String _subtitle(BulkMetadataCandidate? best) {
+    final parts = <String>[];
+    if (contentMode == BulkImportContentMode.coverOnly) {
+      parts.add(_coverOnlyStatus);
+    } else {
+      parts.add(item.confidence.label);
+      if (best != null) parts.add(best.candidate.title);
+      if (contentMode == BulkImportContentMode.metadataAndCover &&
+          item.coverPlan != null) {
+        parts.add(_coverOnlyStatus);
+      }
+    }
+    if (item.issues.isNotEmpty) {
+      parts.add(item.issues.map((issue) => issue.displayMessage).join(' · '));
+    }
+    return parts.join(' · ');
+  }
+
+  String get _coverOnlyStatus {
+    final cover = item.coverPlan;
+    if (cover == null) return 'Sin cover encontrado';
+    if (!cover.canApply) {
+      return cover.reason ?? 'Sin cover encontrado';
+    }
+    if (cover.selected && cover.replacesExisting) {
+      return 'Reemplazo de portada seleccionado';
+    }
+    if (cover.selected) return 'Portada nueva seleccionada';
+    if (cover.replacesExisting) return 'Ya tiene portada';
+    return 'Cover encontrado';
+  }
+
+  String _coverStatusLabel(BulkCoverPlan cover) {
+    if (!cover.canApply) return 'Sin cover encontrado';
+    if (cover.selected && cover.replacesExisting) {
+      return 'Reemplazo de portada seleccionado';
+    }
+    if (cover.selected) return 'Portada nueva seleccionada';
+    if (cover.replacesExisting) return 'Ya tiene portada';
+    return 'Cover encontrado';
+  }
+
+  Future<void> _showCoverPicker(BuildContext context) async {
+    final cover = item.coverPlan;
+    if (cover == null) return;
+    final assets = cover.availableAssets;
+    if (assets.isEmpty) return;
+    final selected = await showDialog<ExternalMediaAsset>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('Elegir portada · ${item.row.title}'),
+            content: SizedBox(
+              width: 640,
+              child: GridView.builder(
+                shrinkWrap: true,
+                itemCount: assets.length,
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 160,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 0.68,
+                ),
+                itemBuilder: (context, index) {
+                  final asset = assets[index];
+                  final isSelected =
+                      cover.asset?.providerId == asset.providerId &&
+                      cover.asset?.externalId == asset.externalId &&
+                      cover.asset?.remoteUrl == asset.remoteUrl;
+                  return InkWell(
+                    onTap: () => Navigator.pop(context, asset),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color:
+                              isSelected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).dividerColor,
+                          width: isSelected ? 2 : 1,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(7),
+                              ),
+                              child: Image.network(
+                                asset.thumbnailUrl ?? asset.remoteUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder:
+                                    (context, error, stackTrace) => const Icon(
+                                      Icons.broken_image_outlined,
+                                      size: 40,
+                                    ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Text(
+                              asset.providerName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+            ],
+          ),
+    );
+    if (selected != null) onCoverAssetChanged(selected);
   }
 }
 

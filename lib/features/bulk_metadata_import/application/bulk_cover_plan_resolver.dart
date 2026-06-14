@@ -38,17 +38,18 @@ class BulkCoverPlanResolver {
     final reasons = <String>[];
     for (final providerId in order) {
       try {
-        final asset = await _resolveAsset(
+        final assets = await _resolveAssets(
           providerId: providerId,
           row: row,
           details: details,
         );
-        if (asset == null) {
+        if (assets.isEmpty) {
           reasons.add('${_providerLabel(providerId)}: sin portada.');
           continue;
         }
         return BulkCoverPlan(
-          asset: asset,
+          asset: assets.first,
+          candidateAssets: assets.skip(1).toList(growable: false),
           selected: !hasExistingCover,
           canApply: true,
           replacesExisting: hasExistingCover,
@@ -79,7 +80,7 @@ class BulkCoverPlanResolver {
     );
   }
 
-  Future<ExternalMediaAsset?> _resolveAsset({
+  Future<List<ExternalMediaAsset>> _resolveAssets({
     required String providerId,
     required LibraryGameRow row,
     required ExternalGameDetails details,
@@ -87,18 +88,18 @@ class BulkCoverPlanResolver {
     if (providerId == 'igdb') {
       final coverFromDetails = externalGameCoverToMediaAsset(details.cover);
       if (details.providerId == 'igdb' && coverFromDetails != null) {
-        return coverFromDetails;
+        return [coverFromDetails];
       }
     }
 
     final provider = _providerById(providerId);
-    if (provider == null) return null;
+    if (provider == null) return const [];
     final candidates = await provider.searchGames(row.title);
-    if (candidates.isEmpty) return null;
+    if (candidates.isEmpty) return const [];
     final candidate = _bestMediaCandidate(row.title, candidates);
     final covers = await provider.searchCoverAssets(candidate.externalId);
-    if (covers.isEmpty) return null;
-    return covers.first;
+    if (covers.isEmpty) return const [];
+    return covers;
   }
 
   MediaSearchCandidate _bestMediaCandidate(
