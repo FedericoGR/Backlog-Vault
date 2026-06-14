@@ -170,6 +170,30 @@ class GameRepository {
     });
   }
 
+  Future<void> softDeleteMany(Iterable<String> entryIds) {
+    final ids = entryIds.toSet();
+    if (ids.isEmpty) return Future.value();
+    return _db.transaction(() async {
+      final now = _clock.now();
+      for (final entryId in ids) {
+        final entry =
+            await ((_db.select(_db.libraryEntries)
+                  ..where((table) => table.id.equals(entryId))
+                  ..where((table) => table.deletedAt.isNull()))
+                .getSingleOrNull());
+        if (entry == null) continue;
+
+        await (_db.update(_db.libraryEntries)
+          ..where((table) => table.id.equals(entryId))).write(
+          LibraryEntriesCompanion(updatedAt: Value(now), deletedAt: Value(now)),
+        );
+        await (_db.update(_db.games)..where(
+          (table) => table.id.equals(entry.gameId),
+        )).write(GamesCompanion(updatedAt: Value(now), deletedAt: Value(now)));
+      }
+    });
+  }
+
   Future<void> registerPlaythrough(PlaythroughFormModel model) {
     return savePlaythrough(model);
   }

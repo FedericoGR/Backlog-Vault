@@ -38,11 +38,10 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
   final _notesController = TextEditingController();
   final _newPlatformController = TextEditingController();
   final _newGenreController = TextEditingController();
-  final _typeController = TextEditingController(text: 'game');
   final _completedHoursController = TextEditingController();
-  final _completedNotesController = TextEditingController();
 
   GameStatus _status = GameStatus.backlog;
+  String? _type;
   DateTime? _releaseDate;
   int? _rating;
   DateTime? _completedAt;
@@ -63,9 +62,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
     _notesController.dispose();
     _newPlatformController.dispose();
     _newGenreController.dispose();
-    _typeController.dispose();
     _completedHoursController.dispose();
-    _completedNotesController.dispose();
     super.dispose();
   }
 
@@ -157,9 +154,28 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                           },
                         ),
                         const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _typeController,
+                        DropdownButtonFormField<String?>(
+                          initialValue: _type,
                           decoration: const InputDecoration(labelText: 'Tipo'),
+                          items: const [
+                            DropdownMenuItem(
+                              value: null,
+                              child: Text('Sin definir'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Un jugador',
+                              child: Text('Un jugador'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Multijugador',
+                              child: Text('Multijugador'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Cooperativo',
+                              child: Text('Cooperativo'),
+                            ),
+                          ],
+                          onChanged: (value) => setState(() => _type = value),
                         ),
                         const SizedBox(height: 12),
                         DropdownButtonFormField<GameStatus>(
@@ -297,7 +313,6 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                           _CompletionFields(
                             completedAt: _completedAt ?? DateTime.now(),
                             hoursController: _completedHoursController,
-                            notesController: _completedNotesController,
                             rating: _completedRating,
                             platformId: _completedPlatformId,
                             platforms: platformMap,
@@ -344,7 +359,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
     _loadedExisting = true;
     _titleController.text = item.game.title;
     _releaseDate = item.game.releaseDate;
-    _typeController.text = item.game.type;
+    _type = _gameTypeForForm(item.game.type);
     _status = parseGameStatus(item.entry.status);
     _rating = item.entry.personalRating;
     _notesController.text = item.entry.personalNotes ?? '';
@@ -377,10 +392,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
         gameId: existing?.game.id,
         title: _titleController.text,
         releaseDate: _releaseDate,
-        type:
-            _typeController.text.trim().isEmpty
-                ? 'game'
-                : _typeController.text.trim(),
+        type: _type ?? '',
         status: _status,
         personalRating: _rating,
         personalNotes: _notesController.text,
@@ -405,7 +417,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                 platformId: _completedPlatformId,
                 hoursPlayed: _completedHours,
                 rating: _completedRating,
-                notes: _completedNotesController.text,
+                notes: null,
               ),
             );
       }
@@ -447,7 +459,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
             initialQuery: _titleController.text,
             currentTitle: _titleController.text,
             currentReleaseDate: _releaseDate,
-            currentType: _typeController.text,
+            currentType: _type ?? '',
             currentPlatforms: [
               for (final platform in platformItems)
                 if (_selectedPlatformIds.contains(platform.id)) platform.name,
@@ -473,7 +485,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
         _releaseDate = details.releaseDate;
       }
       if (result.selectedFields.contains(MetadataField.type)) {
-        _typeController.text = details.type;
+        _type = _gameTypeForForm(details.type) ?? _type;
       }
       if (result.selectedFields.contains(MetadataField.platforms)) {
         _applyCatalogPrefill(
@@ -571,6 +583,16 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
 
 String _normalizeName(String value) {
   return value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+}
+
+String? _gameTypeForForm(String value) {
+  final normalized = value.trim().toLowerCase();
+  return switch (normalized) {
+    'un jugador' || 'single player' || 'single_player' => 'Un jugador',
+    'multijugador' || 'multiplayer' => 'Multijugador',
+    'cooperativo' || 'co-op' || 'coop' || 'cooperative' => 'Cooperativo',
+    _ => null,
+  };
 }
 
 class _FormMetadataResult {
@@ -1049,7 +1071,6 @@ class _CompletionFields extends StatelessWidget {
   const _CompletionFields({
     required this.completedAt,
     required this.hoursController,
-    required this.notesController,
     required this.rating,
     required this.platformId,
     required this.platforms,
@@ -1060,7 +1081,6 @@ class _CompletionFields extends StatelessWidget {
 
   final DateTime completedAt;
   final TextEditingController hoursController;
-  final TextEditingController notesController;
   final int? rating;
   final String? platformId;
   final Map<String, String> platforms;
@@ -1120,13 +1140,6 @@ class _CompletionFields extends StatelessWidget {
               ),
           ],
           onChanged: onPlatformChanged,
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: notesController,
-          minLines: 2,
-          maxLines: 4,
-          decoration: const InputDecoration(labelText: 'Nota de partida'),
         ),
       ],
     );

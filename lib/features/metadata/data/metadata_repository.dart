@@ -5,6 +5,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/database_providers.dart';
 import '../../../core/ids/id_generator.dart';
 import '../../../core/time/clock.dart';
+import '../../catalogs/domain/catalog_normalizer.dart';
 import '../domain/apply_metadata_request.dart';
 import '../domain/metadata_exception.dart';
 import '../domain/metadata_field.dart';
@@ -273,7 +274,7 @@ class MetadataRepository {
   }
 
   Future<String?> _getOrCreateGenre(String name, DateTime now) async {
-    final normalized = name.trim();
+    final normalized = canonicalGenreName(name);
     if (normalized.isEmpty) return null;
     final existing = _firstByName(
       await ((_db.select(_db.genres)
@@ -297,7 +298,7 @@ class MetadataRepository {
   }
 
   Future<String?> _getOrCreatePlatform(String name, DateTime now) async {
-    final normalized = name.trim();
+    final normalized = canonicalPlatformName(name);
     if (normalized.isEmpty) return null;
     final existing = _firstByName(
       await ((_db.select(_db.platforms)
@@ -325,9 +326,9 @@ class MetadataRepository {
     String name,
     String Function(T item) readName,
   ) {
-    final normalized = name.toLowerCase();
+    final normalized = catalogComparisonKey(name);
     for (final item in items) {
-      if (readName(item).toLowerCase() == normalized) return item;
+      if (catalogComparisonKey(readName(item)) == normalized) return item;
     }
     return null;
   }

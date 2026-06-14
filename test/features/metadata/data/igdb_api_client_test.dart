@@ -95,13 +95,13 @@ void main() {
 
     final details = await client.getGameDetails('123');
 
-    expect(details.imageUrl, contains('t_cover_big/cofixture.jpg'));
+    expect(details.imageUrl, contains('t_720p/cofixture.jpg'));
     expect(details.cover, isNotNull);
     expect(details.cover!.externalId, '456');
     expect(details.cover!.imageId, 'cofixture');
     expect(
       details.cover!.remoteUrl,
-      'https://images.igdb.com/igdb/image/upload/t_cover_big/cofixture.jpg',
+      'https://images.igdb.com/igdb/image/upload/t_720p/cofixture.jpg',
     );
     expect(
       details.cover!.thumbnailUrl,
@@ -160,7 +160,11 @@ void main() {
     expect(details.cover!.imageId, isNull);
     expect(
       details.cover!.remoteUrl,
-      'https://images.igdb.com/igdb/image/upload/t_thumb/cofallback.jpg',
+      'https://images.igdb.com/igdb/image/upload/t_720p/cofallback.jpg',
+    );
+    expect(
+      details.cover!.thumbnailUrl,
+      'https://images.igdb.com/igdb/image/upload/t_cover_big/cofallback.jpg',
     );
   });
 

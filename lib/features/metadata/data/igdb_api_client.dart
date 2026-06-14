@@ -208,7 +208,9 @@ limit 1;
     final imageId = _stringOrNull(value['image_id']);
     final rawUrl = _stringOrNull(value['url']);
     final remoteUrl =
-        imageId == null ? _normalizeIgdbImageUrl(rawUrl) : _imageUrl(imageId);
+        imageId == null
+            ? _normalizeIgdbImageUrl(rawUrl, preferredSize: 't_720p')
+            : _imageUrl(imageId, size: 't_720p');
     if (remoteUrl == null) return null;
     final id = _stringOrNull(value['id']) ?? imageId;
     if (id == null || id.isEmpty) return null;
@@ -217,7 +219,9 @@ limit 1;
       imageId: imageId,
       remoteUrl: remoteUrl,
       thumbnailUrl:
-          imageId == null ? _normalizeIgdbImageUrl(rawUrl) : remoteUrl,
+          imageId == null
+              ? _normalizeIgdbImageUrl(rawUrl, preferredSize: 't_cover_big')
+              : _imageUrl(imageId, size: 't_cover_big'),
       width: _intOrNull(value['width']),
       height: _intOrNull(value['height']),
     );
@@ -277,20 +281,27 @@ limit 1;
     return 'https://www.igdb.com/games/$slug';
   }
 
-  String _imageUrl(String imageId) {
-    return 'https://images.igdb.com/igdb/image/upload/t_cover_big/$imageId.jpg';
+  String _imageUrl(String imageId, {required String size}) {
+    return 'https://images.igdb.com/igdb/image/upload/$size/$imageId.jpg';
   }
 
-  String? _normalizeIgdbImageUrl(String? value) {
+  String? _normalizeIgdbImageUrl(String? value, {String? preferredSize}) {
     if (value == null || value.isEmpty) return null;
-    if (value.startsWith('//')) return 'https:$value';
-    final uri = Uri.tryParse(value);
+    final normalized = value.startsWith('//') ? 'https:$value' : value;
+    var uri = Uri.tryParse(normalized);
     if (uri == null) return null;
-    if (uri.scheme == 'https') return value;
     if (uri.scheme == 'http') {
-      return uri.replace(scheme: 'https').toString();
+      uri = uri.replace(scheme: 'https');
     }
-    return null;
+    if (uri.scheme != 'https') return null;
+    if (preferredSize == null) return uri.toString();
+    final segments = [...uri.pathSegments];
+    final uploadIndex = segments.indexOf('upload');
+    if (uploadIndex != -1 && segments.length > uploadIndex + 1) {
+      segments[uploadIndex + 1] = preferredSize;
+      return uri.replace(pathSegments: segments).toString();
+    }
+    return uri.toString();
   }
 
   String? _stringOrNull(Object? value) {

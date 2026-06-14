@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/privacy/privacy_redactor.dart';
 import '../../library/data/library_query_repository.dart';
@@ -146,7 +147,11 @@ class _BulkMetadataImportPageState
                 ],
                 if (_result != null) ...[
                   const SizedBox(height: 12),
-                  _ResultCard(result: _result!),
+                  _ResultCard(
+                    result: _result!,
+                    onNewPreview: () => setState(() => _result = null),
+                    onBackToLibrary: () => context.go('/'),
+                  ),
                 ],
               ],
             ),
@@ -281,7 +286,10 @@ class _BulkMetadataImportPageState
           .read(applyBulkMetadataPlanUseCaseProvider)
           .call(plan);
       if (!mounted) return;
-      setState(() => _result = result);
+      setState(() {
+        _result = result;
+        _plan = null;
+      });
       ref.invalidate(libraryRowsProvider);
     } catch (error) {
       if (!mounted) return;
@@ -292,65 +300,15 @@ class _BulkMetadataImportPageState
   }
 
   Future<bool> _confirmApply() async {
-    final controller = TextEditingController();
     final plan = _plan;
     final requiredText =
         plan?.hasReplacements == true ? 'REEMPLAZAR' : 'APLICAR';
     final result = await showDialog<bool>(
       context: context,
       builder:
-          (context) => StatefulBuilder(
-            builder:
-                (context, setDialogState) => AlertDialog(
-                  title: const Text('Confirmar importación masiva'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Se aplicarán solo los juegos, campos y covers seleccionados.',
-                      ),
-                      if (plan != null) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          'Juegos: ${plan.selectedItems}\n'
-                          'Campos nuevos: ${plan.selectedNewFieldChanges}\n'
-                          'Campos reemplazados: ${plan.selectedReplacementFieldChanges}\n'
-                          'Covers nuevos: ${plan.selectedNewCovers}\n'
-                          'Covers reemplazados: ${plan.selectedReplacementCovers}',
-                        ),
-                      ],
-                      const SizedBox(height: 8),
-                      Text('Escribí $requiredText para confirmar.'),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: controller,
-                        decoration: const InputDecoration(
-                          labelText: 'Confirmación',
-                        ),
-                        onChanged: (_) => setDialogState(() {}),
-                      ),
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Cancelar'),
-                    ),
-                    FilledButton(
-                      onPressed:
-                          controller.text.trim().toUpperCase() == requiredText
-                              ? () => Navigator.pop(context, true)
-                              : null,
-                      child: Text(
-                        requiredText == 'REEMPLAZAR' ? 'Reemplazar' : 'Aplicar',
-                      ),
-                    ),
-                  ],
-                ),
-          ),
+          (context) =>
+              _ApplyConfirmationDialog(plan: plan, requiredText: requiredText),
     );
-    controller.dispose();
     return result == true;
   }
 
@@ -561,6 +519,86 @@ class _BulkMetadataImportPageState
       if (provider.providerId == providerId) return provider;
     }
     return providers.first;
+  }
+}
+
+class _ApplyConfirmationDialog extends StatefulWidget {
+  const _ApplyConfirmationDialog({
+    required this.plan,
+    required this.requiredText,
+  });
+
+  final BulkMetadataImportPlan? plan;
+  final String requiredText;
+
+  @override
+  State<_ApplyConfirmationDialog> createState() =>
+      _ApplyConfirmationDialogState();
+}
+
+class _ApplyConfirmationDialogState extends State<_ApplyConfirmationDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final plan = widget.plan;
+    final requiredText = widget.requiredText;
+    final canConfirm = _controller.text.trim().toUpperCase() == requiredText;
+
+    return AlertDialog(
+      title: const Text('Confirmar importación masiva'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Se aplicarán solo los juegos, campos y covers seleccionados.',
+            ),
+            if (plan != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Juegos: ${plan.selectedItems}\n'
+                'Campos nuevos: ${plan.selectedNewFieldChanges}\n'
+                'Campos reemplazados: ${plan.selectedReplacementFieldChanges}\n'
+                'Covers nuevos: ${plan.selectedNewCovers}\n'
+                'Covers reemplazados: ${plan.selectedReplacementCovers}',
+              ),
+            ],
+            const SizedBox(height: 8),
+            Text('Escribí $requiredText para confirmar.'),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _controller,
+              decoration: const InputDecoration(labelText: 'Confirmación'),
+              onChanged: (_) => setState(() {}),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: canConfirm ? () => Navigator.pop(context, true) : null,
+          child: Text(requiredText == 'REEMPLAZAR' ? 'Reemplazar' : 'Aplicar'),
+        ),
+      ],
+    );
   }
 }
 
@@ -1574,9 +1612,15 @@ class _Badge extends StatelessWidget {
 }
 
 class _ResultCard extends StatelessWidget {
-  const _ResultCard({required this.result});
+  const _ResultCard({
+    required this.result,
+    required this.onNewPreview,
+    required this.onBackToLibrary,
+  });
 
   final BulkImportResult result;
+  final VoidCallback onNewPreview;
+  final VoidCallback onBackToLibrary;
 
   @override
   Widget build(BuildContext context) {
@@ -1629,6 +1673,23 @@ class _ResultCard extends StatelessWidget {
               Text('Errores', style: Theme.of(context).textTheme.titleSmall),
               for (final error in result.errors) Text(error.displayMessage),
             ],
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.icon(
+                  onPressed: onBackToLibrary,
+                  icon: const Icon(Icons.library_books_outlined),
+                  label: const Text('Volver a biblioteca'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: onNewPreview,
+                  icon: const Icon(Icons.manage_search_outlined),
+                  label: const Text('Generar nuevo preview'),
+                ),
+              ],
+            ),
           ],
         ),
       ),

@@ -1,4 +1,5 @@
 import '../../../library/domain/game_status.dart';
+import '../../../catalogs/domain/catalog_normalizer.dart';
 import '../../../playthroughs/domain/playthrough_status.dart';
 import '../domain/csv_column_mapping.dart';
 import '../domain/csv_document.dart';
@@ -61,12 +62,18 @@ class BuildImportPreviewUseCase {
         _value(rawRow, mapping, ImportField.status),
         issues,
       );
-      final genres = _normalizer.splitMultiValue(
-        _value(rawRow, mapping, ImportField.genres),
-      );
-      final platforms = _normalizer.splitMultiValue(
-        _value(rawRow, mapping, ImportField.platforms),
-      );
+      final genres =
+          _normalizer
+              .splitMultiValue(_value(rawRow, mapping, ImportField.genres))
+              .map(canonicalGenreName)
+              .where((name) => name.isNotEmpty)
+              .toList();
+      final platforms =
+          _normalizer
+              .splitMultiValue(_value(rawRow, mapping, ImportField.platforms))
+              .map(canonicalPlatformName)
+              .where((name) => name.isNotEmpty)
+              .toList();
       final type = _normalizer.normalizeType(
         _value(rawRow, mapping, ImportField.type),
       );

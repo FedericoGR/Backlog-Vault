@@ -51,7 +51,7 @@ void main() {
     expect(assets.single.externalId, '456');
     expect(
       assets.single.remoteUrl,
-      'https://images.igdb.com/igdb/image/upload/t_cover_big/cofixture.jpg',
+      'https://images.igdb.com/igdb/image/upload/t_720p/cofixture.jpg',
     );
     expect(assets.single.width, 600);
     expect(assets.single.height, 800);

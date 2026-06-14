@@ -1,3 +1,5 @@
+import 'package:backlog_vault/features/bulk_metadata_import/application/apply_bulk_metadata_plan_use_case.dart';
+import 'package:backlog_vault/features/bulk_metadata_import/application/bulk_metadata_import_providers.dart';
 import 'package:backlog_vault/features/bulk_metadata_import/presentation/bulk_metadata_import_page.dart';
 import 'package:backlog_vault/features/bulk_metadata_import/domain/bulk_metadata_import_models.dart';
 import 'package:backlog_vault/features/library/data/library_query_repository.dart';
@@ -7,6 +9,7 @@ import 'package:backlog_vault/features/media/application/media_providers.dart';
 import 'package:backlog_vault/features/media/domain/media_asset_models.dart';
 import 'package:backlog_vault/features/media/domain/media_provider.dart';
 import 'package:backlog_vault/features/metadata/application/metadata_providers.dart';
+import 'package:backlog_vault/features/metadata/domain/apply_metadata_request.dart';
 import 'package:backlog_vault/features/metadata/domain/external_game_details.dart';
 import 'package:backlog_vault/features/metadata/domain/metadata_provider.dart';
 import 'package:backlog_vault/features/metadata/domain/metadata_search_candidate.dart';
@@ -92,12 +95,69 @@ void main() {
     expect(find.text('No hay campos de metadata para aplicar.'), findsNothing);
     expect(find.text('Con match'), findsNothing);
 
-    await tester.drag(
-      find.byType(ListView),
-      const Offset(0, -500),
-    );
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
     await tester.pumpAndSettle();
     expect(find.text('Aplicar cambios', skipOffstage: false), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('applied plan is replaced by a final result state', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          libraryRowsProvider.overrideWith((ref) => Stream.value(_rows)),
+          metadataProviderListProvider.overrideWith(
+            (ref) => const [_FakeIgdbProvider()],
+          ),
+          mediaProviderListProvider.overrideWith(
+            (ref) => const [_FakeSteamGridDbProvider()],
+          ),
+          applyBulkMetadataPlanUseCaseProvider.overrideWith(
+            (ref) => const ApplyBulkMetadataPlanUseCase(
+              applyMetadata: _noopApplyMetadata,
+              saveCover: _noopSaveCover,
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          theme: ThemeData(useMaterial3: true),
+          home: const BulkMetadataImportPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Solo cover art'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byType(DropdownButtonFormField<BulkCoverProviderMode>),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SteamGridDB').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Generar preview'));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Aplicar cambios'),
+      360,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Aplicar cambios'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).last, 'APLICAR');
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Aplicar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Resultado'), findsOneWidget);
+    expect(find.text('Generar nuevo preview'), findsOneWidget);
+    expect(find.text('Volver a biblioteca'), findsOneWidget);
+    expect(find.text('Aplicar cambios'), findsNothing);
+    expect(find.text('Preview masivo'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }
@@ -196,3 +256,10 @@ class _FakeSteamGridDbProvider implements MediaProvider {
     ];
   }
 }
+
+Future<void> _noopApplyMetadata(ApplyMetadataRequest request) async {}
+
+Future<void> _noopSaveCover({
+  required String gameId,
+  required ExternalMediaAsset asset,
+}) async {}

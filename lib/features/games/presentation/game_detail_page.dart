@@ -170,7 +170,7 @@ class _GameDetailHeader extends ConsumerWidget {
                     'Salida ${formatVisibleDate(item.game.releaseDate)}',
                   ),
                 ),
-              Chip(label: Text('Tipo ${item.game.type}')),
+              Chip(label: Text('Tipo ${_displayGameType(item.game.type)}')),
             ],
           ),
           const SizedBox(height: 12),
@@ -264,7 +264,6 @@ class _GameProgressSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final active = summary.activePlaythrough;
     return _Section(
       title: 'Resumen y progreso',
       child: Column(
@@ -290,6 +289,10 @@ class _GameProgressSection extends StatelessWidget {
                 value: summary.playthroughCount.toString(),
               ),
               _InfoChip(
+                label: 'Estado',
+                value: parseGameStatus(item.entry.status).label,
+              ),
+              _InfoChip(
                 label: 'Plataformas',
                 value: _names(item.platforms.map((platform) => platform.name)),
               ),
@@ -299,18 +302,6 @@ class _GameProgressSection extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          if (active == null)
-            const Text('No hay una partida activa o pausada.')
-          else
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.play_circle_outline),
-              title: Text(
-                'Partida ${parsePlaythroughStatus(active.status).label.toLowerCase()}',
-              ),
-              subtitle: Text(_playthroughSubtitle(active, item.platforms)),
-            ),
         ],
       ),
     );
@@ -1101,6 +1092,16 @@ String _platformName(List<Platform> platforms, String? platformId) {
     if (platform.id == platformId) return platform.name;
   }
   return '-';
+}
+
+String _displayGameType(String value) {
+  final normalized = value.trim().toLowerCase();
+  return switch (normalized) {
+    'un jugador' || 'single_player' || 'single player' => 'Un jugador',
+    'multijugador' || 'multiplayer' => 'Multijugador',
+    'cooperativo' || 'cooperative' || 'coop' || 'co-op' => 'Cooperativo',
+    _ => 'Sin definir',
+  };
 }
 
 String _names(Iterable<String> values) {

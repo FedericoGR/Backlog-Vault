@@ -30,6 +30,9 @@ class GameListPage extends ConsumerStatefulWidget {
 }
 
 class _GameListPageState extends ConsumerState<GameListPage> {
+  bool _selectionMode = false;
+  final _selectedEntryIds = <String>{};
+
   @override
   void initState() {
     super.initState();
@@ -82,7 +85,24 @@ class _GameListPageState extends ConsumerState<GameListPage> {
     final processor = ref.watch(libraryTableProcessorProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Backlog Vault')),
+      appBar: AppBar(
+        title: const Text('Backlog Vault'),
+        actions: [
+          IconButton(
+            tooltip:
+                _selectionMode ? 'Salir de selección' : 'Seleccionar varios',
+            onPressed: () {
+              setState(() {
+                _selectionMode = !_selectionMode;
+                if (!_selectionMode) _selectedEntryIds.clear();
+              });
+            },
+            icon: Icon(
+              _selectionMode ? Icons.close : Icons.checklist_rtl_outlined,
+            ),
+          ),
+        ],
+      ),
       body: rows.when(
         data: (items) {
           final result = processor.apply(
@@ -90,6 +110,12 @@ class _GameListPageState extends ConsumerState<GameListPage> {
             filter: tableState.filter,
             sort: tableState.sort,
           );
+          final visibleIds =
+              result.rows.map((row) => row.libraryEntryId).toSet();
+          final allIds = items.map((row) => row.libraryEntryId).toSet();
+          if (_selectionMode) {
+            _selectedEntryIds.removeWhere((id) => !allIds.contains(id));
+          }
 
           return LayoutBuilder(
             builder: (context, constraints) {
@@ -112,6 +138,24 @@ class _GameListPageState extends ConsumerState<GameListPage> {
                     genres: genres,
                   ),
                   _LibrarySummary(summary: result.summary),
+                  if (_selectionMode)
+                    _LibraryBulkSelectionBar(
+                      selectedCount: _selectedEntryIds.length,
+                      visibleCount: visibleIds.length,
+                      totalCount: allIds.length,
+                      onSelectVisible:
+                          () => setState(
+                            () => _selectedEntryIds.addAll(visibleIds),
+                          ),
+                      onSelectAll:
+                          () =>
+                              setState(() => _selectedEntryIds.addAll(allIds)),
+                      onClear: () => setState(() => _selectedEntryIds.clear()),
+                      onDelete:
+                          _selectedEntryIds.isEmpty
+                              ? null
+                              : () => _confirmDeleteSelected(context),
+                    ),
                   Expanded(
                     child:
                         items.isEmpty
@@ -119,10 +163,25 @@ class _GameListPageState extends ConsumerState<GameListPage> {
                             : result.rows.isEmpty
                             ? const _EmptyFilteredState()
                             : layoutMode == LibraryLayoutMode.gallery
-                            ? _LibraryGalleryGrid(rows: result.rows)
+                            ? _LibraryGalleryGrid(
+                              rows: result.rows,
+                              selectionMode: _selectionMode,
+                              selectedIds: _selectedEntryIds,
+                              onSelectionChanged: _setRowSelected,
+                            )
                             : isWide
-                            ? _LibraryDataTable(rows: result.rows)
-                            : _LibraryCardList(rows: result.rows),
+                            ? _LibraryDataTable(
+                              rows: result.rows,
+                              selectionMode: _selectionMode,
+                              selectedIds: _selectedEntryIds,
+                              onSelectionChanged: _setRowSelected,
+                            )
+                            : _LibraryCardList(
+                              rows: result.rows,
+                              selectionMode: _selectionMode,
+                              selectedIds: _selectedEntryIds,
+                              onSelectionChanged: _setRowSelected,
+                            ),
                   ),
                 ],
               );
@@ -133,6 +192,73 @@ class _GameListPageState extends ConsumerState<GameListPage> {
         error: (error, stackTrace) => _ErrorState(message: error.toString()),
       ),
     );
+  }
+
+  void _setRowSelected(String entryId, bool selected) {
+    setState(() {
+      if (selected) {
+        _selectedEntryIds.add(entryId);
+      } else {
+        _selectedEntryIds.remove(entryId);
+      }
+    });
+  }
+
+  Future<void> _confirmDeleteSelected(BuildContext context) async {
+    final count = _selectedEntryIds.length;
+    final controller = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => StatefulBuilder(
+            builder:
+                (context, setDialogState) => AlertDialog(
+                  title: const Text('Eliminar juegos seleccionados'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Se marcarán como eliminados $count juegos. No se borrarán físicamente.',
+                      ),
+                      const SizedBox(height: 12),
+                      const Text('Escribí ELIMINAR para confirmar.'),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: controller,
+                        decoration: const InputDecoration(
+                          labelText: 'Confirmación',
+                        ),
+                        onChanged: (_) => setDialogState(() {}),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Cancelar'),
+                    ),
+                    FilledButton(
+                      onPressed:
+                          controller.text.trim().toUpperCase() == 'ELIMINAR'
+                              ? () => Navigator.pop(context, true)
+                              : null,
+                      child: const Text('Eliminar seleccionados'),
+                    ),
+                  ],
+                ),
+          ),
+    );
+    controller.dispose();
+    if (confirmed != true || !mounted) return;
+
+    await ref.read(gameRepositoryProvider).softDeleteMany(_selectedEntryIds);
+    ref.invalidate(libraryRowsProvider);
+    if (!mounted) return;
+    setState(() {
+      _selectedEntryIds.clear();
+      _selectionMode = false;
+    });
   }
 }
 
@@ -480,10 +606,82 @@ class _LibrarySummary extends StatelessWidget {
   }
 }
 
+class _LibraryBulkSelectionBar extends StatelessWidget {
+  const _LibraryBulkSelectionBar({
+    required this.selectedCount,
+    required this.visibleCount,
+    required this.totalCount,
+    required this.onSelectVisible,
+    required this.onSelectAll,
+    required this.onClear,
+    required this.onDelete,
+  });
+
+  final int selectedCount;
+  final int visibleCount;
+  final int totalCount;
+  final VoidCallback onSelectVisible;
+  final VoidCallback onSelectAll;
+  final VoidCallback onClear;
+  final VoidCallback? onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              InputChip(
+                onPressed: null,
+                label: Text('$selectedCount seleccionados'),
+              ),
+              OutlinedButton(
+                onPressed: visibleCount == 0 ? null : onSelectVisible,
+                child: Text('Seleccionar visibles ($visibleCount)'),
+              ),
+              OutlinedButton(
+                onPressed: totalCount == 0 ? null : onSelectAll,
+                child: Text('Seleccionar todos ($totalCount)'),
+              ),
+              OutlinedButton(
+                onPressed: selectedCount == 0 ? null : onClear,
+                child: const Text('Deseleccionar todos'),
+              ),
+              FilledButton.icon(
+                onPressed: onDelete,
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Eliminar seleccionados'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _LibraryDataTable extends ConsumerWidget {
-  const _LibraryDataTable({required this.rows});
+  const _LibraryDataTable({
+    required this.rows,
+    required this.selectionMode,
+    required this.selectedIds,
+    required this.onSelectionChanged,
+  });
 
   final List<LibraryGameRow> rows;
+  final bool selectionMode;
+  final Set<String> selectedIds;
+  final void Function(String entryId, bool selected) onSelectionChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -501,6 +699,7 @@ class _LibraryDataTable extends ConsumerWidget {
         sortColumnIndex: sortedColumnIndex == -1 ? null : sortedColumnIndex,
         sortAscending: state.sort.ascending,
         columns: [
+          if (selectionMode) const DataColumn2(label: Text(''), fixedWidth: 56),
           for (final column in visibleColumns)
             DataColumn2(
               label: Text(column.label),
@@ -520,7 +719,19 @@ class _LibraryDataTable extends ConsumerWidget {
         rows: [
           for (final row in rows)
             DataRow(
+              selected: selectedIds.contains(row.libraryEntryId),
               cells: [
+                if (selectionMode)
+                  DataCell(
+                    Checkbox(
+                      value: selectedIds.contains(row.libraryEntryId),
+                      onChanged:
+                          (value) => onSelectionChanged(
+                            row.libraryEntryId,
+                            value ?? false,
+                          ),
+                    ),
+                  ),
                 for (final column in visibleColumns)
                   DataCell(
                     _tableCell(context, row, column),
@@ -539,9 +750,17 @@ class _LibraryDataTable extends ConsumerWidget {
 }
 
 class _LibraryCardList extends ConsumerWidget {
-  const _LibraryCardList({required this.rows});
+  const _LibraryCardList({
+    required this.rows,
+    required this.selectionMode,
+    required this.selectedIds,
+    required this.onSelectionChanged,
+  });
 
   final List<LibraryGameRow> rows;
+  final bool selectionMode;
+  final Set<String> selectedIds;
+  final void Function(String entryId, bool selected) onSelectionChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -551,16 +770,27 @@ class _LibraryCardList extends ConsumerWidget {
       separatorBuilder: (context, index) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final row = rows[index];
+        final selected = selectedIds.contains(row.libraryEntryId);
         return ListTile(
           shape: RoundedRectangleBorder(
             side: BorderSide(color: Theme.of(context).dividerColor),
             borderRadius: BorderRadius.circular(8),
           ),
-          leading: LibraryCoverThumbnail(
-            localPath: row.selectedCoverLocalPath,
-            width: 48,
-            height: 64,
-          ),
+          leading:
+              selectionMode
+                  ? Checkbox(
+                    value: selected,
+                    onChanged:
+                        (value) => onSelectionChanged(
+                          row.libraryEntryId,
+                          value ?? false,
+                        ),
+                  )
+                  : LibraryCoverThumbnail(
+                    localPath: row.selectedCoverLocalPath,
+                    width: 48,
+                    height: 64,
+                  ),
           title: Text(row.title, maxLines: 1, overflow: TextOverflow.ellipsis),
           subtitle: Text(
             [
@@ -575,10 +805,17 @@ class _LibraryCardList extends ConsumerWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          onTap: () => context.go('/games/${row.libraryEntryId}'),
+          selected: selected,
+          onTap:
+              selectionMode
+                  ? () => onSelectionChanged(row.libraryEntryId, !selected)
+                  : () => context.go('/games/${row.libraryEntryId}'),
           trailing: SizedBox(
             width: 48,
-            child: LibraryRowActions(row: row, compact: true),
+            child:
+                selectionMode
+                    ? const SizedBox.shrink()
+                    : LibraryRowActions(row: row, compact: true),
           ),
         );
       },
@@ -587,9 +824,17 @@ class _LibraryCardList extends ConsumerWidget {
 }
 
 class _LibraryGalleryGrid extends StatelessWidget {
-  const _LibraryGalleryGrid({required this.rows});
+  const _LibraryGalleryGrid({
+    required this.rows,
+    required this.selectionMode,
+    required this.selectedIds,
+    required this.onSelectionChanged,
+  });
 
   final List<LibraryGameRow> rows;
+  final bool selectionMode;
+  final Set<String> selectedIds;
+  final void Function(String entryId, bool selected) onSelectionChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -602,15 +847,31 @@ class _LibraryGalleryGrid extends StatelessWidget {
         crossAxisSpacing: 12,
       ),
       itemCount: rows.length,
-      itemBuilder: (context, index) => _LibraryGameCard(row: rows[index]),
+      itemBuilder:
+          (context, index) => _LibraryGameCard(
+            row: rows[index],
+            selectionMode: selectionMode,
+            selected: selectedIds.contains(rows[index].libraryEntryId),
+            onSelectionChanged:
+                (selected) =>
+                    onSelectionChanged(rows[index].libraryEntryId, selected),
+          ),
     );
   }
 }
 
 class _LibraryGameCard extends StatelessWidget {
-  const _LibraryGameCard({required this.row});
+  const _LibraryGameCard({
+    required this.row,
+    required this.selectionMode,
+    required this.selected,
+    required this.onSelectionChanged,
+  });
 
   final LibraryGameRow row;
+  final bool selectionMode;
+  final bool selected;
+  final ValueChanged<bool> onSelectionChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -619,21 +880,47 @@ class _LibraryGameCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.zero,
       child: InkWell(
-        onTap: () => context.go('/games/${row.libraryEntryId}'),
+        onTap:
+            selectionMode
+                ? () => onSelectionChanged(!selected)
+                : () => context.go('/games/${row.libraryEntryId}'),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
               height: 210,
               width: double.infinity,
-              child: LayoutBuilder(
-                builder:
-                    (context, constraints) => LibraryCoverThumbnail(
-                      localPath: row.selectedCoverLocalPath,
-                      width: constraints.maxWidth,
-                      height: 210,
-                      borderRadius: 0,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  LayoutBuilder(
+                    builder:
+                        (context, constraints) => LibraryCoverThumbnail(
+                          localPath: row.selectedCoverLocalPath,
+                          width: constraints.maxWidth,
+                          height: 210,
+                          borderRadius: 0,
+                        ),
+                  ),
+                  if (selectionMode)
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surface.withValues(alpha: 0.85),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Checkbox(
+                          value: selected,
+                          onChanged:
+                              (value) => onSelectionChanged(value ?? false),
+                        ),
+                      ),
                     ),
+                ],
               ),
             ),
             Expanded(
@@ -653,7 +940,8 @@ class _LibraryGameCard extends StatelessWidget {
                             style: theme.textTheme.titleMedium,
                           ),
                         ),
-                        LibraryRowActions(row: row, compact: true),
+                        if (!selectionMode)
+                          LibraryRowActions(row: row, compact: true),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -1506,7 +1794,7 @@ Widget _tableCell(
     LibraryColumnKey.completedDate => formatVisibleDate(row.completedAt),
     LibraryColumnKey.hours =>
       row.hoursPlayed == null ? '-' : row.hoursPlayed!.toStringAsFixed(1),
-    LibraryColumnKey.type => row.type,
+    LibraryColumnKey.type => _displayGameType(row.type),
     LibraryColumnKey.notes =>
       row.personalNotes?.trim().isEmpty ?? true
           ? '-'
@@ -1605,6 +1893,16 @@ String _namesForIds(Set<String> ids, List<LibraryCatalogItem> items) {
   final namesById = {for (final item in items) item.id: item.name};
   final names = ids.map((id) => namesById[id] ?? id).toList();
   return names.isEmpty ? '-' : names.join(', ');
+}
+
+String _displayGameType(String value) {
+  final normalized = value.trim().toLowerCase();
+  return switch (normalized) {
+    'un jugador' || 'single_player' || 'single player' => 'Un jugador',
+    'multijugador' || 'multiplayer' => 'Multijugador',
+    'cooperativo' || 'cooperative' || 'coop' || 'co-op' => 'Cooperativo',
+    _ => '-',
+  };
 }
 
 double? _parseDouble(String value) {

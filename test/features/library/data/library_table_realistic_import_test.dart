@@ -88,7 +88,7 @@ void main() {
         _titles(
           processor,
           rows,
-          LibraryFilterState(genreIds: {_idForGenre(rows, 'Action')}),
+          LibraryFilterState(genreIds: {_idForGenre(rows, 'Acción')}),
         ),
         ['Completed Game'],
       );

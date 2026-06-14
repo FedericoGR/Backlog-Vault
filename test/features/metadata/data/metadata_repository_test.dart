@@ -61,7 +61,7 @@ void main() {
         platforms.map((platform) => platform.name),
         containsAll(['PC', 'Nintendo Switch']),
       );
-      expect(genres.map((genre) => genre.name), containsAll(['RPG', 'Action']));
+      expect(genres.map((genre) => genre.name), containsAll(['RPG', 'Acción']));
       expect(platformLinks, hasLength(2));
       expect(genreLinks, hasLength(2));
     },

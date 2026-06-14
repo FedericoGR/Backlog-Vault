@@ -85,7 +85,7 @@ void main() {
       existingGames: const [],
     );
 
-    expect(preview.rows.single.genres, ['RPG', 'Action']);
+    expect(preview.rows.single.genres, ['RPG', 'Acción']);
     expect(preview.rows.single.platforms, ['PC', 'Xbox']);
   });
 
