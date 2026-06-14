@@ -217,6 +217,51 @@ void main() {
   });
 
   group('BuildBulkMetadataPlanUseCase', () {
+    test('default options analyze all active rows', () async {
+      final provider = _FakeMetadataProvider(
+        candidates: const {
+          'Complete': [
+            MetadataSearchCandidate(
+              providerId: 'igdb',
+              providerName: 'IGDB',
+              externalId: '1',
+              title: 'Complete',
+            ),
+          ],
+          'Missing': [
+            MetadataSearchCandidate(
+              providerId: 'igdb',
+              providerName: 'IGDB',
+              externalId: '2',
+              title: 'Missing',
+            ),
+          ],
+        },
+        details: {
+          '1': _details(title: 'Complete', externalId: '1'),
+          '2': _details(title: 'Missing', externalId: '2'),
+        },
+      );
+
+      final plan = await const BuildBulkMetadataPlanUseCase().call(
+        rows: [
+          _row(
+            title: 'Complete',
+            hasExternalMetadata: true,
+            selectedCoverLocalPath: 'media/games/complete/cover.jpg',
+            releaseDate: DateTime(2020),
+            platforms: const [LibraryCatalogItem(id: 'pc', name: 'PC')],
+            genres: const [LibraryCatalogItem(id: 'rpg', name: 'RPG')],
+          ),
+          _row(gameId: 'game-2', libraryEntryId: 'entry-2', title: 'Missing'),
+        ],
+        provider: provider,
+        options: const BulkMetadataImportOptions(providerId: 'igdb'),
+      );
+
+      expect(plan.items.map((item) => item.row.title), ['Complete', 'Missing']);
+    });
+
     test(
       'builds safe preview with selected empty fields and IGDB cover',
       () async {
@@ -255,6 +300,121 @@ void main() {
         );
         expect(item.coverPlan?.selected, isTrue);
         expect(item.coverPlan?.asset?.providerId, 'igdb');
+      },
+    );
+
+    test('metadata only mode does not plan covers', () async {
+      final provider = _FakeMetadataProvider(
+        candidates: {
+          'Hades': const [
+            MetadataSearchCandidate(
+              providerId: 'igdb',
+              providerName: 'IGDB',
+              externalId: '1',
+              title: 'Hades',
+            ),
+          ],
+        },
+        details: {'1': _details()},
+      );
+
+      final plan = await const BuildBulkMetadataPlanUseCase().call(
+        rows: [_row(title: 'Hades')],
+        provider: provider,
+        options: const BulkMetadataImportOptions(
+          providerId: 'igdb',
+          contentMode: BulkImportContentMode.metadataOnly,
+        ),
+      );
+
+      expect(plan.items.single.fieldPlans, isNotEmpty);
+      expect(plan.items.single.coverPlan, isNull);
+    });
+
+    test('cover only mode plans covers without metadata fields', () async {
+      final resolver = BulkCoverPlanResolver(
+        mediaProviders: [
+          _FakeMediaProvider(
+            providerId: 'steamgriddb',
+            providerName: 'SteamGridDB',
+            candidates: const [
+              MediaSearchCandidate(
+                providerId: 'steamgriddb',
+                providerName: 'SteamGridDB',
+                externalId: 'sgdb-game',
+                title: 'Hades',
+              ),
+            ],
+            assets: [_steamCoverAsset()],
+          ),
+        ],
+      );
+
+      final plan = await const BuildBulkMetadataPlanUseCase().call(
+        rows: [_row(title: 'Hades')],
+        provider: const _FakeMetadataProvider(),
+        options: const BulkMetadataImportOptions(
+          providerId: 'igdb',
+          contentMode: BulkImportContentMode.coverOnly,
+          coverProviderMode: BulkCoverProviderMode.steamgriddb,
+        ),
+        resolveCoverPlan: resolver.call,
+      );
+
+      final item = plan.items.single;
+      expect(item.selectedDetails, isNull);
+      expect(item.fieldPlans, isEmpty);
+      expect(item.coverPlan?.asset?.providerId, 'steamgriddb');
+      expect(item.coverPlan?.selected, isTrue);
+      expect(item.canApply, isTrue);
+    });
+
+    test(
+      'all scope keeps games with existing cover in cover only preview',
+      () async {
+        final resolver = BulkCoverPlanResolver(
+          mediaProviders: [
+            _FakeMediaProvider(
+              providerId: 'steamgriddb',
+              providerName: 'SteamGridDB',
+              candidates: const [
+                MediaSearchCandidate(
+                  providerId: 'steamgriddb',
+                  providerName: 'SteamGridDB',
+                  externalId: 'sgdb-game',
+                  title: 'Hades',
+                ),
+              ],
+              assets: [_steamCoverAsset()],
+            ),
+          ],
+        );
+
+        final plan = await const BuildBulkMetadataPlanUseCase().call(
+          rows: [
+            _row(title: 'Hades', selectedCoverLocalPath: 'media/cover.jpg'),
+          ],
+          provider: const _FakeMetadataProvider(),
+          options: const BulkMetadataImportOptions(
+            providerId: 'igdb',
+            contentMode: BulkImportContentMode.coverOnly,
+            coverProviderMode: BulkCoverProviderMode.steamgriddb,
+            scope: BulkMetadataImportScope.all,
+          ),
+          resolveCoverPlan: resolver.call,
+        );
+
+        expect(plan.items, hasLength(1));
+        expect(plan.items.single.coverPlan?.canApply, isFalse);
+        expect(plan.items.single.included, isFalse);
+        expect(
+          plan.items.single.issues.single.displayMessage,
+          contains('Hades'),
+        );
+        expect(
+          plan.items.single.issues.single.displayMessage,
+          contains('IGDB'),
+        );
       },
     );
 
@@ -560,6 +720,8 @@ void main() {
       );
 
       final message = plan.items.single.issues.single.message;
+      expect(plan.items.single.issues.single.displayMessage, contains('Hades'));
+      expect(plan.items.single.issues.single.displayMessage, contains('IGDB'));
       expect(message, contains('Bearer [REDACTED]'));
       expect(message, isNot(contains('test_access_token')));
       expect(message, isNot(contains('test_client_secret')));
@@ -886,6 +1048,45 @@ void main() {
       expect(result.coversSaved, 0);
     });
 
+    test('cover only item saves cover without metadata details', () async {
+      var metadataCalls = 0;
+      var coverCalls = 0;
+      final useCase = ApplyBulkMetadataPlanUseCase(
+        applyMetadata: (request) async {
+          metadataCalls++;
+        },
+        saveCover: ({required gameId, required asset}) async {
+          coverCalls++;
+        },
+      );
+
+      final result = await useCase.call(
+        BulkMetadataImportPlan(
+          options: const BulkMetadataImportOptions(
+            providerId: 'igdb',
+            contentMode: BulkImportContentMode.coverOnly,
+          ),
+          items: [
+            BulkMetadataImportItem(
+              row: _row(gameId: 'game-ok', libraryEntryId: 'entry-ok'),
+              included: true,
+              coverPlan: BulkCoverPlan(
+                asset: _coverAsset(),
+                selected: true,
+                canApply: true,
+              ),
+            ),
+          ],
+        ),
+      );
+
+      expect(metadataCalls, 0);
+      expect(coverCalls, 1);
+      expect(result.processed, 1);
+      expect(result.metadataApplied, 0);
+      expect(result.coversSaved, 1);
+    });
+
     test('skipped warnings are included in final result', () async {
       final useCase = ApplyBulkMetadataPlanUseCase(
         applyMetadata: (request) async {},
@@ -947,6 +1148,8 @@ void main() {
         expect(result.coversSaved, 1);
         expect(result.newCoversSaved, 1);
         expect(result.replacedCoversSaved, 0);
+        expect(result.analyzed, 1);
+        expect(result.matched, 0);
       },
     );
 

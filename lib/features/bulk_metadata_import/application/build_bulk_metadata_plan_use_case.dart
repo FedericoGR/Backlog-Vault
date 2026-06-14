@@ -86,6 +86,14 @@ class BuildBulkMetadataPlanUseCase {
     required BulkExternalIdsLoader? loadExternalIds,
     required BulkCoverPlanResolve? resolveCoverPlan,
   }) async {
+    if (options.contentMode == BulkImportContentMode.coverOnly) {
+      return _buildCoverOnlyItem(
+        row: row,
+        provider: provider,
+        options: options,
+        resolveCoverPlan: resolveCoverPlan,
+      );
+    }
     try {
       final externalIds =
           loadExternalIds == null
@@ -106,7 +114,7 @@ class BuildBulkMetadataPlanUseCase {
               severity: BulkImportIssueSeverity.info,
             ),
           ],
-        );
+        ).withIssueContext(provider);
       }
 
       final scored = matchScorer.scoreCandidates(
@@ -129,7 +137,7 @@ class BuildBulkMetadataPlanUseCase {
               severity: BulkImportIssueSeverity.warning,
             ),
           ],
-        );
+        ).withIssueContext(provider);
       }
 
       return buildItemFromCandidate(
@@ -151,7 +159,57 @@ class BuildBulkMetadataPlanUseCase {
             severity: BulkImportIssueSeverity.error,
           ),
         ],
+      ).withIssueContext(provider);
+    }
+  }
+
+  Future<BulkMetadataImportItem> _buildCoverOnlyItem({
+    required LibraryGameRow row,
+    required MetadataProvider provider,
+    required BulkMetadataImportOptions options,
+    required BulkCoverPlanResolve? resolveCoverPlan,
+  }) async {
+    try {
+      final details = ExternalGameDetails(
+        providerId: provider.providerId,
+        providerName: provider.displayName,
+        externalId: row.gameId,
+        title: row.title,
       );
+      final coverPlan =
+          resolveCoverPlan == null
+              ? await _coverPlan(row: row, details: details, options: options)
+              : await resolveCoverPlan(
+                row: row,
+                details: details,
+                options: options,
+              );
+      final issues = <BulkImportIssue>[
+        if (coverPlan != null &&
+            !coverPlan.canApply &&
+            coverPlan.reason != null)
+          BulkImportIssue(
+            message: coverPlan.reason!,
+            severity: BulkImportIssueSeverity.info,
+          ),
+      ];
+      return BulkMetadataImportItem(
+        row: row,
+        included: coverPlan?.selected == true,
+        coverPlan: coverPlan,
+        issues: issues,
+      ).withIssueContext(provider);
+    } catch (error) {
+      return BulkMetadataImportItem(
+        row: row,
+        included: false,
+        issues: [
+          BulkImportIssue(
+            message: privacyRedactor.redact(_messageForError(error)),
+            severity: BulkImportIssueSeverity.error,
+          ),
+        ],
+      ).withIssueContext(provider);
     }
   }
 
@@ -200,7 +258,7 @@ class BuildBulkMetadataPlanUseCase {
       final fieldPlans = diffBuilder.build(
         row: row,
         details: details,
-        includeMetadata: options.includeMetadata,
+        includeMetadata: options.shouldImportMetadata,
         applyMode: options.applyMode,
       );
       final coverPlan =
@@ -226,7 +284,7 @@ class BuildBulkMetadataPlanUseCase {
         fieldPlans: fieldPlans,
         coverPlan: coverPlan,
         issues: issues,
-      );
+      ).withIssueContext(provider);
     } catch (error) {
       return BulkMetadataImportItem(
         row: row,
@@ -238,7 +296,7 @@ class BuildBulkMetadataPlanUseCase {
             severity: BulkImportIssueSeverity.error,
           ),
         ],
-      );
+      ).withIssueContext(provider);
     }
   }
 
@@ -298,5 +356,24 @@ class BuildBulkMetadataPlanUseCase {
   String _messageForError(Object error) {
     if (error is MetadataException) return error.message;
     return 'No se pudo analizar este juego con el proveedor seleccionado.';
+  }
+}
+
+extension on BulkMetadataImportItem {
+  BulkMetadataImportItem withIssueContext(MetadataProvider provider) {
+    if (issues.isEmpty) return this;
+    return copyWith(
+      issues: [
+        for (final issue in issues)
+          BulkImportIssue(
+            message: issue.message,
+            severity: issue.severity,
+            gameTitle: issue.gameTitle ?? row.title,
+            providerId: issue.providerId ?? provider.providerId,
+            providerName: issue.providerName ?? provider.displayName,
+            isGlobal: issue.isGlobal,
+          ),
+      ],
+    );
   }
 }

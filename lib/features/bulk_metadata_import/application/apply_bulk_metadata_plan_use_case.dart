@@ -83,42 +83,44 @@ class ApplyBulkMetadataPlanUseCase {
             ),
       );
       processed++;
-      final details = item.selectedDetails!;
+      final details = item.selectedDetails;
       final selectedFields = _selectedFields(item);
       final replacementFields = _replacementFields(item);
-      try {
-        await _applyMetadata(
-          ApplyMetadataRequest(
-            gameId: item.row.gameId,
-            libraryEntryId: item.row.libraryEntryId,
-            details: details,
-            selectedFields: selectedFields,
-            replaceFields: replacementFields,
-            replaceExistingExternalId: plan.options.allowMetadataReplacement,
-          ),
-        );
-        if (selectedFields.isNotEmpty) metadataApplied++;
-        fieldChangesApplied += selectedFields.length;
-        newFieldChangesApplied +=
-            item.fieldPlans
-                .where((plan) => plan.selected && !plan.replacesExisting)
-                .length;
-        replacedFieldChangesApplied +=
-            item.fieldPlans
-                .where((plan) => plan.selected && plan.replacesExisting)
-                .length;
-        externalLinksSaved++;
-      } catch (error) {
-        errors.add(
-          BulkImportIssue(
-            message: privacyRedactor.redact(error.toString()),
-            severity: BulkImportIssueSeverity.error,
-            gameTitle: item.row.title,
-            providerId: details.providerId,
-            providerName: details.providerName,
-          ),
-        );
-        continue;
+      if (details != null) {
+        try {
+          await _applyMetadata(
+            ApplyMetadataRequest(
+              gameId: item.row.gameId,
+              libraryEntryId: item.row.libraryEntryId,
+              details: details,
+              selectedFields: selectedFields,
+              replaceFields: replacementFields,
+              replaceExistingExternalId: plan.options.allowMetadataReplacement,
+            ),
+          );
+          if (selectedFields.isNotEmpty) metadataApplied++;
+          fieldChangesApplied += selectedFields.length;
+          newFieldChangesApplied +=
+              item.fieldPlans
+                  .where((plan) => plan.selected && !plan.replacesExisting)
+                  .length;
+          replacedFieldChangesApplied +=
+              item.fieldPlans
+                  .where((plan) => plan.selected && plan.replacesExisting)
+                  .length;
+          externalLinksSaved++;
+        } catch (error) {
+          errors.add(
+            BulkImportIssue(
+              message: privacyRedactor.redact(error.toString()),
+              severity: BulkImportIssueSeverity.error,
+              gameTitle: item.row.title,
+              providerId: details.providerId,
+              providerName: details.providerName,
+            ),
+          );
+          continue;
+        }
       }
 
       final coverAsset = item.coverPlan?.asset;
@@ -147,6 +149,12 @@ class ApplyBulkMetadataPlanUseCase {
     }
 
     return BulkImportResult(
+      analyzed: plan.items.length,
+      matched: plan.matchedItems,
+      withoutMatch: plan.withoutMatchItems,
+      safeMatches: plan.safeItems,
+      probableMatches: plan.probableItems,
+      ambiguousMatches: plan.ambiguousItems,
       processed: processed,
       metadataApplied: metadataApplied,
       fieldChangesApplied: fieldChangesApplied,

@@ -11,10 +11,31 @@ enum BulkMetadataImportScope {
   onlyIncompleteFields;
 
   String get label => switch (this) {
-    BulkMetadataImportScope.all => 'Toda la biblioteca',
+    BulkMetadataImportScope.all => 'Todos los juegos activos',
     BulkMetadataImportScope.onlyWithoutMetadata => 'Solo sin metadata',
     BulkMetadataImportScope.onlyWithoutCover => 'Solo sin portada',
-    BulkMetadataImportScope.onlyIncompleteFields => 'Solo campos incompletos',
+    BulkMetadataImportScope.onlyIncompleteFields => 'Solo datos incompletos',
+  };
+}
+
+enum BulkImportContentMode {
+  metadataOnly,
+  coverOnly,
+  metadataAndCover;
+
+  String get label => switch (this) {
+    BulkImportContentMode.metadataOnly => 'Solo metadata',
+    BulkImportContentMode.coverOnly => 'Solo cover art',
+    BulkImportContentMode.metadataAndCover => 'Metadata + cover art',
+  };
+
+  String get description => switch (this) {
+    BulkImportContentMode.metadataOnly =>
+      'Completar o revisar campos de metadata sin descargar portadas.',
+    BulkImportContentMode.coverOnly =>
+      'Buscar portadas para juegos existentes sin aplicar campos de metadata.',
+    BulkImportContentMode.metadataAndCover =>
+      'Revisar metadata y portadas en el mismo preview antes de aplicar.',
   };
 }
 
@@ -85,7 +106,8 @@ enum BulkExistingCoverMode {
 class BulkMetadataImportOptions {
   const BulkMetadataImportOptions({
     required this.providerId,
-    this.scope = BulkMetadataImportScope.onlyIncompleteFields,
+    this.scope = BulkMetadataImportScope.all,
+    this.contentMode = BulkImportContentMode.metadataAndCover,
     this.applyMode = BulkMetadataApplyMode.completeMissing,
     this.coverProviderMode = BulkCoverProviderMode.igdb,
     this.existingCoverMode = BulkExistingCoverMode.keepExisting,
@@ -97,6 +119,7 @@ class BulkMetadataImportOptions {
 
   final String providerId;
   final BulkMetadataImportScope scope;
+  final BulkImportContentMode contentMode;
   final BulkMetadataApplyMode applyMode;
   final BulkCoverProviderMode coverProviderMode;
   final BulkExistingCoverMode existingCoverMode;
@@ -105,8 +128,13 @@ class BulkMetadataImportOptions {
   final bool replaceExistingCovers;
   final int maxConcurrency;
 
+  bool get shouldImportMetadata =>
+      includeMetadata && contentMode != BulkImportContentMode.coverOnly;
+
   bool get shouldImportCovers =>
-      includeMissingCovers && coverProviderMode != BulkCoverProviderMode.none;
+      contentMode != BulkImportContentMode.metadataOnly &&
+      includeMissingCovers &&
+      coverProviderMode != BulkCoverProviderMode.none;
 
   bool get allowCoverReplacement =>
       replaceExistingCovers ||
@@ -256,7 +284,10 @@ class BulkMetadataImportItem {
   bool get hasSelectedCover =>
       coverPlan != null && coverPlan!.selected && coverPlan!.canApply;
 
-  bool get canApply => included && selectedDetails != null && !hasErrorIssue;
+  bool get canApply =>
+      included &&
+      !hasErrorIssue &&
+      (selectedDetails != null || hasSelectedCover);
 
   BulkMetadataImportItem copyWith({
     bool? included,
@@ -290,6 +321,35 @@ class BulkMetadataImportPlan {
   final List<BulkImportIssue> globalIssues;
 
   int get selectedItems => items.where((item) => item.canApply).length;
+
+  int get matchedItems =>
+      items.where((item) => item.candidates.isNotEmpty).length;
+
+  int get withoutMatchItems =>
+      items
+          .where((item) => item.confidence == BulkMetadataConfidence.none)
+          .length;
+
+  int get safeItems =>
+      items
+          .where((item) => item.confidence == BulkMetadataConfidence.safe)
+          .length;
+
+  int get probableItems =>
+      items
+          .where((item) => item.confidence == BulkMetadataConfidence.probable)
+          .length;
+
+  int get ambiguousItems =>
+      items
+          .where((item) => item.confidence == BulkMetadataConfidence.ambiguous)
+          .length;
+
+  int get itemsWithMetadata =>
+      items.where((item) => item.fieldPlans.isNotEmpty).length;
+
+  int get itemsWithCover =>
+      items.where((item) => item.coverPlan != null).length;
 
   int get selectedFieldChanges => items.fold(
     0,
@@ -348,6 +408,12 @@ class BulkMetadataImportPlan {
 
 class BulkImportResult {
   const BulkImportResult({
+    this.analyzed = 0,
+    this.matched = 0,
+    this.withoutMatch = 0,
+    this.safeMatches = 0,
+    this.probableMatches = 0,
+    this.ambiguousMatches = 0,
     required this.processed,
     required this.metadataApplied,
     this.fieldChangesApplied = 0,
@@ -362,6 +428,12 @@ class BulkImportResult {
     required this.errors,
   });
 
+  final int analyzed;
+  final int matched;
+  final int withoutMatch;
+  final int safeMatches;
+  final int probableMatches;
+  final int ambiguousMatches;
   final int processed;
   final int metadataApplied;
   final int fieldChangesApplied;

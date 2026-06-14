@@ -180,7 +180,7 @@ class _HomeSection extends StatelessWidget {
             Text(emptyText, style: Theme.of(context).textTheme.bodyMedium)
           else
             SizedBox(
-              height: 206,
+              height: 216,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: rows.length,

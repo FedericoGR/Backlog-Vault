@@ -11,21 +11,27 @@ import '../domain/bulk_metadata_import_models.dart';
 
 enum _PreviewFilter {
   all,
+  selected,
   safe,
   probable,
   ambiguous,
   errors,
   none,
-  withCover;
+  withMetadata,
+  withCover,
+  withReplacements;
 
   String get label => switch (this) {
     _PreviewFilter.all => 'Todos',
+    _PreviewFilter.selected => 'Seleccionados',
     _PreviewFilter.safe => 'Seguros',
     _PreviewFilter.probable => 'Probables',
     _PreviewFilter.ambiguous => 'Ambiguos',
     _PreviewFilter.errors => 'Errores',
     _PreviewFilter.none => 'Sin resultado',
+    _PreviewFilter.withMetadata => 'Con metadata',
     _PreviewFilter.withCover => 'Con cover',
+    _PreviewFilter.withReplacements => 'Con reemplazos',
   };
 }
 
@@ -40,11 +46,11 @@ class BulkMetadataImportPage extends ConsumerStatefulWidget {
 class _BulkMetadataImportPageState
     extends ConsumerState<BulkMetadataImportPage> {
   String _providerId = 'igdb';
-  BulkMetadataImportScope _scope = BulkMetadataImportScope.onlyIncompleteFields;
+  BulkImportContentMode _contentMode = BulkImportContentMode.metadataAndCover;
+  BulkMetadataImportScope _scope = BulkMetadataImportScope.all;
   BulkMetadataApplyMode _applyMode = BulkMetadataApplyMode.completeMissing;
   BulkCoverProviderMode _coverProviderMode = BulkCoverProviderMode.igdb;
   BulkExistingCoverMode _existingCoverMode = BulkExistingCoverMode.keepExisting;
-  bool _includeMetadata = true;
   bool _scanning = false;
   bool _applying = false;
   bool _cancelRequested = false;
@@ -72,14 +78,16 @@ class _BulkMetadataImportPageState
                 _OptionsCard(
                   providers: providers,
                   selectedProviderId: selectedProvider.providerId,
+                  contentMode: _contentMode,
                   scope: _scope,
                   applyMode: _applyMode,
                   coverProviderMode: _coverProviderMode,
                   existingCoverMode: _existingCoverMode,
-                  includeMetadata: _includeMetadata,
                   busy: _scanning || _applying,
                   onProviderChanged:
                       (value) => setState(() => _providerId = value),
+                  onContentModeChanged:
+                      (value) => setState(() => _contentMode = value),
                   onScopeChanged: (value) => setState(() => _scope = value),
                   onApplyModeChanged:
                       (value) => setState(() => _applyMode = value),
@@ -87,8 +95,6 @@ class _BulkMetadataImportPageState
                       (value) => setState(() => _coverProviderMode = value),
                   onExistingCoverModeChanged:
                       (value) => setState(() => _existingCoverMode = value),
-                  onIncludeMetadataChanged:
-                      (value) => setState(() => _includeMetadata = value),
                   onScan: () => _scan(libraryRows, selectedProvider),
                 ),
                 if (_scanning) ...[
@@ -156,11 +162,14 @@ class _BulkMetadataImportPageState
     final options = BulkMetadataImportOptions(
       providerId: provider.providerId,
       scope: _scope,
+      contentMode: _contentMode,
       applyMode: _applyMode,
       coverProviderMode: _coverProviderMode,
       existingCoverMode: _existingCoverMode,
-      includeMetadata: _includeMetadata,
-      includeMissingCovers: _coverProviderMode != BulkCoverProviderMode.none,
+      includeMetadata: _contentMode != BulkImportContentMode.coverOnly,
+      includeMissingCovers:
+          _contentMode != BulkImportContentMode.metadataOnly &&
+          _coverProviderMode != BulkCoverProviderMode.none,
       replaceExistingCovers:
           _existingCoverMode == BulkExistingCoverMode.allowReplace,
       maxConcurrency: 2,
@@ -384,35 +393,35 @@ class _OptionsCard extends StatelessWidget {
   const _OptionsCard({
     required this.providers,
     required this.selectedProviderId,
+    required this.contentMode,
     required this.scope,
     required this.applyMode,
     required this.coverProviderMode,
     required this.existingCoverMode,
-    required this.includeMetadata,
     required this.busy,
     required this.onProviderChanged,
+    required this.onContentModeChanged,
     required this.onScopeChanged,
     required this.onApplyModeChanged,
     required this.onCoverProviderModeChanged,
     required this.onExistingCoverModeChanged,
-    required this.onIncludeMetadataChanged,
     required this.onScan,
   });
 
   final List<MetadataProvider> providers;
   final String selectedProviderId;
+  final BulkImportContentMode contentMode;
   final BulkMetadataImportScope scope;
   final BulkMetadataApplyMode applyMode;
   final BulkCoverProviderMode coverProviderMode;
   final BulkExistingCoverMode existingCoverMode;
-  final bool includeMetadata;
   final bool busy;
   final ValueChanged<String> onProviderChanged;
+  final ValueChanged<BulkImportContentMode> onContentModeChanged;
   final ValueChanged<BulkMetadataImportScope> onScopeChanged;
   final ValueChanged<BulkMetadataApplyMode> onApplyModeChanged;
   final ValueChanged<BulkCoverProviderMode> onCoverProviderModeChanged;
   final ValueChanged<BulkExistingCoverMode> onExistingCoverModeChanged;
-  final ValueChanged<bool> onIncludeMetadataChanged;
   final VoidCallback onScan;
 
   @override
@@ -423,135 +432,173 @@ class _OptionsCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Opciones', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                SizedBox(
-                  width: 260,
-                  child: DropdownButtonFormField<String>(
-                    initialValue: selectedProviderId,
-                    decoration: const InputDecoration(labelText: 'Proveedor'),
-                    items: [
-                      for (final provider in providers)
-                        DropdownMenuItem(
-                          value: provider.providerId,
-                          child: Text(provider.displayName),
-                        ),
-                    ],
-                    onChanged:
-                        busy
-                            ? null
-                            : (value) {
-                              if (value != null) onProviderChanged(value);
-                            },
-                  ),
-                ),
-                SizedBox(
-                  width: 280,
-                  child: DropdownButtonFormField<BulkMetadataImportScope>(
-                    initialValue: scope,
-                    decoration: const InputDecoration(labelText: 'Alcance'),
-                    items: [
-                      for (final value in BulkMetadataImportScope.values)
-                        DropdownMenuItem(
-                          value: value,
-                          child: Text(value.label),
-                        ),
-                    ],
-                    onChanged:
-                        busy
-                            ? null
-                            : (value) {
-                              if (value != null) onScopeChanged(value);
-                            },
-                  ),
-                ),
-                SizedBox(
-                  width: 280,
-                  child: DropdownButtonFormField<BulkMetadataApplyMode>(
-                    initialValue: applyMode,
-                    decoration: const InputDecoration(
-                      labelText: 'Modo metadata',
-                    ),
-                    items: [
-                      for (final value in BulkMetadataApplyMode.values)
-                        DropdownMenuItem(
-                          value: value,
-                          child: Text(value.label),
-                        ),
-                    ],
-                    onChanged:
-                        busy
-                            ? null
-                            : (value) {
-                              if (value != null) onApplyModeChanged(value);
-                            },
-                  ),
-                ),
-                SizedBox(
-                  width: 320,
-                  child: DropdownButtonFormField<BulkCoverProviderMode>(
-                    initialValue: coverProviderMode,
-                    decoration: const InputDecoration(
-                      labelText: 'Fuente de portada',
-                    ),
-                    items: [
-                      for (final value in BulkCoverProviderMode.values)
-                        DropdownMenuItem(
-                          value: value,
-                          child: Text(value.label),
-                        ),
-                    ],
-                    onChanged:
-                        busy
-                            ? null
-                            : (value) {
-                              if (value != null) {
-                                onCoverProviderModeChanged(value);
-                              }
-                            },
-                  ),
-                ),
-                SizedBox(
-                  width: 320,
-                  child: DropdownButtonFormField<BulkExistingCoverMode>(
-                    initialValue: existingCoverMode,
-                    decoration: const InputDecoration(
-                      labelText: 'Portadas existentes',
-                    ),
-                    items: [
-                      for (final value in BulkExistingCoverMode.values)
-                        DropdownMenuItem(
-                          value: value,
-                          child: Text(value.label),
-                        ),
-                    ],
-                    onChanged:
-                        busy
-                            ? null
-                            : (value) {
-                              if (value != null) {
-                                onExistingCoverModeChanged(value);
-                              }
-                            },
-                  ),
-                ),
-              ],
+            Text(
+              '1. ¿Qué querés importar?',
+              style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 0,
-              children: [
-                FilterChip(
-                  label: const Text('Metadata'),
-                  selected: includeMetadata,
-                  onSelected: busy ? null : onIncludeMetadataChanged,
-                ),
-              ],
+            const SizedBox(height: 12),
+            _ImportModePicker(
+              selected: contentMode,
+              busy: busy,
+              onChanged: onContentModeChanged,
+            ),
+            const SizedBox(height: 18),
+            Text('2. Opciones', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 12),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final compact = constraints.maxWidth < 720;
+                final width = compact ? constraints.maxWidth : 320.0;
+                return Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    _OptionBox(
+                      width: width,
+                      child: DropdownButtonFormField<BulkMetadataImportScope>(
+                        initialValue: scope,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Juegos a analizar',
+                          helperText: 'Esto no decide qué se pisa.',
+                        ),
+                        items: [
+                          for (final value in BulkMetadataImportScope.values)
+                            DropdownMenuItem(
+                              value: value,
+                              child: Text(
+                                value.label,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                        ],
+                        onChanged:
+                            busy
+                                ? null
+                                : (value) {
+                                  if (value != null) onScopeChanged(value);
+                                },
+                      ),
+                    ),
+                    if (contentMode != BulkImportContentMode.coverOnly) ...[
+                      _OptionBox(
+                        width: width,
+                        child: DropdownButtonFormField<String>(
+                          initialValue: selectedProviderId,
+                          isExpanded: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Provider metadata',
+                          ),
+                          items: [
+                            for (final provider in providers)
+                              DropdownMenuItem(
+                                value: provider.providerId,
+                                child: Text(
+                                  provider.displayName,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                          ],
+                          onChanged:
+                              busy
+                                  ? null
+                                  : (value) {
+                                    if (value != null) {
+                                      onProviderChanged(value);
+                                    }
+                                  },
+                        ),
+                      ),
+                      _OptionBox(
+                        width: width,
+                        child: DropdownButtonFormField<BulkMetadataApplyMode>(
+                          initialValue: applyMode,
+                          isExpanded: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Modo metadata',
+                          ),
+                          items: [
+                            for (final value in BulkMetadataApplyMode.values)
+                              DropdownMenuItem(
+                                value: value,
+                                child: Text(
+                                  value.label,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                          ],
+                          onChanged:
+                              busy
+                                  ? null
+                                  : (value) {
+                                    if (value != null) {
+                                      onApplyModeChanged(value);
+                                    }
+                                  },
+                        ),
+                      ),
+                    ],
+                    if (contentMode != BulkImportContentMode.metadataOnly) ...[
+                      _OptionBox(
+                        width: width,
+                        child: DropdownButtonFormField<BulkCoverProviderMode>(
+                          initialValue: coverProviderMode,
+                          isExpanded: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Fuente de portada',
+                          ),
+                          items: [
+                            for (final value in BulkCoverProviderMode.values)
+                              DropdownMenuItem(
+                                value: value,
+                                child: Text(
+                                  value.label,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                          ],
+                          onChanged:
+                              busy
+                                  ? null
+                                  : (value) {
+                                    if (value != null) {
+                                      onCoverProviderModeChanged(value);
+                                    }
+                                  },
+                        ),
+                      ),
+                      _OptionBox(
+                        width: width,
+                        child: DropdownButtonFormField<BulkExistingCoverMode>(
+                          initialValue: existingCoverMode,
+                          isExpanded: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Portadas existentes',
+                          ),
+                          items: [
+                            for (final value in BulkExistingCoverMode.values)
+                              DropdownMenuItem(
+                                value: value,
+                                child: Text(
+                                  value.label,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                          ],
+                          onChanged:
+                              busy
+                                  ? null
+                                  : (value) {
+                                    if (value != null) {
+                                      onExistingCoverModeChanged(value);
+                                    }
+                                  },
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 12),
             FilledButton.icon(
@@ -562,6 +609,131 @@ class _OptionsCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ImportModePicker extends StatelessWidget {
+  const _ImportModePicker({
+    required this.selected,
+    required this.busy,
+    required this.onChanged,
+  });
+
+  final BulkImportContentMode selected;
+  final bool busy;
+  final ValueChanged<BulkImportContentMode> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 720;
+        final width =
+            compact ? constraints.maxWidth : (constraints.maxWidth - 24) / 3;
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            for (final mode in BulkImportContentMode.values)
+              SizedBox(
+                width: width,
+                child: _ImportModeCard(
+                  mode: mode,
+                  selected: selected == mode,
+                  enabled: !busy,
+                  onTap: () => onChanged(mode),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ImportModeCard extends StatelessWidget {
+  const _ImportModeCard({
+    required this.mode,
+    required this.selected,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final BulkImportContentMode mode;
+  final bool selected;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: enabled ? onTap : null,
+      borderRadius: BorderRadius.circular(8),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: selected ? colorScheme.primary : colorScheme.outlineVariant,
+            width: selected ? 2 : 1,
+          ),
+          color:
+              selected
+                  ? colorScheme.primaryContainer.withValues(alpha: 0.45)
+                  : colorScheme.surface,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                selected
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+                color:
+                    selected
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      mode.label,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      mode.description,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OptionBox extends StatelessWidget {
+  const _OptionBox({required this.width, required this.child});
+
+  final double width;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolvedWidth = width.clamp(240.0, 420.0).toDouble();
+    return ConstrainedBox(
+      constraints: BoxConstraints.tightFor(width: resolvedWidth),
+      child: child,
     );
   }
 }
@@ -657,6 +829,11 @@ class _PreviewCard extends StatelessWidget {
               runSpacing: 8,
               children: [
                 _statChip('Analizados', plan.items.length.toString()),
+                _statChip('Con match', plan.matchedItems.toString()),
+                _statChip('Sin match', plan.withoutMatchItems.toString()),
+                _statChip('Seguros', plan.safeItems.toString()),
+                _statChip('Probables', plan.probableItems.toString()),
+                _statChip('Ambiguos', plan.ambiguousItems.toString()),
                 _statChip('Seleccionados', plan.selectedItems.toString()),
                 _statChip(
                   'Campos nuevos',
@@ -711,6 +888,7 @@ class _PreviewCard extends StatelessWidget {
   bool _matchesFilter(BulkMetadataImportItem item) {
     return switch (filter) {
       _PreviewFilter.all => true,
+      _PreviewFilter.selected => item.canApply,
       _PreviewFilter.safe => item.confidence == BulkMetadataConfidence.safe,
       _PreviewFilter.probable =>
         item.confidence == BulkMetadataConfidence.probable,
@@ -718,7 +896,12 @@ class _PreviewCard extends StatelessWidget {
         item.confidence == BulkMetadataConfidence.ambiguous,
       _PreviewFilter.errors => item.hasErrorIssue,
       _PreviewFilter.none => item.confidence == BulkMetadataConfidence.none,
+      _PreviewFilter.withMetadata => item.fieldPlans.isNotEmpty,
       _PreviewFilter.withCover => item.coverPlan?.canApply == true,
+      _PreviewFilter.withReplacements =>
+        item.fieldPlans.any((plan) => plan.selected && plan.replacesExisting) ||
+            (item.coverPlan?.selected == true &&
+                item.coverPlan?.replacesExisting == true),
     };
   }
 
@@ -794,7 +977,7 @@ class _PreviewItemTile extends StatelessWidget {
                 const SizedBox(height: 8),
               ],
               if (item.fieldPlans.isEmpty)
-                const Text('No hay campos nuevos seleccionables.')
+                const Text('No hay campos de metadata para aplicar.')
               else ...[
                 Text('Campos', style: Theme.of(context).textTheme.titleSmall),
                 for (var index = 0; index < item.fieldPlans.length; index++)
@@ -869,15 +1052,20 @@ class _ConfirmCard extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          alignment: WrapAlignment.spaceBetween,
           children: [
-            Expanded(
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
               child: Text(
-                '${plan.selectedItems} juegos · '
-                '${plan.selectedNewFieldChanges} campos nuevos · '
-                '${plan.selectedReplacementFieldChanges} reemplazos · '
-                '${plan.selectedNewCovers} covers nuevos · '
-                '${plan.selectedReplacementCovers} covers reemplazados.',
+                '${plan.selectedItems} juegos seleccionados · '
+                '${plan.selectedNewFieldChanges} campos a completar · '
+                '${plan.selectedReplacementFieldChanges} campos a reemplazar · '
+                '${plan.selectedNewCovers} portadas nuevas · '
+                '${plan.selectedReplacementCovers} portadas a reemplazar.',
               ),
             ),
             FilledButton.icon(
@@ -946,6 +1134,12 @@ class _ResultCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
+                _chip('Analizados', result.analyzed.toString()),
+                _chip('Con match', result.matched.toString()),
+                _chip('Sin match', result.withoutMatch.toString()),
+                _chip('Seguros', result.safeMatches.toString()),
+                _chip('Probables', result.probableMatches.toString()),
+                _chip('Ambiguos', result.ambiguousMatches.toString()),
                 _chip('Procesados', result.processed.toString()),
                 _chip(
                   'Metadata nueva',

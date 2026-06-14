@@ -561,7 +561,7 @@ class _LibraryCardList extends ConsumerWidget {
             width: 48,
             height: 64,
           ),
-          title: Text(row.title),
+          title: Text(row.title, maxLines: 1, overflow: TextOverflow.ellipsis),
           subtitle: Text(
             [
               row.status.label,
@@ -572,9 +572,14 @@ class _LibraryCardList extends ConsumerWidget {
               if (row.hoursPlayed != null)
                 '${row.hoursPlayed!.toStringAsFixed(1)} h',
             ].join(' · '),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
           onTap: () => context.go('/games/${row.libraryEntryId}'),
-          trailing: LibraryRowActions(row: row, compact: true),
+          trailing: SizedBox(
+            width: 48,
+            child: LibraryRowActions(row: row, compact: true),
+          ),
         );
       },
     );
@@ -592,7 +597,7 @@ class _LibraryGalleryGrid extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 240,
-        mainAxisExtent: 390,
+        mainAxisExtent: 410,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
       ),

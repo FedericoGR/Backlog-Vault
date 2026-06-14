@@ -81,6 +81,8 @@ final _longRows = [
     title:
         'Final Fantasy XIII-2 Collector Edition With An Extremely Long Title',
     status: GameStatus.playing,
+    personalRating: 5,
+    hoursPlayed: 123.5,
     type: 'game',
     platforms: const [
       LibraryCatalogItem(id: 'pc', name: 'PC'),
@@ -99,6 +101,7 @@ final _longRows = [
     title: 'A Short Hike',
     hasExternalMetadata: true,
     status: GameStatus.backlog,
+    personalRating: 4,
     type: 'game',
     platforms: const [LibraryCatalogItem(id: 'pc', name: 'PC')],
     genres: const [LibraryCatalogItem(id: 'cozy', name: 'Cozy')],
