@@ -88,8 +88,11 @@ class MediaRepository {
           type: MediaErrorType.conflict,
         );
       }
-      await _selectAsset(existing.id, gameId);
-      return (await selectedCoverForGame(gameId))!;
+      if (await _isStoredFileUsable(existing)) {
+        await _selectAsset(existing.id, gameId);
+        return _requireSelectedUsableCover(gameId);
+      }
+      await _softDeleteBrokenAsset(existing);
     }
 
     final assetId = _ids.newId();
@@ -104,9 +107,12 @@ class MediaRepository {
       hash: stored.hash,
     );
     if (existingWithHash != null) {
-      await _deleteStoredFileIfExists(stored.localPath);
-      await _selectAsset(existingWithHash.id, gameId);
-      return (await selectedCoverForGame(gameId))!;
+      if (await _isStoredFileUsable(existingWithHash)) {
+        await _deleteStoredFileIfExists(stored.localPath);
+        await _selectAsset(existingWithHash.id, gameId);
+        return _requireSelectedUsableCover(gameId);
+      }
+      await _softDeleteBrokenAsset(existingWithHash);
     }
 
     try {
@@ -247,25 +253,36 @@ class MediaRepository {
         hash: companion.hash.value,
       );
       if (existingWithHash != null) {
-        await (_db.update(_db.mediaAssets)
-              ..where((table) => table.gameId.equals(companion.gameId.value))
-              ..where((table) => table.kind.equals(MediaAssetKind.cover.name))
-              ..where((table) => table.deletedAt.isNull()))
-            .write(
-              MediaAssetsCompanion(
-                isSelected: const Value(false),
-                updatedAt: Value(now),
-              ),
-            );
-        await (_db.update(_db.mediaAssets)
-          ..where((table) => table.id.equals(existingWithHash.id))).write(
-          MediaAssetsCompanion(
-            isSelected: const Value(true),
-            updatedAt: Value(now),
-          ),
-        );
-        await _touchGame(companion.gameId.value, now);
-        return (await selectedCoverForGame(companion.gameId.value))!;
+        if (!await _isStoredFileUsable(existingWithHash)) {
+          await (_db.update(_db.mediaAssets)
+            ..where((table) => table.id.equals(existingWithHash.id))).write(
+            MediaAssetsCompanion(
+              isSelected: const Value(false),
+              updatedAt: Value(now),
+              deletedAt: Value(now),
+            ),
+          );
+        } else {
+          await (_db.update(_db.mediaAssets)
+                ..where((table) => table.gameId.equals(companion.gameId.value))
+                ..where((table) => table.kind.equals(MediaAssetKind.cover.name))
+                ..where((table) => table.deletedAt.isNull()))
+              .write(
+                MediaAssetsCompanion(
+                  isSelected: const Value(false),
+                  updatedAt: Value(now),
+                ),
+              );
+          await (_db.update(_db.mediaAssets)
+            ..where((table) => table.id.equals(existingWithHash.id))).write(
+            MediaAssetsCompanion(
+              isSelected: const Value(true),
+              updatedAt: Value(now),
+            ),
+          );
+          await _touchGame(companion.gameId.value, now);
+          return _requireSelectedUsableCover(companion.gameId.value);
+        }
       }
 
       await (_db.update(_db.mediaAssets)
@@ -280,7 +297,7 @@ class MediaRepository {
           );
       await _db.into(_db.mediaAssets).insert(companion);
       await _touchGame(companion.gameId.value, now);
-      return (await selectedCoverForGame(companion.gameId.value))!;
+      return _requireSelectedUsableCover(companion.gameId.value);
     });
   }
 
@@ -306,6 +323,41 @@ class MediaRepository {
       );
       await _touchGame(gameId, now);
     });
+  }
+
+  Future<MediaAsset> _requireSelectedUsableCover(String gameId) async {
+    final selected = await selectedCoverForGame(gameId);
+    if (selected == null || !await _isStoredFileUsable(selected)) {
+      throw const MediaException(
+        'La portada se guardó, pero no se pudo resolver el archivo local.',
+        type: MediaErrorType.fileSystem,
+      );
+    }
+    return selected;
+  }
+
+  Future<bool> _isStoredFileUsable(MediaAsset asset) async {
+    try {
+      final file = await _storage.resolveFile(asset.localPath);
+      return await file.exists() && await file.length() > 0;
+    } on FileSystemException {
+      return false;
+    } on MediaException {
+      return false;
+    }
+  }
+
+  Future<void> _softDeleteBrokenAsset(MediaAsset asset) async {
+    final now = _clock.now();
+    await (_db.update(_db.mediaAssets)
+      ..where((table) => table.id.equals(asset.id))).write(
+      MediaAssetsCompanion(
+        isSelected: const Value(false),
+        updatedAt: Value(now),
+        deletedAt: Value(now),
+      ),
+    );
+    await _touchGame(asset.gameId, now);
   }
 
   Future<Game> _requireGame(String gameId) async {

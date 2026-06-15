@@ -123,7 +123,9 @@ void main() {
               id: 'cover-1',
               gameId: 'game-1',
               kind: 'cover',
-              source: 'local',
+              source: 'igdb',
+              provider: const Value('igdb'),
+              externalId: const Value('igdb-cover-1'),
               localPath: 'media/games/game-1/cover-1.png',
               fileName: 'cover-1.png',
               isSelected: const Value(true),
@@ -226,6 +228,7 @@ void main() {
       expect(hades.playthroughCount, 2);
       expect(hades.updatedAt, now);
       expect(hades.selectedCoverLocalPath, 'media/games/game-1/cover-1.png');
+      expect(hades.selectedCoverProvider, 'igdb');
       expect(hades.hasExternalMetadata, isTrue);
       expect(celeste.hasExternalMetadata, isFalse);
     },

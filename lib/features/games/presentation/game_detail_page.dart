@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,8 +7,8 @@ import '../../../core/formatting/date_formatters.dart';
 import '../../library/domain/game_status.dart';
 import '../../library/domain/rating.dart';
 import '../../library/data/library_query_repository.dart';
+import '../../library/presentation/widgets/library_cover_thumbnail.dart';
 import '../../media/application/media_providers.dart';
-import '../../media/data/media_repository.dart';
 import '../../media/presentation/media_search_dialog.dart';
 import '../../metadata/presentation/metadata_search_dialog.dart';
 import '../../playthroughs/application/completion_form_model.dart';
@@ -196,27 +194,14 @@ class _GameCoverPanel extends ConsumerWidget {
         children: [
           AspectRatio(
             aspectRatio: 2 / 3,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child:
-                  cover == null
-                      ? _coverPlaceholder(context)
-                      : FutureBuilder<File>(
-                        future: ref
-                            .watch(mediaRepositoryProvider)
-                            .resolveLocalFile(cover.localPath),
-                        builder: (context, snapshot) {
-                          final file = snapshot.data;
-                          if (file == null) return _coverPlaceholder(context);
-                          return Image.file(
-                            file,
-                            fit: BoxFit.cover,
-                            errorBuilder:
-                                (context, error, stackTrace) =>
-                                    _coverPlaceholder(context),
-                          );
-                        },
-                      ),
+            child: LayoutBuilder(
+              builder:
+                  (context, constraints) => LibraryCoverThumbnail(
+                    localPath: cover?.localPath,
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
+                    borderRadius: 8,
+                  ),
             ),
           ),
           const SizedBox(height: 8),
@@ -238,19 +223,6 @@ class _GameCoverPanel extends ConsumerWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _coverPlaceholder(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      ),
-      child: Icon(
-        Icons.image_outlined,
-        size: 48,
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
   }

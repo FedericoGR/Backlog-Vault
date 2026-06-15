@@ -7,7 +7,7 @@ import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/playthroughs/application/completion_form_model.dart';
 import 'package:backlog_vault/features/playthroughs/application/playthrough_form_model.dart';
 import 'package:backlog_vault/features/playthroughs/domain/playthrough_status.dart';
-import 'package:drift/drift.dart' hide isNull;
+import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
@@ -220,6 +220,38 @@ void main() {
     expect(summary.playthroughCount, 0);
     expect(summary.totalHours, isNull);
     expect(summary.latestCompletedAt, isNull);
+  });
+
+  test('details include selected IGDB cover asset', () async {
+    await _seedGame(db, status: GameStatus.backlog);
+    await db
+        .into(db.mediaAssets)
+        .insert(
+          MediaAssetsCompanion.insert(
+            id: 'igdb-cover-1',
+            gameId: 'game-1',
+            kind: 'cover',
+            source: 'igdb',
+            provider: const Value('igdb'),
+            externalId: const Value('456'),
+            localPath: 'media/games/game-1/igdb-cover-1.jpg',
+            fileName: 'igdb-cover-1.jpg',
+            isSelected: const Value(true),
+            createdAt: _now,
+            updatedAt: _now,
+          ),
+        );
+
+    final detail = await repository.getByEntryId('entry-1');
+
+    expect(detail, isNotNull);
+    expect(detail!.selectedCover, isNotNull);
+    expect(detail.selectedCover!.provider, 'igdb');
+    expect(detail.selectedCover!.source, 'igdb');
+    expect(
+      detail.selectedCover!.localPath,
+      'media/games/game-1/igdb-cover-1.jpg',
+    );
   });
 
   test('advanced table projection ignores soft-deleted playthroughs', () async {

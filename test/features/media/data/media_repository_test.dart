@@ -7,6 +7,7 @@ import 'package:backlog_vault/features/media/data/media_file_storage.dart';
 import 'package:backlog_vault/features/media/data/media_repository.dart';
 import 'package:backlog_vault/features/media/domain/media_asset_models.dart';
 import 'package:backlog_vault/features/media/domain/media_exception.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -72,7 +73,68 @@ void main() {
     expect(saved.source, MediaAssetSource.igdb.name);
     expect(saved.provider, 'igdb');
     expect(saved.externalId, 'igdb-cover-1');
+
+    final file = await repository.resolveLocalFile(saved.localPath);
+    expect(saved.localPath, 'media/games/game-1/id-1.png');
+    expect(await file.exists(), isTrue);
+    expect((await file.length()), greaterThan(0));
+
+    final selected = await repository.selectedCoverForGame('game-1');
+    expect(selected, isNotNull);
+    expect(selected!.id, saved.id);
+    expect(selected.source, MediaAssetSource.igdb.name);
   });
+
+  test(
+    're-downloads IGDB cover when provider external id points to missing file',
+    () async {
+      final now = DateTime(2026);
+      await db
+          .into(db.mediaAssets)
+          .insert(
+            MediaAssetsCompanion.insert(
+              id: 'stale-cover',
+              gameId: 'game-1',
+              kind: MediaAssetKind.cover.name,
+              source: MediaAssetSource.igdb.name,
+              provider: const Value('igdb'),
+              externalId: const Value('igdb-cover-1'),
+              remoteUrl: const Value(
+                'https://images.igdb.com/igdb/image/upload/t_cover_big/cofixture.jpg',
+              ),
+              localPath: 'media/games/game-1/missing.jpg',
+              fileName: 'missing.jpg',
+              isSelected: const Value(true),
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+
+      final saved = await repository.saveRemoteCover(
+        gameId: 'game-1',
+        asset: _asset(
+          'igdb-cover-1',
+          'https://images.igdb.com/igdb/image/upload/t_cover_big/cofixture.jpg',
+          providerId: 'igdb',
+          providerName: 'IGDB',
+        ),
+      );
+
+      final stale =
+          await (db.select(db.mediaAssets)
+            ..where((table) => table.id.equals('stale-cover'))).getSingle();
+      final selected = await repository.selectedCoverForGame('game-1');
+      final file = await repository.resolveLocalFile(saved.localPath);
+
+      expect(stale.deletedAt, isNotNull);
+      expect(stale.isSelected, isFalse);
+      expect(saved.id, 'id-1');
+      expect(saved.source, MediaAssetSource.igdb.name);
+      expect(saved.provider, 'igdb');
+      expect(selected!.id, saved.id);
+      expect(await file.exists(), isTrue);
+    },
+  );
 
   test('replacing a cover deselects the previous cover', () async {
     final first = await repository.saveRemoteCover(
