@@ -1,4 +1,11 @@
-# Backlog Vault install and portability notes
+# Backlog Vault v1 install and portability notes
+
+Version: `0.1.0+1`
+
+Final RC artifact names:
+
+- `dist\BacklogVault-windows-x64-v0.1.0.zip`
+- `dist\BacklogVault-android-v0.1.0.apk`
 
 Backlog Vault is local-first. The app data, media files, API keys, and backups live on each device unless you move them explicitly.
 
@@ -49,7 +56,13 @@ The generated APK is at:
 build\app\outputs\flutter-apk\app-release.apk
 ```
 
-This E15 APK uses the current local release configuration, signed with debug signing for personal installation/testing. It is not a Play Store release package.
+For the RC package, copy it to:
+
+```text
+dist\BacklogVault-android-v0.1.0.apk
+```
+
+This v1 APK uses the current local release configuration, signed with debug signing for personal installation/testing. It is not a Play Store release package.
 
 The Android project currently uses Android Gradle Plugin 8.13.1 with legacy Kotlin plugin support because one dependency still applies the Kotlin Gradle Plugin path. `flutter build apk` may print a non-blocking warning about future built-in Kotlin migration.
 
@@ -68,6 +81,8 @@ Use `.vaultbackup` or `.vaultbackup.enc`:
 3. Restore it from Settings > Datos y backups on the target device.
 
 There is no automatic sync in this release.
+
+API keys are device-local. After restoring on another device, configure RAWG, IGDB/Twitch and SteamGridDB credentials again if you want external metadata or cover search there.
 
 ## Secrets and API keys
 

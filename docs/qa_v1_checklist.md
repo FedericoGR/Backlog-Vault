@@ -2,6 +2,22 @@
 
 Use a test library or a disposable backup when possible. Do not use real provider secrets in screenshots, logs, fixtures, or commits.
 
+## RC automated validation status
+
+Last RC validation run: 2026-06-15 on branch `release/v1`.
+
+- [x] `flutter pub get`
+- [x] `dart run build_runner build`
+- [x] `flutter analyze`
+- [x] `flutter test`
+- [x] `flutter build windows`
+- [x] `flutter build apk`
+- [x] Windows portable ZIP generated locally.
+- [x] Android APK copied to the RC artifact name locally.
+- [x] Secrets scan completed with only dummy/test strings and generic documentation references found.
+
+Manual app-launch QA was not executed during this RC pass to avoid touching the user's real local app data. Use the checklist below with a disposable library or a temporary backup before declaring the build final-final.
+
 ## Windows
 
 - [ ] App opens from `flutter run -d windows`.
@@ -49,8 +65,8 @@ Use a test library or a disposable backup when possible. Do not use real provide
 
 ## Release notes to verify
 
-- [ ] No automatic sync exists.
-- [ ] API keys do not travel in backups.
-- [ ] `.vaultbackup` is not encrypted.
-- [ ] `.vaultbackup.enc` requires the password to restore.
-- [ ] Android APK is local/debug-signed for personal testing, not store release.
+- [x] No automatic sync exists.
+- [x] API keys do not travel in backups.
+- [x] `.vaultbackup` is not encrypted.
+- [x] `.vaultbackup.enc` requires the password to restore.
+- [x] Android APK is local/debug-signed for personal testing, not store release.

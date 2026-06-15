@@ -1,6 +1,17 @@
 # Backlog Vault
 
-Backlog Vault es una app personal local-first para gestionar un backlog de videojuegos. Este repositorio contiene el Entregable 1: base offline funcional con Flutter, Drift, Riverpod y go_router.
+Backlog Vault es una app personal local-first para gestionar un backlog de videojuegos. La Release Candidate v1 queda preparada para uso local en Windows y Android, con biblioteca offline, metadata opcional, portadas locales, bulk import, backups normales/cifrados y empaquetado portable.
+
+## Release Candidate v1
+
+- Versión de app: `0.1.0+1`.
+- Windows portable: generar con `.\tool\package_windows.ps1`; el ZIP final esperado queda en `dist/BacklogVault-windows-x64-v0.1.0.zip`.
+- Android local: generar con `flutter build apk`; el APK final puede copiarse como `dist/BacklogVault-android-v0.1.0.apk`.
+- Release notes: [docs/release_notes_v1.md](docs/release_notes_v1.md).
+- Instalación y portabilidad: [docs/install_and_portability.md](docs/install_and_portability.md).
+- Checklist QA v1: [docs/qa_v1_checklist.md](docs/qa_v1_checklist.md).
+
+Limitaciones conocidas de v1: no hay sync automático, la DB SQLite local y la carpeta `media/` no están cifradas at-rest, el APK Android es para instalación personal con signing local/debug y las API keys deben configurarse por dispositivo.
 
 ## Alcance del Entregable 1
 
