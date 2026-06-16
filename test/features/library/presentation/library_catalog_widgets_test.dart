@@ -57,6 +57,55 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('catalog grid avoids bottom overflow with dense long metadata', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 760);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      _TestApp(
+        child: LibraryCatalogGrid(
+          rows: [_denseRow],
+          selectionMode: false,
+          selectedIds: const {},
+          onSelectionChanged: (_, _) {},
+          rowActionsBuilder: _actions,
+        ),
+      ),
+    );
+
+    expect(find.textContaining('Extremely Long'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'catalog list avoids horizontal overflow with dense long metadata',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 720);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        _TestApp(
+          child: LibraryCatalogList(
+            rows: [_denseRow],
+            selectionMode: false,
+            selectedIds: const {},
+            onSelectionChanged: (_, _) {},
+            rowActionsBuilder: _actions,
+          ),
+        ),
+      );
+
+      expect(find.textContaining('Extremely Long'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('selection mode reflects selected catalog items', (tester) async {
     await tester.pumpWidget(
       _TestApp(
@@ -172,3 +221,30 @@ final _rows = [
     updatedAt: DateTime(2026, 6, 13),
   ),
 ];
+
+final _denseRow = LibraryGameRow(
+  gameId: 'game-dense',
+  libraryEntryId: 'entry-dense',
+  title:
+      'Extremely Long Tactical Role Playing Game Definitive Remastered Edition',
+  status: GameStatus.playing,
+  type: 'game',
+  platforms: const [
+    LibraryCatalogItem(id: 'pc', name: 'PC'),
+    LibraryCatalogItem(id: 'switch', name: 'Nintendo Switch'),
+    LibraryCatalogItem(id: 'ps5', name: 'PlayStation 5'),
+    LibraryCatalogItem(id: 'deck', name: 'Steam Deck'),
+  ],
+  genres: const [
+    LibraryCatalogItem(id: 'rpg', name: 'Rol'),
+    LibraryCatalogItem(id: 'strategy', name: 'Estrategia'),
+    LibraryCatalogItem(id: 'adventure', name: 'Aventura'),
+    LibraryCatalogItem(id: 'story', name: 'Narrativo'),
+  ],
+  personalRating: 5,
+  hoursPlayed: 123.5,
+  releaseDate: DateTime(2021, 11, 11),
+  completedAt: DateTime(2026, 5, 8),
+  playthroughCount: 3,
+  updatedAt: DateTime(2026, 6, 13),
+);

@@ -159,7 +159,7 @@ class LibraryCatalogGrid extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 238,
-        mainAxisExtent: 408,
+        mainAxisExtent: 444,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
       ),
@@ -273,7 +273,7 @@ class LibraryCatalogCard extends StatelessWidget {
                       if (!selectionMode) actions,
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
@@ -290,19 +290,19 @@ class LibraryCatalogCard extends StatelessWidget {
                         ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   _MetadataLine(
                     icon: Icons.sports_esports_outlined,
                     text: _limitedNames(
                       row.platforms.map((platform) => platform.name),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   _MetadataLine(
                     icon: Icons.category_outlined,
                     text: _limitedNames(row.genres.map((genre) => genre.name)),
                   ),
-                  const Spacer(),
+                  const SizedBox(height: 6),
                   _MetadataLine(
                     icon:
                         row.completedAt == null
@@ -376,86 +376,97 @@ class LibraryCatalogListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return BvSurface(
-      padding: const EdgeInsets.all(10),
-      selected: selected,
-      onTap:
-          selectionMode
-              ? () => onSelected(!selected)
-              : () => context.go('/games/${row.libraryEntryId}'),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (selectionMode) ...[
-            _SelectionBadge(selected: selected, onChanged: onSelected),
-            const SizedBox(width: 10),
-          ],
-          LibraryCoverThumbnail(
-            localPath: row.selectedCoverLocalPath,
-            width: 112,
-            height: 76,
-            borderRadius: BvRadii.sm,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  row.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    BvChip(
-                      label: row.status.label,
-                      tone: _statusTone(row.status),
-                    ),
-                    BvChip(label: formatStarRating(row.personalRating)),
-                    if (row.hoursPlayed != null)
-                      BvChip(label: '${row.hoursPlayed!.toStringAsFixed(1)} h'),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 4,
-                  children: [
-                    _InlineMetadata(
-                      icon: Icons.sports_esports_outlined,
-                      text: _limitedNames(
-                        row.platforms.map((platform) => platform.name),
-                        limit: 3,
-                      ),
-                    ),
-                    _InlineMetadata(
-                      icon: Icons.category_outlined,
-                      text: _limitedNames(
-                        row.genres.map((genre) => genre.name),
-                        limit: 3,
-                      ),
-                    ),
-                    _InlineMetadata(
-                      icon: Icons.event_outlined,
-                      text: formatVisibleDate(
-                        row.completedAt ?? row.releaseDate,
-                      ),
-                    ),
-                  ],
-                ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 430;
+        final coverWidth = compact ? 84.0 : 112.0;
+        final coverHeight = compact ? 62.0 : 76.0;
+
+        return BvSurface(
+          padding: const EdgeInsets.all(10),
+          selected: selected,
+          onTap:
+              selectionMode
+                  ? () => onSelected(!selected)
+                  : () => context.go('/games/${row.libraryEntryId}'),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (selectionMode) ...[
+                _SelectionBadge(selected: selected, onChanged: onSelected),
+                const SizedBox(width: 10),
               ],
-            ),
+              LibraryCoverThumbnail(
+                localPath: row.selectedCoverLocalPath,
+                width: coverWidth,
+                height: coverHeight,
+                borderRadius: BvRadii.sm,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      row.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        BvChip(
+                          label: row.status.label,
+                          tone: _statusTone(row.status),
+                        ),
+                        BvChip(label: formatStarRating(row.personalRating)),
+                        if (row.hoursPlayed != null)
+                          BvChip(
+                            label: '${row.hoursPlayed!.toStringAsFixed(1)} h',
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 4,
+                      children: [
+                        _InlineMetadata(
+                          icon: Icons.sports_esports_outlined,
+                          text: _limitedNames(
+                            row.platforms.map((platform) => platform.name),
+                            limit: compact ? 2 : 3,
+                          ),
+                        ),
+                        _InlineMetadata(
+                          icon: Icons.category_outlined,
+                          text: _limitedNames(
+                            row.genres.map((genre) => genre.name),
+                            limit: compact ? 2 : 3,
+                          ),
+                        ),
+                        _InlineMetadata(
+                          icon: Icons.event_outlined,
+                          text: formatVisibleDate(
+                            row.completedAt ?? row.releaseDate,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              if (!selectionMode)
+                SizedBox(width: 48, child: Align(child: actions)),
+            ],
           ),
-          if (!selectionMode) actions,
-        ],
-      ),
+        );
+      },
     );
   }
 }

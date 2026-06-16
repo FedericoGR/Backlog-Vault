@@ -12,6 +12,7 @@ import '../../../core/formatting/date_formatters.dart';
 import '../../catalogs/data/catalog_repository.dart';
 import '../../games/data/game_repository.dart';
 import '../application/library_default_views.dart';
+import '../application/library_responsive_layout.dart';
 import '../application/library_table_providers.dart';
 import '../application/library_table_state.dart';
 import '../data/library_query_repository.dart';
@@ -126,9 +127,11 @@ class _GameListPageState extends ConsumerState<GameListPage> {
           return LayoutBuilder(
             builder: (context, constraints) {
               final isWide = constraints.maxWidth >= BvBreakpoints.libraryWide;
-              final showFilterSidebar =
-                  constraints.maxWidth >= BvBreakpoints.desktop &&
-                  _filtersVisible;
+              final showFilterSidebar = shouldShowLibraryFilterSidebar(
+                width: constraints.maxWidth,
+                layoutMode: layoutMode,
+                filtersVisible: _filtersVisible,
+              );
               final content = Column(
                 children: [
                   _LibraryToolbar(
@@ -141,8 +144,7 @@ class _GameListPageState extends ConsumerState<GameListPage> {
                     isWide: isWide,
                     layoutMode: layoutMode,
                     filtersVisible: _filtersVisible,
-                    canUseFilterSidebar:
-                        constraints.maxWidth >= BvBreakpoints.desktop,
+                    canUseFilterSidebar: showFilterSidebar,
                     onToggleFilters:
                         constraints.maxWidth >= BvBreakpoints.desktop
                             ? () => setState(
@@ -543,21 +545,24 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
                     ),
                     SegmentedButton<LibraryLayoutMode>(
                       showSelectedIcon: false,
-                      segments: const [
+                      segments: [
                         ButtonSegment(
                           value: LibraryLayoutMode.table,
-                          icon: Icon(Icons.table_rows_outlined),
-                          label: Text('Tabla'),
+                          icon: const Icon(Icons.table_rows_outlined),
+                          label: compact ? null : const Text('Tabla'),
+                          tooltip: 'Tabla',
                         ),
                         ButtonSegment(
                           value: LibraryLayoutMode.gallery,
-                          icon: Icon(Icons.grid_view_outlined),
-                          label: Text('Galería'),
+                          icon: const Icon(Icons.grid_view_outlined),
+                          label: compact ? null : const Text('Galería'),
+                          tooltip: 'Galería',
                         ),
                         ButtonSegment(
                           value: LibraryLayoutMode.list,
-                          icon: Icon(Icons.view_list_outlined),
-                          label: Text('Lista'),
+                          icon: const Icon(Icons.view_list_outlined),
+                          label: compact ? null : const Text('Lista'),
+                          tooltip: 'Lista',
                         ),
                       ],
                       selected: {widget.layoutMode},
@@ -777,10 +782,10 @@ class _LibraryDataTable extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: DataTable2(
-        minWidth: 1150,
+        minWidth: _tableMinWidth(visibleColumns, selectionMode),
         fixedLeftColumns: 1,
-        columnSpacing: 20,
-        horizontalMargin: 12,
+        columnSpacing: 16,
+        horizontalMargin: 10,
         headingRowHeight: 44,
         dataRowHeight: 48,
         dividerThickness: 1,
@@ -819,7 +824,7 @@ class _LibraryDataTable extends ConsumerWidget {
                       ? null
                       : (index, ascending) => _toggleSort(ref, column),
             ),
-          const DataColumn2(label: Text('Acciones'), fixedWidth: 132),
+          const DataColumn2(label: Text(''), fixedWidth: 56),
         ],
         rows: [
           for (final row in rows)
@@ -845,12 +850,35 @@ class _LibraryDataTable extends ConsumerWidget {
                             ? () => context.go('/games/${row.libraryEntryId}')
                             : null,
                   ),
-                DataCell(LibraryRowActions(row: row)),
+                DataCell(LibraryRowActions(row: row, compact: true)),
               ],
             ),
         ],
       ),
     );
+  }
+
+  double _tableMinWidth(
+    List<LibraryColumnKey> visibleColumns,
+    bool selectionMode,
+  ) {
+    var width = selectionMode ? 56.0 : 0.0;
+    for (final column in visibleColumns) {
+      width += switch (column) {
+        LibraryColumnKey.title => 280,
+        LibraryColumnKey.cover => 72,
+        LibraryColumnKey.status => 116,
+        LibraryColumnKey.platforms || LibraryColumnKey.genres => 150,
+        LibraryColumnKey.rating ||
+        LibraryColumnKey.releaseDate ||
+        LibraryColumnKey.completedDate ||
+        LibraryColumnKey.hours ||
+        LibraryColumnKey.type ||
+        LibraryColumnKey.playthroughs => 120,
+        LibraryColumnKey.notes || LibraryColumnKey.updatedAt => 150,
+      };
+    }
+    return (width + 56).clamp(760.0, 1120.0).toDouble();
   }
 }
 
