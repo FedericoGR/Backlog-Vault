@@ -3,6 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/design_system/bv_breakpoints.dart';
+import '../../../core/design_system/bv_chip.dart';
+import '../../../core/design_system/bv_empty_state.dart';
+import '../../../core/design_system/bv_panel.dart';
+import '../../../core/design_system/bv_section.dart';
+import '../../../core/design_system/bv_spacing.dart';
+import '../../../core/design_system/bv_surface.dart';
+import '../../../core/design_system/bv_theme_extension.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../../../core/privacy/privacy_redactor.dart';
 import '../../../core/widgets/dropdown_value_guard.dart';
@@ -106,242 +114,284 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
 
                   return Form(
                     key: _formKey,
-                    child: ListView(
-                      padding: const EdgeInsets.all(16),
-                      children: [
-                        TextFormField(
-                          controller: _titleController,
-                          decoration: const InputDecoration(
-                            labelText: 'Nombre',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'El nombre es obligatorio.';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          onPressed:
-                              _saving
-                                  ? null
-                                  : () => _searchMetadataForForm(
-                                    item,
-                                    platformItems,
-                                    genreItems,
-                                  ),
-                          icon: const Icon(Icons.auto_fix_high_outlined),
-                          label: const Text('Buscar metadata'),
-                        ),
-                        if (_pendingCoverAsset != null) ...[
-                          const SizedBox(height: 8),
-                          InputChip(
-                            avatar: const Icon(Icons.image_outlined),
-                            label: Text(
-                              'Portada pendiente: ${_pendingCoverAsset!.providerName}',
-                            ),
-                            onDeleted:
-                                () => setState(() => _pendingCoverAsset = null),
-                          ),
-                        ],
-                        const SizedBox(height: 12),
-                        _DateField(
-                          label: 'Fecha de salida',
-                          value: _releaseDate,
-                          onChanged: (value) {
-                            setState(() => _releaseDate = value);
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                        DropdownButtonFormField<String?>(
-                          initialValue: _type,
-                          decoration: const InputDecoration(labelText: 'Tipo'),
-                          items: const [
-                            DropdownMenuItem(
-                              value: null,
-                              child: Text('Sin definir'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'Un jugador',
-                              child: Text('Un jugador'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'Multijugador',
-                              child: Text('Multijugador'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'Cooperativo',
-                              child: Text('Cooperativo'),
-                            ),
-                          ],
-                          onChanged: (value) => setState(() => _type = value),
-                        ),
-                        const SizedBox(height: 12),
-                        DropdownButtonFormField<GameStatus>(
-                          initialValue: _status,
-                          decoration: const InputDecoration(
-                            labelText: 'Estado',
-                          ),
-                          items: [
-                            for (final status in GameStatus.values)
-                              DropdownMenuItem(
-                                value: status,
-                                child: Text(status.label),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final compact =
+                            constraints.maxWidth < BvBreakpoints.mobile;
+                        final twoColumns =
+                            constraints.maxWidth >= BvBreakpoints.detailWide;
+                        final padding =
+                            compact ? BvSpacing.pageCompact : BvSpacing.page;
+                        final identitySection = _FormSection(
+                          title: 'Identidad',
+                          subtitle: 'Datos del juego y metadata externa.',
+                          child: _FormFieldGrid(
+                            twoColumns: twoColumns,
+                            children: [
+                              TextFormField(
+                                controller: _titleController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Nombre',
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'El nombre es obligatorio.';
+                                  }
+                                  return null;
+                                },
                               ),
-                          ],
-                          onChanged: (value) {
-                            if (value == null) return;
-                            setState(() {
-                              _status = value;
-                              if (value == GameStatus.completed) {
-                                _completedAt ??= DateTime.now();
-                                _completedRating ??= _rating;
-                              }
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                        DropdownButtonFormField<int?>(
-                          initialValue: _rating,
-                          decoration: const InputDecoration(
-                            labelText: 'Puntaje personal',
-                          ),
-                          items: const [
-                            DropdownMenuItem(
-                              value: null,
-                              child: Text('Sin puntaje'),
-                            ),
-                            DropdownMenuItem(
-                              value: 1,
-                              child: Text('1 estrella'),
-                            ),
-                            DropdownMenuItem(
-                              value: 2,
-                              child: Text('2 estrellas'),
-                            ),
-                            DropdownMenuItem(
-                              value: 3,
-                              child: Text('3 estrellas'),
-                            ),
-                            DropdownMenuItem(
-                              value: 4,
-                              child: Text('4 estrellas'),
-                            ),
-                            DropdownMenuItem(
-                              value: 5,
-                              child: Text('5 estrellas'),
-                            ),
-                          ],
-                          onChanged: (value) => setState(() => _rating = value),
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _notesController,
-                          minLines: 3,
-                          maxLines: 6,
-                          decoration: const InputDecoration(
-                            labelText: 'Notas personales',
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        _CatalogSelector(
-                          title: 'Plataformas',
-                          addLabel: 'Agregar plataforma',
-                          controller: _newPlatformController,
-                          items: platformMap,
-                          selectedIds: _selectedPlatformIds,
-                          pendingNames: _pendingPlatformNames,
-                          onToggle: (id, selected) {
-                            setState(() {
-                              if (selected) {
-                                _selectedPlatformIds.add(id);
-                                _completedPlatformId ??= id;
-                              } else {
-                                _selectedPlatformIds.remove(id);
-                              }
-                            });
-                          },
-                          onCreate: () async {
-                            final id = await ref
-                                .read(catalogRepositoryProvider)
-                                .createPlatform(_newPlatformController.text);
-                            setState(() {
-                              _selectedPlatformIds.add(id);
-                              _completedPlatformId ??= id;
-                              _newPlatformController.clear();
-                            });
-                          },
-                          onRemovePending:
-                              (name) => setState(
-                                () => _pendingPlatformNames.remove(name),
-                              ),
-                        ),
-                        const SizedBox(height: 24),
-                        _CatalogSelector(
-                          title: 'Géneros',
-                          addLabel: 'Agregar género',
-                          controller: _newGenreController,
-                          items: genreMap,
-                          selectedIds: _selectedGenreIds,
-                          pendingNames: _pendingGenreNames,
-                          onToggle: (id, selected) {
-                            setState(() {
-                              if (selected) {
-                                _selectedGenreIds.add(id);
-                              } else {
-                                _selectedGenreIds.remove(id);
-                              }
-                            });
-                          },
-                          onCreate: () async {
-                            final id = await ref
-                                .read(catalogRepositoryProvider)
-                                .createGenre(_newGenreController.text);
-                            setState(() {
-                              _selectedGenreIds.add(id);
-                              _newGenreController.clear();
-                            });
-                          },
-                          onRemovePending:
-                              (name) => setState(
-                                () => _pendingGenreNames.remove(name),
-                              ),
-                        ),
-                        if (_status == GameStatus.completed) ...[
-                          const SizedBox(height: 24),
-                          _CompletionFields(
-                            completedAt: _completedAt ?? DateTime.now(),
-                            hoursController: _completedHoursController,
-                            rating: _completedRating,
-                            platformId: _completedPlatformId,
-                            platforms: platformMap,
-                            onDateChanged: (value) {
-                              setState(() => _completedAt = value);
-                            },
-                            onRatingChanged: (value) {
-                              setState(() => _completedRating = value);
-                            },
-                            onPlatformChanged: (value) {
-                              setState(() => _completedPlatformId = value);
-                            },
-                          ),
-                        ],
-                        const SizedBox(height: 24),
-                        FilledButton.icon(
-                          onPressed: _saving ? null : () => _save(item),
-                          icon:
-                              _saving
-                                  ? const SizedBox.square(
-                                    dimension: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
+                              _MetadataSearchButton(
+                                saving: _saving,
+                                pendingCoverAsset: _pendingCoverAsset,
+                                onSearch:
+                                    () => _searchMetadataForForm(
+                                      item,
+                                      platformItems,
+                                      genreItems,
                                     ),
-                                  )
-                                  : const Icon(Icons.save_outlined),
-                          label: const Text('Guardar'),
-                        ),
-                      ],
+                                onClearCover:
+                                    () => setState(
+                                      () => _pendingCoverAsset = null,
+                                    ),
+                              ),
+                              _DateField(
+                                label: 'Fecha de salida',
+                                value: _releaseDate,
+                                onChanged:
+                                    (value) =>
+                                        setState(() => _releaseDate = value),
+                              ),
+                              DropdownButtonFormField<String?>(
+                                initialValue: _type,
+                                decoration: const InputDecoration(
+                                  labelText: 'Tipo',
+                                ),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: null,
+                                    child: Text('Sin definir'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Un jugador',
+                                    child: Text('Un jugador'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Multijugador',
+                                    child: Text('Multijugador'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Cooperativo',
+                                    child: Text('Cooperativo'),
+                                  ),
+                                ],
+                                onChanged:
+                                    (value) => setState(() => _type = value),
+                              ),
+                            ],
+                          ),
+                        );
+                        final personalSection = _FormSection(
+                          title: 'Biblioteca personal',
+                          subtitle: 'Estado, puntaje y notas privadas.',
+                          child: _FormFieldGrid(
+                            twoColumns: twoColumns,
+                            children: [
+                              DropdownButtonFormField<GameStatus>(
+                                initialValue: _status,
+                                decoration: const InputDecoration(
+                                  labelText: 'Estado',
+                                ),
+                                items: [
+                                  for (final status in GameStatus.values)
+                                    DropdownMenuItem(
+                                      value: status,
+                                      child: Text(status.label),
+                                    ),
+                                ],
+                                onChanged: (value) {
+                                  if (value == null) return;
+                                  setState(() {
+                                    _status = value;
+                                    if (value == GameStatus.completed) {
+                                      _completedAt ??= DateTime.now();
+                                      _completedRating ??= _rating;
+                                    }
+                                  });
+                                },
+                              ),
+                              DropdownButtonFormField<int?>(
+                                initialValue: _rating,
+                                decoration: const InputDecoration(
+                                  labelText: 'Puntaje personal',
+                                ),
+                                items: _ratingItems(),
+                                onChanged:
+                                    (value) => setState(() => _rating = value),
+                              ),
+                              TextFormField(
+                                controller: _notesController,
+                                minLines: 4,
+                                maxLines: 7,
+                                decoration: const InputDecoration(
+                                  labelText: 'Notas personales',
+                                  alignLabelWithHint: true,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                        final catalogSection = _FormSection(
+                          title: 'Catálogos',
+                          subtitle: 'Plataformas y géneros asociados.',
+                          child: Column(
+                            children: [
+                              _CatalogSelector(
+                                title: 'Plataformas',
+                                addLabel: 'Agregar plataforma',
+                                controller: _newPlatformController,
+                                items: platformMap,
+                                selectedIds: _selectedPlatformIds,
+                                pendingNames: _pendingPlatformNames,
+                                onToggle: (id, selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      _selectedPlatformIds.add(id);
+                                      _completedPlatformId ??= id;
+                                    } else {
+                                      _selectedPlatformIds.remove(id);
+                                    }
+                                  });
+                                },
+                                onCreate: () async {
+                                  final id = await ref
+                                      .read(catalogRepositoryProvider)
+                                      .createPlatform(
+                                        _newPlatformController.text,
+                                      );
+                                  setState(() {
+                                    _selectedPlatformIds.add(id);
+                                    _completedPlatformId ??= id;
+                                    _newPlatformController.clear();
+                                  });
+                                },
+                                onRemovePending:
+                                    (name) => setState(
+                                      () => _pendingPlatformNames.remove(name),
+                                    ),
+                              ),
+                              const SizedBox(height: BvSpacing.lg),
+                              _CatalogSelector(
+                                title: 'Géneros',
+                                addLabel: 'Agregar género',
+                                controller: _newGenreController,
+                                items: genreMap,
+                                selectedIds: _selectedGenreIds,
+                                pendingNames: _pendingGenreNames,
+                                onToggle: (id, selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      _selectedGenreIds.add(id);
+                                    } else {
+                                      _selectedGenreIds.remove(id);
+                                    }
+                                  });
+                                },
+                                onCreate: () async {
+                                  final id = await ref
+                                      .read(catalogRepositoryProvider)
+                                      .createGenre(_newGenreController.text);
+                                  setState(() {
+                                    _selectedGenreIds.add(id);
+                                    _newGenreController.clear();
+                                  });
+                                },
+                                onRemovePending:
+                                    (name) => setState(
+                                      () => _pendingGenreNames.remove(name),
+                                    ),
+                              ),
+                            ],
+                          ),
+                        );
+                        final completionSection =
+                            _status == GameStatus.completed
+                                ? _FormSection(
+                                  title: 'Completado / partida',
+                                  subtitle:
+                                      'Datos iniciales al marcar como completado.',
+                                  child: _CompletionFields(
+                                    completedAt: _completedAt ?? DateTime.now(),
+                                    hoursController: _completedHoursController,
+                                    rating: _completedRating,
+                                    platformId: _completedPlatformId,
+                                    platforms: platformMap,
+                                    twoColumns: twoColumns,
+                                    onDateChanged:
+                                        (value) => setState(
+                                          () => _completedAt = value,
+                                        ),
+                                    onRatingChanged:
+                                        (value) => setState(
+                                          () => _completedRating = value,
+                                        ),
+                                    onPlatformChanged:
+                                        (value) => setState(
+                                          () => _completedPlatformId = value,
+                                        ),
+                                  ),
+                                )
+                                : null;
+
+                        return ListView(
+                          padding: padding,
+                          children: [
+                            if (twoColumns)
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      children: [
+                                        identitySection,
+                                        const SizedBox(height: BvSpacing.md),
+                                        personalSection,
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: BvSpacing.md),
+                                  Expanded(
+                                    child: Column(
+                                      children: [
+                                        catalogSection,
+                                        if (completionSection != null) ...[
+                                          const SizedBox(height: BvSpacing.md),
+                                          completionSection,
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              )
+                            else ...[
+                              identitySection,
+                              const SizedBox(height: BvSpacing.md),
+                              personalSection,
+                              const SizedBox(height: BvSpacing.md),
+                              catalogSection,
+                              if (completionSection != null) ...[
+                                const SizedBox(height: BvSpacing.md),
+                                completionSection,
+                              ],
+                            ],
+                            const SizedBox(height: BvSpacing.lg),
+                            _SaveActionBar(
+                              saving: _saving,
+                              onSave: () => _save(item),
+                            ),
+                            const SizedBox(height: 80),
+                          ],
+                        );
+                      },
                     ),
                   );
                 },
@@ -658,15 +708,24 @@ class _GameFormMetadataDialogState
   Widget build(BuildContext context) {
     final providers = ref.watch(metadataProviderListProvider);
     final provider = _providerById(providers, _selectedProviderId);
-    return AlertDialog(
-      title: const Text('Importar metadata'),
-      content: SizedBox(
-        width: 720,
-        child: SingleChildScrollView(
+    final size = MediaQuery.sizeOf(context);
+    return Dialog(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 860,
+          maxHeight: size.height * 0.88,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(BvSpacing.md),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(
+                'Importar metadata',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: BvSpacing.sm),
               TextField(
                 controller: _queryController,
                 decoration: InputDecoration(
@@ -679,106 +738,172 @@ class _GameFormMetadataDialogState
                 ),
                 onSubmitted: (_) => _loading ? null : _search(),
               ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: provider.providerId,
-                decoration: const InputDecoration(labelText: 'Proveedor'),
-                items: [
-                  for (final item in providers)
-                    DropdownMenuItem(
-                      value: item.providerId,
-                      child: Text(item.displayName),
-                    ),
-                ],
-                onChanged:
-                    _loading
-                        ? null
-                        : (value) {
-                          if (value == null) return;
-                          setState(() {
-                            _selectedProviderId = value;
-                            _error = null;
-                            _candidates = const [];
-                            _details = null;
-                            _selectedFields = {};
-                            _saveCover = false;
-                          });
-                        },
+              const SizedBox(height: BvSpacing.sm),
+              SizedBox(
+                width: 280,
+                child: DropdownButtonFormField<String>(
+                  initialValue: provider.providerId,
+                  decoration: const InputDecoration(labelText: 'Proveedor'),
+                  items: [
+                    for (final item in providers)
+                      DropdownMenuItem(
+                        value: item.providerId,
+                        child: Text(item.displayName),
+                      ),
+                  ],
+                  onChanged:
+                      _loading
+                          ? null
+                          : (value) {
+                            if (value == null) return;
+                            setState(() {
+                              _selectedProviderId = value;
+                              _error = null;
+                              _candidates = const [];
+                              _details = null;
+                              _selectedFields = {};
+                              _saveCover = false;
+                            });
+                          },
+                ),
               ),
-              const SizedBox(height: 12),
-              if (_loading)
-                const Center(child: CircularProgressIndicator())
-              else if (_error != null)
-                Text(
-                  _error!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                )
-              else if (_details != null)
-                _FormMetadataPreview(
-                  details: _details!,
-                  selectedFields: _selectedFields,
-                  saveCover: _saveCover,
-                  hasCurrentCover: widget.hasCurrentCover,
-                  availableFields: _availableFields(_details!),
-                  onFieldChanged: (field, selected) {
-                    setState(() {
-                      selected
-                          ? _selectedFields.add(field)
-                          : _selectedFields.remove(field);
-                    });
-                  },
-                  onCoverChanged: (selected) {
-                    setState(() => _saveCover = selected);
-                  },
-                )
-              else if (_candidates.isEmpty)
-                Text(
-                  'Buscá un juego para prellenar campos desde ${provider.displayName}.',
-                )
-              else
-                for (final candidate in _candidates)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.travel_explore_outlined),
-                    title: Text(candidate.title),
-                    subtitle: Text(
-                      [
-                        candidate.providerName,
-                        formatVisibleDate(candidate.releaseDate),
-                        _joinNames(candidate.platforms),
-                        _joinNames(candidate.genres),
-                      ].where((value) => value != '-').join(' · '),
-                    ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _selectCandidate(candidate),
+              const SizedBox(height: BvSpacing.md),
+              Expanded(
+                child: SingleChildScrollView(
+                  child:
+                      _loading
+                          ? const Padding(
+                            padding: EdgeInsets.all(BvSpacing.xl),
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                          : _error != null
+                          ? _FormMetadataError(message: _error!)
+                          : _details != null
+                          ? _FormMetadataPreview(
+                            details: _details!,
+                            selectedFields: _selectedFields,
+                            saveCover: _saveCover,
+                            hasCurrentCover: widget.hasCurrentCover,
+                            availableFields: _availableFields(_details!),
+                            onFieldChanged: (field, selected) {
+                              setState(() {
+                                selected
+                                    ? _selectedFields.add(field)
+                                    : _selectedFields.remove(field);
+                              });
+                            },
+                            onCoverChanged: (selected) {
+                              setState(() => _saveCover = selected);
+                            },
+                          )
+                          : _candidates.isEmpty
+                          ? BvEmptyState(
+                            title: 'Sin candidatos todavía',
+                            message:
+                                'Buscá un juego para prellenar campos desde ${provider.displayName}.',
+                            icon: Icons.travel_explore_outlined,
+                          )
+                          : Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              for (final candidate in _candidates)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    bottom: BvSpacing.xs,
+                                  ),
+                                  child: BvSurface(
+                                    padding: const EdgeInsets.all(BvSpacing.sm),
+                                    onTap: () => _selectCandidate(candidate),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.travel_explore_outlined,
+                                        ),
+                                        const SizedBox(width: BvSpacing.sm),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                candidate.title,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style:
+                                                    Theme.of(
+                                                      context,
+                                                    ).textTheme.titleMedium,
+                                              ),
+                                              const SizedBox(
+                                                height: BvSpacing.xxs,
+                                              ),
+                                              Text(
+                                                [
+                                                      candidate.providerName,
+                                                      formatVisibleDate(
+                                                        candidate.releaseDate,
+                                                      ),
+                                                      _joinNames(
+                                                        candidate.platforms,
+                                                      ),
+                                                      _joinNames(
+                                                        candidate.genres,
+                                                      ),
+                                                    ]
+                                                    .where(
+                                                      (value) => value != '-',
+                                                    )
+                                                    .join(' · '),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const Icon(Icons.chevron_right),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                ),
+              ),
+              const SizedBox(height: BvSpacing.sm),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancelar'),
                   ),
+                  if (_details != null) ...[
+                    const SizedBox(width: BvSpacing.xs),
+                    FilledButton.icon(
+                      onPressed:
+                          () => Navigator.pop(
+                            context,
+                            _FormMetadataResult(
+                              details: _details!,
+                              selectedFields: _selectedFields,
+                              coverAsset:
+                                  _saveCover
+                                      ? externalGameCoverToMediaAsset(
+                                        _details!.cover,
+                                      )
+                                      : null,
+                            ),
+                          ),
+                      icon: const Icon(Icons.check),
+                      label: const Text('Aplicar al formulario'),
+                    ),
+                  ],
+                ],
+              ),
             ],
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
-        if (_details != null)
-          FilledButton.icon(
-            onPressed:
-                () => Navigator.pop(
-                  context,
-                  _FormMetadataResult(
-                    details: _details!,
-                    selectedFields: _selectedFields,
-                    coverAsset:
-                        _saveCover
-                            ? externalGameCoverToMediaAsset(_details!.cover)
-                            : null,
-                  ),
-                ),
-            icon: const Icon(Icons.check),
-            label: const Text('Aplicar al formulario'),
-          ),
-      ],
     );
   }
 
@@ -906,35 +1031,61 @@ class _FormMetadataPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(details.title, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 4),
-        Text('${details.providerName} · ID ${details.externalId}'),
-        const SizedBox(height: 12),
-        for (final field in MetadataField.values)
-          if (availableFields.contains(field))
-            CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              value: selectedFields.contains(field),
-              onChanged: (value) => onFieldChanged(field, value ?? false),
-              title: Text(field.label),
-              subtitle: Text(_fieldValue(details, field)),
+    return BvPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(details.title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text('${details.providerName} · ID ${details.externalId}'),
+          const SizedBox(height: BvSpacing.md),
+          for (final field in MetadataField.values)
+            if (availableFields.contains(field))
+              Padding(
+                padding: const EdgeInsets.only(bottom: BvSpacing.xs),
+                child: BvSurface(
+                  padding: EdgeInsets.zero,
+                  selected: selectedFields.contains(field),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: CheckboxListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: BvSpacing.sm,
+                        vertical: BvSpacing.xs,
+                      ),
+                      value: selectedFields.contains(field),
+                      onChanged:
+                          (value) => onFieldChanged(field, value ?? false),
+                      title: Text(field.label),
+                      subtitle: Text(_fieldValue(details, field)),
+                    ),
+                  ),
+                ),
+              ),
+          if (details.providerId == 'igdb' && details.cover != null)
+            BvSurface(
+              padding: EdgeInsets.zero,
+              selected: saveCover,
+              child: Material(
+                color: Colors.transparent,
+                child: CheckboxListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: BvSpacing.sm,
+                    vertical: BvSpacing.xs,
+                  ),
+                  value: saveCover,
+                  onChanged: (value) => onCoverChanged(value ?? false),
+                  title: const Text('Guardar portada incluida'),
+                  subtitle: Text(
+                    hasCurrentCover
+                        ? 'Reemplazará la portada al guardar el juego.'
+                        : 'Se guardará localmente después de guardar el juego.',
+                  ),
+                ),
+              ),
             ),
-        if (details.providerId == 'igdb' && details.cover != null)
-          CheckboxListTile(
-            contentPadding: EdgeInsets.zero,
-            value: saveCover,
-            onChanged: (value) => onCoverChanged(value ?? false),
-            title: const Text('Guardar portada incluida'),
-            subtitle: Text(
-              hasCurrentCover
-                  ? 'Reemplazará la portada al guardar el juego.'
-                  : 'Se guardará localmente después de guardar el juego.',
-            ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -949,10 +1100,171 @@ class _FormMetadataPreview extends StatelessWidget {
   }
 }
 
+class _FormMetadataError extends StatelessWidget {
+  const _FormMetadataError({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return BvPanel(
+      child: Text(
+        message,
+        style: TextStyle(color: Theme.of(context).colorScheme.error),
+      ),
+    );
+  }
+}
+
+class _FormSection extends StatelessWidget {
+  const _FormSection({
+    required this.title,
+    required this.subtitle,
+    required this.child,
+  });
+
+  final String title;
+  final String subtitle;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return BvPanel(
+      child: BvSection(
+        title: title,
+        subtitle: subtitle,
+        padding: EdgeInsets.zero,
+        child: child,
+      ),
+    );
+  }
+}
+
+class _FormFieldGrid extends StatelessWidget {
+  const _FormFieldGrid({required this.children, required this.twoColumns});
+
+  final List<Widget> children;
+  final bool twoColumns;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (!twoColumns || constraints.maxWidth < 560) {
+          return Column(
+            children: [
+              for (final child in children) ...[
+                child,
+                if (child != children.last)
+                  const SizedBox(height: BvSpacing.sm),
+              ],
+            ],
+          );
+        }
+        return Wrap(
+          spacing: BvSpacing.sm,
+          runSpacing: BvSpacing.sm,
+          children: [
+            for (final child in children)
+              SizedBox(
+                width: (constraints.maxWidth - BvSpacing.sm) / 2,
+                child: child,
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _MetadataSearchButton extends StatelessWidget {
+  const _MetadataSearchButton({
+    required this.saving,
+    required this.pendingCoverAsset,
+    required this.onSearch,
+    required this.onClearCover,
+  });
+
+  final bool saving;
+  final ExternalMediaAsset? pendingCoverAsset;
+  final VoidCallback onSearch;
+  final VoidCallback onClearCover;
+
+  @override
+  Widget build(BuildContext context) {
+    return BvSurface(
+      padding: const EdgeInsets.all(BvSpacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          OutlinedButton.icon(
+            onPressed: saving ? null : onSearch,
+            icon: const Icon(Icons.auto_fix_high_outlined),
+            label: const Text('Buscar metadata'),
+          ),
+          if (pendingCoverAsset != null) ...[
+            const SizedBox(height: BvSpacing.xs),
+            BvChip(
+              icon: Icons.image_outlined,
+              label: 'Portada pendiente: ${pendingCoverAsset!.providerName}',
+              tone: BvChipTone.primary,
+              onDeleted: onClearCover,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SaveActionBar extends StatelessWidget {
+  const _SaveActionBar({required this.saving, required this.onSave});
+
+  final bool saving;
+  final VoidCallback onSave;
+
+  @override
+  Widget build(BuildContext context) {
+    return BvPanel(
+      dense: true,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 180),
+            child: FilledButton.icon(
+              onPressed: saving ? null : onSave,
+              icon:
+                  saving
+                      ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                      : const Icon(Icons.save_outlined),
+              label: const Text('Guardar'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 String _joinNames(Iterable<String> values) {
   final list = values.where((value) => value.trim().isNotEmpty).toList();
   if (list.isEmpty) return '-';
   return list.join(', ');
+}
+
+List<DropdownMenuItem<int?>> _ratingItems() {
+  return const [
+    DropdownMenuItem(value: null, child: Text('Sin puntaje')),
+    DropdownMenuItem(value: 1, child: Text('1 estrella')),
+    DropdownMenuItem(value: 2, child: Text('2 estrellas')),
+    DropdownMenuItem(value: 3, child: Text('3 estrellas')),
+    DropdownMenuItem(value: 4, child: Text('4 estrellas')),
+    DropdownMenuItem(value: 5, child: Text('5 estrellas')),
+  ];
 }
 
 class _DateField extends StatelessWidget {
@@ -1022,11 +1334,12 @@ class _CatalogSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bv = BvThemeExtension.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
+        const SizedBox(height: BvSpacing.xs),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -1038,14 +1351,15 @@ class _CatalogSelector extends StatelessWidget {
                 onSelected: (selected) => onToggle(item.key, selected),
               ),
             for (final name in pendingNames)
-              InputChip(
-                label: Text(name),
-                avatar: const Icon(Icons.auto_fix_high_outlined, size: 18),
+              BvChip(
+                label: name,
+                icon: Icons.auto_fix_high_outlined,
+                tone: BvChipTone.primary,
                 onDeleted: () => onRemovePending(name),
               ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: BvSpacing.xs),
         Row(
           children: [
             Expanded(
@@ -1054,11 +1368,15 @@ class _CatalogSelector extends StatelessWidget {
                 decoration: InputDecoration(labelText: addLabel),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: BvSpacing.xs),
             IconButton.filledTonal(
               tooltip: addLabel,
               onPressed: onCreate,
               icon: const Icon(Icons.add),
+              style: IconButton.styleFrom(
+                backgroundColor: bv.surfaceHighest,
+                foregroundColor: Theme.of(context).colorScheme.primary,
+              ),
             ),
           ],
         ),
@@ -1074,6 +1392,7 @@ class _CompletionFields extends StatelessWidget {
     required this.rating,
     required this.platformId,
     required this.platforms,
+    required this.twoColumns,
     required this.onDateChanged,
     required this.onRatingChanged,
     required this.onPlatformChanged,
@@ -1084,6 +1403,7 @@ class _CompletionFields extends StatelessWidget {
   final int? rating;
   final String? platformId;
   final Map<String, String> platforms;
+  final bool twoColumns;
   final ValueChanged<DateTime?> onDateChanged;
   final ValueChanged<int?> onRatingChanged;
   final ValueChanged<String?> onPlatformChanged;
@@ -1094,40 +1414,25 @@ class _CompletionFields extends StatelessWidget {
       null,
       ...platforms.keys,
     ]);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return _FormFieldGrid(
+      twoColumns: twoColumns,
       children: [
-        Text(
-          'Datos de completado',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 12),
         _DateField(
           label: 'Fecha de completado',
           value: completedAt,
           onChanged: onDateChanged,
         ),
-        const SizedBox(height: 12),
         TextFormField(
           controller: hoursController,
           keyboardType: TextInputType.number,
           decoration: const InputDecoration(labelText: 'Horas jugadas'),
         ),
-        const SizedBox(height: 12),
         DropdownButtonFormField<int?>(
           initialValue: rating,
           decoration: const InputDecoration(labelText: 'Puntaje de partida'),
-          items: const [
-            DropdownMenuItem(value: null, child: Text('Sin puntaje')),
-            DropdownMenuItem(value: 1, child: Text('1 estrella')),
-            DropdownMenuItem(value: 2, child: Text('2 estrellas')),
-            DropdownMenuItem(value: 3, child: Text('3 estrellas')),
-            DropdownMenuItem(value: 4, child: Text('4 estrellas')),
-            DropdownMenuItem(value: 5, child: Text('5 estrellas')),
-          ],
+          items: _ratingItems(),
           onChanged: onRatingChanged,
         ),
-        const SizedBox(height: 12),
         DropdownButtonFormField<String?>(
           initialValue: safePlatformId,
           decoration: const InputDecoration(labelText: 'Plataforma'),

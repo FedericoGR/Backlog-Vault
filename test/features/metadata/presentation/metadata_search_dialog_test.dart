@@ -33,10 +33,7 @@ void main() {
     await tester.tap(find.text('IGDB').last);
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('Buscá un juego para ver candidatos de IGDB.'),
-      findsOneWidget,
-    );
+    expect(find.text('Sin candidatos todavía'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -64,6 +61,37 @@ void main() {
 
     expect(find.text('Guardar portada incluida'), findsOneWidget);
     expect(find.byType(CheckboxListTile), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('stays stable on small viewport with diff preview', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          metadataProviderListProvider.overrideWith(
+            (ref) => const [_FakeIgdbProvider()],
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(body: MetadataSearchDialog(item: _details())),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Buscar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hades').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Guardar portada incluida'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
