@@ -1,48 +1,29 @@
-# Backlog Vault v1 install and portability notes
+# Backlog Vault install and portability
 
-Version: `0.1.0+1`
+Version: `0.1.0+3`
+Release candidate: `v0.1.0-rc3`
 
-Final RC artifact names:
+Backlog Vault is local-first. App data, media, provider credentials, and language preferences live on each device unless explicitly moved through a backup.
 
-- `dist\BacklogVault-windows-x64-v0.1.0.zip`
-- `dist\BacklogVault-android-v0.1.0.apk`
+## Windows
 
-Backlog Vault is local-first. The app data, media files, API keys, and backups live on each device unless you move them explicitly.
+Build the release folder:
 
-## Windows ZIP install
+```powershell
+flutter build windows
+```
 
-1. Build the app:
+Create a portable ZIP without rebuilding:
 
-   ```powershell
-   flutter build windows
-   ```
+```powershell
+.\tool\package_windows.ps1 -SkipBuild
+```
 
-2. Create the portable ZIP:
+Extract the complete ZIP and launch `backlog_vault.exe`. The executable, DLLs, native assets, and `data` folder must remain together.
 
-   ```powershell
-   .\tool\package_windows.ps1 -SkipBuild
-   ```
+The portable application folder is not the user-data folder. Replacing the app binaries should not remove the library, but create a `.vaultbackup.enc` before every update.
 
-   Omit `-SkipBuild` if you want the script to run `flutter build windows` first.
-
-3. Extract `dist\BacklogVault-windows-x64-v0.1.0.zip` anywhere you want to run the app.
-4. Launch `backlog_vault.exe` from the extracted folder.
-
-The ZIP contains the complete Flutter Windows release folder: executable, DLLs, native assets, and `data`.
-
-## Windows updates
-
-Before replacing an older app folder, create a `.vaultbackup` or `.vaultbackup.enc` from Settings > Datos y backups.
-
-The portable app folder is not the same as the user data folder. Replacing the app binaries should not delete your library, but a backup before updating is the safest workflow.
-
-## Data locations
-
-Backlog Vault stores its SQLite database and media under the platform app support area through Flutter plugins. The exact path is OS-managed and may differ between Windows and Android versions.
-
-Media files are stored with relative paths in the database. To move data between devices, use Backlog Vault backups instead of copying individual files.
-
-## Android APK install
+## Android
 
 Build the APK:
 
@@ -50,48 +31,40 @@ Build the APK:
 flutter build apk
 ```
 
-The generated APK is at:
+Flutter writes the release APK under:
 
 ```text
 build\app\outputs\flutter-apk\app-release.apk
 ```
 
-For the RC package, copy it to:
+The current APK configuration is for local personal installation and QA, not Play Store publication. Android only accepts an in-place update when package identity and signing key are compatible. If a differently signed APK requires uninstalling the previous app, export an encrypted backup first because uninstalling may remove app-local data.
 
-```text
-dist\BacklogVault-android-v0.1.0.apk
-```
+## Data locations
 
-This v1 APK uses the current local release configuration, signed with debug signing for personal installation/testing. It is not a Play Store release package.
+SQLite and media are stored in the OS-managed app support directory. Exact paths differ between Windows and Android. Media paths stored in SQLite are relative; do not move individual database or media files between devices.
 
-The Android project currently uses Android Gradle Plugin 8.13.1 with legacy Kotlin plugin support because one dependency still applies the Kotlin Gradle Plugin path. `flutter build apk` may print a non-blocking warning about future built-in Kotlin migration.
+The selected UI language is stored through platform preferences. It is device-local and is not included in the main SQLite database or backups.
 
-Install it manually on a test phone or run it from Flutter when a device is connected:
+## PC ↔ Android transfer
 
-```powershell
-flutter run -d android
-```
+Automatic sync does not exist in RC3. Use the supported manual workflow:
 
-## Moving data between PC and Android
+1. Create `.vaultbackup.enc` on the source device.
+2. Move the file through a channel you control.
+3. Restore it on the destination device with the password.
+4. Configure RAWG, IGDB/Twitch, and SteamGridDB credentials again on that device.
 
-Use `.vaultbackup` or `.vaultbackup.enc`:
+Plain `.vaultbackup` also works but is not encrypted and may expose personal notes and library data.
 
-1. On the source device, create a backup from Settings > Datos y backups.
-2. Move the backup file manually to the target device.
-3. Restore it from Settings > Datos y backups on the target device.
+## Restore guarantees and limits
 
-There is no automatic sync in this release.
+- A safety backup is created before restore.
+- Rows in the backup are inserted or updated.
+- Current rows absent from the backup are soft-deleted.
+- Existing media is not hard-deleted during restore.
+- Restore is complete/conservative, not a field-level merge or sync conflict resolver.
+- Provider credentials and secure-storage values are never restored.
 
-API keys are device-local. After restoring on another device, configure RAWG, IGDB/Twitch and SteamGridDB credentials again if you want external metadata or cover search there.
+## Security reminder
 
-## Secrets and API keys
-
-Backups and exports do not include RAWG keys, SteamGridDB keys, IGDB Client Secret, IGDB access tokens, or secure storage values.
-
-After restoring on another device, configure provider credentials again from Settings if you want metadata or cover search on that device.
-
-## Privacy reminder
-
-`.vaultbackup` is not encrypted. Use `.vaultbackup.enc` when the file may leave your device or include sensitive notes.
-
-The local SQLite database and media folder are not encrypted at rest in this release.
+The local SQLite database and media folder are not encrypted at rest in RC3. Use OS device protection and encrypted backups. Never include real API credentials, `.secure` files, tokens, or keystores in an app package, backup example, test, log, or repository commit.

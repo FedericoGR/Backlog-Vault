@@ -9,6 +9,8 @@ import '../../../core/design_system/bv_spacing.dart';
 import '../../../core/design_system/bv_surface.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../../../core/privacy/privacy_redactor.dart';
+import '../../../l10n/domain_localizations.dart';
+import '../../../l10n/l10n.dart';
 import '../../media/application/media_providers.dart';
 import '../../media/data/igdb_media_provider.dart';
 import '../application/get_metadata_details_use_case.dart';
@@ -77,16 +79,16 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Buscar metadata',
+                context.l10n.metadataDialogTitle,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: BvSpacing.sm),
               TextField(
                 controller: _queryController,
                 decoration: InputDecoration(
-                  labelText: 'Título',
+                  labelText: context.l10n.metadataTitleField,
                   suffixIcon: IconButton(
-                    tooltip: 'Buscar',
+                    tooltip: context.l10n.search,
                     onPressed: _loading ? null : _search,
                     icon: const Icon(Icons.search),
                   ),
@@ -98,7 +100,7 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
                 width: 280,
                 child: DropdownButtonFormField<String>(
                   initialValue: selectedProvider.providerId,
-                  decoration: const InputDecoration(labelText: 'Proveedor'),
+                  decoration: InputDecoration(labelText: context.l10n.provider),
                   items: [
                     for (final provider in providers)
                       DropdownMenuItem(
@@ -161,9 +163,10 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
                           )
                           : _candidates.isEmpty
                           ? BvEmptyState(
-                            title: 'Sin candidatos todavía',
-                            message:
-                                'Buscá un juego para ver resultados de $providerName.',
+                            title: context.l10n.metadataNoCandidates,
+                            message: context.l10n.metadataNoCandidatesMessage(
+                              providerName,
+                            ),
                             icon: Icons.travel_explore_outlined,
                           )
                           : _CandidateList(
@@ -181,7 +184,7 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
                   TextButton(
                     onPressed:
                         _applying ? null : () => Navigator.pop(context, false),
-                    child: const Text('Cerrar'),
+                    child: Text(context.l10n.close),
                   ),
                   if (_details != null && _diff != null)
                     FilledButton.icon(
@@ -199,8 +202,8 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
                               : const Icon(Icons.check),
                       label: Text(
                         _selectedFields.isEmpty
-                            ? 'Guardar vínculo'
-                            : 'Aplicar metadata',
+                            ? context.l10n.metadataSaveLink
+                            : context.l10n.metadataApply,
                       ),
                     ),
                 ],
@@ -235,7 +238,7 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
         _candidates = result;
         _error =
             result.isEmpty
-                ? '${provider.displayName} no devolvió candidatos.'
+                ? context.l10n.providerNoCandidates(provider.displayName)
                 : null;
       });
     } catch (error) {
@@ -322,8 +325,9 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
           if (!mounted) return;
           setState(
             () =>
-                _error =
-                    'Metadata aplicada, pero no se pudo guardar la portada. ${privacyRedactor.redact(error.toString())}',
+                _error = context.l10n.metadataCoverSaveFailed(
+                  privacyRedactor.redact(error.toString()),
+                ),
           );
           return;
         }
@@ -358,18 +362,16 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
       builder:
           (context) => AlertDialog(
             scrollable: true,
-            title: const Text('Reemplazar portada'),
-            content: const Text(
-              'Este juego ya tiene portada seleccionada. ¿Querés reemplazarla por la portada incluida en IGDB?',
-            ),
+            title: Text(context.l10n.metadataReplaceCoverTitle),
+            content: Text(context.l10n.metadataReplaceCoverMessage),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancelar'),
+                child: Text(context.l10n.cancel),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Reemplazar portada'),
+                child: Text(context.l10n.metadataReplaceCoverTitle),
               ),
             ],
           ),
@@ -387,18 +389,16 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
       builder:
           (context) => AlertDialog(
             scrollable: true,
-            title: const Text('Reemplazar match externo'),
-            content: const Text(
-              'Este juego ya tiene otro match externo para este proveedor. ¿Querés reemplazarlo por el candidato seleccionado?',
-            ),
+            title: Text(context.l10n.metadataReplaceExternalTitle),
+            content: Text(context.l10n.metadataReplaceExternalMessage),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancelar'),
+                child: Text(context.l10n.cancel),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Reemplazar'),
+                child: Text(context.l10n.replace),
               ),
             ],
           ),
@@ -415,9 +415,7 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
     if (error is MetadataException) {
       return privacyRedactor.redact(error.message);
     }
-    return privacyRedactor.redact(
-      'No se pudo completar la operación de metadata.',
-    );
+    return privacyRedactor.redact(context.l10n.metadataOperationFailed);
   }
 
   MetadataProvider _providerById(
@@ -526,11 +524,11 @@ class _DiffPreview extends StatelessWidget {
                   contentPadding: EdgeInsets.zero,
                   value: saveIncludedCover,
                   onChanged: (value) => onCoverChanged(value ?? false),
-                  title: const Text('Guardar portada incluida'),
+                  title: Text(context.l10n.gameSaveIncludedCover),
                   subtitle: Text(
                     hasCurrentCover
-                        ? 'Este juego ya tiene portada. Se pedirá confirmación antes de reemplazarla.'
-                        : 'La portada se guardará localmente y quedará disponible offline.',
+                        ? context.l10n.metadataIncludedCoverExisting
+                        : context.l10n.metadataIncludedCoverOffline,
                   ),
                 ),
               ),
@@ -538,9 +536,7 @@ class _DiffPreview extends StatelessWidget {
           ],
           const SizedBox(height: BvSpacing.md),
           if (diff.changes.isEmpty)
-            const Text(
-              'No hay campos nuevos para aplicar. Podés guardar el vínculo externo.',
-            )
+            Text(context.l10n.metadataNoNewFields)
           else
             for (final change in diff.changes)
               Padding(
@@ -565,19 +561,23 @@ class _DiffPreview extends StatelessWidget {
                         spacing: BvSpacing.xs,
                         runSpacing: BvSpacing.xs,
                         children: [
-                          Text(change.field.label),
+                          Text(context.l10n.metadataFieldLabel(change.field)),
                           if (change.currentValue.trim().isNotEmpty &&
                               change.currentValue != '-')
-                            const BvChip(
-                              label: 'reemplaza',
+                            BvChip(
+                              label: context.l10n.metadataReplaces,
                               tone: BvChipTone.warning,
                             ),
                           if (change.isProtected)
-                            const BvChip(label: 'protegido'),
+                            BvChip(label: context.l10n.metadataProtected),
                         ],
                       ),
                       subtitle: Text(
-                        'Actual: ${change.currentValue}\n${details.providerName}: ${change.externalValue}',
+                        context.l10n.metadataCurrentExternal(
+                          change.currentValue,
+                          details.providerName,
+                          change.externalValue,
+                        ),
                       ),
                     ),
                   ),
@@ -614,7 +614,7 @@ class _MetadataError extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: onSettings,
             icon: const Icon(Icons.settings_outlined),
-            label: const Text('Abrir ajustes'),
+            label: Text(context.l10n.openSettings),
           ),
         ],
       ],

@@ -14,6 +14,8 @@ import '../../../core/design_system/bv_theme_extension.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../../../core/privacy/privacy_redactor.dart';
 import '../../../core/widgets/dropdown_value_guard.dart';
+import '../../../l10n/domain_localizations.dart';
+import '../../../l10n/l10n.dart';
 import '../../catalogs/data/catalog_repository.dart';
 import '../../library/domain/game_status.dart';
 import '../../media/application/media_providers.dart';
@@ -85,7 +87,11 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.entryId == null ? 'Crear juego' : 'Editar juego'),
+        title: Text(
+          widget.entryId == null
+              ? context.l10n.gameCreateTitle
+              : context.l10n.gameEditTitle,
+        ),
       ),
       body: detail.when(
         data: (item) {
@@ -123,19 +129,19 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                         final padding =
                             compact ? BvSpacing.pageCompact : BvSpacing.page;
                         final identitySection = _FormSection(
-                          title: 'Identidad',
-                          subtitle: 'Datos del juego y metadata externa.',
+                          title: context.l10n.gameIdentity,
+                          subtitle: context.l10n.gameIdentitySubtitle,
                           child: _FormFieldGrid(
                             twoColumns: twoColumns,
                             children: [
                               TextFormField(
                                 controller: _titleController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Nombre',
+                                decoration: InputDecoration(
+                                  labelText: context.l10n.gameName,
                                 ),
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
-                                    return 'El nombre es obligatorio.';
+                                    return context.l10n.gameNameRequired;
                                   }
                                   return null;
                                 },
@@ -155,7 +161,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                                     ),
                               ),
                               _DateField(
-                                label: 'Fecha de salida',
+                                label: context.l10n.gameReleaseDate,
                                 value: _releaseDate,
                                 onChanged:
                                     (value) =>
@@ -163,25 +169,31 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                               ),
                               DropdownButtonFormField<String?>(
                                 initialValue: _type,
-                                decoration: const InputDecoration(
-                                  labelText: 'Tipo',
+                                decoration: InputDecoration(
+                                  labelText: context.l10n.libraryType,
                                 ),
-                                items: const [
+                                items: [
                                   DropdownMenuItem(
                                     value: null,
-                                    child: Text('Sin definir'),
+                                    child: Text(context.l10n.gameTypeUndefined),
                                   ),
                                   DropdownMenuItem(
                                     value: 'Un jugador',
-                                    child: Text('Un jugador'),
+                                    child: Text(
+                                      context.l10n.gameTypeSinglePlayer,
+                                    ),
                                   ),
                                   DropdownMenuItem(
                                     value: 'Multijugador',
-                                    child: Text('Multijugador'),
+                                    child: Text(
+                                      context.l10n.gameTypeMultiplayer,
+                                    ),
                                   ),
                                   DropdownMenuItem(
                                     value: 'Cooperativo',
-                                    child: Text('Cooperativo'),
+                                    child: Text(
+                                      context.l10n.gameTypeCooperative,
+                                    ),
                                   ),
                                 ],
                                 onChanged:
@@ -191,21 +203,23 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                           ),
                         );
                         final personalSection = _FormSection(
-                          title: 'Biblioteca personal',
-                          subtitle: 'Estado, puntaje y notas privadas.',
+                          title: context.l10n.gamePersonalLibrary,
+                          subtitle: context.l10n.gamePersonalLibrarySubtitle,
                           child: _FormFieldGrid(
                             twoColumns: twoColumns,
                             children: [
                               DropdownButtonFormField<GameStatus>(
                                 initialValue: _status,
-                                decoration: const InputDecoration(
-                                  labelText: 'Estado',
+                                decoration: InputDecoration(
+                                  labelText: context.l10n.libraryStatus,
                                 ),
                                 items: [
                                   for (final status in GameStatus.values)
                                     DropdownMenuItem(
                                       value: status,
-                                      child: Text(status.label),
+                                      child: Text(
+                                        context.l10n.gameStatusLabel(status),
+                                      ),
                                     ),
                                 ],
                                 onChanged: (value) {
@@ -221,10 +235,10 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                               ),
                               DropdownButtonFormField<int?>(
                                 initialValue: _rating,
-                                decoration: const InputDecoration(
-                                  labelText: 'Puntaje personal',
+                                decoration: InputDecoration(
+                                  labelText: context.l10n.gamePersonalRating,
                                 ),
-                                items: _ratingItems(),
+                                items: _ratingItems(context),
                                 onChanged:
                                     (value) => setState(() => _rating = value),
                               ),
@@ -232,8 +246,8 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                                 controller: _notesController,
                                 minLines: 4,
                                 maxLines: 7,
-                                decoration: const InputDecoration(
-                                  labelText: 'Notas personales',
+                                decoration: InputDecoration(
+                                  labelText: context.l10n.gamePersonalNotes,
                                   alignLabelWithHint: true,
                                 ),
                               ),
@@ -241,13 +255,13 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                           ),
                         );
                         final catalogSection = _FormSection(
-                          title: 'Catálogos',
-                          subtitle: 'Plataformas y géneros asociados.',
+                          title: context.l10n.gameCatalogs,
+                          subtitle: context.l10n.gameCatalogsSubtitle,
                           child: Column(
                             children: [
                               _CatalogSelector(
-                                title: 'Plataformas',
-                                addLabel: 'Agregar plataforma',
+                                title: context.l10n.libraryPlatforms,
+                                addLabel: context.l10n.gameAddPlatform,
                                 controller: _newPlatformController,
                                 items: platformMap,
                                 selectedIds: _selectedPlatformIds,
@@ -281,8 +295,8 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                               ),
                               const SizedBox(height: BvSpacing.lg),
                               _CatalogSelector(
-                                title: 'Géneros',
-                                addLabel: 'Agregar género',
+                                title: context.l10n.libraryGenres,
+                                addLabel: context.l10n.gameAddGenre,
                                 controller: _newGenreController,
                                 items: genreMap,
                                 selectedIds: _selectedGenreIds,
@@ -316,9 +330,11 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                         final completionSection =
                             _status == GameStatus.completed
                                 ? _FormSection(
-                                  title: 'Completado / partida',
+                                  title: context.l10n.gameCompletionSection,
                                   subtitle:
-                                      'Datos iniciales al marcar como completado.',
+                                      context
+                                          .l10n
+                                          .gameCompletionSectionSubtitle,
                                   child: _CompletionFields(
                                     completedAt: _completedAt ?? DateTime.now(),
                                     hoursController: _completedHoursController,
@@ -722,16 +738,16 @@ class _GameFormMetadataDialogState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Importar metadata',
+                context.l10n.gameImportMetadata,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: BvSpacing.sm),
               TextField(
                 controller: _queryController,
                 decoration: InputDecoration(
-                  labelText: 'Buscar por título',
+                  labelText: context.l10n.gameSearchByTitle,
                   suffixIcon: IconButton(
-                    tooltip: 'Buscar',
+                    tooltip: context.l10n.search,
                     onPressed: _loading ? null : _search,
                     icon: const Icon(Icons.search),
                   ),
@@ -743,7 +759,7 @@ class _GameFormMetadataDialogState
                 width: 280,
                 child: DropdownButtonFormField<String>(
                   initialValue: provider.providerId,
-                  decoration: const InputDecoration(labelText: 'Proveedor'),
+                  decoration: InputDecoration(labelText: context.l10n.provider),
                   items: [
                     for (final item in providers)
                       DropdownMenuItem(
@@ -798,9 +814,10 @@ class _GameFormMetadataDialogState
                           )
                           : _candidates.isEmpty
                           ? BvEmptyState(
-                            title: 'Sin candidatos todavía',
-                            message:
-                                'Buscá un juego para prellenar campos desde ${provider.displayName}.',
+                            title: context.l10n.gameNoCandidates,
+                            message: context.l10n.gameNoCandidatesMessage(
+                              provider.displayName,
+                            ),
                             icon: Icons.travel_explore_outlined,
                           )
                           : Column(
@@ -875,7 +892,7 @@ class _GameFormMetadataDialogState
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancelar'),
+                    child: Text(context.l10n.cancel),
                   ),
                   if (_details != null) ...[
                     const SizedBox(width: BvSpacing.xs),
@@ -895,7 +912,7 @@ class _GameFormMetadataDialogState
                             ),
                           ),
                       icon: const Icon(Icons.check),
-                      label: const Text('Aplicar al formulario'),
+                      label: Text(context.l10n.gameApplyToForm),
                     ),
                   ],
                 ],
@@ -929,7 +946,7 @@ class _GameFormMetadataDialogState
         _candidates = candidates;
         _error =
             candidates.isEmpty
-                ? '${provider.displayName} no devolvió candidatos.'
+                ? context.l10n.providerNoCandidates(provider.displayName)
                 : null;
       });
     } catch (error) {
@@ -1056,7 +1073,7 @@ class _FormMetadataPreview extends StatelessWidget {
                       value: selectedFields.contains(field),
                       onChanged:
                           (value) => onFieldChanged(field, value ?? false),
-                      title: Text(field.label),
+                      title: Text(context.l10n.metadataFieldLabel(field)),
                       subtitle: Text(_fieldValue(details, field)),
                     ),
                   ),
@@ -1075,11 +1092,11 @@ class _FormMetadataPreview extends StatelessWidget {
                   ),
                   value: saveCover,
                   onChanged: (value) => onCoverChanged(value ?? false),
-                  title: const Text('Guardar portada incluida'),
+                  title: Text(context.l10n.gameSaveIncludedCover),
                   subtitle: Text(
                     hasCurrentCover
-                        ? 'Reemplazará la portada al guardar el juego.'
-                        : 'Se guardará localmente después de guardar el juego.',
+                        ? context.l10n.gameIncludedCoverReplace
+                        : context.l10n.gameIncludedCoverSave,
                   ),
                 ),
               ),
@@ -1200,13 +1217,15 @@ class _MetadataSearchButton extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: saving ? null : onSearch,
             icon: const Icon(Icons.auto_fix_high_outlined),
-            label: const Text('Buscar metadata'),
+            label: Text(context.l10n.gameSearchMetadata),
           ),
           if (pendingCoverAsset != null) ...[
             const SizedBox(height: BvSpacing.xs),
             BvChip(
               icon: Icons.image_outlined,
-              label: 'Portada pendiente: ${pendingCoverAsset!.providerName}',
+              label: context.l10n.gamePendingCover(
+                pendingCoverAsset!.providerName,
+              ),
               tone: BvChipTone.primary,
               onDeleted: onClearCover,
             ),
@@ -1241,7 +1260,7 @@ class _SaveActionBar extends StatelessWidget {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                       : const Icon(Icons.save_outlined),
-              label: const Text('Guardar'),
+              label: Text(context.l10n.save),
             ),
           ),
         ],
@@ -1256,14 +1275,15 @@ String _joinNames(Iterable<String> values) {
   return list.join(', ');
 }
 
-List<DropdownMenuItem<int?>> _ratingItems() {
-  return const [
-    DropdownMenuItem(value: null, child: Text('Sin puntaje')),
-    DropdownMenuItem(value: 1, child: Text('1 estrella')),
-    DropdownMenuItem(value: 2, child: Text('2 estrellas')),
-    DropdownMenuItem(value: 3, child: Text('3 estrellas')),
-    DropdownMenuItem(value: 4, child: Text('4 estrellas')),
-    DropdownMenuItem(value: 5, child: Text('5 estrellas')),
+List<DropdownMenuItem<int?>> _ratingItems(BuildContext context) {
+  return [
+    DropdownMenuItem(value: null, child: Text(context.l10n.ratingNone)),
+    DropdownMenuItem(value: 1, child: Text(context.l10n.ratingOneStar)),
+    for (var rating = 2; rating <= 5; rating++)
+      DropdownMenuItem(
+        value: rating,
+        child: Text(context.l10n.ratingStars(rating)),
+      ),
   ];
 }
 
@@ -1296,11 +1316,11 @@ class _DateField extends StatelessWidget {
                 );
                 if (picked != null) onChanged(picked);
               },
-              child: const Text('Elegir'),
+              child: Text(context.l10n.choose),
             ),
             if (value != null)
               IconButton(
-                tooltip: 'Limpiar',
+                tooltip: context.l10n.clear,
                 onPressed: () => onChanged(null),
                 icon: const Icon(Icons.clear),
               ),
@@ -1463,26 +1483,31 @@ class _CompletionFields extends StatelessWidget {
       twoColumns: twoColumns,
       children: [
         _DateField(
-          label: 'Fecha de completado',
+          label: context.l10n.gameCompletionDate,
           value: completedAt,
           onChanged: onDateChanged,
         ),
         TextFormField(
           controller: hoursController,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'Horas jugadas'),
+          decoration: InputDecoration(labelText: context.l10n.gameHoursPlayed),
         ),
         DropdownButtonFormField<int?>(
           initialValue: rating,
-          decoration: const InputDecoration(labelText: 'Puntaje de partida'),
-          items: _ratingItems(),
+          decoration: InputDecoration(
+            labelText: context.l10n.gamePlaythroughRating,
+          ),
+          items: _ratingItems(context),
           onChanged: onRatingChanged,
         ),
         DropdownButtonFormField<String?>(
           initialValue: safePlatformId,
-          decoration: const InputDecoration(labelText: 'Plataforma'),
+          decoration: InputDecoration(labelText: context.l10n.gamePlatform),
           items: [
-            const DropdownMenuItem(value: null, child: Text('Sin plataforma')),
+            DropdownMenuItem(
+              value: null,
+              child: Text(context.l10n.gameNoPlatform),
+            ),
             for (final platform in platforms.entries)
               DropdownMenuItem(
                 value: platform.key,

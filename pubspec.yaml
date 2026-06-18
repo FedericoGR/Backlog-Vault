@@ -1,13 +1,15 @@
 name: backlog_vault
 description: Backlog Vault is a local-first personal video game backlog manager.
 publish_to: "none"
-version: 0.1.0+2
+version: 0.1.0+3
 
 environment:
   sdk: ">=3.7.0 <4.0.0"
 
 dependencies:
   flutter:
+    sdk: flutter
+  flutter_localizations:
     sdk: flutter
   drift: ^2.33.0
   drift_flutter: ^0.3.0
@@ -24,6 +26,7 @@ dependencies:
   crypto: ^3.0.7
   archive: ^4.0.9
   cryptography: ^2.9.0
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   build_runner: ^2.10.4
@@ -39,4 +42,5 @@ dependency_overrides:
     path: third_party/flutter_secure_storage_windows
 
 flutter:
+  generate: true
   uses-material-design: true

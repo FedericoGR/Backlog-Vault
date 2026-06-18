@@ -8,6 +8,7 @@ import '../../../core/design_system/bv_progress_panel.dart';
 import '../../../core/design_system/bv_status_banner.dart';
 import '../../../core/design_system/bv_spacing.dart';
 import '../../../core/privacy/privacy_redactor.dart';
+import '../../../l10n/l10n.dart';
 import '../application/backup_restore_providers.dart';
 import '../data/backup_service.dart';
 import '../domain/backup_models.dart';
@@ -27,14 +28,13 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
   @override
   Widget build(BuildContext context) {
     return BvPageScaffold(
-      title: 'Datos y backups',
+      title: context.l10n.backupTitle,
       body: ListView(
         children: [
-          const BvStatusBanner(
-            title: 'Portabilidad local',
+          BvStatusBanner(
+            title: context.l10n.backupLocalPortability,
             tone: BvBannerTone.warning,
-            message:
-                '.vaultbackup no está cifrado y puede incluir notas personales, juegos, estados y media local. .vaultbackup.enc cifra el backup completo con una password que la app no guarda.',
+            message: context.l10n.backupLocalPortabilityMessage,
           ),
           const SizedBox(height: BvSpacing.md),
           _ActionGrid(
@@ -48,35 +48,33 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
           ),
           if (_busy) ...[
             const SizedBox(height: BvSpacing.md),
-            const BvProgressPanel(
-              title: 'Procesando archivo',
-              subtitle:
-                  'Esperá mientras Backlog Vault prepara o valida el contenido seleccionado.',
+            BvProgressPanel(
+              title: context.l10n.backupProcessingTitle,
+              subtitle: context.l10n.backupProcessingMessage,
             ),
           ],
           if (_lastOperation != null) ...[
             const SizedBox(height: BvSpacing.md),
             _OperationResultPanel(
-              title: 'Última operación',
+              title: context.l10n.backupLastOperation,
               message: _lastOperation!,
               warnings: _lastWarnings,
             ),
           ],
           const SizedBox(height: BvSpacing.md),
           BvDangerZone(
-            title: 'Restauración y reemplazo lógico',
-            message:
-                'Antes de restaurar, la app crea un backup previo automático. La restauración inserta o actualiza lo que está en el archivo y marca como borrado lógico lo que quedó afuera.',
+            title: context.l10n.backupRestoreLogicTitle,
+            message: context.l10n.backupRestoreLogicMessage,
             actions: [
               OutlinedButton.icon(
                 onPressed: _busy ? null : _restoreBackup,
                 icon: const Icon(Icons.restore_outlined),
-                label: const Text('Restaurar backup'),
+                label: Text(context.l10n.backupRestore),
               ),
               OutlinedButton.icon(
                 onPressed: _busy ? null : _restoreEncryptedBackup,
                 icon: const Icon(Icons.lock_open_outlined),
-                label: const Text('Restaurar cifrado'),
+                label: Text(context.l10n.backupRestoreEncrypted),
               ),
             ],
           ),
@@ -89,11 +87,12 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
     await _saveGeneratedFile(
       allowedExtensions: ['vaultbackup'],
       create: ref.read(backupServiceProvider).createBackup,
-      success: 'Backup completo creado.',
+      success: context.l10n.backupCreated,
     );
   }
 
   Future<void> _createEncryptedBackup() async {
+    final success = context.l10n.backupEncryptedCreated;
     final password = await _askEncryptionPassword(confirm: true);
     if (password == null) return;
     await _saveGeneratedFile(
@@ -102,7 +101,7 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
           () => ref
               .read(backupServiceProvider)
               .createEncryptedBackup(password: password),
-      success: 'Backup cifrado creado.',
+      success: success,
     );
   }
 
@@ -110,7 +109,7 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
     await _saveGeneratedFile(
       allowedExtensions: ['json'],
       create: ref.read(backupServiceProvider).exportJson,
-      success: 'Export JSON creado.',
+      success: context.l10n.backupJsonCreated,
     );
   }
 
@@ -118,7 +117,7 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
     await _saveGeneratedFile(
       allowedExtensions: ['csv'],
       create: ref.read(backupServiceProvider).exportCsv,
-      success: 'Export CSV creado.',
+      success: context.l10n.backupCsvCreated,
     );
   }
 
@@ -180,11 +179,10 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
       setState(() {
         _busy = false;
         _lastWarnings = result.warnings;
-        _lastOperation =
-            'Backup restaurado. Se creó un backup previo automático.';
+        _lastOperation = context.l10n.backupRestoredWithSafety;
       });
       ref.invalidate(backupServiceProvider);
-      _showMessage('Backup restaurado.');
+      _showMessage(context.l10n.backupRestored);
     } on Object catch (error) {
       if (!mounted) return;
       setState(() => _busy = false);
@@ -229,11 +227,10 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
       setState(() {
         _busy = false;
         _lastWarnings = result.warnings;
-        _lastOperation =
-            'Backup cifrado restaurado. Se creó un backup previo cifrado automático.';
+        _lastOperation = context.l10n.backupEncryptedRestoredWithSafety;
       });
       ref.invalidate(backupServiceProvider);
-      _showMessage('Backup cifrado restaurado.');
+      _showMessage(context.l10n.backupEncryptedRestored);
     } on Object catch (error) {
       if (!mounted) return;
       setState(() => _busy = false);
@@ -241,34 +238,51 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
     }
   }
 
-  Future<String?> _askRestoreConfirmation(BackupPreview preview) {
+  Future<String?> _askRestoreConfirmation(BackupPreview preview) async {
+    final expectedKeyword = context.l10n.backupRestoreKeyword;
     final controller = TextEditingController();
-    return showDialog<String>(
+    final result = await showDialog<String>(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Confirmar restauración'),
+            title: Text(context.l10n.backupConfirmRestore),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Fecha: ${preview.manifest.createdAt.toLocal()}'),
-                  Text('Juegos: ${preview.manifest.counts.games}'),
-                  Text('Playthroughs: ${preview.manifest.counts.playthroughs}'),
-                  Text('Media: ${preview.manifest.counts.mediaFiles} archivos'),
-                  Text('Schema: ${preview.manifest.appSchemaVersion}'),
+                  Text(
+                    context.l10n.backupDate(
+                      preview.manifest.createdAt.toLocal().toString(),
+                    ),
+                  ),
+                  Text(context.l10n.backupGames(preview.manifest.counts.games)),
+                  Text(
+                    context.l10n.backupPlaythroughs(
+                      preview.manifest.counts.playthroughs,
+                    ),
+                  ),
+                  Text(
+                    context.l10n.backupMediaFiles(
+                      preview.manifest.counts.mediaFiles,
+                    ),
+                  ),
+                  Text(
+                    context.l10n.backupSchema(
+                      preview.manifest.appSchemaVersion,
+                    ),
+                  ),
                   if (preview.warnings.isNotEmpty) ...[
                     const SizedBox(height: BvSpacing.sm),
-                    Text('Warnings: ${preview.warnings.length}'),
+                    Text(context.l10n.backupWarnings(preview.warnings.length)),
                   ],
                   const SizedBox(height: BvSpacing.md),
-                  const Text('Escribí RESTAURAR para continuar.'),
+                  Text(context.l10n.backupTypeRestore),
                   TextField(
                     controller: controller,
                     autofocus: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Confirmación',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.libraryConfirmation,
                     ),
                   ),
                 ],
@@ -277,20 +291,24 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancelar'),
+                child: Text(context.l10n.cancel),
               ),
               FilledButton(
                 onPressed: () => Navigator.of(context).pop(controller.text),
-                child: const Text('Restaurar'),
+                child: Text(context.l10n.backupRestore),
               ),
             ],
           ),
     ).whenComplete(controller.dispose);
+    if (result?.trim().toUpperCase() == expectedKeyword) {
+      return 'RESTAURAR';
+    }
+    return result;
   }
 
   String _friendlyError(Object error) {
     if (error is BackupException) return privacyRedactor.redact(error.message);
-    return privacyRedactor.redact('No se pudo completar la operación.');
+    return privacyRedactor.redact(context.l10n.backupOperationFailed);
   }
 
   Future<String?> _askEncryptionPassword({required bool confirm}) {
@@ -304,23 +322,23 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
             builder:
                 (context, setDialogState) => AlertDialog(
                   title: Text(
-                    confirm ? 'Crear backup cifrado' : 'Abrir backup cifrado',
+                    confirm
+                        ? context.l10n.backupCreateEncrypted
+                        : context.l10n.backupOpenEncrypted,
                   ),
                   content: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'La password no se guarda. Si la perdés, el backup cifrado no se puede recuperar.',
-                        ),
+                        Text(context.l10n.backupPasswordWarning),
                         const SizedBox(height: BvSpacing.md),
                         TextField(
                           controller: passwordController,
                           autofocus: true,
                           obscureText: true,
                           decoration: InputDecoration(
-                            labelText: 'Password',
+                            labelText: context.l10n.backupPassword,
                             errorText: errorText,
                           ),
                         ),
@@ -329,8 +347,8 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
                           TextField(
                             controller: confirmationController,
                             obscureText: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Repetir password',
+                            decoration: InputDecoration(
+                              labelText: context.l10n.backupRepeatPassword,
                             ),
                           ),
                         ],
@@ -340,27 +358,31 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancelar'),
+                      child: Text(context.l10n.cancel),
                     ),
                     FilledButton(
                       onPressed: () {
                         final password = passwordController.text;
                         if (password.isEmpty) {
                           setDialogState(
-                            () => errorText = 'Ingresá una password.',
+                            () => errorText = context.l10n.backupEnterPassword,
                           );
                           return;
                         }
                         if (confirm &&
                             password != confirmationController.text) {
                           setDialogState(
-                            () => errorText = 'Las passwords no coinciden.',
+                            () =>
+                                errorText =
+                                    context.l10n.backupPasswordsMismatch,
                           );
                           return;
                         }
                         Navigator.pop(context, password);
                       },
-                      child: Text(confirm ? 'Crear' : 'Abrir'),
+                      child: Text(
+                        confirm ? context.l10n.create : context.l10n.openAction,
+                      ),
                     ),
                   ],
                 ),
@@ -407,16 +429,15 @@ class _ActionGrid extends StatelessWidget {
         SizedBox(
           width: 320,
           child: BvActionCard(
-            title: 'Backup completo',
-            subtitle:
-                'Genera un .vaultbackup con juegos, partidas, metadata aplicada y media local sin cifrado.',
+            title: context.l10n.backupCompleteTitle,
+            subtitle: context.l10n.backupCompleteDescription,
             icon: Icons.archive_outlined,
             emphasized: true,
             actions: [
               FilledButton.icon(
                 onPressed: busy ? null : onCreateBackup,
                 icon: const Icon(Icons.download_outlined),
-                label: const Text('Crear backup'),
+                label: Text(context.l10n.backupCreate),
               ),
             ],
           ),
@@ -424,15 +445,14 @@ class _ActionGrid extends StatelessWidget {
         SizedBox(
           width: 320,
           child: BvActionCard(
-            title: 'Backup cifrado',
-            subtitle:
-                'Genera un .vaultbackup.enc protegido con password. La password no queda almacenada.',
+            title: context.l10n.backupEncryptedTitle,
+            subtitle: context.l10n.backupEncryptedDescription,
             icon: Icons.enhanced_encryption_outlined,
             actions: [
               FilledButton.tonalIcon(
                 onPressed: busy ? null : onCreateEncryptedBackup,
                 icon: const Icon(Icons.lock_outlined),
-                label: const Text('Crear cifrado'),
+                label: Text(context.l10n.backupCreateEncrypted),
               ),
             ],
           ),
@@ -440,15 +460,14 @@ class _ActionGrid extends StatelessWidget {
         SizedBox(
           width: 320,
           child: BvActionCard(
-            title: 'Exportar JSON',
-            subtitle:
-                'Exporta la biblioteca en un formato legible y útil para revisión o scripting local.',
+            title: context.l10n.backupExportJson,
+            subtitle: context.l10n.backupExportJsonDescription,
             icon: Icons.data_object_outlined,
             actions: [
               OutlinedButton.icon(
                 onPressed: busy ? null : onExportJson,
                 icon: const Icon(Icons.file_download_outlined),
-                label: const Text('Exportar JSON'),
+                label: Text(context.l10n.backupExportJson),
               ),
             ],
           ),
@@ -456,15 +475,14 @@ class _ActionGrid extends StatelessWidget {
         SizedBox(
           width: 320,
           child: BvActionCard(
-            title: 'Exportar CSV',
-            subtitle:
-                'Genera una exportación tabular compacta para hojas de cálculo o intercambio manual.',
+            title: context.l10n.backupExportCsv,
+            subtitle: context.l10n.backupExportCsvDescription,
             icon: Icons.table_view_outlined,
             actions: [
               OutlinedButton.icon(
                 onPressed: busy ? null : onExportCsv,
                 icon: const Icon(Icons.file_download_outlined),
-                label: const Text('Exportar CSV'),
+                label: Text(context.l10n.backupExportCsv),
               ),
             ],
           ),
@@ -472,15 +490,14 @@ class _ActionGrid extends StatelessWidget {
         SizedBox(
           width: 320,
           child: BvActionCard(
-            title: 'Restaurar backup',
-            subtitle:
-                'Abre un .vaultbackup, muestra preview y pide confirmación fuerte antes de aplicar cambios.',
+            title: context.l10n.backupRestore,
+            subtitle: context.l10n.backupRestoreDescription,
             icon: Icons.restore_outlined,
             actions: [
               FilledButton.tonalIcon(
                 onPressed: busy ? null : onRestoreBackup,
                 icon: const Icon(Icons.restore_outlined),
-                label: const Text('Restaurar backup'),
+                label: Text(context.l10n.backupRestore),
               ),
             ],
           ),
@@ -488,15 +505,14 @@ class _ActionGrid extends StatelessWidget {
         SizedBox(
           width: 320,
           child: BvActionCard(
-            title: 'Restaurar cifrado',
-            subtitle:
-                'Abre un .vaultbackup.enc, pide password y valida el contenido antes de reemplazar datos.',
+            title: context.l10n.backupRestoreEncrypted,
+            subtitle: context.l10n.backupRestoreEncryptedDescription,
             icon: Icons.lock_open_outlined,
             actions: [
               FilledButton.tonalIcon(
                 onPressed: busy ? null : onRestoreEncryptedBackup,
                 icon: const Icon(Icons.lock_open_outlined),
-                label: const Text('Restaurar cifrado'),
+                label: Text(context.l10n.backupRestoreEncrypted),
               ),
             ],
           ),
@@ -529,7 +545,7 @@ class _OperationResultPanel extends StatelessWidget {
         if (warnings.isNotEmpty) ...[
           const SizedBox(height: BvSpacing.sm),
           BvStatusBanner(
-            title: 'Warnings',
+            title: context.l10n.warnings,
             tone: BvBannerTone.warning,
             message: warnings.map((warning) => warning.message).join('\n'),
           ),

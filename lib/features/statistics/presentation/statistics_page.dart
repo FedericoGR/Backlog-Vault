@@ -14,6 +14,8 @@ import '../../../core/design_system/bv_stat_card.dart';
 import '../../../core/design_system/bv_surface.dart';
 import '../../../core/design_system/bv_theme_extension.dart';
 import '../../../core/formatting/date_formatters.dart';
+import '../../../l10n/domain_localizations.dart';
+import '../../../l10n/l10n.dart';
 import '../../library/data/library_query_repository.dart';
 import '../../library/domain/game_status.dart';
 import '../application/statistics_providers.dart';
@@ -32,16 +34,17 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final rows = ref.watch(libraryRowsProvider);
     final playthroughs = ref.watch(statisticsPlaythroughsProvider);
 
     return BvPageScaffold(
-      title: 'Estadísticas',
+      title: l10n.navigationStatistics,
       actions: [
         TextButton.icon(
           onPressed: () => context.go('/'),
           icon: const Icon(Icons.library_books_outlined),
-          label: const Text('Biblioteca'),
+          label: Text(l10n.navigationLibrary),
         ),
       ],
       body: rows.when(
@@ -59,17 +62,18 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
                   onYearChanged: (year) => setState(() => _selectedYear = year),
                 );
               },
-              loading: () => const BvLoadingState(label: 'Cargando progreso'),
+              loading:
+                  () => BvLoadingState(label: l10n.statisticsProgressLoading),
               error:
                   (error, stackTrace) => BvErrorState(
-                    title: 'No se pudo cargar progreso',
+                    title: l10n.statisticsLoadProgressError,
                     message: error.toString(),
                   ),
             ),
-        loading: () => const BvLoadingState(label: 'Cargando biblioteca'),
+        loading: () => BvLoadingState(label: l10n.statisticsLibraryLoading),
         error:
             (error, stackTrace) => BvErrorState(
-              title: 'No se pudo cargar estadísticas',
+              title: l10n.statisticsLoadError,
               message: error.toString(),
             ),
       ),
@@ -99,6 +103,7 @@ class _StatisticsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final selectedYearStats = stats.statsForYear(selectedYear);
     return ListView(
       children: [
@@ -112,21 +117,20 @@ class _StatisticsContent extends StatelessWidget {
             final left = Column(
               children: [
                 _SectionPanel(
-                  title: 'Biblioteca por estado',
-                  subtitle: 'Distribución rápida del backlog actual.',
+                  title: l10n.statisticsLibraryByStatus,
+                  subtitle: l10n.statisticsLibraryByStatusSubtitle,
                   child: _StatusBreakdown(stats: stats),
                 ),
                 const SizedBox(height: BvSpacing.md),
                 _SectionPanel(
-                  title: 'Ratings',
-                  subtitle:
-                      'Cómo se reparte tu valoración personal entre los juegos puntuados.',
+                  title: l10n.statisticsRatings,
+                  subtitle: l10n.statisticsRatingsSubtitle,
                   child: _RatingDistribution(stats: stats),
                 ),
                 const SizedBox(height: BvSpacing.md),
                 _SectionPanel(
-                  title: 'Calidad de datos',
-                  subtitle: 'Huecos de metadata que todavía conviene revisar.',
+                  title: l10n.statisticsDataQuality,
+                  subtitle: l10n.statisticsDataQualitySubtitle,
                   child: _QualityStats(stats: stats),
                 ),
               ],
@@ -134,9 +138,8 @@ class _StatisticsContent extends StatelessWidget {
             final right = Column(
               children: [
                 _SectionPanel(
-                  title: 'Progreso anual',
-                  subtitle:
-                      'Playthroughs completados con fecha, más horas registradas por período.',
+                  title: l10n.statisticsAnnualProgress,
+                  subtitle: l10n.statisticsAnnualProgressSubtitle,
                   trailing: _YearSelector(
                     years: stats.availableYears,
                     selectedYear: selectedYear,
@@ -149,26 +152,26 @@ class _StatisticsContent extends StatelessWidget {
                 ),
                 const SizedBox(height: BvSpacing.md),
                 _SectionPanel(
-                  title: 'Plataformas más usadas',
-                  subtitle: 'Dónde se concentra más actividad jugable.',
+                  title: l10n.statisticsTopPlatforms,
+                  subtitle: l10n.statisticsTopPlatformsSubtitle,
                   child: _CategoryBreakdownList(
                     items: stats.platformBreakdown,
-                    emptyText: 'No hay plataformas registradas.',
+                    emptyText: l10n.statisticsNoPlatforms,
                   ),
                 ),
                 const SizedBox(height: BvSpacing.md),
                 _SectionPanel(
-                  title: 'Géneros más usados',
-                  subtitle: 'Qué estilos dominan tu biblioteca personal.',
+                  title: l10n.statisticsTopGenres,
+                  subtitle: l10n.statisticsTopGenresSubtitle,
                   child: _CategoryBreakdownList(
                     items: stats.genreBreakdown,
-                    emptyText: 'No hay géneros registrados.',
+                    emptyText: l10n.statisticsNoGenres,
                   ),
                 ),
                 const SizedBox(height: BvSpacing.md),
                 _SectionPanel(
-                  title: 'Últimos completados',
-                  subtitle: 'Tus cierres más recientes con fecha registrada.',
+                  title: l10n.statisticsRecentCompleted,
+                  subtitle: l10n.statisticsRecentCompletedSubtitle,
                   child: _LatestCompletedList(items: stats.latestCompleted),
                 ),
               ],
@@ -203,6 +206,7 @@ class _HeroSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bv = BvThemeExtension.of(context);
+    final l10n = context.l10n;
     return BvPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,19 +217,21 @@ class _HeroSummary extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
-                'Pulso de tu biblioteca',
+                l10n.statisticsPulse,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               BvChip(
-                label:
-                    '${stats.completedCount} completados · ${_formatHours(stats.totalHours)}',
+                label: l10n.statisticsCompletedHours(
+                  stats.completedCount,
+                  stats.totalHours.toStringAsFixed(1),
+                ),
                 selected: true,
               ),
             ],
           ),
           const SizedBox(height: BvSpacing.xs),
           Text(
-            'Un vistazo rápido a backlog, progreso y calidad de datos sin salir del mismo catálogo.',
+            l10n.statisticsPulseSubtitle,
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: bv.textMuted),
@@ -243,23 +249,24 @@ class _SummaryCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Wrap(
       spacing: BvSpacing.sm,
       runSpacing: BvSpacing.sm,
       children: [
-        _StatCard(label: 'Juegos', value: stats.totalGames.toString()),
-        _StatCard(label: 'Backlog', value: stats.backlogCount.toString()),
-        _StatCard(label: 'Jugando', value: stats.playingCount.toString()),
+        _StatCard(label: l10n.games, value: stats.totalGames.toString()),
+        _StatCard(label: l10n.backlog, value: stats.backlogCount.toString()),
+        _StatCard(label: l10n.playing, value: stats.playingCount.toString()),
         _StatCard(
-          label: 'Completados totales',
+          label: l10n.statisticsTotalCompleted,
           value: stats.completedCount.toString(),
         ),
         _StatCard(
-          label: 'Horas registradas',
-          value: _formatHours(stats.totalHours),
+          label: l10n.statisticsLoggedHours,
+          value: l10n.hoursShort(stats.totalHours.toStringAsFixed(1)),
         ),
         _StatCard(
-          label: 'Rating promedio',
+          label: l10n.statisticsAverageRating,
           value:
               stats.averageRating == null
                   ? '-'
@@ -321,7 +328,7 @@ class _StatusBreakdown extends StatelessWidget {
       children: [
         for (final status in GameStatus.values)
           _StatBar(
-            label: status.label,
+            label: context.l10n.gameStatusLabel(status),
             value: stats.statusCounts[status] ?? 0,
             maxValue: maxCount,
           ),
@@ -348,7 +355,7 @@ class _YearSelector extends StatelessWidget {
       width: 128,
       child: DropdownButtonFormField<int>(
         initialValue: selectedYear,
-        decoration: const InputDecoration(labelText: 'Año'),
+        decoration: InputDecoration(labelText: context.l10n.statisticsYear),
         items: [
           for (final year in availableYears)
             DropdownMenuItem(value: year, child: Text(year.toString())),
@@ -375,10 +382,9 @@ class _YearProgress extends StatelessWidget {
     final yearlyMax = _maxInt(stats.completedByYear.values);
     final selected = selectedYearStats;
     if (stats.yearlyStatistics.isEmpty) {
-      return const BvEmptyState(
-        title: 'Todavía no hay progreso anual',
-        message:
-            'Cuando completes partidas con fecha, este panel las resume por año y mes.',
+      return BvEmptyState(
+        title: context.l10n.statisticsNoAnnualProgress,
+        message: context.l10n.statisticsNoAnnualProgressMessage,
         icon: Icons.event_note_outlined,
       );
     }
@@ -390,26 +396,28 @@ class _YearProgress extends StatelessWidget {
             label: year.year.toString(),
             value: year.completedCount,
             maxValue: yearlyMax,
-            trailing: _formatHours(year.hours),
+            trailing: context.l10n.hoursShort(year.hours.toStringAsFixed(1)),
           ),
         if (selected != null) ...[
           const SizedBox(height: BvSpacing.md),
           Text(
-            'Meses de ${selected.year}',
+            context.l10n.statisticsMonthsOf(selected.year),
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: BvSpacing.sm),
           for (final month in selected.monthlyCompletions)
             if (month.completedCount > 0 || month.hours > 0)
               _StatBar(
-                label: _monthLabel(month.month),
+                label: context.l10n.monthLabel(month.month),
                 value: month.completedCount,
                 maxValue: _maxInt(
                   selected.monthlyCompletions.map(
                     (item) => item.completedCount,
                   ),
                 ),
-                trailing: _formatHours(month.hours),
+                trailing: context.l10n.hoursShort(
+                  month.hours.toStringAsFixed(1),
+                ),
               ),
         ],
       ],
@@ -430,21 +438,24 @@ class _RatingDistribution extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (distribution.ratedCount == 0)
-          const BvEmptyState(
-            title: 'Todavía no hay puntajes',
-            message:
-                'Cuando empieces a calificar juegos, esta sección va a mostrar cómo se reparte tu criterio.',
+          BvEmptyState(
+            title: context.l10n.statisticsNoRatings,
+            message: context.l10n.statisticsNoRatingsMessage,
             icon: Icons.star_border_outlined,
           )
         else
           for (var rating = 5; rating >= 1; rating--)
             _StatBar(
-              label: '$rating estrella${rating == 1 ? '' : 's'}',
+              label: context.l10n.statisticsStars(rating),
               value: distribution.countByRating[rating] ?? 0,
               maxValue: maxCount,
             ),
         const SizedBox(height: BvSpacing.sm),
-        BvSurface(child: Text('Sin puntaje: ${distribution.unratedCount}')),
+        BvSurface(
+          child: Text(
+            context.l10n.statisticsUnrated(distribution.unratedCount),
+          ),
+        ),
       ],
     );
   }
@@ -461,7 +472,7 @@ class _CategoryBreakdownList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (items.isEmpty) {
       return BvEmptyState(
-        title: 'Sin datos todavía',
+        title: context.l10n.statisticsNoData,
         message: emptyText,
         icon: Icons.category_outlined,
       );
@@ -491,12 +502,15 @@ class _QualityStats extends StatelessWidget {
   Widget build(BuildContext context) {
     final quality = stats.qualityStats;
     final items = [
-      ('Sin portada', quality.missingCover),
-      ('Sin metadata', quality.missingMetadata),
-      ('Sin puntaje', quality.missingRating),
-      ('Sin plataforma', quality.missingPlatform),
-      ('Sin género', quality.missingGenre),
-      ('Completados sin fecha', quality.completedWithoutDate),
+      (context.l10n.missingCover, quality.missingCover),
+      (context.l10n.missingMetadata, quality.missingMetadata),
+      (context.l10n.missingRating, quality.missingRating),
+      (context.l10n.missingPlatform, quality.missingPlatform),
+      (context.l10n.missingGenre, quality.missingGenre),
+      (
+        context.l10n.statisticsCompletedWithoutDate,
+        quality.completedWithoutDate,
+      ),
     ];
     final maxCount = _maxInt(items.map((item) => item.$2));
     return Column(
@@ -516,10 +530,9 @@ class _LatestCompletedList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const BvEmptyState(
-        title: 'Todavía no hay completados',
-        message:
-            'Registrá una fecha de cierre en tus partidas para verlas acá.',
+      return BvEmptyState(
+        title: context.l10n.statisticsNoCompleted,
+        message: context.l10n.statisticsNoCompletedMessage,
         icon: Icons.history_toggle_off_outlined,
       );
     }
@@ -554,7 +567,9 @@ class _LatestCompletedList extends StatelessWidget {
                   Text(
                     item.hoursPlayed == null
                         ? '-'
-                        : _formatHours(item.hoursPlayed!),
+                        : context.l10n.hoursShort(
+                          item.hoursPlayed!.toStringAsFixed(1),
+                        ),
                     style: Theme.of(context).textTheme.labelLarge,
                   ),
                 ],
@@ -647,14 +662,13 @@ class _EmptyStatisticsState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BvEmptyState(
-      title: 'Todavía no hay datos para calcular estadísticas.',
-      message:
-          'Cuando cargues juegos y partidas, este panel te va a resumir progreso, ratings y calidad de metadata.',
+      title: context.l10n.statisticsEmptyTitle,
+      message: context.l10n.statisticsEmptyMessage,
       icon: Icons.bar_chart_outlined,
       action: FilledButton.icon(
         onPressed: () => context.go('/'),
         icon: const Icon(Icons.library_books_outlined),
-        label: const Text('Ir a biblioteca'),
+        label: Text(context.l10n.statisticsGoToLibrary),
       ),
     );
   }
@@ -666,25 +680,4 @@ int _maxInt(Iterable<int> values) {
     if (value > max) max = value;
   }
   return max;
-}
-
-String _formatHours(double value) => '${value.toStringAsFixed(1)} h';
-
-String _monthLabel(int month) {
-  const labels = [
-    'Enero',
-    'Febrero',
-    'Marzo',
-    'Abril',
-    'Mayo',
-    'Junio',
-    'Julio',
-    'Agosto',
-    'Septiembre',
-    'Octubre',
-    'Noviembre',
-    'Diciembre',
-  ];
-  if (month < 1 || month > 12) return month.toString();
-  return labels[month - 1];
 }

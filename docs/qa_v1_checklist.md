@@ -1,12 +1,10 @@
 # Backlog Vault v1 QA checklist
 
-Use a test library or a disposable backup when possible. Do not use real provider secrets in screenshots, logs, fixtures, or commits.
+Use a disposable library or test backup. Never use real provider credentials in screenshots, fixtures, logs, or commits.
 
-## RC automated validation status
+## RC3 automated validation
 
-Last RC validation run: 2026-06-18 on branch `release/v1`.
-
-This RC includes the Nexus-inspired UI refresh and final responsive stabilization pass across the whole app shell.
+Target: `v0.1.0-rc3`, version `0.1.0+3`, 2026-06-18.
 
 - [x] `flutter pub get`
 - [x] `dart run build_runner build`
@@ -14,65 +12,52 @@ This RC includes the Nexus-inspired UI refresh and final responsive stabilizatio
 - [x] `flutter test`
 - [x] `flutter build windows`
 - [x] `flutter build apk`
-- [x] Windows portable ZIP generated locally.
-- [x] Android APK copied to the RC artifact name locally.
-- [x] Secrets scan completed with only dummy/test strings and generic documentation references found.
+- [x] Secret and artifact scan
 
-Manual app-launch QA was not executed during this RC pass to avoid touching the user's real local app data. Use the checklist below with a disposable library or a temporary backup before declaring the build final-final.
+Update these boxes only from the final validation run.
 
-## Windows
+## i18n — Windows and Android
 
-- [ ] App opens from `flutter run -d windows`.
-- [ ] App opens from the portable ZIP extracted from `dist`.
-- [ ] Create a game.
-- [ ] Edit a game.
-- [ ] Delete a game with soft delete flow.
-- [ ] Import a Notion CSV fixture.
-- [ ] Search metadata with IGDB.
-- [ ] Search metadata with RAWG if a key is configured.
-- [ ] Save an IGDB cover.
-- [ ] Save a SteamGridDB cover if a key is configured.
-- [ ] Change an existing cover without deleting the old file.
-- [ ] Run bulk metadata import through preview and confirmation.
-- [ ] Toggle table and gallery.
-- [ ] Use filters, search, sort, and saved views.
-- [ ] Verificar tabla / galería / lista sin `RenderFlex overflowed`.
-- [ ] Verificar sidebar de filtros desktop y filtros modal mobile.
-- [ ] Open Home.
-- [ ] Open Statistics.
-- [ ] Create a normal `.vaultbackup`.
-- [ ] Create an encrypted `.vaultbackup.enc`.
-- [ ] Restore a normal backup.
-- [ ] Restore an encrypted backup with the correct password.
-- [ ] Confirm wrong encrypted-backup password fails safely.
-- [ ] Switch system theme or inspect dark/light theme behavior.
-- [ ] Save and delete external API keys from Settings.
+- [ ] Fresh install follows an English system locale.
+- [ ] Fresh install follows a Spanish system locale.
+- [ ] Settings → Language offers System, Español, and English.
+- [ ] Selecting English updates navigation and visible page content immediately.
+- [ ] Selecting Spanish updates navigation and visible page content immediately.
+- [ ] Selecting System resumes OS locale behavior.
+- [ ] The selection survives app restart on the same device.
+- [ ] The selected language is not transferred through backup/restore.
+- [ ] Game names and canonical provider/platform names are not translated.
+- [ ] Long English labels do not overflow on phone or desktop widths.
 
-## Android
+## Windows manual smoke test
 
-- [ ] App installs from `flutter build apk` output.
-- [ ] App opens on a physical device or emulator.
-- [ ] Navigation works on phone-size screen.
-- [ ] Biblioteca no rompe en tabla / galería / lista.
-- [ ] Dialogs de metadata y covers no se salen de pantalla.
-- [ ] Create a game.
-- [ ] Edit a game.
-- [ ] Import CSV through Android file picker.
-- [ ] Export a normal backup.
-- [ ] Export an encrypted backup.
-- [ ] Restore a normal backup.
-- [ ] Restore an encrypted backup.
-- [ ] Save and delete API keys from Settings.
-- [ ] Search metadata with IGDB if credentials are configured.
-- [ ] Save a cover from IGDB if credentials are configured.
-- [ ] Open gallery and detail cover views.
-- [ ] Open Statistics.
-- [ ] Verify system dark theme uses the OLED dark theme.
+- [ ] App opens from a release build without touching production data unexpectedly.
+- [ ] Create, edit, and soft-delete a game.
+- [ ] Table, gallery, list, filters, columns, and saved views work.
+- [ ] Home and Statistics render with populated and empty libraries.
+- [ ] Notion CSV import reaches preview and result.
+- [ ] RAWG/IGDB metadata dialogs work with test credentials.
+- [ ] IGDB/SteamGridDB/local cover flows work with test data.
+- [ ] Bulk metadata/cover import preserves protected personal fields.
+- [ ] Plain and encrypted backup creation work.
+- [ ] Plain and encrypted restore create a safety backup.
+- [ ] Wrong encrypted-backup password fails without modifying data.
 
-## Release notes to verify
+## Android manual smoke test
 
-- [x] No automatic sync exists.
-- [x] API keys do not travel in backups.
-- [x] `.vaultbackup` is not encrypted.
-- [x] `.vaultbackup.enc` requires the password to restore.
-- [x] Android APK is local/debug-signed for personal testing, not store release.
+- [ ] APK installs or updates with the expected local signing identity.
+- [ ] App opens on a phone-size viewport.
+- [ ] Bottom navigation, dialogs, filters, and forms fit without overflow.
+- [ ] Create/edit/detail and gallery flows work.
+- [ ] CSV picker, backup export, and restore pickers work.
+- [ ] Metadata, covers, bulk import, Home, and Statistics work.
+- [ ] System dark mode uses the OLED-friendly theme.
+
+## Release assertions
+
+- [x] No automatic sync is present in RC3.
+- [x] No account or backend is required.
+- [x] Provider credentials do not travel in backups.
+- [x] Plain backups remain unencrypted and clearly documented.
+- [x] Encrypted backups require their password.
+- [x] Restore keeps soft-delete semantics and does not hard-delete media.

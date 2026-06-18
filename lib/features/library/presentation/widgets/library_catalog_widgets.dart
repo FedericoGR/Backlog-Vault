@@ -7,6 +7,8 @@ import '../../../../core/design_system/bv_surface.dart';
 import '../../../../core/design_system/bv_theme_extension.dart';
 import '../../../../core/design_system/bv_tokens.dart';
 import '../../../../core/formatting/date_formatters.dart';
+import '../../../../l10n/domain_localizations.dart';
+import '../../../../l10n/l10n.dart';
 import '../../domain/game_status.dart';
 import '../../domain/library_filter_state.dart';
 import '../../domain/library_game_row.dart';
@@ -26,6 +28,7 @@ class LibrarySummaryStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
       child: Align(
@@ -34,25 +37,28 @@ class LibrarySummaryStrip extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: [
-            _SummaryPill(label: 'Juegos', value: summary.visibleGames),
-            _SummaryPill(label: 'Completados', value: summary.completedCount),
+            _SummaryPill(label: l10n.games, value: summary.visibleGames),
+            _SummaryPill(label: l10n.completed, value: summary.completedCount),
             _SummaryPill(
-              label: 'Horas',
+              label: l10n.libraryHours,
               textValue: summary.totalHours.toStringAsFixed(1),
             ),
             _SummaryPill(
-              label: 'Promedio',
+              label: l10n.libraryAverage,
               textValue:
                   summary.averageRating == null
                       ? '-'
                       : summary.averageRating!.toStringAsFixed(1),
             ),
-            _SummaryPill(label: 'Sin puntaje', value: summary.missingRating),
             _SummaryPill(
-              label: 'Sin plataforma',
+              label: l10n.missingRating,
+              value: summary.missingRating,
+            ),
+            _SummaryPill(
+              label: l10n.missingPlatform,
               value: summary.missingPlatform,
             ),
-            _SummaryPill(label: 'Sin género', value: summary.missingGenre),
+            _SummaryPill(label: l10n.missingGenre, value: summary.missingGenre),
           ],
         ),
       ),
@@ -109,26 +115,26 @@ class LibrarySelectionBar extends StatelessWidget {
           children: [
             BvChip(
               icon: Icons.check_circle_outline,
-              label: '$selectedCount seleccionados',
+              label: context.l10n.librarySelectedCount(selectedCount),
               tone: BvChipTone.primary,
               selected: selectedCount > 0,
             ),
             OutlinedButton(
               onPressed: visibleCount == 0 ? null : onSelectVisible,
-              child: Text('Seleccionar visibles ($visibleCount)'),
+              child: Text(context.l10n.librarySelectVisible(visibleCount)),
             ),
             OutlinedButton(
               onPressed: totalCount == 0 ? null : onSelectAll,
-              child: Text('Seleccionar todos ($totalCount)'),
+              child: Text(context.l10n.librarySelectAll(totalCount)),
             ),
             OutlinedButton(
               onPressed: selectedCount == 0 ? null : onClear,
-              child: const Text('Limpiar selección'),
+              child: Text(context.l10n.libraryClearSelection),
             ),
             FilledButton.icon(
               onPressed: onDelete,
               icon: const Icon(Icons.delete_outline),
-              label: const Text('Eliminar'),
+              label: Text(context.l10n.deleteAction),
             ),
           ],
         ),
@@ -279,14 +285,16 @@ class LibraryCatalogCard extends StatelessWidget {
                     runSpacing: 6,
                     children: [
                       BvChip(
-                        label: row.status.label,
+                        label: context.l10n.gameStatusLabel(row.status),
                         tone: _statusTone(row.status),
                       ),
                       if (row.personalRating != null)
                         BvChip(label: formatStarRating(row.personalRating)),
                       if (row.hoursPlayed != null)
                         BvChip(
-                          label: '${row.hoursPlayed!.toStringAsFixed(1)} h',
+                          label: context.l10n.hoursShort(
+                            row.hoursPlayed!.toStringAsFixed(1),
+                          ),
                         ),
                     ],
                   ),
@@ -421,13 +429,15 @@ class LibraryCatalogListTile extends StatelessWidget {
                       runSpacing: 6,
                       children: [
                         BvChip(
-                          label: row.status.label,
+                          label: context.l10n.gameStatusLabel(row.status),
                           tone: _statusTone(row.status),
                         ),
                         BvChip(label: formatStarRating(row.personalRating)),
                         if (row.hoursPlayed != null)
                           BvChip(
-                            label: '${row.hoursPlayed!.toStringAsFixed(1)} h',
+                            label: context.l10n.hoursShort(
+                              row.hoursPlayed!.toStringAsFixed(1),
+                            ),
                           ),
                       ],
                     ),
@@ -506,7 +516,7 @@ class LibraryFilterSidebar extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Filtros',
+                    context.l10n.filters,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -521,7 +531,7 @@ class LibraryFilterSidebar extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _SidebarSection(
-              title: 'Estado',
+              title: context.l10n.libraryStatus,
               children: [
                 for (final status in GameStatus.values)
                   Material(
@@ -531,13 +541,13 @@ class LibraryFilterSidebar extends StatelessWidget {
                       contentPadding: EdgeInsets.zero,
                       value: filter.statuses.contains(status),
                       onChanged: (_) => onToggleStatus(status),
-                      title: Text(status.label),
+                      title: Text(context.l10n.gameStatusLabel(status)),
                     ),
                   ),
               ],
             ),
             _SidebarSection(
-              title: 'Plataformas',
+              title: context.l10n.libraryPlatforms,
               children: [
                 _FilterChipWrap(
                   items: platforms.take(10).toList(),
@@ -547,7 +557,7 @@ class LibraryFilterSidebar extends StatelessWidget {
               ],
             ),
             _SidebarSection(
-              title: 'Géneros',
+              title: context.l10n.libraryGenres,
               children: [
                 _FilterChipWrap(
                   items: genres.take(12).toList(),
@@ -560,13 +570,13 @@ class LibraryFilterSidebar extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: onEditFilters,
               icon: const Icon(Icons.tune_outlined),
-              label: const Text('Filtros avanzados'),
+              label: Text(context.l10n.libraryAdvancedFilters),
             ),
             const SizedBox(height: 8),
             TextButton.icon(
               onPressed: filter.isEmpty ? null : onClearFilters,
               icon: const Icon(Icons.restart_alt),
-              label: const Text('Limpiar filtros'),
+              label: Text(context.l10n.libraryClearFilters),
             ),
           ],
         ),
@@ -616,7 +626,10 @@ class _FilterChipWrap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return Text('Sin opciones', style: Theme.of(context).textTheme.bodySmall);
+      return Text(
+        context.l10n.libraryNoOptionsShort,
+        style: Theme.of(context).textTheme.bodySmall,
+      );
     }
 
     return Wrap(

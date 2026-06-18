@@ -14,9 +14,10 @@ import '../../../core/design_system/bv_spacing.dart';
 import '../../../core/design_system/bv_stat_card.dart';
 import '../../../core/design_system/bv_surface.dart';
 import '../../../core/formatting/date_formatters.dart';
+import '../../../l10n/domain_localizations.dart';
+import '../../../l10n/l10n.dart';
 import '../application/library_home_summary.dart';
 import '../data/library_query_repository.dart';
-import '../domain/game_status.dart';
 import '../domain/library_game_row.dart';
 import 'widgets/library_cover_thumbnail.dart';
 import 'widgets/rating_stars.dart';
@@ -26,15 +27,16 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final rows = ref.watch(libraryRowsProvider);
 
     return BvPageScaffold(
-      title: 'Inicio',
+      title: l10n.navigationHome,
       actions: [
         TextButton.icon(
           onPressed: () => context.go('/statistics'),
           icon: const Icon(Icons.bar_chart_outlined),
-          label: const Text('Estadísticas'),
+          label: Text(l10n.navigationStatistics),
         ),
       ],
       body: rows.when(
@@ -48,56 +50,55 @@ class HomePage extends ConsumerWidget {
               _HomeCounters(data: data),
               const SizedBox(height: BvSpacing.md),
               _HomeSection(
-                title: 'Jugando ahora',
-                description: 'Lo más activo de tu biblioteca personal.',
+                title: l10n.homeNowPlaying,
+                description: l10n.homeNowPlayingDescription,
                 rows: data.playingNow,
-                emptyText: 'No hay juegos en progreso.',
+                emptyText: l10n.homeNowPlayingEmpty,
               ),
               const SizedBox(height: BvSpacing.md),
               _HomeSection(
-                title: 'Backlog',
-                description: 'Pendientes listos para volver a mirar.',
+                title: l10n.backlog,
+                description: l10n.homeBacklogDescription,
                 rows: data.backlog,
-                emptyText: 'No hay pendientes en backlog.',
+                emptyText: l10n.homeBacklogEmpty,
               ),
               const SizedBox(height: BvSpacing.md),
               _HomeSection(
-                title: 'Completados recientes',
-                description: 'Los últimos cierres con fecha registrada.',
+                title: l10n.homeRecentCompleted,
+                description: l10n.homeRecentCompletedDescription,
                 rows: data.recentlyCompleted,
-                emptyText: 'No hay completados con fecha registrada.',
+                emptyText: l10n.homeRecentCompletedEmpty,
                 subtitleFor: (row) => formatVisibleDate(row.completedAt),
               ),
               const SizedBox(height: BvSpacing.md),
               _HomeSection(
-                title: 'Sin portada',
-                description: 'Entradas que todavía piden una selección visual.',
+                title: l10n.missingCover,
+                description: l10n.homeMissingCoverDescription,
                 rows: data.missingCover,
-                emptyText: 'Todos los juegos visibles tienen portada.',
+                emptyText: l10n.homeMissingCoverEmpty,
               ),
               const SizedBox(height: BvSpacing.md),
               _HomeSection(
-                title: 'Sin metadata',
-                description: 'Juegos que conviene enriquecer antes de ordenar.',
+                title: l10n.missingMetadata,
+                description: l10n.homeMissingMetadataDescription,
                 rows: data.missingMetadata,
-                emptyText: 'Todos los juegos visibles tienen metadata externa.',
+                emptyText: l10n.homeMissingMetadataEmpty,
               ),
               const SizedBox(height: BvSpacing.md),
               _HomeSection(
-                title: 'Últimos actualizados',
-                description:
-                    'Movimiento reciente en estados, notas y partidas.',
+                title: l10n.homeRecentlyUpdated,
+                description: l10n.homeRecentlyUpdatedDescription,
                 rows: data.recentlyUpdated,
-                emptyText: 'No hay actividad reciente.',
+                emptyText: l10n.homeRecentlyUpdatedEmpty,
                 subtitleFor: (row) => formatVisibleDate(row.updatedAt),
               ),
             ],
           );
         },
-        loading: () => const BvLoadingState(label: 'Cargando inicio'),
+        loading: () => BvLoadingState(label: l10n.homeLoading),
         error:
             (error, stackTrace) => BvErrorState(
-              title: 'No se pudo cargar el inicio',
+              title: l10n.homeLoadError,
               message: error.toString(),
             ),
       ),
@@ -112,38 +113,41 @@ class _HomeHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 760;
         final primary = BvActionCard(
-          title: 'Biblioteca',
-          subtitle:
-              '${data.totalGames} juegos activos, ${data.completedCount} completados y ${data.playingCount} en progreso.',
+          title: l10n.navigationLibrary,
+          subtitle: l10n.homeLibrarySummary(
+            data.totalGames,
+            data.completedCount,
+            data.playingCount,
+          ),
           icon: Icons.library_books_outlined,
           emphasized: true,
           actions: [
             FilledButton.icon(
               onPressed: () => context.go('/'),
               icon: const Icon(Icons.library_books_outlined),
-              label: const Text('Abrir biblioteca'),
+              label: Text(l10n.homeOpenLibrary),
             ),
           ],
         );
         final secondary = BvActionCard(
-          title: 'Panel rápido',
-          subtitle:
-              'Saltá a estadísticas o revisá lo que sigue sin portada o metadata.',
+          title: l10n.homeQuickPanel,
+          subtitle: l10n.homeQuickPanelDescription,
           icon: Icons.dashboard_customize_outlined,
           actions: [
             OutlinedButton.icon(
               onPressed: () => context.go('/statistics'),
               icon: const Icon(Icons.bar_chart_outlined),
-              label: const Text('Ver estadísticas'),
+              label: Text(l10n.homeViewStatistics),
             ),
             OutlinedButton.icon(
               onPressed: () => context.go('/games/new'),
               icon: const Icon(Icons.add),
-              label: const Text('Crear juego'),
+              label: Text(l10n.homeCreateGame),
             ),
           ],
         );
@@ -178,15 +182,16 @@ class _HomeCounters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Wrap(
       spacing: BvSpacing.sm,
       runSpacing: BvSpacing.sm,
       children: [
-        _CounterCard(label: 'Juegos', value: data.totalGames),
-        _CounterCard(label: 'Backlog', value: data.backlogCount),
-        _CounterCard(label: 'Jugando', value: data.playingCount),
-        _CounterCard(label: 'Completados', value: data.completedCount),
-        _CounterCard(label: 'Sin portada', value: data.missingCoverCount),
+        _CounterCard(label: l10n.games, value: data.totalGames),
+        _CounterCard(label: l10n.backlog, value: data.backlogCount),
+        _CounterCard(label: l10n.playing, value: data.playingCount),
+        _CounterCard(label: l10n.completed, value: data.completedCount),
+        _CounterCard(label: l10n.missingCover, value: data.missingCoverCount),
       ],
     );
   }
@@ -228,7 +233,7 @@ class _HomeSection extends StatelessWidget {
         padding: EdgeInsets.zero,
         trailing: TextButton(
           onPressed: () => context.go('/'),
-          child: const Text('Ver biblioteca'),
+          child: Text(context.l10n.homeViewLibrary),
         ),
         child:
             rows.isEmpty
@@ -295,7 +300,10 @@ class _HomeGameCard extends StatelessWidget {
                       spacing: BvSpacing.xs,
                       runSpacing: BvSpacing.xs,
                       children: [
-                        BvChip(label: row.status.label, selected: true),
+                        BvChip(
+                          label: context.l10n.gameStatusLabel(row.status),
+                          selected: true,
+                        ),
                         if (row.personalRating != null)
                           BvSurface(
                             padding: const EdgeInsets.symmetric(
@@ -313,7 +321,9 @@ class _HomeGameCard extends StatelessWidget {
                             if (row.platforms.isNotEmpty)
                               row.platforms.first.name,
                             if (row.hoursPlayed != null)
-                              '${row.hoursPlayed!.toStringAsFixed(1)} h',
+                              context.l10n.hoursShort(
+                                row.hoursPlayed!.toStringAsFixed(1),
+                              ),
                           ].join(' · '),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -336,14 +346,13 @@ class _EmptyHomeState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BvEmptyState(
-      title: 'Tu biblioteca todavía está vacía.',
-      message:
-          'Cuando cargues tus primeros juegos, este panel te va a mostrar actividad, pendientes y calidad de datos.',
+      title: context.l10n.homeEmptyTitle,
+      message: context.l10n.homeEmptyMessage,
       icon: Icons.home_outlined,
       action: FilledButton.icon(
         onPressed: () => context.go('/games/new'),
         icon: const Icon(Icons.add),
-        label: const Text('Crear primer juego'),
+        label: Text(context.l10n.homeCreateFirstGame),
       ),
     );
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../l10n/l10n.dart';
+
 class AppShell extends StatelessWidget {
   const AppShell({required this.child, super.key});
 
@@ -8,6 +10,7 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final location = GoRouterState.of(context).uri.path;
     final selectedIndex =
         location.startsWith('/home')
@@ -36,26 +39,26 @@ class AppShell extends StatelessWidget {
                         _ => '/settings',
                       });
                     },
-                    destinations: const [
+                    destinations: [
                       NavigationRailDestination(
-                        icon: Icon(Icons.home_outlined),
-                        selectedIcon: Icon(Icons.home),
-                        label: Text('Inicio'),
+                        icon: const Icon(Icons.home_outlined),
+                        selectedIcon: const Icon(Icons.home),
+                        label: Text(l10n.navigationHome),
                       ),
                       NavigationRailDestination(
-                        icon: Icon(Icons.library_books_outlined),
-                        selectedIcon: Icon(Icons.library_books),
-                        label: Text('Biblioteca'),
+                        icon: const Icon(Icons.library_books_outlined),
+                        selectedIcon: const Icon(Icons.library_books),
+                        label: Text(l10n.navigationLibrary),
                       ),
                       NavigationRailDestination(
-                        icon: Icon(Icons.bar_chart_outlined),
-                        selectedIcon: Icon(Icons.bar_chart),
-                        label: Text('Estadísticas'),
+                        icon: const Icon(Icons.bar_chart_outlined),
+                        selectedIcon: const Icon(Icons.bar_chart),
+                        label: Text(l10n.navigationStatistics),
                       ),
                       NavigationRailDestination(
-                        icon: Icon(Icons.settings_outlined),
-                        selectedIcon: Icon(Icons.settings),
-                        label: Text('Ajustes'),
+                        icon: const Icon(Icons.settings_outlined),
+                        selectedIcon: const Icon(Icons.settings),
+                        label: Text(l10n.navigationSettings),
                       ),
                     ],
                   ),
@@ -79,26 +82,26 @@ class AppShell extends StatelessWidget {
                 _ => '/settings',
               });
             },
-            destinations: const [
+            destinations: [
               NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home),
-                label: 'Inicio',
+                icon: const Icon(Icons.home_outlined),
+                selectedIcon: const Icon(Icons.home),
+                label: l10n.navigationHome,
               ),
               NavigationDestination(
-                icon: Icon(Icons.library_books_outlined),
-                selectedIcon: Icon(Icons.library_books),
-                label: 'Biblioteca',
+                icon: const Icon(Icons.library_books_outlined),
+                selectedIcon: const Icon(Icons.library_books),
+                label: l10n.navigationLibrary,
               ),
               NavigationDestination(
-                icon: Icon(Icons.bar_chart_outlined),
-                selectedIcon: Icon(Icons.bar_chart),
-                label: 'Estadísticas',
+                icon: const Icon(Icons.bar_chart_outlined),
+                selectedIcon: const Icon(Icons.bar_chart),
+                label: l10n.navigationStatistics,
               ),
               NavigationDestination(
-                icon: Icon(Icons.settings_outlined),
-                selectedIcon: Icon(Icons.settings),
-                label: 'Ajustes',
+                icon: const Icon(Icons.settings_outlined),
+                selectedIcon: const Icon(Icons.settings),
+                label: l10n.navigationSettings,
               ),
             ],
           ),

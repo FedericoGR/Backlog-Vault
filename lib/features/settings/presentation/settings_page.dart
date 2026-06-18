@@ -11,7 +11,9 @@ import '../../../core/design_system/bv_section.dart';
 import '../../../core/design_system/bv_spacing.dart';
 import '../../../core/design_system/bv_status_banner.dart';
 import '../../../core/design_system/bv_theme_extension.dart';
+import '../../../l10n/l10n.dart';
 import '../../metadata/data/metadata_api_key_storage.dart';
+import '../application/app_language.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -47,8 +49,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final language = ref
+        .watch(appLanguageProvider)
+        .when(
+          data: (value) => value,
+          loading: () => AppLanguagePreference.system,
+          error: (_, _) => AppLanguagePreference.system,
+        );
     return BvPageScaffold(
-      title: 'Ajustes',
+      title: l10n.settingsTitle,
       body: ListView(
         children: [
           _OverviewSection(loading: _loading),
@@ -57,8 +67,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           const SizedBox(height: BvSpacing.md),
           _ConfigurationPanel(
             title: 'RAWG',
-            subtitle:
-                'Fuente opcional para completar metadata de juegos. La clave se guarda localmente en el secure storage del sistema.',
+            subtitle: l10n.settingsRawgSubtitle,
             icon: Icons.vpn_key_outlined,
             configured: _rawgConfigured,
             loading: _loading,
@@ -66,10 +75,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               TextField(
                 controller: _rawgApiKeyController,
                 obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Nueva API key',
-                  helperText:
-                      'No se exporta en backups, no se muestra en claro y no debe terminar en commits.',
+                decoration: InputDecoration(
+                  labelText: l10n.settingsNewApiKey,
+                  helperText: l10n.settingsApiKeyHelper,
                 ),
               ),
             ],
@@ -77,21 +85,20 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               FilledButton.icon(
                 onPressed: _loading ? null : _saveRawgApiKey,
                 icon: const Icon(Icons.save_outlined),
-                label: const Text('Guardar'),
+                label: Text(l10n.save),
               ),
               OutlinedButton.icon(
                 onPressed:
                     _loading || !_rawgConfigured ? null : _deleteRawgApiKey,
                 icon: const Icon(Icons.delete_outline),
-                label: const Text('Borrar'),
+                label: Text(l10n.delete),
               ),
             ],
           ),
           const SizedBox(height: BvSpacing.md),
           _ConfigurationPanel(
             title: 'IGDB / Twitch',
-            subtitle:
-                'Client credentials para consultar IGDB. El access token se renueva localmente y el secret no se expone en pantalla.',
+            subtitle: l10n.settingsIgdbSubtitle,
             icon: Icons.cloud_sync_outlined,
             configured: _igdbConfigured,
             loading: _loading,
@@ -99,19 +106,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               TextField(
                 controller: _igdbClientIdController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Client ID',
-                  helperText:
-                      'Se guarda solo en el equipo actual y no viaja en backups.',
+                  helperText: l10n.settingsClientIdHelper,
                 ),
               ),
               const SizedBox(height: BvSpacing.sm),
               TextField(
                 controller: _igdbClientSecretController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Client Secret',
-                  helperText: 'No lo pegues en logs, README, tests ni issues.',
+                  helperText: l10n.settingsClientSecretHelper,
                 ),
               ),
             ],
@@ -119,7 +125,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               FilledButton.icon(
                 onPressed: _loading ? null : _saveIgdbCredentials,
                 icon: const Icon(Icons.save_outlined),
-                label: const Text('Guardar'),
+                label: Text(l10n.save),
               ),
               OutlinedButton.icon(
                 onPressed:
@@ -127,15 +133,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                         ? null
                         : _deleteIgdbCredentials,
                 icon: const Icon(Icons.delete_outline),
-                label: const Text('Borrar'),
+                label: Text(l10n.delete),
               ),
             ],
           ),
           const SizedBox(height: BvSpacing.md),
           _ConfigurationPanel(
             title: 'SteamGridDB',
-            subtitle:
-                'Clave opcional para buscar portadas. Backlog Vault sigue pidiendo confirmación explícita antes de guardar covers.',
+            subtitle: l10n.settingsSteamGridDbSubtitle,
             icon: Icons.image_search_outlined,
             configured: _steamGridDbConfigured,
             loading: _loading,
@@ -143,10 +148,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               TextField(
                 controller: _steamGridDbApiKeyController,
                 obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Nueva API key',
-                  helperText:
-                      'Se usa solo para búsqueda de media y se mantiene local.',
+                decoration: InputDecoration(
+                  labelText: l10n.settingsNewApiKey,
+                  helperText: l10n.settingsMediaApiKeyHelper,
                 ),
               ),
             ],
@@ -154,7 +158,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               FilledButton.icon(
                 onPressed: _loading ? null : _saveSteamGridDbApiKey,
                 icon: const Icon(Icons.save_outlined),
-                label: const Text('Guardar'),
+                label: Text(l10n.save),
               ),
               OutlinedButton.icon(
                 onPressed:
@@ -162,15 +166,46 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                         ? null
                         : _deleteSteamGridDbApiKey,
                 icon: const Icon(Icons.delete_outline),
-                label: const Text('Borrar'),
+                label: Text(l10n.delete),
               ),
             ],
           ),
           const SizedBox(height: BvSpacing.md),
+          BvPanel(
+            child: BvSection(
+              title: l10n.language,
+              subtitle: l10n.languageDescription,
+              padding: EdgeInsets.zero,
+              child: DropdownButtonFormField<AppLanguagePreference>(
+                key: ValueKey(language),
+                initialValue: language,
+                decoration: InputDecoration(labelText: l10n.language),
+                items: [
+                  DropdownMenuItem(
+                    value: AppLanguagePreference.system,
+                    child: Text(l10n.languageSystem),
+                  ),
+                  DropdownMenuItem(
+                    value: AppLanguagePreference.spanish,
+                    child: Text(l10n.languageSpanish),
+                  ),
+                  DropdownMenuItem(
+                    value: AppLanguagePreference.english,
+                    child: Text(l10n.languageEnglish),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    ref.read(appLanguageProvider.notifier).setPreference(value);
+                  }
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: BvSpacing.md),
           BvDangerZone(
-            title: 'Borrado de claves externas',
-            message:
-                'Solo elimina credenciales guardadas localmente. No toca juegos, metadata ya aplicada, external IDs ni portadas almacenadas.',
+            title: l10n.settingsExternalKeysDeletion,
+            message: l10n.settingsExternalKeysDeletionMessage,
             actions: [
               OutlinedButton.icon(
                 onPressed:
@@ -181,7 +216,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                         ? null
                         : _deleteAllExternalApiKeys,
                 icon: const Icon(Icons.key_off_outlined),
-                label: const Text('Borrar todas las claves'),
+                label: Text(l10n.settingsDeleteAllKeys),
               ),
             ],
           ),
@@ -208,7 +243,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Future<void> _saveRawgApiKey() async {
     final value = _rawgApiKeyController.text.trim();
     if (value.isEmpty) {
-      _showMessage('Ingresá una API key antes de guardar.');
+      _showMessage(context.l10n.settingsEnterApiKey);
       return;
     }
     setState(() => _loading = true);
@@ -219,7 +254,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _rawgConfigured = true;
       _loading = false;
     });
-    _showMessage('API key de RAWG guardada localmente.');
+    _showMessage(context.l10n.settingsRawgSaved);
   }
 
   Future<void> _deleteRawgApiKey() async {
@@ -230,14 +265,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _rawgConfigured = false;
       _loading = false;
     });
-    _showMessage('API key de RAWG borrada.');
+    _showMessage(context.l10n.settingsRawgDeleted);
   }
 
   Future<void> _saveIgdbCredentials() async {
     final clientId = _igdbClientIdController.text.trim();
     final clientSecret = _igdbClientSecretController.text.trim();
     if (clientId.isEmpty || clientSecret.isEmpty) {
-      _showMessage('Ingresá Client ID y Client Secret antes de guardar.');
+      _showMessage(context.l10n.settingsEnterIgdbCredentials);
       return;
     }
     setState(() => _loading = true);
@@ -252,7 +287,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _igdbConfigured = true;
       _loading = false;
     });
-    _showMessage('Credenciales de IGDB guardadas localmente.');
+    _showMessage(context.l10n.settingsIgdbSaved);
   }
 
   Future<void> _deleteIgdbCredentials() async {
@@ -266,13 +301,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _igdbConfigured = false;
       _loading = false;
     });
-    _showMessage('Credenciales de IGDB borradas.');
+    _showMessage(context.l10n.settingsIgdbDeleted);
   }
 
   Future<void> _saveSteamGridDbApiKey() async {
     final value = _steamGridDbApiKeyController.text.trim();
     if (value.isEmpty) {
-      _showMessage('Ingresá una API key antes de guardar.');
+      _showMessage(context.l10n.settingsEnterApiKey);
       return;
     }
     setState(() => _loading = true);
@@ -283,7 +318,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _steamGridDbConfigured = true;
       _loading = false;
     });
-    _showMessage('API key de SteamGridDB guardada localmente.');
+    _showMessage(context.l10n.settingsSteamGridDbSaved);
   }
 
   Future<void> _deleteSteamGridDbApiKey() async {
@@ -294,26 +329,25 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _steamGridDbConfigured = false;
       _loading = false;
     });
-    _showMessage('API key de SteamGridDB borrada.');
+    _showMessage(context.l10n.settingsSteamGridDbDeleted);
   }
 
   Future<void> _deleteAllExternalApiKeys() async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Borrar claves externas'),
-            content: const Text(
-              'Se borrarán las claves de RAWG, IGDB y SteamGridDB guardadas localmente. No se modifican tus juegos, metadata aplicada, external IDs ni portadas.',
-            ),
+            title: Text(l10n.settingsDeleteExternalKeysTitle),
+            content: Text(l10n.settingsDeleteExternalKeysConfirmation),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancelar'),
+                child: Text(l10n.cancel),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Borrar claves'),
+                child: Text(l10n.settingsDeleteKeys),
               ),
             ],
           ),
@@ -332,7 +366,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _steamGridDbConfigured = false;
       _loading = false;
     });
-    _showMessage('Claves externas borradas.');
+    _showMessage(context.l10n.settingsExternalKeysDeleted);
   }
 
   void _showMessage(String message) {
@@ -351,42 +385,41 @@ class _OverviewSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bv = BvThemeExtension.of(context);
+    final l10n = context.l10n;
     return BvPanel(
       child: BvSection(
-        title: 'Estado local',
-        subtitle:
-            'Backlog Vault sigue siendo una app offline-first: la biblioteca vive en tu equipo y las integraciones externas son opcionales.',
+        title: l10n.settingsLocalStatusTitle,
+        subtitle: l10n.settingsLocalStatusSubtitle,
         padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const BvKeyValueRow(
-              label: 'Cuenta obligatoria',
-              value: 'No',
+            BvKeyValueRow(
+              label: l10n.settingsAccountRequired,
+              value: l10n.no,
               leading: Icons.lock_outline,
             ),
-            const BvKeyValueRow(
-              label: 'Modo de uso',
+            BvKeyValueRow(
+              label: l10n.settingsUsageMode,
               value: 'Offline-first',
               leading: Icons.wifi_off_outlined,
             ),
-            const BvKeyValueRow(
-              label: 'Base local',
+            BvKeyValueRow(
+              label: l10n.settingsLocalDatabase,
               value: 'SQLite + Drift',
               leading: Icons.storage_outlined,
             ),
             BvKeyValueRow(
-              label: 'Estado de carga',
-              value: loading ? 'Cargando configuración…' : 'Listo',
+              label: l10n.settingsLoadingStatus,
+              value: loading ? l10n.settingsLoadingConfiguration : l10n.ready,
               valueColor: loading ? bv.warning : null,
               leading: Icons.sync_outlined,
             ),
             const SizedBox(height: BvSpacing.sm),
-            const BvStatusBanner(
+            BvStatusBanner(
               tone: BvBannerTone.warning,
-              title: 'Privacidad y protección',
-              message:
-                  'La DB local y los archivos media siguen sin cifrado en disco. Los backups cifrados ya están disponibles para exportación y restauración.',
+              title: l10n.settingsPrivacyProtection,
+              message: l10n.settingsPrivacyProtectionMessage,
             ),
           ],
         ),
@@ -402,25 +435,24 @@ class _ActionShortcuts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final compact = MediaQuery.sizeOf(context).width < 860;
     final backupCard = BvActionCard(
-      title: 'Datos y backups',
-      subtitle:
-          'Exportá JSON/CSV, generá backups normales o cifrados y restaurá archivos locales.',
+      title: l10n.settingsDataBackups,
+      subtitle: l10n.settingsDataBackupsSubtitle,
       icon: Icons.archive_outlined,
       emphasized: true,
       actions: [
         FilledButton.icon(
           onPressed: loading ? null : () => context.go('/settings/backups'),
           icon: const Icon(Icons.chevron_right),
-          label: const Text('Abrir backups'),
+          label: Text(l10n.settingsOpenBackups),
         ),
       ],
     );
     final notesCard = BvActionCard(
-      title: 'Buenas prácticas',
-      subtitle:
-          'No pegues claves reales en README, issues, logs, tests ni commits. Todo queda guardado localmente en secure storage.',
+      title: l10n.settingsGoodPractices,
+      subtitle: l10n.settingsGoodPracticesSubtitle,
       icon: Icons.shield_outlined,
     );
 
@@ -478,8 +510,8 @@ class _ConfigurationPanel extends StatelessWidget {
                 Expanded(
                   child: Text(
                     configured
-                        ? 'Configuración presente'
-                        : 'Configuración pendiente',
+                        ? context.l10n.settingsConfigurationPresent
+                        : context.l10n.settingsConfigurationPending,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),
@@ -535,10 +567,10 @@ class _ConfigPill extends StatelessWidget {
         ),
         child: Text(
           loading
-              ? 'Cargando'
+              ? context.l10n.loading
               : configured
-              ? 'Configurado'
-              : 'Pendiente',
+              ? context.l10n.settingsConfigured
+              : context.l10n.settingsPending,
           style: theme.textTheme.labelLarge?.copyWith(color: foreground),
         ),
       ),

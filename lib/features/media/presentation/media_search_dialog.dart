@@ -10,6 +10,7 @@ import '../../../core/design_system/bv_surface.dart';
 import '../../../core/design_system/bv_theme_extension.dart';
 import '../../../core/design_system/bv_tokens.dart';
 import '../../../core/privacy/privacy_redactor.dart';
+import '../../../l10n/l10n.dart';
 import '../../games/application/library_game_details.dart';
 import '../application/media_providers.dart';
 import '../application/media_use_cases.dart';
@@ -70,17 +71,17 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
             children: [
               Text(
                 widget.item.selectedCover == null
-                    ? 'Buscar portada'
-                    : 'Cambiar portada',
+                    ? context.l10n.coverDialogSearchTitle
+                    : context.l10n.coverDialogChangeTitle,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: BvSpacing.sm),
               TextField(
                 controller: _queryController,
                 decoration: InputDecoration(
-                  labelText: 'Buscar en $providerName',
+                  labelText: context.l10n.coverSearchIn(providerName),
                   suffixIcon: IconButton(
-                    tooltip: 'Buscar',
+                    tooltip: context.l10n.search,
                     onPressed: _loading || _saving ? null : _searchGames,
                     icon: const Icon(Icons.search),
                   ),
@@ -94,7 +95,7 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
                 width: 280,
                 child: DropdownButtonFormField<String>(
                   initialValue: selectedProvider.providerId,
-                  decoration: const InputDecoration(labelText: 'Proveedor'),
+                  decoration: InputDecoration(labelText: context.l10n.provider),
                   items: [
                     for (final provider in providers)
                       DropdownMenuItem(
@@ -126,7 +127,7 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
                   OutlinedButton.icon(
                     onPressed: _saving ? null : _pickLocalFile,
                     icon: const Icon(Icons.folder_open_outlined),
-                    label: const Text('Usar archivo local'),
+                    label: Text(context.l10n.coverUseLocalFile),
                   ),
                   if (_selectedCandidate != null)
                     BvChip(
@@ -177,9 +178,10 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
                           ),
                         )
                         : BvEmptyState(
-                          title: 'Sin portadas todavía',
-                          message:
-                              'Buscá un juego en $providerName o elegí un archivo local.',
+                          title: context.l10n.coverNoResults,
+                          message: context.l10n.coverNoResultsMessage(
+                            providerName,
+                          ),
                           icon: Icons.image_search_outlined,
                         ),
               ),
@@ -192,7 +194,7 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
                   TextButton(
                     onPressed:
                         _saving ? null : () => Navigator.pop(context, false),
-                    child: const Text('Cerrar'),
+                    child: Text(context.l10n.close),
                   ),
                   if (_selectedAsset != null)
                     FilledButton.icon(
@@ -207,7 +209,7 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
                                 ),
                               )
                               : const Icon(Icons.save_alt_outlined),
-                      label: const Text('Guardar portada'),
+                      label: Text(context.l10n.coverSave),
                     ),
                 ],
               ),
@@ -240,7 +242,7 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
         _candidates = result;
         _error =
             result.isEmpty
-                ? '${provider.displayName} no devolvió candidatos.'
+                ? context.l10n.providerNoCandidates(provider.displayName)
                 : null;
       });
     } catch (error) {
@@ -272,7 +274,7 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
         _assets = result;
         _error =
             result.isEmpty
-                ? '${provider.displayName} no devolvió portadas.'
+                ? context.l10n.providerNoCovers(provider.displayName)
                 : null;
       });
     } catch (error) {
@@ -340,9 +342,7 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
 
   String _safeMessage(Object error) {
     if (error is MediaException) return privacyRedactor.redact(error.message);
-    return privacyRedactor.redact(
-      'No se pudo completar la operación de portada.',
-    );
+    return privacyRedactor.redact(context.l10n.coverOperationFailed);
   }
 
   SearchMediaGamesUseCase _searchMediaGamesUseCase(MediaProvider provider) {
@@ -506,7 +506,7 @@ class _MediaError extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: onSettings,
             icon: const Icon(Icons.settings_outlined),
-            label: const Text('Abrir ajustes'),
+            label: Text(context.l10n.openSettings),
           ),
         ],
       ],

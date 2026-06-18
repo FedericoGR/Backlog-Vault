@@ -12,6 +12,8 @@ import '../../../core/design_system/bv_panel.dart';
 import '../../../core/design_system/bv_spacing.dart';
 import '../../../core/design_system/bv_theme_extension.dart';
 import '../../../core/formatting/date_formatters.dart';
+import '../../../l10n/domain_localizations.dart';
+import '../../../l10n/l10n.dart';
 import '../../catalogs/data/catalog_repository.dart';
 import '../../games/data/game_repository.dart';
 import '../application/library_default_views.dart';
@@ -53,6 +55,7 @@ class _GameListPageState extends ConsumerState<GameListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final rows = ref.watch(libraryRowsProvider);
     final platforms = ref
         .watch(platformsProvider)
@@ -100,7 +103,9 @@ class _GameListPageState extends ConsumerState<GameListPage> {
         actions: [
           IconButton(
             tooltip:
-                _selectionMode ? 'Salir de selección' : 'Seleccionar varios',
+                _selectionMode
+                    ? l10n.libraryExitSelection
+                    : l10n.librarySelectMultiple,
             onPressed: () {
               setState(() {
                 _selectionMode = !_selectionMode;
@@ -229,10 +234,10 @@ class _GameListPageState extends ConsumerState<GameListPage> {
             },
           );
         },
-        loading: () => const BvLoadingState(label: 'Cargando biblioteca'),
+        loading: () => BvLoadingState(label: l10n.libraryLoading),
         error:
             (error, stackTrace) => BvErrorState(
-              title: 'No se pudo cargar la biblioteca',
+              title: l10n.libraryLoadError,
               message: error.toString(),
             ),
       ),
@@ -289,6 +294,7 @@ class _GameListPageState extends ConsumerState<GameListPage> {
   }
 
   Future<void> _confirmDeleteSelected(BuildContext context) async {
+    final l10n = context.l10n;
     final count = _selectedEntryIds.length;
     final controller = TextEditingController();
     final confirmed = await showDialog<bool>(
@@ -298,20 +304,18 @@ class _GameListPageState extends ConsumerState<GameListPage> {
             builder:
                 (context, setDialogState) => AlertDialog(
                   scrollable: true,
-                  title: const Text('Eliminar juegos seleccionados'),
+                  title: Text(l10n.libraryDeleteSelectedTitle),
                   content: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Se marcarán como eliminados $count juegos. No se borrarán físicamente.',
-                      ),
+                      Text(l10n.libraryDeleteSelectedMessage(count)),
                       const SizedBox(height: 12),
-                      const Text('Escribí ELIMINAR para confirmar.'),
+                      Text(l10n.libraryTypeDeleteConfirmation),
                       const SizedBox(height: 12),
                       TextField(
                         controller: controller,
-                        decoration: const InputDecoration(
-                          labelText: 'Confirmación',
+                        decoration: InputDecoration(
+                          labelText: l10n.libraryConfirmation,
                         ),
                         onChanged: (_) => setDialogState(() {}),
                       ),
@@ -320,14 +324,15 @@ class _GameListPageState extends ConsumerState<GameListPage> {
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Cancelar'),
+                      child: Text(l10n.cancel),
                     ),
                     FilledButton(
                       onPressed:
-                          controller.text.trim().toUpperCase() == 'ELIMINAR'
+                          controller.text.trim().toUpperCase() ==
+                                  l10n.libraryDeleteKeyword
                               ? () => Navigator.pop(context, true)
                               : null,
-                      child: const Text('Eliminar seleccionados'),
+                      child: Text(l10n.libraryDeleteSelected),
                     ),
                   ],
                 ),
@@ -490,16 +495,16 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
                       child: DropdownButtonFormField<String>(
                         initialValue: selectedViewId,
                         isExpanded: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Vista',
-                          prefixIcon: Icon(Icons.view_column_outlined),
+                        decoration: InputDecoration(
+                          labelText: context.l10n.view,
+                          prefixIcon: const Icon(Icons.view_column_outlined),
                         ),
                         items: [
                           for (final view in widget.views)
                             DropdownMenuItem(
                               value: view.id,
                               child: Text(
-                                view.name,
+                                _localizedViewName(context, view),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -523,9 +528,9 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
                       width: searchWidth,
                       child: TextField(
                         controller: _searchController,
-                        decoration: const InputDecoration(
-                          labelText: 'Buscar',
-                          prefixIcon: Icon(Icons.search),
+                        decoration: InputDecoration(
+                          labelText: context.l10n.search,
+                          prefixIcon: const Icon(Icons.search),
                         ),
                         onChanged: (value) {
                           final current = ref.read(libraryTableStateProvider);
@@ -548,7 +553,11 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
                             ? Icons.filter_alt
                             : Icons.filter_alt_outlined,
                       ),
-                      label: Text('Filtros (${widget.filter.activeCount})'),
+                      label: Text(
+                        context.l10n.libraryFiltersCount(
+                          widget.filter.activeCount,
+                        ),
+                      ),
                     ),
                     SegmentedButton<LibraryLayoutMode>(
                       showSelectedIcon: false,
@@ -556,20 +565,20 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
                         ButtonSegment(
                           value: LibraryLayoutMode.table,
                           icon: const Icon(Icons.table_rows_outlined),
-                          label: compact ? null : const Text('Tabla'),
-                          tooltip: 'Tabla',
+                          label: compact ? null : Text(context.l10n.table),
+                          tooltip: context.l10n.table,
                         ),
                         ButtonSegment(
                           value: LibraryLayoutMode.gallery,
                           icon: const Icon(Icons.grid_view_outlined),
-                          label: compact ? null : const Text('Galería'),
-                          tooltip: 'Galería',
+                          label: compact ? null : Text(context.l10n.gallery),
+                          tooltip: context.l10n.gallery,
                         ),
                         ButtonSegment(
                           value: LibraryLayoutMode.list,
                           icon: const Icon(Icons.view_list_outlined),
-                          label: compact ? null : const Text('Lista'),
-                          tooltip: 'Lista',
+                          label: compact ? null : Text(context.l10n.list),
+                          tooltip: context.l10n.list,
                         ),
                       ],
                       selected: {widget.layoutMode},
@@ -583,7 +592,7 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
                     FilledButton.icon(
                       onPressed: () => context.go('/games/new'),
                       icon: const Icon(Icons.add),
-                      label: const Text('Crear juego'),
+                      label: Text(context.l10n.homeCreateGame),
                     ),
                   ],
                 ),
@@ -599,20 +608,20 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
                       OutlinedButton.icon(
                         onPressed: () => _showColumnsDialog(context, ref),
                         icon: const Icon(Icons.view_week_outlined),
-                        label: const Text('Columnas'),
+                        label: Text(context.l10n.columns),
                       ),
                     OutlinedButton.icon(
                       onPressed: () => _resetTableState(ref),
                       icon: const Icon(Icons.restart_alt),
-                      label: const Text('Limpiar'),
+                      label: Text(context.l10n.clear),
                     ),
                     FilledButton.tonalIcon(
                       onPressed: () => _saveCurrentView(context, ref),
                       icon: const Icon(Icons.bookmark_add_outlined),
-                      label: const Text('Guardar vista'),
+                      label: Text(context.l10n.saveView),
                     ),
                     PopupMenuButton<String>(
-                      tooltip: 'Acciones de biblioteca',
+                      tooltip: context.l10n.libraryActions,
                       icon: const Icon(Icons.more_horiz),
                       onSelected: (value) {
                         if (value == 'csv') context.go('/import/notion-csv');
@@ -632,27 +641,27 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
                       },
                       itemBuilder:
                           (context) => [
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'csv',
-                              child: Text('Importar CSV'),
+                              child: Text(context.l10n.importCsv),
                             ),
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'metadata',
-                              child: Text('Importar metadata'),
+                              child: Text(context.l10n.importMetadata),
                             ),
-                            if (isCustomView) ...const [
-                              PopupMenuDivider(),
+                            if (isCustomView) ...[
+                              const PopupMenuDivider(),
                               PopupMenuItem(
                                 value: 'update',
-                                child: Text('Actualizar vista'),
+                                child: Text(context.l10n.libraryUpdateView),
                               ),
                               PopupMenuItem(
                                 value: 'rename',
-                                child: Text('Renombrar vista'),
+                                child: Text(context.l10n.libraryRenameView),
                               ),
                               PopupMenuItem(
                                 value: 'delete',
-                                child: Text('Eliminar vista'),
+                                child: Text(context.l10n.libraryDeleteView),
                               ),
                             ],
                           ],
@@ -685,9 +694,9 @@ class _CompletedYearSelector extends ConsumerWidget {
     return DropdownButtonFormField<int>(
       initialValue: safeYear,
       isExpanded: true,
-      decoration: const InputDecoration(
-        labelText: 'Año',
-        prefixIcon: Icon(Icons.event_outlined),
+      decoration: InputDecoration(
+        labelText: context.l10n.libraryYear,
+        prefixIcon: const Icon(Icons.event_outlined),
       ),
       items: [
         for (final year in years)
@@ -730,24 +739,42 @@ class _ActiveFilterChips extends ConsumerWidget {
     final chips = <Widget>[];
     if (filter.statuses.isNotEmpty) {
       chips.add(
-        _chip('Estado: ${filter.statuses.map((s) => s.label).join(', ')}'),
+        _chip(
+          context.l10n.libraryFilterStatus(
+            filter.statuses.map(context.l10n.gameStatusLabel).join(', '),
+          ),
+        ),
       );
     }
     if (filter.platformIds.isNotEmpty) {
       chips.add(
-        _chip('Plataforma: ${_namesForIds(filter.platformIds, platforms)}'),
+        _chip(
+          context.l10n.libraryFilterPlatform(
+            _namesForIds(filter.platformIds, platforms),
+          ),
+        ),
       );
     }
     if (filter.genreIds.isNotEmpty) {
-      chips.add(_chip('Género: ${_namesForIds(filter.genreIds, genres)}'));
+      chips.add(
+        _chip(
+          context.l10n.libraryFilterGenre(
+            _namesForIds(filter.genreIds, genres),
+          ),
+        ),
+      );
     }
     if (filter.textQuery.trim().isNotEmpty) {
-      chips.add(_chip('Búsqueda: ${filter.textQuery.trim()}'));
+      chips.add(
+        _chip(context.l10n.libraryFilterSearch(filter.textQuery.trim())),
+      );
     }
-    if (filter.missingRating) chips.add(_chip('Sin puntaje'));
-    if (filter.missingPlatform) chips.add(_chip('Sin plataforma'));
-    if (filter.missingGenre) chips.add(_chip('Sin género'));
-    if (filter.missingCompletedDate) chips.add(_chip('Sin fecha completado'));
+    if (filter.missingRating) chips.add(_chip(context.l10n.missingRating));
+    if (filter.missingPlatform) chips.add(_chip(context.l10n.missingPlatform));
+    if (filter.missingGenre) chips.add(_chip(context.l10n.missingGenre));
+    if (filter.missingCompletedDate) {
+      chips.add(_chip(context.l10n.libraryMissingCompletedDate));
+    }
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -819,7 +846,7 @@ class _LibraryDataTable extends ConsumerWidget {
           if (selectionMode) const DataColumn2(label: Text(''), fixedWidth: 56),
           for (final column in visibleColumns)
             DataColumn2(
-              label: Text(column.label),
+              label: Text(context.l10n.libraryColumnLabel(column)),
               size:
                   column == LibraryColumnKey.title
                       ? ColumnSize.L
@@ -910,17 +937,17 @@ class LibraryRowActions extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              tooltip: 'Abrir detalle',
+              tooltip: context.l10n.libraryOpenDetails,
               onPressed: () => context.go('/games/${row.libraryEntryId}'),
               icon: const Icon(Icons.open_in_new),
             ),
             IconButton(
-              tooltip: 'Editar',
+              tooltip: context.l10n.edit,
               onPressed: () => context.go('/games/${row.libraryEntryId}/edit'),
               icon: const Icon(Icons.edit_outlined),
             ),
             IconButton(
-              tooltip: 'Eliminar',
+              tooltip: context.l10n.deleteAction,
               onPressed: () => _confirmDelete(context, ref, row),
               icon: const Icon(Icons.delete_outline),
             ),
@@ -942,17 +969,23 @@ class _RowActionsMenu extends StatelessWidget {
     return Align(
       alignment: Alignment.centerRight,
       child: PopupMenuButton<String>(
-        tooltip: 'Acciones',
+        tooltip: context.l10n.libraryActionsTooltip,
         onSelected: (value) {
           if (value == 'open') context.go('/games/${row.libraryEntryId}');
           if (value == 'edit') context.go('/games/${row.libraryEntryId}/edit');
           if (value == 'delete') _confirmDelete(context, ref, row);
         },
         itemBuilder:
-            (context) => const [
-              PopupMenuItem(value: 'open', child: Text('Abrir detalle')),
-              PopupMenuItem(value: 'edit', child: Text('Editar')),
-              PopupMenuItem(value: 'delete', child: Text('Eliminar')),
+            (context) => [
+              PopupMenuItem(
+                value: 'open',
+                child: Text(context.l10n.libraryOpenDetails),
+              ),
+              PopupMenuItem(value: 'edit', child: Text(context.l10n.edit)),
+              PopupMenuItem(
+                value: 'delete',
+                child: Text(context.l10n.deleteAction),
+              ),
             ],
       ),
     );
@@ -1037,7 +1070,7 @@ class _FiltersDialogState extends State<_FiltersDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Filtros'),
+      title: Text(context.l10n.filters),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 720),
         child: SingleChildScrollView(
@@ -1045,14 +1078,14 @@ class _FiltersDialogState extends State<_FiltersDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _sectionTitle(context, 'Estado'),
+              _sectionTitle(context, context.l10n.libraryStatus),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
                   for (final status in GameStatus.values)
                     FilterChip(
-                      label: Text(status.label),
+                      label: Text(context.l10n.gameStatusLabel(status)),
                       selected: _statuses.contains(status),
                       onSelected: (selected) {
                         setState(() {
@@ -1065,17 +1098,18 @@ class _FiltersDialogState extends State<_FiltersDialog> {
                 ],
               ),
               const SizedBox(height: 16),
-              _sectionTitle(context, 'Plataformas'),
+              _sectionTitle(context, context.l10n.libraryPlatforms),
               _catalogChips(widget.platforms, _platformIds),
               const SizedBox(height: 16),
-              _sectionTitle(context, 'Géneros'),
+              _sectionTitle(context, context.l10n.libraryGenres),
               _catalogChips(widget.genres, _genreIds),
               const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
                     child: _ratingDropdown(
-                      label: 'Puntaje mínimo',
+                      context: context,
+                      label: context.l10n.libraryMinimumRating,
                       value: _minRating,
                       onChanged: (value) => setState(() => _minRating = value),
                     ),
@@ -1083,7 +1117,8 @@ class _FiltersDialogState extends State<_FiltersDialog> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _ratingDropdown(
-                      label: 'Puntaje máximo',
+                      context: context,
+                      label: context.l10n.libraryMaximumRating,
                       value: _maxRating,
                       onChanged: (value) => setState(() => _maxRating = value),
                     ),
@@ -1097,8 +1132,8 @@ class _FiltersDialogState extends State<_FiltersDialog> {
                     child: TextField(
                       controller: _minHoursController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Horas mínimas',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.libraryMinimumHours,
                       ),
                     ),
                   ),
@@ -1107,8 +1142,8 @@ class _FiltersDialogState extends State<_FiltersDialog> {
                     child: TextField(
                       controller: _maxHoursController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Horas máximas',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.libraryMaximumHours,
                       ),
                     ),
                   ),
@@ -1117,27 +1152,29 @@ class _FiltersDialogState extends State<_FiltersDialog> {
               const SizedBox(height: 12),
               TextField(
                 controller: _typeController,
-                decoration: const InputDecoration(labelText: 'Tipo'),
+                decoration: InputDecoration(
+                  labelText: context.l10n.libraryType,
+                ),
               ),
               const SizedBox(height: 12),
               _DateFilterTile(
-                label: 'Salida desde',
+                label: context.l10n.libraryReleaseFrom,
                 value: _releaseDateFrom,
                 onChanged: (value) => setState(() => _releaseDateFrom = value),
               ),
               _DateFilterTile(
-                label: 'Salida hasta',
+                label: context.l10n.libraryReleaseTo,
                 value: _releaseDateTo,
                 onChanged: (value) => setState(() => _releaseDateTo = value),
               ),
               _DateFilterTile(
-                label: 'Completado desde',
+                label: context.l10n.libraryCompletedFrom,
                 value: _completedDateFrom,
                 onChanged:
                     (value) => setState(() => _completedDateFrom = value),
               ),
               _DateFilterTile(
-                label: 'Completado hasta',
+                label: context.l10n.libraryCompletedTo,
                 value: _completedDateTo,
                 onChanged: (value) => setState(() => _completedDateTo = value),
               ),
@@ -1147,38 +1184,42 @@ class _FiltersDialogState extends State<_FiltersDialog> {
                 runSpacing: 0,
                 children: [
                   _flag(
-                    'Con puntaje',
+                    context.l10n.libraryWithRating,
                     _hasRating,
                     (value) => _hasRating = value,
                   ),
                   _flag(
-                    'Sin puntaje',
+                    context.l10n.missingRating,
                     _missingRating,
                     (value) => _missingRating = value,
                   ),
                   _flag(
-                    'Con plataforma',
+                    context.l10n.libraryWithPlatform,
                     _hasPlatform,
                     (value) => _hasPlatform = value,
                   ),
                   _flag(
-                    'Sin plataforma',
+                    context.l10n.missingPlatform,
                     _missingPlatform,
                     (value) => _missingPlatform = value,
                   ),
-                  _flag('Con género', _hasGenre, (value) => _hasGenre = value),
                   _flag(
-                    'Sin género',
+                    context.l10n.libraryWithGenre,
+                    _hasGenre,
+                    (value) => _hasGenre = value,
+                  ),
+                  _flag(
+                    context.l10n.missingGenre,
                     _missingGenre,
                     (value) => _missingGenre = value,
                   ),
                   _flag(
-                    'Con fecha completado',
+                    context.l10n.libraryWithCompletedDate,
                     _hasCompletedDate,
                     (value) => _hasCompletedDate = value,
                   ),
                   _flag(
-                    'Sin fecha completado',
+                    context.l10n.libraryMissingCompletedDate,
                     _missingCompletedDate,
                     (value) => _missingCompletedDate = value,
                   ),
@@ -1191,15 +1232,15 @@ class _FiltersDialogState extends State<_FiltersDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(context.l10n.cancel),
         ),
         TextButton(
           onPressed: () => Navigator.pop(context, const LibraryFilterState()),
-          child: const Text('Limpiar'),
+          child: Text(context.l10n.clear),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, _buildFilter()),
-          child: const Text('Aplicar'),
+          child: Text(context.l10n.apply),
         ),
       ],
     );
@@ -1209,7 +1250,7 @@ class _FiltersDialogState extends State<_FiltersDialog> {
     List<LibraryCatalogItem> items,
     Set<String> selectedIds,
   ) {
-    if (items.isEmpty) return const Text('No hay opciones disponibles.');
+    if (items.isEmpty) return Text(context.l10n.libraryNoOptions);
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -1291,12 +1332,12 @@ class _DateFilterTile extends StatelessWidget {
       trailing: Wrap(
         children: [
           IconButton(
-            tooltip: 'Limpiar fecha',
+            tooltip: context.l10n.libraryClearDate,
             onPressed: value == null ? null : () => onChanged(null),
             icon: const Icon(Icons.clear),
           ),
           IconButton(
-            tooltip: 'Elegir fecha',
+            tooltip: context.l10n.libraryChooseDate,
             onPressed: () async {
               final picked = await showDatePicker(
                 context: context,
@@ -1336,7 +1377,7 @@ class _ColumnsDialogState extends State<_ColumnsDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       scrollable: true,
-      title: const Text('Columnas visibles'),
+      title: Text(context.l10n.libraryVisibleColumns),
       content: SizedBox(
         width: 360,
         child: ListView(
@@ -1350,7 +1391,7 @@ class _ColumnsDialogState extends State<_ColumnsDialog> {
                         ? null
                         : (value) =>
                             setState(() => _config = _config.toggle(column)),
-                title: Text(column.label),
+                title: Text(context.l10n.libraryColumnLabel(column)),
               ),
           ],
         ),
@@ -1358,11 +1399,11 @@ class _ColumnsDialogState extends State<_ColumnsDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(context.l10n.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, _config),
-          child: const Text('Aplicar'),
+          child: Text(context.l10n.apply),
         ),
       ],
     );
@@ -1376,13 +1417,13 @@ class _EmptyLibraryState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: BvEmptyState(
-        title: 'Todavía no hay juegos en tu biblioteca.',
-        message: 'Cuando cargues el primero, el catálogo va a empezar a tomar forma.',
+        title: context.l10n.libraryEmptyTitle,
+        message: context.l10n.libraryEmptyMessage,
         icon: Icons.library_add_outlined,
         action: FilledButton.icon(
           onPressed: () => context.go('/games/new'),
           icon: const Icon(Icons.add),
-          label: const Text('Crear primer juego'),
+          label: Text(context.l10n.homeCreateFirstGame),
         ),
       ),
     );
@@ -1396,13 +1437,13 @@ class _EmptyFilteredState extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Center(
       child: BvEmptyState(
-        title: 'No hay juegos que coincidan con la vista actual.',
-        message: 'Probá aflojar filtros, cambiar la vista guardada o limpiar la búsqueda.',
+        title: context.l10n.libraryEmptyFilteredTitle,
+        message: context.l10n.libraryEmptyFilteredMessage,
         icon: Icons.search_off_outlined,
         action: OutlinedButton.icon(
           onPressed: () => _resetTableState(ref),
           icon: const Icon(Icons.restart_alt),
-          label: const Text('Limpiar filtros'),
+          label: Text(context.l10n.libraryClearFilters),
         ),
       ),
     );
@@ -1476,7 +1517,7 @@ Future<void> _showColumnsDialog(BuildContext context, WidgetRef ref) async {
 }
 
 Future<void> _saveCurrentView(BuildContext context, WidgetRef ref) async {
-  final name = await _askViewName(context, title: 'Guardar vista');
+  final name = await _askViewName(context, title: context.l10n.saveView);
   if (name == null) return;
   final state = ref.read(libraryTableStateProvider);
   final id = await ref
@@ -1510,7 +1551,7 @@ Future<void> _updateCurrentView(
   if (context.mounted) {
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Vista actualizada.')));
+    ).showSnackBar(SnackBar(content: Text(context.l10n.libraryViewUpdated)));
   }
 }
 
@@ -1521,7 +1562,7 @@ Future<void> _renameCurrentView(
 ) async {
   final name = await _askViewName(
     context,
-    title: 'Renombrar vista',
+    title: context.l10n.libraryRenameView,
     initialName: view.name,
   );
   if (name == null) return;
@@ -1540,16 +1581,16 @@ Future<void> _deleteCurrentView(
     builder:
         (context) => AlertDialog(
           scrollable: true,
-          title: const Text('Eliminar vista'),
-          content: Text('Se eliminará la vista "${view.name}".'),
+          title: Text(context.l10n.libraryDeleteView),
+          content: Text(context.l10n.libraryDeleteViewMessage(view.name)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
+              child: Text(context.l10n.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Eliminar'),
+              child: Text(context.l10n.deleteAction),
             ),
           ],
         ),
@@ -1574,12 +1615,12 @@ Future<String?> _askViewName(
           content: TextField(
             controller: controller,
             autofocus: true,
-            decoration: const InputDecoration(labelText: 'Nombre'),
+            decoration: InputDecoration(labelText: context.l10n.name),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
+              child: Text(context.l10n.cancel),
             ),
             FilledButton(
               onPressed: () {
@@ -1587,7 +1628,7 @@ Future<String?> _askViewName(
                 if (name.isEmpty) return;
                 Navigator.pop(context, name);
               },
-              child: const Text('Guardar'),
+              child: Text(context.l10n.save),
             ),
           ],
         ),
@@ -1606,16 +1647,16 @@ Future<void> _confirmDelete(
     builder:
         (context) => AlertDialog(
           scrollable: true,
-          title: const Text('Eliminar juego'),
-          content: Text('Se ocultará "${row.title}" de la biblioteca.'),
+          title: Text(context.l10n.libraryDeleteGameTitle),
+          content: Text(context.l10n.libraryDeleteGameMessage(row.title)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
+              child: Text(context.l10n.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Eliminar'),
+              child: Text(context.l10n.deleteAction),
             ),
           ],
         ),
@@ -1641,7 +1682,7 @@ Widget _tableCell(
 
   final text = switch (column) {
     LibraryColumnKey.title => row.title,
-    LibraryColumnKey.status => row.status.label,
+    LibraryColumnKey.status => context.l10n.gameStatusLabel(row.status),
     LibraryColumnKey.platforms => _names(
       row.platforms.map((platform) => platform.name),
     ),
@@ -1651,7 +1692,7 @@ Widget _tableCell(
     LibraryColumnKey.completedDate => formatVisibleDate(row.completedAt),
     LibraryColumnKey.hours =>
       row.hoursPlayed == null ? '-' : row.hoursPlayed!.toStringAsFixed(1),
-    LibraryColumnKey.type => _displayGameType(row.type),
+    LibraryColumnKey.type => context.l10n.displayGameType(row.type),
     LibraryColumnKey.notes =>
       row.personalNotes?.trim().isEmpty ?? true
           ? '-'
@@ -1673,6 +1714,7 @@ Widget _tableCell(
 }
 
 DropdownButtonFormField<int?> _ratingDropdown({
+  required BuildContext context,
   required String label,
   required int? value,
   required ValueChanged<int?> onChanged,
@@ -1681,13 +1723,13 @@ DropdownButtonFormField<int?> _ratingDropdown({
     initialValue: value,
     isExpanded: true,
     decoration: InputDecoration(labelText: label),
-    items: const [
-      DropdownMenuItem(value: null, child: Text('Sin límite')),
-      DropdownMenuItem(value: 1, child: Text('1')),
-      DropdownMenuItem(value: 2, child: Text('2')),
-      DropdownMenuItem(value: 3, child: Text('3')),
-      DropdownMenuItem(value: 4, child: Text('4')),
-      DropdownMenuItem(value: 5, child: Text('5')),
+    items: [
+      DropdownMenuItem(value: null, child: Text(context.l10n.libraryNoLimit)),
+      const DropdownMenuItem(value: 1, child: Text('1')),
+      const DropdownMenuItem(value: 2, child: Text('2')),
+      const DropdownMenuItem(value: 3, child: Text('3')),
+      const DropdownMenuItem(value: 4, child: Text('4')),
+      const DropdownMenuItem(value: 5, child: Text('5')),
     ],
     onChanged: onChanged,
   );
@@ -1745,13 +1787,13 @@ String _namesForIds(Set<String> ids, List<LibraryCatalogItem> items) {
   return names.isEmpty ? '-' : names.join(', ');
 }
 
-String _displayGameType(String value) {
-  final normalized = value.trim().toLowerCase();
-  return switch (normalized) {
-    'un jugador' || 'single_player' || 'single player' => 'Un jugador',
-    'multijugador' || 'multiplayer' => 'Multijugador',
-    'cooperativo' || 'cooperative' || 'coop' || 'co-op' => 'Cooperativo',
-    _ => '-',
+String _localizedViewName(BuildContext context, SavedLibraryView view) {
+  return switch (view.id) {
+    defaultAllGamesViewId => context.l10n.libraryDefaultAll,
+    'default:pending' => context.l10n.libraryDefaultPending,
+    'default:completed' => context.l10n.libraryDefaultCompleted,
+    defaultCompletedYearViewId => context.l10n.libraryDefaultByYear,
+    _ => view.name,
   };
 }
 

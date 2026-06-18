@@ -11,6 +11,8 @@ import '../../../core/design_system/bv_spacing.dart';
 import '../../../core/design_system/bv_status_banner.dart';
 import '../../../core/design_system/bv_wizard_step.dart';
 import '../../../core/privacy/privacy_redactor.dart';
+import '../../../l10n/domain_localizations.dart';
+import '../../../l10n/l10n.dart';
 import '../../library/data/library_query_repository.dart';
 import '../../library/domain/library_game_row.dart';
 import '../../media/domain/media_asset_models.dart';
@@ -29,21 +31,22 @@ enum _PreviewFilter {
   none,
   withMetadata,
   withCover,
-  withReplacements;
-
-  String get label => switch (this) {
-    _PreviewFilter.all => 'Todos',
-    _PreviewFilter.selected => 'Seleccionados',
-    _PreviewFilter.safe => 'Seguros',
-    _PreviewFilter.probable => 'Probables',
-    _PreviewFilter.ambiguous => 'Ambiguos',
-    _PreviewFilter.errors => 'Errores',
-    _PreviewFilter.none => 'Sin resultado',
-    _PreviewFilter.withMetadata => 'Con metadata',
-    _PreviewFilter.withCover => 'Con cover',
-    _PreviewFilter.withReplacements => 'Con reemplazos',
-  };
+  withReplacements,
 }
+
+String _previewFilterLabel(BuildContext context, _PreviewFilter filter) =>
+    switch (filter) {
+      _PreviewFilter.all => context.l10n.bulkFilterAll,
+      _PreviewFilter.selected => context.l10n.bulkFilterSelected,
+      _PreviewFilter.safe => context.l10n.bulkFilterSafe,
+      _PreviewFilter.probable => context.l10n.bulkFilterProbable,
+      _PreviewFilter.ambiguous => context.l10n.bulkFilterAmbiguous,
+      _PreviewFilter.errors => context.l10n.bulkFilterErrors,
+      _PreviewFilter.none => context.l10n.bulkFilterNoResult,
+      _PreviewFilter.withMetadata => context.l10n.bulkFilterMetadata,
+      _PreviewFilter.withCover => context.l10n.bulkFilterCover,
+      _PreviewFilter.withReplacements => context.l10n.bulkFilterReplacements,
+    };
 
 enum _BulkSelectionAction {
   selectVisible,
@@ -90,15 +93,14 @@ class _BulkMetadataImportPageState
     final selectedProvider = _providerById(providers, _providerId);
 
     return BvPageScaffold(
-      title: 'Importar metadata',
+      title: context.l10n.bulkTitle,
       body: rows.when(
         data:
             (libraryRows) => ListView(
               children: [
-                const BvStatusBanner(
-                  title: 'Importación masiva',
-                  message:
-                      'Definí alcance, revisá el preview y confirmá exactamente qué metadata o covers se aplican antes de ejecutar cambios en lote.',
+                BvStatusBanner(
+                  title: context.l10n.bulkIntroTitle,
+                  message: context.l10n.bulkIntroDescription,
                 ),
                 const SizedBox(height: BvSpacing.md),
                 _OptionsCard(
@@ -168,7 +170,7 @@ class _BulkMetadataImportPageState
                 ],
               ],
             ),
-        loading: () => const BvLoadingState(label: 'Cargando biblioteca'),
+        loading: () => BvLoadingState(label: context.l10n.bulkLoadingLibrary),
         error:
             (error, stackTrace) =>
                 _ErrorCard(message: privacyRedactor.redact(error.toString())),
@@ -239,7 +241,7 @@ class _BulkMetadataImportPageState
       if (!mounted) return;
       setState(() {
         _error = privacyRedactor.redact(
-          'No se pudo generar el preview. ${error.toString()}',
+          context.l10n.bulkPreviewFailed(error.toString()),
         );
       });
     } finally {
@@ -571,31 +573,33 @@ class _ApplyConfirmationDialogState extends State<_ApplyConfirmationDialog> {
     final canConfirm = _controller.text.trim().toUpperCase() == requiredText;
 
     return AlertDialog(
-      title: const Text('Confirmar importación masiva'),
+      title: Text(context.l10n.bulkConfirmTitle),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Se aplicarán solo los juegos, campos y covers seleccionados.',
-            ),
+            Text(context.l10n.bulkConfirmMessage),
             if (plan != null) ...[
               const SizedBox(height: 8),
               Text(
-                'Juegos: ${plan.selectedItems}\n'
-                'Campos nuevos: ${plan.selectedNewFieldChanges}\n'
-                'Campos reemplazados: ${plan.selectedReplacementFieldChanges}\n'
-                'Covers nuevos: ${plan.selectedNewCovers}\n'
-                'Covers reemplazados: ${plan.selectedReplacementCovers}',
+                context.l10n.bulkConfirmSummary(
+                  plan.selectedItems,
+                  plan.selectedNewFieldChanges,
+                  plan.selectedReplacementFieldChanges,
+                  plan.selectedNewCovers,
+                  plan.selectedReplacementCovers,
+                ),
               ),
             ],
             const SizedBox(height: 8),
-            Text('Escribí $requiredText para confirmar.'),
+            Text(context.l10n.bulkTypeConfirmation(requiredText)),
             const SizedBox(height: 12),
             TextField(
               controller: _controller,
-              decoration: const InputDecoration(labelText: 'Confirmación'),
+              decoration: InputDecoration(
+                labelText: context.l10n.libraryConfirmation,
+              ),
               onChanged: (_) => setState(() {}),
             ),
           ],
@@ -604,11 +608,15 @@ class _ApplyConfirmationDialogState extends State<_ApplyConfirmationDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancelar'),
+          child: Text(context.l10n.cancel),
         ),
         FilledButton(
           onPressed: canConfirm ? () => Navigator.pop(context, true) : null,
-          child: Text(requiredText == 'REEMPLAZAR' ? 'Reemplazar' : 'Aplicar'),
+          child: Text(
+            requiredText == 'REEMPLAZAR'
+                ? context.l10n.bulkReplace
+                : context.l10n.bulkApply,
+          ),
         ),
       ],
     );
@@ -653,10 +661,9 @@ class _OptionsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BvWizardStep(
-      step: 'Paso 1',
-      title: 'Qué querés importar',
-      subtitle:
-          'Elegí el tipo de importación y después ajustá alcance, proveedor y reglas de reemplazo antes de generar el preview.',
+      step: context.l10n.stepOne,
+      title: context.l10n.bulkWhatImport,
+      subtitle: context.l10n.bulkWhatImportDescription,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -679,16 +686,16 @@ class _OptionsCard extends StatelessWidget {
                     child: DropdownButtonFormField<BulkMetadataImportScope>(
                       initialValue: scope,
                       isExpanded: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Juegos a analizar',
-                        helperText: 'Esto no decide qué se pisa.',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.bulkGamesToAnalyze,
+                        helperText: context.l10n.bulkGamesToAnalyzeHelper,
                       ),
                       items: [
                         for (final value in BulkMetadataImportScope.values)
                           DropdownMenuItem(
                             value: value,
                             child: Text(
-                              value.label,
+                              context.l10n.bulkScopeLabel(value),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -707,8 +714,8 @@ class _OptionsCard extends StatelessWidget {
                       child: DropdownButtonFormField<String>(
                         initialValue: selectedProviderId,
                         isExpanded: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Provider metadata',
+                        decoration: InputDecoration(
+                          labelText: context.l10n.bulkMetadataProvider,
                         ),
                         items: [
                           for (final provider in providers)
@@ -733,15 +740,15 @@ class _OptionsCard extends StatelessWidget {
                       child: DropdownButtonFormField<BulkMetadataApplyMode>(
                         initialValue: applyMode,
                         isExpanded: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Modo metadata',
+                        decoration: InputDecoration(
+                          labelText: context.l10n.bulkMetadataMode,
                         ),
                         items: [
                           for (final value in BulkMetadataApplyMode.values)
                             DropdownMenuItem(
                               value: value,
                               child: Text(
-                                value.label,
+                                context.l10n.bulkApplyModeLabel(value),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -763,15 +770,15 @@ class _OptionsCard extends StatelessWidget {
                       child: DropdownButtonFormField<BulkCoverProviderMode>(
                         initialValue: coverProviderMode,
                         isExpanded: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Fuente de portada',
+                        decoration: InputDecoration(
+                          labelText: context.l10n.bulkCoverSource,
                         ),
                         items: [
                           for (final value in BulkCoverProviderMode.values)
                             DropdownMenuItem(
                               value: value,
                               child: Text(
-                                value.label,
+                                context.l10n.bulkCoverProviderLabel(value),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -791,15 +798,15 @@ class _OptionsCard extends StatelessWidget {
                       child: DropdownButtonFormField<BulkExistingCoverMode>(
                         initialValue: existingCoverMode,
                         isExpanded: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Portadas existentes',
+                        decoration: InputDecoration(
+                          labelText: context.l10n.bulkExistingCovers,
                         ),
                         items: [
                           for (final value in BulkExistingCoverMode.values)
                             DropdownMenuItem(
                               value: value,
                               child: Text(
-                                value.label,
+                                context.l10n.bulkExistingCoverModeLabel(value),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -823,7 +830,7 @@ class _OptionsCard extends StatelessWidget {
           FilledButton.icon(
             onPressed: busy ? null : onScan,
             icon: const Icon(Icons.manage_search_outlined),
-            label: const Text('Generar preview'),
+            label: Text(context.l10n.csvGeneratePreview),
           ),
         ],
       ),
@@ -921,12 +928,12 @@ class _ImportModeCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      mode.label,
+                      context.l10n.bulkContentModeLabel(mode),
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      mode.description,
+                      context.l10n.bulkContentModeDescription(mode),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -973,7 +980,7 @@ class _ProgressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = total == 0 ? null : processed / total;
     return BvProgressPanel(
-      title: 'Escaneando biblioteca',
+      title: context.l10n.bulkScanning,
       progress: progress,
       trailing: '$processed / $total',
       subtitle: currentTitle,
@@ -1025,10 +1032,9 @@ class _PreviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final visibleItems = plan.items.where(_matchesFilter).toList();
     return BvWizardStep(
-      step: 'Paso 2',
-      title: 'Preview',
-      subtitle:
-          'Filtrá coincidencias, revisá cambios y dejá seleccionados solo los juegos y campos que querés aplicar.',
+      step: context.l10n.stepTwo,
+      title: context.l10n.bulkPreviewTitle,
+      subtitle: context.l10n.bulkPreviewDescription,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1036,45 +1042,66 @@ class _PreviewCard extends StatelessWidget {
             spacing: BvSpacing.xs,
             runSpacing: BvSpacing.xs,
             children: [
-              _statChip('Analizados', plan.items.length.toString()),
+              _statChip(
+                context.l10n.bulkAnalyzed,
+                plan.items.length.toString(),
+              ),
               if (plan.options.contentMode !=
                   BulkImportContentMode.coverOnly) ...[
-                _statChip('Con match', plan.matchedItems.toString()),
-                _statChip('Sin match', plan.withoutMatchItems.toString()),
-                _statChip('Seguros', plan.safeItems.toString()),
-                _statChip('Probables', plan.probableItems.toString()),
-                _statChip('Ambiguos', plan.ambiguousItems.toString()),
+                _statChip(
+                  context.l10n.bulkWithMatch,
+                  plan.matchedItems.toString(),
+                ),
+                _statChip(
+                  context.l10n.bulkWithoutMatch,
+                  plan.withoutMatchItems.toString(),
+                ),
+                _statChip(context.l10n.bulkSafe, plan.safeItems.toString()),
+                _statChip(
+                  context.l10n.bulkProbable,
+                  plan.probableItems.toString(),
+                ),
+                _statChip(
+                  context.l10n.bulkAmbiguous,
+                  plan.ambiguousItems.toString(),
+                ),
               ] else ...[
                 _statChip(
-                  'Con cover',
+                  context.l10n.bulkWithCover,
                   plan.items
                       .where((item) => item.coverPlan?.canApply == true)
                       .length
                       .toString(),
                 ),
                 _statChip(
-                  'Sin cover',
+                  context.l10n.bulkWithoutCover,
                   plan.items
                       .where((item) => item.coverPlan?.canApply != true)
                       .length
                       .toString(),
                 ),
               ],
-              _statChip('Seleccionados', plan.selectedItems.toString()),
+              _statChip(
+                context.l10n.bulkSelected,
+                plan.selectedItems.toString(),
+              ),
               if (plan.options.contentMode !=
                   BulkImportContentMode.coverOnly) ...[
                 _statChip(
-                  'Campos nuevos',
+                  context.l10n.bulkNewFields,
                   plan.selectedNewFieldChanges.toString(),
                 ),
                 _statChip(
-                  'Campos reemplazados',
+                  context.l10n.bulkReplacedFields,
                   plan.selectedReplacementFieldChanges.toString(),
                 ),
               ],
-              _statChip('Covers nuevos', plan.selectedNewCovers.toString()),
               _statChip(
-                'Covers reemplazados',
+                context.l10n.bulkNewCovers,
+                plan.selectedNewCovers.toString(),
+              ),
+              _statChip(
+                context.l10n.bulkReplacedCovers,
                 plan.selectedReplacementCovers.toString(),
               ),
             ],
@@ -1086,7 +1113,7 @@ class _PreviewCard extends StatelessWidget {
             children: [
               for (final value in _visibleFilters)
                 FilterChip(
-                  label: Text(value.label),
+                  label: Text(_previewFilterLabel(context, value)),
                   selected: filter == value,
                   onSelected: (_) => onFilterChanged(value),
                 ),
@@ -1099,7 +1126,7 @@ class _PreviewCard extends StatelessWidget {
             children: [
               ActionChip(
                 avatar: const Icon(Icons.select_all, size: 18),
-                label: const Text('Seleccionar visibles'),
+                label: Text(context.l10n.bulkSelectVisible),
                 onPressed:
                     visibleItems.isEmpty
                         ? null
@@ -1110,7 +1137,7 @@ class _PreviewCard extends StatelessWidget {
               ),
               ActionChip(
                 avatar: const Icon(Icons.clear_all, size: 18),
-                label: const Text('Deseleccionar todos'),
+                label: Text(context.l10n.bulkDeselectAll),
                 onPressed:
                     () => onBulkSelection(
                       _BulkSelectionAction.deselectAll,
@@ -1118,7 +1145,7 @@ class _PreviewCard extends StatelessWidget {
                     ),
               ),
               ActionChip(
-                label: const Text('Seleccionar seguros'),
+                label: Text(context.l10n.bulkSelectSafe),
                 onPressed:
                     visibleItems.isEmpty
                         ? null
@@ -1128,7 +1155,7 @@ class _PreviewCard extends StatelessWidget {
                         ),
               ),
               ActionChip(
-                label: const Text('Con cover'),
+                label: Text(context.l10n.bulkWithCover),
                 onPressed:
                     visibleItems.isEmpty
                         ? null
@@ -1138,7 +1165,7 @@ class _PreviewCard extends StatelessWidget {
                         ),
               ),
               ActionChip(
-                label: const Text('Portadas nuevas'),
+                label: Text(context.l10n.bulkNewCoverSelection),
                 onPressed:
                     visibleItems.isEmpty
                         ? null
@@ -1149,7 +1176,7 @@ class _PreviewCard extends StatelessWidget {
               ),
               if (plan.options.allowCoverReplacement)
                 ActionChip(
-                  label: const Text('Reemplazos portada'),
+                  label: Text(context.l10n.bulkCoverReplacements),
                   onPressed:
                       visibleItems.isEmpty
                           ? null
@@ -1160,7 +1187,7 @@ class _PreviewCard extends StatelessWidget {
                 ),
               if (plan.options.shouldImportMetadata)
                 ActionChip(
-                  label: const Text('Campos nuevos'),
+                  label: Text(context.l10n.bulkNewFields),
                   onPressed:
                       visibleItems.isEmpty
                           ? null
@@ -1171,7 +1198,7 @@ class _PreviewCard extends StatelessWidget {
                 ),
               if (plan.options.allowMetadataReplacement)
                 ActionChip(
-                  label: const Text('Campos reemplazables'),
+                  label: Text(context.l10n.bulkReplaceableFields),
                   onPressed:
                       visibleItems.isEmpty
                           ? null
@@ -1184,10 +1211,9 @@ class _PreviewCard extends StatelessWidget {
           ),
           const SizedBox(height: BvSpacing.md),
           if (visibleItems.isEmpty)
-            const BvEmptyState(
-              title: 'No hay juegos para este filtro',
-              message:
-                  'Probá cambiar el filtro del preview o revisar el alcance seleccionado en el paso anterior.',
+            BvEmptyState(
+              title: context.l10n.bulkNoGamesForFilter,
+              message: context.l10n.bulkNoGamesForFilterMessage,
               icon: Icons.filter_alt_off_outlined,
             )
           else
@@ -1287,7 +1313,7 @@ class _PreviewItemTile extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
         subtitle: Text(
-          _subtitle(best),
+          _subtitle(context, best),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
@@ -1302,7 +1328,7 @@ class _PreviewItemTile extends StatelessWidget {
                   if (contentMode != BulkImportContentMode.coverOnly &&
                       item.candidates.isNotEmpty) ...[
                     Text(
-                      'Candidatos',
+                      context.l10n.bulkCandidates,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     const SizedBox(height: 4),
@@ -1312,22 +1338,22 @@ class _PreviewItemTile extends StatelessWidget {
                         contentPadding: EdgeInsets.zero,
                         title: Text(candidate.candidate.title),
                         subtitle: Text(
-                          '${candidate.confidence.label} · score ${candidate.score}'
+                          '${context.l10n.bulkConfidenceLabel(candidate.confidence)} · score ${candidate.score}'
                           '${candidate.reasons.isEmpty ? '' : ' · ${candidate.reasons.join(', ')}'}',
                         ),
                         trailing: TextButton(
                           onPressed: () => onCandidateSelected(candidate),
-                          child: const Text('Usar'),
+                          child: Text(context.l10n.bulkUse),
                         ),
                       ),
                     const SizedBox(height: 8),
                   ],
                   if (contentMode != BulkImportContentMode.coverOnly &&
                       item.fieldPlans.isEmpty)
-                    const Text('No hay campos de metadata para aplicar.')
+                    Text(context.l10n.bulkNoMetadataFields)
                   else if (contentMode != BulkImportContentMode.coverOnly) ...[
                     Text(
-                      'Campos',
+                      context.l10n.bulkFields,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     for (var index = 0; index < item.fieldPlans.length; index++)
@@ -1344,16 +1370,23 @@ class _PreviewItemTile extends StatelessWidget {
                         title: Row(
                           children: [
                             Expanded(
-                              child: Text(item.fieldPlans[index].field.label),
+                              child: Text(
+                                context.l10n.metadataFieldLabel(
+                                  item.fieldPlans[index].field,
+                                ),
+                              ),
                             ),
                             if (item.fieldPlans[index].replacesExisting)
-                              const _Badge(label: 'reemplaza'),
+                              _Badge(label: context.l10n.metadataReplaces),
                             if (item.fieldPlans[index].isProtected)
-                              const _Badge(label: 'protegido'),
+                              _Badge(label: context.l10n.metadataProtected),
                           ],
                         ),
                         subtitle: Text(
-                          'Actual: ${item.fieldPlans[index].currentValue}\nExterno: ${item.fieldPlans[index].externalValue}',
+                          context.l10n.bulkCurrentExternal(
+                            item.fieldPlans[index].currentValue,
+                            item.fieldPlans[index].externalValue,
+                          ),
                         ),
                       ),
                   ],
@@ -1367,16 +1400,20 @@ class _PreviewItemTile extends StatelessWidget {
                           item.coverPlan!.canApply
                               ? (value) => onCoverChanged(value ?? false)
                               : null,
-                      title: const Text('Guardar portada'),
+                      title: Text(context.l10n.bulkSaveCover),
                       subtitle: Text(
                         item.coverPlan!.canApply
                             ? [
-                              _coverStatusLabel(item.coverPlan!),
+                              _coverStatusLabel(context, item.coverPlan!),
                               item.coverPlan!.asset!.providerName,
                               if (item.coverPlan!.replacesExisting)
-                                'reemplaza ${item.coverPlan!.currentProviderName ?? 'portada actual'}',
+                                context.l10n.bulkReplacesCover(
+                                  item.coverPlan!.currentProviderName ??
+                                      context.l10n.bulkCurrentCover,
+                                ),
                             ].join(' · ')
-                            : item.coverPlan!.reason ?? 'No disponible',
+                            : item.coverPlan!.reason ??
+                                context.l10n.notAvailable,
                       ),
                     ),
                     if (item.coverPlan!.canApply &&
@@ -1386,7 +1423,7 @@ class _PreviewItemTile extends StatelessWidget {
                         child: TextButton.icon(
                           onPressed: () => _showCoverPicker(context),
                           icon: const Icon(Icons.image_search_outlined),
-                          label: const Text('Elegir portada'),
+                          label: Text(context.l10n.bulkChooseCover),
                         ),
                       ),
                   ],
@@ -1407,16 +1444,16 @@ class _PreviewItemTile extends StatelessWidget {
     return false;
   }
 
-  String _subtitle(BulkMetadataCandidate? best) {
+  String _subtitle(BuildContext context, BulkMetadataCandidate? best) {
     final parts = <String>[];
     if (contentMode == BulkImportContentMode.coverOnly) {
-      parts.add(_coverOnlyStatus);
+      parts.add(_coverOnlyStatus(context));
     } else {
-      parts.add(item.confidence.label);
+      parts.add(context.l10n.bulkConfidenceLabel(item.confidence));
       if (best != null) parts.add(best.candidate.title);
       if (contentMode == BulkImportContentMode.metadataAndCover &&
           item.coverPlan != null) {
-        parts.add(_coverOnlyStatus);
+        parts.add(_coverOnlyStatus(context));
       }
     }
     if (item.issues.isNotEmpty) {
@@ -1425,28 +1462,28 @@ class _PreviewItemTile extends StatelessWidget {
     return parts.join(' · ');
   }
 
-  String get _coverOnlyStatus {
+  String _coverOnlyStatus(BuildContext context) {
     final cover = item.coverPlan;
-    if (cover == null) return 'Sin cover encontrado';
+    if (cover == null) return context.l10n.bulkNoCoverFound;
     if (!cover.canApply) {
-      return cover.reason ?? 'Sin cover encontrado';
+      return cover.reason ?? context.l10n.bulkNoCoverFound;
     }
     if (cover.selected && cover.replacesExisting) {
-      return 'Reemplazo de portada seleccionado';
+      return context.l10n.bulkCoverReplacementSelected;
     }
-    if (cover.selected) return 'Portada nueva seleccionada';
-    if (cover.replacesExisting) return 'Ya tiene portada';
-    return 'Cover encontrado';
+    if (cover.selected) return context.l10n.bulkNewCoverSelected;
+    if (cover.replacesExisting) return context.l10n.bulkAlreadyHasCover;
+    return context.l10n.bulkCoverFound;
   }
 
-  String _coverStatusLabel(BulkCoverPlan cover) {
-    if (!cover.canApply) return 'Sin cover encontrado';
+  String _coverStatusLabel(BuildContext context, BulkCoverPlan cover) {
+    if (!cover.canApply) return context.l10n.bulkNoCoverFound;
     if (cover.selected && cover.replacesExisting) {
-      return 'Reemplazo de portada seleccionado';
+      return context.l10n.bulkCoverReplacementSelected;
     }
-    if (cover.selected) return 'Portada nueva seleccionada';
-    if (cover.replacesExisting) return 'Ya tiene portada';
-    return 'Cover encontrado';
+    if (cover.selected) return context.l10n.bulkNewCoverSelected;
+    if (cover.replacesExisting) return context.l10n.bulkAlreadyHasCover;
+    return context.l10n.bulkCoverFound;
   }
 
   Future<void> _showCoverPicker(BuildContext context) async {
@@ -1458,7 +1495,7 @@ class _PreviewItemTile extends StatelessWidget {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text('Elegir portada · ${item.row.title}'),
+            title: Text(context.l10n.bulkChooseCoverFor(item.row.title)),
             content: SizedBox(
               width: 640,
               child: GridView.builder(
@@ -1526,7 +1563,7 @@ class _PreviewItemTile extends StatelessWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancelar'),
+                child: Text(context.l10n.cancel),
               ),
             ],
           ),
@@ -1549,10 +1586,9 @@ class _ConfirmCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BvWizardStep(
-      step: 'Paso 3',
-      title: 'Confirmación final',
-      subtitle:
-          'Se aplican solo los juegos, campos y covers que siguen seleccionados en el preview.',
+      step: context.l10n.stepThree,
+      title: context.l10n.bulkFinalConfirmation,
+      subtitle: context.l10n.bulkFinalConfirmationDescription,
       child: Wrap(
         spacing: 12,
         runSpacing: 12,
@@ -1562,11 +1598,13 @@ class _ConfirmCard extends StatelessWidget {
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 720),
             child: Text(
-              '${plan.selectedItems} juegos seleccionados · '
-              '${plan.selectedNewFieldChanges} campos a completar · '
-              '${plan.selectedReplacementFieldChanges} campos a reemplazar · '
-              '${plan.selectedNewCovers} portadas nuevas · '
-              '${plan.selectedReplacementCovers} portadas a reemplazar.',
+              context.l10n.bulkFinalSummary(
+                plan.selectedItems,
+                plan.selectedNewFieldChanges,
+                plan.selectedReplacementFieldChanges,
+                plan.selectedNewCovers,
+                plan.selectedReplacementCovers,
+              ),
             ),
           ),
           FilledButton.icon(
@@ -1579,7 +1617,7 @@ class _ConfirmCard extends StatelessWidget {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                     : const Icon(Icons.check),
-            label: const Text('Aplicar cambios'),
+            label: Text(context.l10n.bulkApplyChanges),
           ),
         ],
       ),
@@ -1629,10 +1667,9 @@ class _ResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BvWizardStep(
-      step: 'Resultado',
-      title: 'Importación finalizada',
-      subtitle:
-          'Resumen de coincidencias, cambios guardados y warnings o errores devueltos por el proceso.',
+      step: context.l10n.csvResult,
+      title: context.l10n.bulkResultTitle,
+      subtitle: context.l10n.bulkResultDescription,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1640,37 +1677,61 @@ class _ResultCard extends StatelessWidget {
             spacing: BvSpacing.xs,
             runSpacing: BvSpacing.xs,
             children: [
-              _chip('Analizados', result.analyzed.toString()),
-              _chip('Con match', result.matched.toString()),
-              _chip('Sin match', result.withoutMatch.toString()),
-              _chip('Seguros', result.safeMatches.toString()),
-              _chip('Probables', result.probableMatches.toString()),
-              _chip('Ambiguos', result.ambiguousMatches.toString()),
-              _chip('Procesados', result.processed.toString()),
-              _chip('Metadata nueva', result.newFieldChangesApplied.toString()),
+              _chip(context.l10n.bulkAnalyzed, result.analyzed.toString()),
+              _chip(context.l10n.bulkWithMatch, result.matched.toString()),
               _chip(
-                'Metadata reemplazada',
+                context.l10n.bulkWithoutMatch,
+                result.withoutMatch.toString(),
+              ),
+              _chip(context.l10n.bulkSafe, result.safeMatches.toString()),
+              _chip(
+                context.l10n.bulkProbable,
+                result.probableMatches.toString(),
+              ),
+              _chip(
+                context.l10n.bulkAmbiguous,
+                result.ambiguousMatches.toString(),
+              ),
+              _chip(context.l10n.bulkProcessed, result.processed.toString()),
+              _chip(
+                context.l10n.bulkNewMetadata,
+                result.newFieldChangesApplied.toString(),
+              ),
+              _chip(
+                context.l10n.bulkReplacedMetadata,
                 result.replacedFieldChangesApplied.toString(),
               ),
-              _chip('Vínculos', result.externalLinksSaved.toString()),
-              _chip('Covers nuevos', result.newCoversSaved.toString()),
               _chip(
-                'Covers reemplazados',
+                context.l10n.bulkLinks,
+                result.externalLinksSaved.toString(),
+              ),
+              _chip(
+                context.l10n.bulkNewCovers,
+                result.newCoversSaved.toString(),
+              ),
+              _chip(
+                context.l10n.bulkReplacedCovers,
                 result.replacedCoversSaved.toString(),
               ),
-              _chip('Omitidos', result.skipped.toString()),
-              _chip('Warnings', result.warnings.length.toString()),
-              _chip('Errores', result.errors.length.toString()),
+              _chip(context.l10n.bulkSkipped, result.skipped.toString()),
+              _chip(context.l10n.warnings, result.warnings.length.toString()),
+              _chip(context.l10n.errors, result.errors.length.toString()),
             ],
           ),
           if (result.warnings.isNotEmpty) ...[
             const SizedBox(height: BvSpacing.md),
-            Text('Warnings', style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              context.l10n.warnings,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             for (final warning in result.warnings) Text(warning.displayMessage),
           ],
           if (result.errors.isNotEmpty) ...[
             const SizedBox(height: BvSpacing.md),
-            Text('Errores', style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              context.l10n.errors,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             for (final error in result.errors) Text(error.displayMessage),
           ],
           const SizedBox(height: BvSpacing.md),
@@ -1681,12 +1742,12 @@ class _ResultCard extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onBackToLibrary,
                 icon: const Icon(Icons.library_books_outlined),
-                label: const Text('Volver a biblioteca'),
+                label: Text(context.l10n.csvBackToLibrary),
               ),
               OutlinedButton.icon(
                 onPressed: onNewPreview,
                 icon: const Icon(Icons.manage_search_outlined),
-                label: const Text('Generar nuevo preview'),
+                label: Text(context.l10n.bulkNewPreview),
               ),
             ],
           ),
@@ -1708,7 +1769,7 @@ class _ErrorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BvStatusBanner(
-      title: 'No se pudo continuar',
+      title: context.l10n.cannotContinue,
       tone: BvBannerTone.danger,
       message: message,
     );

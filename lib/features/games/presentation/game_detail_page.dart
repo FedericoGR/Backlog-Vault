@@ -14,6 +14,8 @@ import '../../../core/design_system/bv_surface.dart';
 import '../../../core/design_system/bv_theme_extension.dart';
 import '../../../core/design_system/bv_tokens.dart';
 import '../../../core/formatting/date_formatters.dart';
+import '../../../l10n/domain_localizations.dart';
+import '../../../l10n/l10n.dart';
 import '../../library/domain/game_status.dart';
 import '../../library/domain/rating.dart';
 import '../../library/data/library_query_repository.dart';
@@ -41,8 +43,8 @@ class GameDetailPage extends ConsumerWidget {
       data: (item) {
         if (item == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Juego no encontrado')),
-            body: const Center(child: Text('No se encontró el juego.')),
+            appBar: AppBar(title: Text(context.l10n.gameNotFoundTitle)),
+            body: Center(child: Text(context.l10n.gameNotFoundMessage)),
           );
         }
 
@@ -54,23 +56,23 @@ class GameDetailPage extends ConsumerWidget {
               IconButton(
                 tooltip:
                     item.selectedCover == null
-                        ? 'Buscar portada'
-                        : 'Cambiar portada',
+                        ? context.l10n.coverSearch
+                        : context.l10n.coverChange,
                 onPressed: () => _showMediaDialog(context, ref, item),
                 icon: const Icon(Icons.image_search_outlined),
               ),
               IconButton(
-                tooltip: 'Buscar metadata',
+                tooltip: context.l10n.metadataSearch,
                 onPressed: () => _showMetadataDialog(context, ref, item),
                 icon: const Icon(Icons.travel_explore_outlined),
               ),
               IconButton(
-                tooltip: 'Editar juego',
+                tooltip: context.l10n.gameEditTitle,
                 onPressed: () => context.go('/games/${item.entry.id}/edit'),
                 icon: const Icon(Icons.edit_outlined),
               ),
               IconButton(
-                tooltip: 'Eliminar juego',
+                tooltip: context.l10n.gameDeleteTooltip,
                 onPressed: () => _confirmDelete(context, ref, item),
                 icon: const Icon(Icons.delete_outline),
               ),
@@ -147,7 +149,7 @@ class GameDetailPage extends ConsumerWidget {
               const Scaffold(body: Center(child: CircularProgressIndicator())),
       error:
           (error, stackTrace) => Scaffold(
-            appBar: AppBar(title: const Text('Error')),
+            appBar: AppBar(title: Text(context.l10n.errorTitle)),
             body: Center(child: Text(error.toString())),
           ),
     );
@@ -183,7 +185,7 @@ class _GameInfoPanel extends ConsumerWidget {
               ),
               const SizedBox(width: BvSpacing.sm),
               PopupMenuButton<String>(
-                tooltip: 'Acciones del juego',
+                tooltip: context.l10n.gameActions,
                 onSelected: (value) {
                   if (value == 'cover') _showMediaDialog(context, ref, item);
                   if (value == 'metadata') {
@@ -195,17 +197,23 @@ class _GameInfoPanel extends ConsumerWidget {
                   if (value == 'delete') _confirmDelete(context, ref, item);
                 },
                 itemBuilder:
-                    (context) => const [
+                    (context) => [
                       PopupMenuItem(
                         value: 'cover',
-                        child: Text('Cambiar portada'),
+                        child: Text(context.l10n.coverChange),
                       ),
                       PopupMenuItem(
                         value: 'metadata',
-                        child: Text('Buscar metadata'),
+                        child: Text(context.l10n.metadataSearch),
                       ),
-                      PopupMenuItem(value: 'edit', child: Text('Editar')),
-                      PopupMenuItem(value: 'delete', child: Text('Eliminar')),
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Text(context.l10n.edit),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Text(context.l10n.delete),
+                      ),
                     ],
               ),
             ],
@@ -216,7 +224,7 @@ class _GameInfoPanel extends ConsumerWidget {
             runSpacing: 8,
             children: [
               BvChip(
-                label: status.label,
+                label: context.l10n.gameStatusLabel(status),
                 icon: Icons.bookmark_outline,
                 tone: _statusTone(status),
                 selected: true,
@@ -231,20 +239,20 @@ class _GameInfoPanel extends ConsumerWidget {
                   icon: Icons.event_outlined,
                 ),
               BvChip(
-                label: _displayGameType(item.game.type),
+                label: context.l10n.displayGameType(item.game.type),
                 icon: Icons.extension_outlined,
               ),
             ],
           ),
           const SizedBox(height: BvSpacing.md),
           _MetadataWrap(
-            title: 'Plataformas',
+            title: context.l10n.libraryPlatforms,
             icon: Icons.sports_esports_outlined,
             values: item.platforms.map((platform) => platform.name),
           ),
           const SizedBox(height: BvSpacing.sm),
           _MetadataWrap(
-            title: 'Géneros',
+            title: context.l10n.libraryGenres,
             icon: Icons.category_outlined,
             values: item.genres.map((genre) => genre.name),
           ),
@@ -291,11 +299,15 @@ class _GameCoverPanel extends ConsumerWidget {
               OutlinedButton.icon(
                 onPressed: () => _showMediaDialog(context, ref, item),
                 icon: const Icon(Icons.image_search_outlined),
-                label: Text(cover == null ? 'Buscar portada' : 'Cambiar'),
+                label: Text(
+                  cover == null
+                      ? context.l10n.coverSearch
+                      : context.l10n.coverChange,
+                ),
               ),
               if (cover != null)
                 IconButton.outlined(
-                  tooltip: 'Quitar portada',
+                  tooltip: context.l10n.gameRemoveCover,
                   onPressed: () => _confirmDeleteCover(context, ref, item),
                   icon: const Icon(Icons.delete_outline),
                 ),
@@ -318,7 +330,7 @@ class _GameProgressSection extends StatelessWidget {
     return BvPanel(
       dense: true,
       child: BvSection(
-        title: 'Resumen y progreso',
+        title: context.l10n.gameSummaryProgress,
         padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -328,7 +340,7 @@ class _GameProgressSection extends StatelessWidget {
               runSpacing: 8,
               children: [
                 BvStatCard(
-                  label: 'Horas',
+                  label: context.l10n.libraryHours,
                   value:
                       summary.totalHours == null
                           ? '-'
@@ -336,29 +348,31 @@ class _GameProgressSection extends StatelessWidget {
                   icon: Icons.timer_outlined,
                 ),
                 BvStatCard(
-                  label: 'Último completado',
+                  label: context.l10n.gameLastCompleted,
                   value: formatVisibleDate(summary.latestCompletedAt),
                   icon: Icons.emoji_events_outlined,
                 ),
                 BvStatCard(
-                  label: 'Partidas',
+                  label: context.l10n.gamePlaythroughs,
                   value: summary.playthroughCount.toString(),
                   icon: Icons.history_outlined,
                 ),
                 BvStatCard(
-                  label: 'Estado',
-                  value: parseGameStatus(item.entry.status).label,
+                  label: context.l10n.libraryStatus,
+                  value: context.l10n.gameStatusLabel(
+                    parseGameStatus(item.entry.status),
+                  ),
                   icon: Icons.flag_outlined,
                 ),
                 BvStatCard(
-                  label: 'Plataformas',
+                  label: context.l10n.libraryPlatforms,
                   value: _names(
                     item.platforms.map((platform) => platform.name),
                   ),
                   icon: Icons.sports_esports_outlined,
                 ),
                 BvStatCard(
-                  label: 'Géneros',
+                  label: context.l10n.libraryGenres,
                   value: _names(item.genres.map((genre) => genre.name)),
                   icon: Icons.category_outlined,
                 ),
@@ -384,7 +398,7 @@ class _QuickProgressActions extends ConsumerWidget {
         final compact = constraints.maxWidth < 440;
         final actions = [
           _ProgressAction(
-            label: 'Jugando',
+            label: context.l10n.gameMarkPlaying,
             icon: Icons.play_arrow,
             onPressed:
                 _can(current, GameStatus.playing)
@@ -399,7 +413,7 @@ class _QuickProgressActions extends ConsumerWidget {
                     : null,
           ),
           _ProgressAction(
-            label: 'Pausar',
+            label: context.l10n.gamePause,
             icon: Icons.pause,
             onPressed:
                 _can(current, GameStatus.paused)
@@ -414,7 +428,7 @@ class _QuickProgressActions extends ConsumerWidget {
                     : null,
           ),
           _ProgressAction(
-            label: 'Completar',
+            label: context.l10n.gameComplete,
             icon: Icons.check_circle_outline,
             prominent: true,
             onPressed:
@@ -423,7 +437,7 @@ class _QuickProgressActions extends ConsumerWidget {
                     : null,
           ),
           _ProgressAction(
-            label: 'Abandonar',
+            label: context.l10n.gameDrop,
             icon: Icons.cancel_outlined,
             onPressed:
                 _can(current, GameStatus.dropped)
@@ -438,7 +452,7 @@ class _QuickProgressActions extends ConsumerWidget {
                     : null,
           ),
           _ProgressAction(
-            label: 'Pendiente',
+            label: context.l10n.gameMoveToBacklog,
             icon: Icons.assignment_return_outlined,
             onPressed:
                 _can(current, GameStatus.backlog)
@@ -487,12 +501,12 @@ class _PlaythroughSection extends ConsumerWidget {
         final compact = constraints.maxWidth < 520;
         return BvPanel(
           child: BvSection(
-            title: 'Partidas',
+            title: context.l10n.gamePlaythroughs,
             padding: EdgeInsets.zero,
             trailing:
                 compact
                     ? IconButton.filledTonal(
-                      tooltip: 'Nueva partida',
+                      tooltip: context.l10n.gameNewPlaythrough,
                       onPressed:
                           () => _showPlaythroughDialog(context, ref, item),
                       icon: const Icon(Icons.add),
@@ -501,14 +515,13 @@ class _PlaythroughSection extends ConsumerWidget {
                       onPressed:
                           () => _showPlaythroughDialog(context, ref, item),
                       icon: const Icon(Icons.add),
-                      label: const Text('Nueva partida'),
+                      label: Text(context.l10n.gameNewPlaythrough),
                     ),
             child:
                 playthroughs.isEmpty
-                    ? const BvEmptyState(
-                      title: 'Sin partidas registradas',
-                      message:
-                          'Cuando juegues o completes una partida aparecerá acá.',
+                    ? BvEmptyState(
+                      title: context.l10n.gameNoPlaythroughs,
+                      message: context.l10n.gameNoPlaythroughsMessage,
                       icon: Icons.history_outlined,
                     )
                     : Column(
@@ -561,7 +574,7 @@ class _PlaythroughTile extends ConsumerWidget {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       BvChip(
-                        label: status.label,
+                        label: context.l10n.playthroughStatusLabel(status),
                         tone:
                             status == PlaythroughStatus.completed
                                 ? BvChipTone.primary
@@ -578,7 +591,7 @@ class _PlaythroughTile extends ConsumerWidget {
                   ),
                   const SizedBox(height: BvSpacing.xxs),
                   Text(
-                    _playthroughSubtitle(playthrough, item.platforms),
+                    _playthroughSubtitle(context, playthrough, item.platforms),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -587,7 +600,7 @@ class _PlaythroughTile extends ConsumerWidget {
             ),
             const SizedBox(width: BvSpacing.xs),
             PopupMenuButton<String>(
-              tooltip: 'Acciones de partida',
+              tooltip: context.l10n.gamePlaythroughActions,
               onSelected: (value) {
                 if (value == 'edit') {
                   _showPlaythroughDialog(context, ref, item, playthrough);
@@ -597,9 +610,15 @@ class _PlaythroughTile extends ConsumerWidget {
                 }
               },
               itemBuilder:
-                  (context) => const [
-                    PopupMenuItem(value: 'edit', child: Text('Editar')),
-                    PopupMenuItem(value: 'delete', child: Text('Eliminar')),
+                  (context) => [
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Text(context.l10n.edit),
+                    ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Text(context.l10n.delete),
+                    ),
                   ],
             ),
           ],
@@ -696,7 +715,7 @@ class _NotesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return BvPanel(
       child: BvSection(
-        title: 'Notas personales',
+        title: context.l10n.gamePersonalNotes,
         padding: EdgeInsets.zero,
         child: Text(
           item.entry.personalNotes?.trim().isEmpty ?? true
@@ -721,7 +740,7 @@ Future<void> _showMetadataDialog(
   ref.invalidate(libraryGameProvider(item.entry.id));
   ScaffoldMessenger.of(
     context,
-  ).showSnackBar(const SnackBar(content: Text('Metadata aplicada.')));
+  ).showSnackBar(SnackBar(content: Text(context.l10n.metadataApplied)));
 }
 
 Future<void> _showMediaDialog(
@@ -738,7 +757,7 @@ Future<void> _showMediaDialog(
   ref.invalidate(libraryRowsProvider);
   ScaffoldMessenger.of(
     context,
-  ).showSnackBar(const SnackBar(content: Text('Portada actualizada.')));
+  ).showSnackBar(SnackBar(content: Text(context.l10n.coverUpdated)));
 }
 
 Future<void> _confirmDeleteCover(
@@ -753,18 +772,16 @@ Future<void> _confirmDeleteCover(
     builder:
         (context) => AlertDialog(
           scrollable: true,
-          title: const Text('Quitar portada'),
-          content: const Text(
-            'La portada se ocultará del juego, sin borrar físicamente tu historial de media.',
-          ),
+          title: Text(context.l10n.coverRemoveTitle),
+          content: Text(context.l10n.coverRemoveMessage),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
+              child: Text(context.l10n.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Quitar'),
+              child: Text(context.l10n.remove),
             ),
           ],
         ),
@@ -776,7 +793,7 @@ Future<void> _confirmDeleteCover(
   if (!context.mounted) return;
   ScaffoldMessenger.of(
     context,
-  ).showSnackBar(const SnackBar(content: Text('Portada quitada.')));
+  ).showSnackBar(SnackBar(content: Text(context.l10n.coverRemoved)));
 }
 
 Future<void> _runProgressAction(
@@ -845,16 +862,16 @@ Future<void> _confirmDeletePlaythrough(
     builder:
         (context) => AlertDialog(
           scrollable: true,
-          title: const Text('Eliminar partida'),
-          content: const Text('La partida se ocultará del historial.'),
+          title: Text(context.l10n.gameDeletePlaythroughTitle),
+          content: Text(context.l10n.gameDeletePlaythroughMessage),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
+              child: Text(context.l10n.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Eliminar'),
+              child: Text(context.l10n.delete),
             ),
           ],
         ),
@@ -879,16 +896,16 @@ Future<void> _confirmDelete(
     builder:
         (context) => AlertDialog(
           scrollable: true,
-          title: const Text('Eliminar juego'),
-          content: Text('Se ocultará "${item.game.title}" de la biblioteca.'),
+          title: Text(context.l10n.libraryDeleteGameTitle),
+          content: Text(context.l10n.libraryDeleteGameMessage(item.game.title)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
+              child: Text(context.l10n.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Eliminar'),
+              child: Text(context.l10n.delete),
             ),
           ],
         ),
@@ -933,13 +950,13 @@ class _CompletionDialogState extends State<_CompletionDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       scrollable: true,
-      title: const Text('Marcar como completado'),
+      title: Text(context.l10n.gameMarkCompletedTitle),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             _DatePickerTile(
-              label: 'Fecha de completado',
+              label: context.l10n.gameCompletionDate,
               value: _completedAt,
               allowClear: false,
               onChanged: (value) {
@@ -949,7 +966,9 @@ class _CompletionDialogState extends State<_CompletionDialog> {
             TextField(
               controller: _hoursController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Horas jugadas'),
+              decoration: InputDecoration(
+                labelText: context.l10n.gameHoursPlayed,
+              ),
             ),
             const SizedBox(height: 12),
             _RatingField(
@@ -967,7 +986,7 @@ class _CompletionDialogState extends State<_CompletionDialog> {
               controller: _notesController,
               minLines: 2,
               maxLines: 4,
-              decoration: const InputDecoration(labelText: 'Nota'),
+              decoration: InputDecoration(labelText: context.l10n.gameNote),
             ),
           ],
         ),
@@ -975,7 +994,7 @@ class _CompletionDialogState extends State<_CompletionDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(context.l10n.cancel),
         ),
         FilledButton(
           onPressed:
@@ -992,7 +1011,7 @@ class _CompletionDialogState extends State<_CompletionDialog> {
                   notes: _notesController.text,
                 ),
               ),
-          child: const Text('Completar'),
+          child: Text(context.l10n.gameComplete),
         ),
       ],
     );
@@ -1050,7 +1069,9 @@ class _PlaythroughDialogState extends State<_PlaythroughDialog> {
     return AlertDialog(
       scrollable: true,
       title: Text(
-        widget.playthrough == null ? 'Registrar partida' : 'Editar partida',
+        widget.playthrough == null
+            ? context.l10n.gameRegisterPlaythrough
+            : context.l10n.gameEditPlaythrough,
       ),
       content: SingleChildScrollView(
         child: Column(
@@ -1058,10 +1079,15 @@ class _PlaythroughDialogState extends State<_PlaythroughDialog> {
           children: [
             DropdownButtonFormField<PlaythroughStatus>(
               initialValue: _status,
-              decoration: const InputDecoration(labelText: 'Estado'),
+              decoration: InputDecoration(
+                labelText: context.l10n.libraryStatus,
+              ),
               items: [
                 for (final status in PlaythroughStatus.values)
-                  DropdownMenuItem(value: status, child: Text(status.label)),
+                  DropdownMenuItem(
+                    value: status,
+                    child: Text(context.l10n.playthroughStatusLabel(status)),
+                  ),
               ],
               onChanged: (value) {
                 if (value == null) return;
@@ -1081,19 +1107,21 @@ class _PlaythroughDialogState extends State<_PlaythroughDialog> {
             ),
             const SizedBox(height: 12),
             _DatePickerTile(
-              label: 'Fecha de inicio',
+              label: context.l10n.gameStartDate,
               value: _startedAt,
               onChanged: (value) => setState(() => _startedAt = value),
             ),
             _DatePickerTile(
-              label: 'Fecha de completado',
+              label: context.l10n.gameCompletionDate,
               value: _completedAt,
               onChanged: (value) => setState(() => _completedAt = value),
             ),
             TextField(
               controller: _hoursController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Horas jugadas'),
+              decoration: InputDecoration(
+                labelText: context.l10n.gameHoursPlayed,
+              ),
             ),
             const SizedBox(height: 12),
             _RatingField(
@@ -1105,7 +1133,7 @@ class _PlaythroughDialogState extends State<_PlaythroughDialog> {
               controller: _notesController,
               minLines: 2,
               maxLines: 4,
-              decoration: const InputDecoration(labelText: 'Notas'),
+              decoration: InputDecoration(labelText: context.l10n.gameNotes),
             ),
           ],
         ),
@@ -1113,7 +1141,7 @@ class _PlaythroughDialogState extends State<_PlaythroughDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(context.l10n.cancel),
         ),
         FilledButton(
           onPressed: () {
@@ -1139,7 +1167,7 @@ class _PlaythroughDialogState extends State<_PlaythroughDialog> {
               ).showSnackBar(SnackBar(content: Text(error.toString())));
             }
           },
-          child: const Text('Guardar'),
+          child: Text(context.l10n.save),
         ),
       ],
     );
@@ -1169,12 +1197,12 @@ class _DatePickerTile extends StatelessWidget {
         children: [
           if (allowClear)
             IconButton(
-              tooltip: 'Limpiar fecha',
+              tooltip: context.l10n.libraryClearDate,
               onPressed: value == null ? null : () => onChanged(null),
               icon: const Icon(Icons.clear),
             ),
           IconButton(
-            tooltip: 'Elegir fecha',
+            tooltip: context.l10n.libraryChooseDate,
             onPressed: () async {
               final picked = await showDatePicker(
                 context: context,
@@ -1202,14 +1230,15 @@ class _RatingField extends StatelessWidget {
   Widget build(BuildContext context) {
     return DropdownButtonFormField<int?>(
       initialValue: value,
-      decoration: const InputDecoration(labelText: 'Puntaje'),
-      items: const [
-        DropdownMenuItem(value: null, child: Text('Sin puntaje')),
-        DropdownMenuItem(value: 1, child: Text('1 estrella')),
-        DropdownMenuItem(value: 2, child: Text('2 estrellas')),
-        DropdownMenuItem(value: 3, child: Text('3 estrellas')),
-        DropdownMenuItem(value: 4, child: Text('4 estrellas')),
-        DropdownMenuItem(value: 5, child: Text('5 estrellas')),
+      decoration: InputDecoration(labelText: context.l10n.columnRating),
+      items: [
+        DropdownMenuItem(value: null, child: Text(context.l10n.ratingNone)),
+        DropdownMenuItem(value: 1, child: Text(context.l10n.ratingOneStar)),
+        for (var rating = 2; rating <= 5; rating++)
+          DropdownMenuItem(
+            value: rating,
+            child: Text(context.l10n.ratingStars(rating)),
+          ),
       ],
       onChanged: onChanged,
     );
@@ -1235,9 +1264,9 @@ class _PlatformField extends StatelessWidget {
             : null;
     return DropdownButtonFormField<String?>(
       initialValue: safePlatformId,
-      decoration: const InputDecoration(labelText: 'Plataforma'),
+      decoration: InputDecoration(labelText: context.l10n.gamePlatform),
       items: [
-        const DropdownMenuItem(value: null, child: Text('Sin plataforma')),
+        DropdownMenuItem(value: null, child: Text(context.l10n.gameNoPlatform)),
         for (final platform in platforms)
           DropdownMenuItem(value: platform.id, child: Text(platform.name)),
       ],
@@ -1246,16 +1275,24 @@ class _PlatformField extends StatelessWidget {
   }
 }
 
-String _playthroughSubtitle(Playthrough playthrough, List<Platform> platforms) {
+String _playthroughSubtitle(
+  BuildContext context,
+  Playthrough playthrough,
+  List<Platform> platforms,
+) {
   final parts =
       [
         _platformName(platforms, playthrough.platformId),
         if (playthrough.startedAt != null)
-          'Inicio ${formatVisibleDate(playthrough.startedAt)}',
+          context.l10n.gamePlaythroughStart(
+            formatVisibleDate(playthrough.startedAt),
+          ),
         if (playthrough.completedAt != null)
-          'Fin ${formatVisibleDate(playthrough.completedAt)}',
+          context.l10n.gamePlaythroughEnd(
+            formatVisibleDate(playthrough.completedAt),
+          ),
         if (playthrough.hoursPlayed != null)
-          '${playthrough.hoursPlayed!.toStringAsFixed(1)} h',
+          context.l10n.hoursShort(playthrough.hoursPlayed!.toStringAsFixed(1)),
         if (playthrough.rating != null) '${playthrough.rating}/5',
         if (playthrough.notes?.trim().isNotEmpty ?? false)
           playthrough.notes!.trim(),
@@ -1269,16 +1306,6 @@ String _platformName(List<Platform> platforms, String? platformId) {
     if (platform.id == platformId) return platform.name;
   }
   return '-';
-}
-
-String _displayGameType(String value) {
-  final normalized = value.trim().toLowerCase();
-  return switch (normalized) {
-    'un jugador' || 'single_player' || 'single player' => 'Un jugador',
-    'multijugador' || 'multiplayer' => 'Multijugador',
-    'cooperativo' || 'cooperative' || 'coop' || 'co-op' => 'Cooperativo',
-    _ => 'Sin definir',
-  };
 }
 
 BvChipTone _statusTone(GameStatus status) {

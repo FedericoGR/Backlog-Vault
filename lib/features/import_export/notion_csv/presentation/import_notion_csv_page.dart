@@ -10,6 +10,8 @@ import '../../../../core/design_system/bv_status_banner.dart';
 import '../../../../core/design_system/bv_surface.dart';
 import '../../../../core/design_system/bv_wizard_step.dart';
 import '../../../../core/formatting/date_formatters.dart';
+import '../../../../l10n/domain_localizations.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../library/domain/game_status.dart';
 import '../../../library/domain/rating.dart';
 import '../application/notion_csv_import_providers.dart';
@@ -41,13 +43,12 @@ class _ImportNotionCsvPageState extends ConsumerState<ImportNotionCsvPage> {
   @override
   Widget build(BuildContext context) {
     return BvPageScaffold(
-      title: 'Importar CSV de Notion',
+      title: context.l10n.csvImportTitle,
       body: ListView(
         children: [
-          const BvStatusBanner(
-            title: 'Flujo de importación',
-            message:
-                'Este flujo crea juegos nuevos a partir del CSV exportado desde Notion. No actualiza juegos existentes y te deja revisar el mapping antes de aplicar cambios.',
+          BvStatusBanner(
+            title: context.l10n.csvFlowTitle,
+            message: context.l10n.csvFlowDescription,
           ),
           if (_error != null) ...[
             const SizedBox(height: BvSpacing.md),
@@ -134,7 +135,7 @@ class _ImportNotionCsvPageState extends ConsumerState<ImportNotionCsvPage> {
     final mapping = _mapping;
     if (document == null || mapping == null) return;
     if (!mapping.hasRequiredFields) {
-      setState(() => _error = 'El mapping necesita una columna para Nombre.');
+      setState(() => _error = context.l10n.csvMappingNeedsName);
       return;
     }
 
@@ -169,18 +170,18 @@ class _ImportNotionCsvPageState extends ConsumerState<ImportNotionCsvPage> {
       builder:
           (context) => AlertDialog(
             scrollable: true,
-            title: const Text('Confirmar importación'),
+            title: Text(context.l10n.csvConfirmTitle),
             content: Text(
-              'Se importarán ${preview.importableCount} juegos. No se actualizarán juegos existentes.',
+              context.l10n.csvConfirmMessage(preview.importableCount),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancelar'),
+                child: Text(context.l10n.cancel),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Importar'),
+                child: Text(context.l10n.csvImportAction),
               ),
             ],
           ),
@@ -218,18 +219,16 @@ class _FileStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BvWizardStep(
-      step: 'Paso 1',
-      title: 'Elegir archivo',
-      subtitle:
-          'Seleccioná el CSV exportado desde Notion. La app detecta delimitador, columnas y cantidad de filas antes de avanzar.',
+      step: context.l10n.stepOne,
+      title: context.l10n.csvChooseFile,
+      subtitle: context.l10n.csvChooseFileDescription,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (document == null)
-            const BvEmptyState(
-              title: 'Todavía no hay archivo seleccionado',
-              message:
-                  'Elegí un CSV para revisar headers, mapping y preview de importación.',
+            BvEmptyState(
+              title: context.l10n.csvNoFile,
+              message: context.l10n.csvNoFileMessage,
               icon: Icons.upload_file_outlined,
             )
           else
@@ -239,9 +238,11 @@ class _FileStep extends StatelessWidget {
                 runSpacing: BvSpacing.sm,
                 children: [
                   BvChip(label: document!.fileName, selected: true),
-                  BvChip(label: '${document!.rowCount} filas'),
-                  BvChip(label: '${document!.headers.length} columnas'),
-                  BvChip(label: 'Delimitador "${document!.delimiter}"'),
+                  BvChip(label: context.l10n.csvRows(document!.rowCount)),
+                  BvChip(
+                    label: context.l10n.csvColumns(document!.headers.length),
+                  ),
+                  BvChip(label: context.l10n.csvDelimiter(document!.delimiter)),
                 ],
               ),
             ),
@@ -255,7 +256,11 @@ class _FileStep extends StatelessWidget {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                     : const Icon(Icons.upload_file_outlined),
-            label: Text(document == null ? 'Seleccionar CSV' : 'Cambiar CSV'),
+            label: Text(
+              document == null
+                  ? context.l10n.csvSelect
+                  : context.l10n.csvChange,
+            ),
           ),
         ],
       ),
@@ -280,17 +285,16 @@ class CsvMappingStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BvWizardStep(
-      step: 'Paso 2',
-      title: 'Mapping de columnas',
-      subtitle:
-          'Definí cómo se interpretan los headers del CSV. Solo Nombre es obligatorio para generar preview.',
+      step: context.l10n.stepTwo,
+      title: context.l10n.csvColumnMapping,
+      subtitle: context.l10n.csvColumnMappingDescription,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!mapping.hasRequiredFields) ...[
-            const BvStatusBanner(
+            BvStatusBanner(
               tone: BvBannerTone.danger,
-              message: 'Falta mapear Nombre antes de generar el preview.',
+              message: context.l10n.csvMissingNameMapping,
             ),
             const SizedBox(height: BvSpacing.md),
           ],
@@ -301,12 +305,13 @@ class CsvMappingStep extends StatelessWidget {
               ),
               initialValue: mapping.headerFor(field),
               decoration: InputDecoration(
-                labelText: '${field.label}${field.isRequired ? ' *' : ''}',
+                labelText:
+                    '${context.l10n.importFieldLabel(field)}${field.isRequired ? ' *' : ''}',
               ),
               items: [
-                const DropdownMenuItem<String?>(
+                DropdownMenuItem<String?>(
                   value: null,
-                  child: Text('No importar'),
+                  child: Text(context.l10n.csvDoNotImport),
                 ),
                 for (final header in document.headers)
                   DropdownMenuItem<String?>(value: header, child: Text(header)),
@@ -319,7 +324,7 @@ class CsvMappingStep extends StatelessWidget {
           FilledButton.icon(
             onPressed: mapping.hasRequiredFields ? onApply : null,
             icon: const Icon(Icons.preview_outlined),
-            label: const Text('Generar preview'),
+            label: Text(context.l10n.csvGeneratePreview),
           ),
         ],
       ),
@@ -344,10 +349,9 @@ class CsvPreviewStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BvWizardStep(
-      step: 'Paso 3',
-      title: 'Preview',
-      subtitle:
-          'Revisá qué filas se importan, cuáles quedan omitidas y dónde aparecen warnings o duplicados.',
+      step: context.l10n.stepThree,
+      title: context.l10n.bulkPreviewTitle,
+      subtitle: context.l10n.csvPreviewDescription,
       trailing: FilledButton.icon(
         onPressed: importing || preview.importableCount == 0 ? null : onImport,
         icon:
@@ -357,7 +361,7 @@ class CsvPreviewStep extends StatelessWidget {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
                 : const Icon(Icons.check_circle_outline),
-        label: const Text('Confirmar importación'),
+        label: Text(context.l10n.csvConfirmImport),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -367,21 +371,20 @@ class CsvPreviewStep extends StatelessWidget {
             runSpacing: BvSpacing.xs,
             children: [
               BvChip(
-                label: '${preview.importableCount} importables',
+                label: context.l10n.csvImportable(preview.importableCount),
                 selected: true,
               ),
-              BvChip(label: '${preview.omittedCount} omitidas'),
-              BvChip(label: '${preview.warningCount} con warnings'),
-              BvChip(label: '${preview.errorCount} con errores'),
-              BvChip(label: '${preview.duplicateCount} duplicadas'),
+              BvChip(label: context.l10n.csvOmitted(preview.omittedCount)),
+              BvChip(label: context.l10n.csvWithWarnings(preview.warningCount)),
+              BvChip(label: context.l10n.csvWithErrors(preview.errorCount)),
+              BvChip(label: context.l10n.csvDuplicates(preview.duplicateCount)),
             ],
           ),
           const SizedBox(height: BvSpacing.md),
           if (preview.rows.isEmpty)
-            const BvEmptyState(
-              title: 'No hay filas para revisar',
-              message:
-                  'El preview no generó resultados visibles para importar.',
+            BvEmptyState(
+              title: context.l10n.csvNoRows,
+              message: context.l10n.csvNoRowsMessage,
               icon: Icons.inbox_outlined,
             )
           else
@@ -433,20 +436,23 @@ class _PreviewRowTile extends StatelessWidget {
                   children: [
                     Text(
                       row.title.isEmpty
-                          ? 'Fila ${row.rowNumber} sin nombre'
+                          ? context.l10n.csvUnnamedRow(row.rowNumber)
                           : row.title,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     if (row.hasErrors)
-                      const BvChip(
-                        label: 'Con errores',
+                      BvChip(
+                        label: context.l10n.csvHasErrors,
                         tone: BvChipTone.danger,
                       ),
                     if (row.hasWarnings)
-                      const BvChip(label: 'Warning', tone: BvChipTone.warning),
+                      BvChip(
+                        label: context.l10n.csvWarning,
+                        tone: BvChipTone.warning,
+                      ),
                     if (row.hasDuplicates)
-                      const BvChip(
-                        label: 'Duplicado',
+                      BvChip(
+                        label: context.l10n.csvDuplicate,
                         tone: BvChipTone.warning,
                       ),
                   ],
@@ -454,7 +460,9 @@ class _PreviewRowTile extends StatelessWidget {
                 const SizedBox(height: BvSpacing.xxs),
                 Text(
                   [
-                    parseGameStatus(row.status.name).label,
+                    context.l10n.gameStatusLabel(
+                      parseGameStatus(row.status.name),
+                    ),
                     if (row.platforms.isNotEmpty) row.platforms.join(', '),
                     if (row.genres.isNotEmpty) row.genres.join(', '),
                     if (row.completedAt != null)
@@ -486,8 +494,8 @@ class _PreviewRowTile extends StatelessWidget {
                         ),
                     child: Text(
                       row.forceCreateDuplicate
-                          ? 'Omitir duplicado'
-                          : 'Crear igual',
+                          ? context.l10n.csvSkipDuplicate
+                          : context.l10n.csvCreateAnyway,
                     ),
                   ),
                 ],
@@ -513,9 +521,9 @@ class ImportResultStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BvWizardStep(
-      step: 'Paso 4',
-      title: 'Resultado',
-      subtitle: 'Resumen de lo que entró realmente a tu biblioteca local.',
+      step: context.l10n.stepFour,
+      title: context.l10n.csvResult,
+      subtitle: context.l10n.csvResultDescription,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -524,21 +532,35 @@ class ImportResultStep extends StatelessWidget {
             runSpacing: BvSpacing.xs,
             children: [
               BvChip(
-                label: 'Importados ${result.importedGames}',
+                label: context.l10n.csvImported(result.importedGames),
                 selected: true,
               ),
-              BvChip(label: 'Omitidas ${result.skippedRows}'),
-              BvChip(label: 'Duplicados ${result.duplicatesSkipped}'),
-              BvChip(label: 'Plataformas ${result.platformsCreated}'),
-              BvChip(label: 'Géneros ${result.genresCreated}'),
-              BvChip(label: 'Partidas ${result.playthroughsCreated}'),
+              BvChip(label: context.l10n.csvSkipped(result.skippedRows)),
+              BvChip(
+                label: context.l10n.csvDuplicateSkipped(
+                  result.duplicatesSkipped,
+                ),
+              ),
+              BvChip(
+                label: context.l10n.csvPlatformsCreated(
+                  result.platformsCreated,
+                ),
+              ),
+              BvChip(
+                label: context.l10n.csvGenresCreated(result.genresCreated),
+              ),
+              BvChip(
+                label: context.l10n.csvPlaythroughsCreated(
+                  result.playthroughsCreated,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: BvSpacing.md),
           FilledButton.icon(
             onPressed: onBackToLibrary,
             icon: const Icon(Icons.library_books_outlined),
-            label: const Text('Volver a biblioteca'),
+            label: Text(context.l10n.csvBackToLibrary),
           ),
         ],
       ),
@@ -555,7 +577,7 @@ class _ErrorBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return BvStatusBanner(
       tone: BvBannerTone.danger,
-      title: 'No se pudo continuar',
+      title: context.l10n.cannotContinue,
       message: message,
     );
   }
