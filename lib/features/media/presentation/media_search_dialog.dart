@@ -56,9 +56,10 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
     final providerName = selectedProvider.displayName;
     final size = MediaQuery.sizeOf(context);
     return Dialog(
+      insetPadding: const EdgeInsets.all(BvSpacing.sm),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: 900,
+          maxWidth: size.width > 960 ? 900 : size.width * 0.94,
           maxHeight: size.height * 0.88,
         ),
         child: Padding(

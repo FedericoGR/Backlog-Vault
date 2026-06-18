@@ -5,6 +5,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/design_system/bv_breakpoints.dart';
 import '../../../core/design_system/bv_chip.dart';
+import '../../../core/design_system/bv_empty_state.dart';
+import '../../../core/design_system/bv_error_state.dart';
+import '../../../core/design_system/bv_loading_state.dart';
 import '../../../core/design_system/bv_panel.dart';
 import '../../../core/design_system/bv_spacing.dart';
 import '../../../core/design_system/bv_theme_extension.dart';
@@ -226,8 +229,12 @@ class _GameListPageState extends ConsumerState<GameListPage> {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => _ErrorState(message: error.toString()),
+        loading: () => const BvLoadingState(label: 'Cargando biblioteca'),
+        error:
+            (error, stackTrace) => BvErrorState(
+              title: 'No se pudo cargar la biblioteca',
+              message: error.toString(),
+            ),
       ),
     );
   }
@@ -290,9 +297,9 @@ class _GameListPageState extends ConsumerState<GameListPage> {
           (context) => StatefulBuilder(
             builder:
                 (context, setDialogState) => AlertDialog(
+                  scrollable: true,
                   title: const Text('Eliminar juegos seleccionados'),
                   content: Column(
-                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -1328,6 +1335,7 @@ class _ColumnsDialogState extends State<_ColumnsDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: const Text('Columnas visibles'),
       content: SizedBox(
         width: 360,
@@ -1367,25 +1375,14 @@ class _EmptyLibraryState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 360),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.library_add_outlined, size: 48),
-            const SizedBox(height: 16),
-            Text(
-              'Todavía no hay juegos en tu biblioteca.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: () => context.go('/games/new'),
-              icon: const Icon(Icons.add),
-              label: const Text('Crear primer juego'),
-            ),
-          ],
+      child: BvEmptyState(
+        title: 'Todavía no hay juegos en tu biblioteca.',
+        message: 'Cuando cargues el primero, el catálogo va a empezar a tomar forma.',
+        icon: Icons.library_add_outlined,
+        action: FilledButton.icon(
+          onPressed: () => context.go('/games/new'),
+          icon: const Icon(Icons.add),
+          label: const Text('Crear primer juego'),
         ),
       ),
     );
@@ -1398,38 +1395,15 @@ class _EmptyFilteredState extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.search_off_outlined, size: 48),
-          const SizedBox(height: 16),
-          Text(
-            'No hay juegos que coincidan con la vista actual.',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 16),
-          OutlinedButton.icon(
-            onPressed: () => _resetTableState(ref),
-            icon: const Icon(Icons.restart_alt),
-            label: const Text('Limpiar filtros'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  const _ErrorState({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text('No se pudo cargar la biblioteca.\n$message'),
+      child: BvEmptyState(
+        title: 'No hay juegos que coincidan con la vista actual.',
+        message: 'Probá aflojar filtros, cambiar la vista guardada o limpiar la búsqueda.',
+        icon: Icons.search_off_outlined,
+        action: OutlinedButton.icon(
+          onPressed: () => _resetTableState(ref),
+          icon: const Icon(Icons.restart_alt),
+          label: const Text('Limpiar filtros'),
+        ),
       ),
     );
   }
@@ -1565,6 +1539,7 @@ Future<void> _deleteCurrentView(
     context: context,
     builder:
         (context) => AlertDialog(
+          scrollable: true,
           title: const Text('Eliminar vista'),
           content: Text('Se eliminará la vista "${view.name}".'),
           actions: [
@@ -1594,6 +1569,7 @@ Future<String?> _askViewName(
     context: context,
     builder:
         (context) => AlertDialog(
+          scrollable: true,
           title: Text(title),
           content: TextField(
             controller: controller,
@@ -1629,6 +1605,7 @@ Future<void> _confirmDelete(
     context: context,
     builder:
         (context) => AlertDialog(
+          scrollable: true,
           title: const Text('Eliminar juego'),
           content: Text('Se ocultará "${row.title}" de la biblioteca.'),
           actions: [
@@ -1702,6 +1679,7 @@ DropdownButtonFormField<int?> _ratingDropdown({
 }) {
   return DropdownButtonFormField<int?>(
     initialValue: value,
+    isExpanded: true,
     decoration: InputDecoration(labelText: label),
     items: const [
       DropdownMenuItem(value: null, child: Text('Sin límite')),

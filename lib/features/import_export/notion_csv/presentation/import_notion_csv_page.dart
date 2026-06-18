@@ -168,6 +168,7 @@ class _ImportNotionCsvPageState extends ConsumerState<ImportNotionCsvPage> {
       context: context,
       builder:
           (context) => AlertDialog(
+            scrollable: true,
             title: const Text('Confirmar importación'),
             content: Text(
               'Se importarán ${preview.importableCount} juegos. No se actualizarán juegos existentes.',

@@ -12,11 +12,20 @@ import 'package:backlog_vault/features/metadata/domain/apply_metadata_request.da
 import 'package:backlog_vault/features/metadata/domain/external_game_details.dart';
 import 'package:backlog_vault/features/metadata/domain/metadata_provider.dart';
 import 'package:backlog_vault/features/metadata/domain/metadata_search_candidate.dart';
+import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  setUpAll(() {
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  });
+
+  tearDownAll(() {
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = false;
+  });
+
   testWidgets('bulk import options stay readable in a narrow viewport', (
     tester,
   ) async {

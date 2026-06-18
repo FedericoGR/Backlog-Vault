@@ -752,6 +752,7 @@ Future<void> _confirmDeleteCover(
     context: context,
     builder:
         (context) => AlertDialog(
+          scrollable: true,
           title: const Text('Quitar portada'),
           content: const Text(
             'La portada se ocultará del juego, sin borrar físicamente tu historial de media.',
@@ -843,6 +844,7 @@ Future<void> _confirmDeletePlaythrough(
     context: context,
     builder:
         (context) => AlertDialog(
+          scrollable: true,
           title: const Text('Eliminar partida'),
           content: const Text('La partida se ocultará del historial.'),
           actions: [
@@ -876,6 +878,7 @@ Future<void> _confirmDelete(
     context: context,
     builder:
         (context) => AlertDialog(
+          scrollable: true,
           title: const Text('Eliminar juego'),
           content: Text('Se ocultará "${item.game.title}" de la biblioteca.'),
           actions: [
@@ -929,6 +932,7 @@ class _CompletionDialogState extends State<_CompletionDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: const Text('Marcar como completado'),
       content: SingleChildScrollView(
         child: Column(
@@ -1044,6 +1048,7 @@ class _PlaythroughDialogState extends State<_PlaythroughDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: Text(
         widget.playthrough == null ? 'Registrar partida' : 'Editar partida',
       ),

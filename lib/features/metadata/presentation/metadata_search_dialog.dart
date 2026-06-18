@@ -64,9 +64,10 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
     final providerName = selectedProvider.displayName;
     final size = MediaQuery.sizeOf(context);
     return Dialog(
+      insetPadding: const EdgeInsets.all(BvSpacing.sm),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: 860,
+          maxWidth: size.width > 920 ? 860 : size.width * 0.94,
           maxHeight: size.height * 0.88,
         ),
         child: Padding(
@@ -356,6 +357,7 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
       context: context,
       builder:
           (context) => AlertDialog(
+            scrollable: true,
             title: const Text('Reemplazar portada'),
             content: const Text(
               'Este juego ya tiene portada seleccionada. ¿Querés reemplazarla por la portada incluida en IGDB?',
@@ -384,6 +386,7 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
       context: context,
       builder:
           (context) => AlertDialog(
+            scrollable: true,
             title: const Text('Reemplazar match externo'),
             content: const Text(
               'Este juego ya tiene otro match externo para este proveedor. ¿Querés reemplazarlo por el candidato seleccionado?',
