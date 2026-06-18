@@ -31,4 +31,16 @@ void main() {
     expect(tableState.filter.textQuery, 'hades');
     expect(tableState.sort.field, LibrarySortField.rating);
   });
+
+  test('list layout mode is available without touching table state', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    container
+        .read(libraryLayoutModeProvider.notifier)
+        .setMode(LibraryLayoutMode.list);
+
+    expect(container.read(libraryLayoutModeProvider), LibraryLayoutMode.list);
+    expect(LibraryLayoutMode.list.label, 'Lista');
+  });
 }

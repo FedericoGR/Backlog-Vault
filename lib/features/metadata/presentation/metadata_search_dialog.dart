@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/design_system/bv_chip.dart';
+import '../../../core/design_system/bv_empty_state.dart';
+import '../../../core/design_system/bv_panel.dart';
+import '../../../core/design_system/bv_spacing.dart';
+import '../../../core/design_system/bv_surface.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../../../core/privacy/privacy_redactor.dart';
 import '../../media/application/media_providers.dart';
@@ -57,15 +62,25 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
     final providers = ref.watch(metadataProviderListProvider);
     final selectedProvider = _providerById(providers, _selectedProviderId);
     final providerName = selectedProvider.displayName;
-    return AlertDialog(
-      title: const Text('Buscar metadata'),
-      content: SizedBox(
-        width: 720,
-        child: SingleChildScrollView(
+    final size = MediaQuery.sizeOf(context);
+    return Dialog(
+      insetPadding: const EdgeInsets.all(BvSpacing.sm),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: size.width > 920 ? 860 : size.width * 0.94,
+          maxHeight: size.height * 0.88,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(BvSpacing.md),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(
+                'Buscar metadata',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: BvSpacing.sm),
               TextField(
                 controller: _queryController,
                 decoration: InputDecoration(
@@ -78,95 +93,122 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
                 ),
                 onSubmitted: (_) => _loading ? null : _search(),
               ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: selectedProvider.providerId,
-                decoration: const InputDecoration(labelText: 'Proveedor'),
-                items: [
-                  for (final provider in providers)
-                    DropdownMenuItem(
-                      value: provider.providerId,
-                      child: Text(provider.displayName),
+              const SizedBox(height: BvSpacing.sm),
+              SizedBox(
+                width: 280,
+                child: DropdownButtonFormField<String>(
+                  initialValue: selectedProvider.providerId,
+                  decoration: const InputDecoration(labelText: 'Proveedor'),
+                  items: [
+                    for (final provider in providers)
+                      DropdownMenuItem(
+                        value: provider.providerId,
+                        child: Text(provider.displayName),
+                      ),
+                  ],
+                  onChanged:
+                      _loading || _applying
+                          ? null
+                          : (value) {
+                            if (value == null) return;
+                            setState(() {
+                              _selectedProviderId = value;
+                              _error = null;
+                              _candidates = const [];
+                              _details = null;
+                              _diff = null;
+                              _selectedFields = {};
+                              _saveIncludedCover = false;
+                            });
+                          },
+                ),
+              ),
+              const SizedBox(height: BvSpacing.md),
+              Expanded(
+                child: SingleChildScrollView(
+                  child:
+                      _loading
+                          ? const Padding(
+                            padding: EdgeInsets.all(BvSpacing.xl),
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                          : _error != null
+                          ? _MetadataError(
+                            message: _error!,
+                            onSettings: _goToSettings,
+                            showSettings:
+                                _error!.contains('API key') ||
+                                _error!.contains('Client ID') ||
+                                _error!.contains('Client Secret'),
+                          )
+                          : _details != null && _diff != null
+                          ? _DiffPreview(
+                            details: _details!,
+                            diff: _diff!,
+                            selectedFields: _selectedFields,
+                            saveIncludedCover: _saveIncludedCover,
+                            hasCurrentCover: widget.item.selectedCover != null,
+                            onChanged: (field, selected) {
+                              setState(() {
+                                selected
+                                    ? _selectedFields.add(field)
+                                    : _selectedFields.remove(field);
+                              });
+                            },
+                            onCoverChanged: (selected) {
+                              setState(() => _saveIncludedCover = selected);
+                            },
+                          )
+                          : _candidates.isEmpty
+                          ? BvEmptyState(
+                            title: 'Sin candidatos todavía',
+                            message:
+                                'Buscá un juego para ver resultados de $providerName.',
+                            icon: Icons.travel_explore_outlined,
+                          )
+                          : _CandidateList(
+                            candidates: _candidates,
+                            onSelected: _selectCandidate,
+                          ),
+                ),
+              ),
+              const SizedBox(height: BvSpacing.sm),
+              OverflowBar(
+                alignment: MainAxisAlignment.end,
+                spacing: BvSpacing.xs,
+                overflowSpacing: BvSpacing.xs,
+                children: [
+                  TextButton(
+                    onPressed:
+                        _applying ? null : () => Navigator.pop(context, false),
+                    child: const Text('Cerrar'),
+                  ),
+                  if (_details != null && _diff != null)
+                    FilledButton.icon(
+                      onPressed:
+                          _applying ? null : () => _apply(replace: false),
+                      icon:
+                          _applying
+                              ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : const Icon(Icons.check),
+                      label: Text(
+                        _selectedFields.isEmpty
+                            ? 'Guardar vínculo'
+                            : 'Aplicar metadata',
+                      ),
                     ),
                 ],
-                onChanged:
-                    _loading || _applying
-                        ? null
-                        : (value) {
-                          if (value == null) return;
-                          setState(() {
-                            _selectedProviderId = value;
-                            _error = null;
-                            _candidates = const [];
-                            _details = null;
-                            _diff = null;
-                            _selectedFields = {};
-                            _saveIncludedCover = false;
-                          });
-                        },
               ),
-              const SizedBox(height: 12),
-              if (_loading)
-                const Center(child: CircularProgressIndicator())
-              else if (_error != null)
-                _MetadataError(
-                  message: _error!,
-                  onSettings: _goToSettings,
-                  showSettings:
-                      _error!.contains('API key') ||
-                      _error!.contains('Client ID') ||
-                      _error!.contains('Client Secret'),
-                )
-              else if (_details != null && _diff != null)
-                _DiffPreview(
-                  details: _details!,
-                  diff: _diff!,
-                  selectedFields: _selectedFields,
-                  saveIncludedCover: _saveIncludedCover,
-                  hasCurrentCover: widget.item.selectedCover != null,
-                  onChanged: (field, selected) {
-                    setState(() {
-                      selected
-                          ? _selectedFields.add(field)
-                          : _selectedFields.remove(field);
-                    });
-                  },
-                  onCoverChanged: (selected) {
-                    setState(() => _saveIncludedCover = selected);
-                  },
-                )
-              else if (_candidates.isEmpty)
-                Text('Buscá un juego para ver candidatos de $providerName.')
-              else
-                _CandidateList(
-                  candidates: _candidates,
-                  onSelected: _selectCandidate,
-                ),
             ],
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: _applying ? null : () => Navigator.pop(context, false),
-          child: const Text('Cerrar'),
-        ),
-        if (_details != null && _diff != null)
-          FilledButton.icon(
-            onPressed: _applying ? null : () => _apply(replace: false),
-            icon:
-                _applying
-                    ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                    : const Icon(Icons.check),
-            label: Text(
-              _selectedFields.isEmpty ? 'Guardar vínculo' : 'Aplicar metadata',
-            ),
-          ),
-      ],
     );
   }
 
@@ -315,6 +357,7 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
       context: context,
       builder:
           (context) => AlertDialog(
+            scrollable: true,
             title: const Text('Reemplazar portada'),
             content: const Text(
               'Este juego ya tiene portada seleccionada. ¿Querés reemplazarla por la portada incluida en IGDB?',
@@ -343,6 +386,7 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
       context: context,
       builder:
           (context) => AlertDialog(
+            scrollable: true,
             title: const Text('Reemplazar match externo'),
             content: const Text(
               'Este juego ya tiene otro match externo para este proveedor. ¿Querés reemplazarlo por el candidato seleccionado?',
@@ -396,23 +440,47 @@ class _CandidateList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (final candidate in candidates)
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.travel_explore_outlined),
-            title: Text(candidate.title),
-            subtitle: Text(
-              [
-                candidate.providerName,
-                'ID ${candidate.externalId}',
-                formatVisibleDate(candidate.releaseDate),
-                _names(candidate.platforms),
-                _names(candidate.genres),
-              ].where((value) => value != '-').join(' · '),
+          Padding(
+            padding: const EdgeInsets.only(bottom: BvSpacing.xs),
+            child: BvSurface(
+              padding: const EdgeInsets.all(BvSpacing.sm),
+              onTap: () => onSelected(candidate),
+              child: Row(
+                children: [
+                  const Icon(Icons.travel_explore_outlined),
+                  const SizedBox(width: BvSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          candidate.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: BvSpacing.xxs),
+                        Text(
+                          [
+                            candidate.providerName,
+                            'ID ${candidate.externalId}',
+                            formatVisibleDate(candidate.releaseDate),
+                            _names(candidate.platforms),
+                            _names(candidate.genres),
+                          ].where((value) => value != '-').join(' · '),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right),
+                ],
+              ),
             ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => onSelected(candidate),
           ),
       ],
     );
@@ -440,46 +508,83 @@ class _DiffPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(details.title, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 4),
-        Text('${details.providerName} · ID ${details.externalId}'),
-        if (details.providerId == 'igdb' && details.cover != null) ...[
-          const SizedBox(height: 8),
-          CheckboxListTile(
-            contentPadding: EdgeInsets.zero,
-            value: saveIncludedCover,
-            onChanged: (value) => onCoverChanged(value ?? false),
-            title: const Text('Guardar portada incluida'),
-            subtitle: Text(
-              hasCurrentCover
-                  ? 'Este juego ya tiene portada. Se pedirá confirmación antes de reemplazarla.'
-                  : 'La portada se guardará localmente y quedará disponible offline.',
-            ),
-          ),
-        ],
-        const SizedBox(height: 12),
-        if (diff.changes.isEmpty)
-          const Text(
-            'No hay campos nuevos para aplicar. Podés guardar el vínculo externo.',
-          )
-        else
-          for (final change in diff.changes)
-            CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              value: selectedFields.contains(change.field),
-              onChanged:
-                  change.canApply && !change.isProtected
-                      ? (value) => onChanged(change.field, value ?? false)
-                      : null,
-              title: Text(change.field.label),
-              subtitle: Text(
-                'Actual: ${change.currentValue}\n${details.providerName}: ${change.externalValue}',
+    return BvPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(details.title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text('${details.providerName} · ID ${details.externalId}'),
+          if (details.providerId == 'igdb' && details.cover != null) ...[
+            const SizedBox(height: BvSpacing.sm),
+            BvSurface(
+              padding: const EdgeInsets.all(BvSpacing.xs),
+              selected: saveIncludedCover,
+              child: Material(
+                color: Colors.transparent,
+                child: CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: saveIncludedCover,
+                  onChanged: (value) => onCoverChanged(value ?? false),
+                  title: const Text('Guardar portada incluida'),
+                  subtitle: Text(
+                    hasCurrentCover
+                        ? 'Este juego ya tiene portada. Se pedirá confirmación antes de reemplazarla.'
+                        : 'La portada se guardará localmente y quedará disponible offline.',
+                  ),
+                ),
               ),
             ),
-      ],
+          ],
+          const SizedBox(height: BvSpacing.md),
+          if (diff.changes.isEmpty)
+            const Text(
+              'No hay campos nuevos para aplicar. Podés guardar el vínculo externo.',
+            )
+          else
+            for (final change in diff.changes)
+              Padding(
+                padding: const EdgeInsets.only(bottom: BvSpacing.xs),
+                child: BvSurface(
+                  padding: EdgeInsets.zero,
+                  selected: selectedFields.contains(change.field),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: CheckboxListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: BvSpacing.sm,
+                        vertical: BvSpacing.xs,
+                      ),
+                      value: selectedFields.contains(change.field),
+                      onChanged:
+                          change.canApply && !change.isProtected
+                              ? (value) =>
+                                  onChanged(change.field, value ?? false)
+                              : null,
+                      title: Wrap(
+                        spacing: BvSpacing.xs,
+                        runSpacing: BvSpacing.xs,
+                        children: [
+                          Text(change.field.label),
+                          if (change.currentValue.trim().isNotEmpty &&
+                              change.currentValue != '-')
+                            const BvChip(
+                              label: 'reemplaza',
+                              tone: BvChipTone.warning,
+                            ),
+                          if (change.isProtected)
+                            const BvChip(label: 'protegido'),
+                        ],
+                      ),
+                      subtitle: Text(
+                        'Actual: ${change.currentValue}\n${details.providerName}: ${change.externalValue}',
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+        ],
+      ),
     );
   }
 }

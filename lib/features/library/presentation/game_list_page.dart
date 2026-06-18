@@ -3,10 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/design_system/bv_breakpoints.dart';
+import '../../../core/design_system/bv_chip.dart';
+import '../../../core/design_system/bv_empty_state.dart';
+import '../../../core/design_system/bv_error_state.dart';
+import '../../../core/design_system/bv_loading_state.dart';
+import '../../../core/design_system/bv_panel.dart';
+import '../../../core/design_system/bv_spacing.dart';
+import '../../../core/design_system/bv_theme_extension.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../../catalogs/data/catalog_repository.dart';
 import '../../games/data/game_repository.dart';
 import '../application/library_default_views.dart';
+import '../application/library_responsive_layout.dart';
 import '../application/library_table_providers.dart';
 import '../application/library_table_state.dart';
 import '../data/library_query_repository.dart';
@@ -17,9 +26,9 @@ import '../domain/library_filter_state.dart';
 import '../domain/library_game_row.dart';
 import '../domain/library_layout_mode.dart';
 import '../domain/library_sort_state.dart';
-import '../domain/library_table_summary.dart';
 import '../domain/rating.dart';
 import '../domain/saved_library_view.dart';
+import 'widgets/library_catalog_widgets.dart';
 import 'widgets/library_cover_thumbnail.dart';
 
 class GameListPage extends ConsumerStatefulWidget {
@@ -31,6 +40,7 @@ class GameListPage extends ConsumerStatefulWidget {
 
 class _GameListPageState extends ConsumerState<GameListPage> {
   bool _selectionMode = false;
+  bool _filtersVisible = true;
   final _selectedEntryIds = <String>{};
 
   @override
@@ -119,8 +129,13 @@ class _GameListPageState extends ConsumerState<GameListPage> {
 
           return LayoutBuilder(
             builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 900;
-              return Column(
+              final isWide = constraints.maxWidth >= BvBreakpoints.libraryWide;
+              final showFilterSidebar = shouldShowLibraryFilterSidebar(
+                width: constraints.maxWidth,
+                layoutMode: layoutMode,
+                filtersVisible: _filtersVisible,
+              );
+              final content = Column(
                 children: [
                   _LibraryToolbar(
                     views: views,
@@ -131,15 +146,28 @@ class _GameListPageState extends ConsumerState<GameListPage> {
                     genres: genres,
                     isWide: isWide,
                     layoutMode: layoutMode,
+                    filtersVisible: _filtersVisible,
+                    canUseFilterSidebar: showFilterSidebar,
+                    onToggleFilters:
+                        constraints.maxWidth >= BvBreakpoints.desktop
+                            ? () => setState(
+                              () => _filtersVisible = !_filtersVisible,
+                            )
+                            : () => _showFiltersPanel(
+                              context,
+                              ref,
+                              platforms,
+                              genres,
+                            ),
                   ),
                   _ActiveFilterChips(
                     filter: tableState.filter,
                     platforms: platforms,
                     genres: genres,
                   ),
-                  _LibrarySummary(summary: result.summary),
+                  LibrarySummaryStrip(summary: result.summary),
                   if (_selectionMode)
-                    _LibraryBulkSelectionBar(
+                    LibrarySelectionBar(
                       selectedCount: _selectedEntryIds.length,
                       visibleCount: visibleIds.length,
                       totalCount: allIds.length,
@@ -157,39 +185,56 @@ class _GameListPageState extends ConsumerState<GameListPage> {
                               : () => _confirmDeleteSelected(context),
                     ),
                   Expanded(
-                    child:
-                        items.isEmpty
-                            ? const _EmptyLibraryState()
-                            : result.rows.isEmpty
-                            ? const _EmptyFilteredState()
-                            : layoutMode == LibraryLayoutMode.gallery
-                            ? _LibraryGalleryGrid(
-                              rows: result.rows,
-                              selectionMode: _selectionMode,
-                              selectedIds: _selectedEntryIds,
-                              onSelectionChanged: _setRowSelected,
-                            )
-                            : isWide
-                            ? _LibraryDataTable(
-                              rows: result.rows,
-                              selectionMode: _selectionMode,
-                              selectedIds: _selectedEntryIds,
-                              onSelectionChanged: _setRowSelected,
-                            )
-                            : _LibraryCardList(
-                              rows: result.rows,
-                              selectionMode: _selectionMode,
-                              selectedIds: _selectedEntryIds,
-                              onSelectionChanged: _setRowSelected,
-                            ),
+                    child: _LibraryContent(
+                      items: items,
+                      rows: result.rows,
+                      layoutMode: layoutMode,
+                      isWide: isWide,
+                      selectionMode: _selectionMode,
+                      selectedIds: _selectedEntryIds,
+                      onSelectionChanged: _setRowSelected,
+                    ),
                   ),
+                ],
+              );
+
+              if (!showFilterSidebar) return content;
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 0, 16),
+                    child: LibraryFilterSidebar(
+                      filter: tableState.filter,
+                      platforms: platforms,
+                      genres: genres,
+                      onEditFilters:
+                          () => _showFiltersPanel(
+                            context,
+                            ref,
+                            platforms,
+                            genres,
+                          ),
+                      onClearFilters: () => _resetTableState(ref),
+                      onToggleStatus: _toggleStatusFilter,
+                      onTogglePlatform: _togglePlatformFilter,
+                      onToggleGenre: _toggleGenreFilter,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: content),
                 ],
               );
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => _ErrorState(message: error.toString()),
+        loading: () => const BvLoadingState(label: 'Cargando biblioteca'),
+        error:
+            (error, stackTrace) => BvErrorState(
+              title: 'No se pudo cargar la biblioteca',
+              message: error.toString(),
+            ),
       ),
     );
   }
@@ -204,6 +249,45 @@ class _GameListPageState extends ConsumerState<GameListPage> {
     });
   }
 
+  void _toggleStatusFilter(GameStatus status) {
+    final current = ref.read(libraryTableStateProvider);
+    final statuses = {...current.filter.statuses};
+    statuses.contains(status) ? statuses.remove(status) : statuses.add(status);
+    ref
+        .read(libraryTableStateProvider.notifier)
+        .setTableState(
+          current.copyWith(filter: current.filter.copyWith(statuses: statuses)),
+        );
+  }
+
+  void _togglePlatformFilter(String platformId) {
+    final current = ref.read(libraryTableStateProvider);
+    final platformIds = {...current.filter.platformIds};
+    platformIds.contains(platformId)
+        ? platformIds.remove(platformId)
+        : platformIds.add(platformId);
+    ref
+        .read(libraryTableStateProvider.notifier)
+        .setTableState(
+          current.copyWith(
+            filter: current.filter.copyWith(platformIds: platformIds),
+          ),
+        );
+  }
+
+  void _toggleGenreFilter(String genreId) {
+    final current = ref.read(libraryTableStateProvider);
+    final genreIds = {...current.filter.genreIds};
+    genreIds.contains(genreId)
+        ? genreIds.remove(genreId)
+        : genreIds.add(genreId);
+    ref
+        .read(libraryTableStateProvider.notifier)
+        .setTableState(
+          current.copyWith(filter: current.filter.copyWith(genreIds: genreIds)),
+        );
+  }
+
   Future<void> _confirmDeleteSelected(BuildContext context) async {
     final count = _selectedEntryIds.length;
     final controller = TextEditingController();
@@ -213,9 +297,9 @@ class _GameListPageState extends ConsumerState<GameListPage> {
           (context) => StatefulBuilder(
             builder:
                 (context, setDialogState) => AlertDialog(
+                  scrollable: true,
                   title: const Text('Eliminar juegos seleccionados'),
                   content: Column(
-                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -262,6 +346,63 @@ class _GameListPageState extends ConsumerState<GameListPage> {
   }
 }
 
+class _LibraryContent extends StatelessWidget {
+  const _LibraryContent({
+    required this.items,
+    required this.rows,
+    required this.layoutMode,
+    required this.isWide,
+    required this.selectionMode,
+    required this.selectedIds,
+    required this.onSelectionChanged,
+  });
+
+  final List<LibraryGameRow> items;
+  final List<LibraryGameRow> rows;
+  final LibraryLayoutMode layoutMode;
+  final bool isWide;
+  final bool selectionMode;
+  final Set<String> selectedIds;
+  final LibraryRowSelectionChanged onSelectionChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) return const _EmptyLibraryState();
+    if (rows.isEmpty) return const _EmptyFilteredState();
+
+    Widget rowActionsBuilder(LibraryGameRow row, bool compact) {
+      return LibraryRowActions(row: row, compact: compact);
+    }
+
+    if (layoutMode == LibraryLayoutMode.gallery) {
+      return LibraryCatalogGrid(
+        rows: rows,
+        selectionMode: selectionMode,
+        selectedIds: selectedIds,
+        onSelectionChanged: onSelectionChanged,
+        rowActionsBuilder: rowActionsBuilder,
+      );
+    }
+
+    if (layoutMode == LibraryLayoutMode.list || !isWide) {
+      return LibraryCatalogList(
+        rows: rows,
+        selectionMode: selectionMode,
+        selectedIds: selectedIds,
+        onSelectionChanged: onSelectionChanged,
+        rowActionsBuilder: rowActionsBuilder,
+      );
+    }
+
+    return _LibraryDataTable(
+      rows: rows,
+      selectionMode: selectionMode,
+      selectedIds: selectedIds,
+      onSelectionChanged: onSelectionChanged,
+    );
+  }
+}
+
 class _LibraryToolbar extends ConsumerStatefulWidget {
   const _LibraryToolbar({
     required this.views,
@@ -272,6 +413,9 @@ class _LibraryToolbar extends ConsumerStatefulWidget {
     required this.genres,
     required this.isWide,
     required this.layoutMode,
+    required this.filtersVisible,
+    required this.canUseFilterSidebar,
+    required this.onToggleFilters,
   });
 
   final List<SavedLibraryView> views;
@@ -282,6 +426,9 @@ class _LibraryToolbar extends ConsumerStatefulWidget {
   final List<LibraryCatalogItem> genres;
   final bool isWide;
   final LibraryLayoutMode layoutMode;
+  final bool filtersVisible;
+  final bool canUseFilterSidebar;
+  final VoidCallback onToggleFilters;
 
   @override
   ConsumerState<_LibraryToolbar> createState() => _LibraryToolbarState();
@@ -315,159 +462,207 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
     final activeView = _viewById(widget.views, widget.activeViewId);
     final selectedViewId = activeView?.id ?? defaultAllGamesViewId;
     final isCustomView = activeView?.isDefault == false;
+    final bv = BvThemeExtension.of(context);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          SizedBox(
-            width: widget.isWide ? 220 : MediaQuery.sizeOf(context).width - 32,
-            child: DropdownButtonFormField<String>(
-              initialValue: selectedViewId,
-              isExpanded: true,
-              decoration: const InputDecoration(
-                labelText: 'Vista',
-                prefixIcon: Icon(Icons.view_column_outlined),
-              ),
-              items: [
-                for (final view in widget.views)
-                  DropdownMenuItem(
-                    value: view.id,
-                    child: Text(view.name, overflow: TextOverflow.ellipsis),
-                  ),
-              ],
-              onChanged: (id) {
-                if (id == null) return;
-                final view = _viewById(widget.views, id);
-                if (view == null) return;
-                ref
-                    .read(libraryTableStateProvider.notifier)
-                    .setTableState(LibraryTableState.fromView(view));
-              },
-            ),
-          ),
-          if (selectedViewId == defaultCompletedYearViewId)
-            SizedBox(
-              width:
-                  widget.isWide ? 150 : MediaQuery.sizeOf(context).width - 32,
-              child: _CompletedYearSelector(filter: widget.filter),
-            ),
-          SizedBox(
-            width: widget.isWide ? 320 : MediaQuery.sizeOf(context).width - 32,
-            child: TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                labelText: 'Buscar',
-                prefixIcon: Icon(Icons.search),
-              ),
-              onChanged: (value) {
-                final current = ref.read(libraryTableStateProvider);
-                ref
-                    .read(libraryTableStateProvider.notifier)
-                    .setTableState(
-                      current.copyWith(
-                        filter: current.filter.copyWith(textQuery: value),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+      child: BvPanel(
+        dense: true,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 760;
+            final fieldWidth = compact ? constraints.maxWidth : 220.0;
+            final searchWidth =
+                compact
+                    ? constraints.maxWidth
+                    : (constraints.maxWidth * 0.25).clamp(280.0, 420.0);
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: fieldWidth,
+                      child: DropdownButtonFormField<String>(
+                        initialValue: selectedViewId,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Vista',
+                          prefixIcon: Icon(Icons.view_column_outlined),
+                        ),
+                        items: [
+                          for (final view in widget.views)
+                            DropdownMenuItem(
+                              value: view.id,
+                              child: Text(
+                                view.name,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                        ],
+                        onChanged: (id) {
+                          if (id == null) return;
+                          final view = _viewById(widget.views, id);
+                          if (view == null) return;
+                          ref
+                              .read(libraryTableStateProvider.notifier)
+                              .setTableState(LibraryTableState.fromView(view));
+                        },
                       ),
-                    );
-              },
-            ),
-          ),
-          OutlinedButton.icon(
-            onPressed:
-                () => _showFiltersDialog(
-                  context,
-                  ref,
-                  widget.platforms,
-                  widget.genres,
-                ),
-            icon: const Icon(Icons.filter_alt_outlined),
-            label: Text('Filtros (${widget.filter.activeCount})'),
-          ),
-          SegmentedButton<LibraryLayoutMode>(
-            showSelectedIcon: false,
-            segments: const [
-              ButtonSegment(
-                value: LibraryLayoutMode.table,
-                icon: Icon(Icons.table_rows_outlined),
-                label: Text('Tabla'),
-              ),
-              ButtonSegment(
-                value: LibraryLayoutMode.gallery,
-                icon: Icon(Icons.grid_view_outlined),
-                label: Text('Galería'),
-              ),
-            ],
-            selected: {widget.layoutMode},
-            onSelectionChanged: (selection) {
-              if (selection.isEmpty) return;
-              ref
-                  .read(libraryLayoutModeProvider.notifier)
-                  .setMode(selection.first);
-            },
-          ),
-          OutlinedButton.icon(
-            onPressed: () => _showColumnsDialog(context, ref),
-            icon: const Icon(Icons.view_week_outlined),
-            label: const Text('Columnas'),
-          ),
-          OutlinedButton.icon(
-            onPressed: () => _resetTableState(ref),
-            icon: const Icon(Icons.restart_alt),
-            label: const Text('Limpiar'),
-          ),
-          FilledButton.icon(
-            onPressed: () => _saveCurrentView(context, ref),
-            icon: const Icon(Icons.bookmark_add_outlined),
-            label: const Text('Guardar vista'),
-          ),
-          if (isCustomView)
-            PopupMenuButton<String>(
-              tooltip: 'Opciones de vista',
-              icon: const Icon(Icons.more_vert),
-              onSelected: (value) {
-                if (activeView == null) return;
-                if (value == 'update') {
-                  _updateCurrentView(context, ref, activeView);
-                }
-                if (value == 'rename') {
-                  _renameCurrentView(context, ref, activeView);
-                }
-                if (value == 'delete') {
-                  _deleteCurrentView(context, ref, activeView);
-                }
-              },
-              itemBuilder:
-                  (context) => const [
-                    PopupMenuItem(
-                      value: 'update',
-                      child: Text('Actualizar vista'),
                     ),
-                    PopupMenuItem(value: 'rename', child: Text('Renombrar')),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Text('Eliminar vista'),
+                    if (selectedViewId == defaultCompletedYearViewId)
+                      SizedBox(
+                        width: compact ? constraints.maxWidth : 150,
+                        child: _CompletedYearSelector(filter: widget.filter),
+                      ),
+                    SizedBox(
+                      width: searchWidth,
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: const InputDecoration(
+                          labelText: 'Buscar',
+                          prefixIcon: Icon(Icons.search),
+                        ),
+                        onChanged: (value) {
+                          final current = ref.read(libraryTableStateProvider);
+                          ref
+                              .read(libraryTableStateProvider.notifier)
+                              .setTableState(
+                                current.copyWith(
+                                  filter: current.filter.copyWith(
+                                    textQuery: value,
+                                  ),
+                                ),
+                              );
+                        },
+                      ),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: widget.onToggleFilters,
+                      icon: Icon(
+                        widget.canUseFilterSidebar && widget.filtersVisible
+                            ? Icons.filter_alt
+                            : Icons.filter_alt_outlined,
+                      ),
+                      label: Text('Filtros (${widget.filter.activeCount})'),
+                    ),
+                    SegmentedButton<LibraryLayoutMode>(
+                      showSelectedIcon: false,
+                      segments: [
+                        ButtonSegment(
+                          value: LibraryLayoutMode.table,
+                          icon: const Icon(Icons.table_rows_outlined),
+                          label: compact ? null : const Text('Tabla'),
+                          tooltip: 'Tabla',
+                        ),
+                        ButtonSegment(
+                          value: LibraryLayoutMode.gallery,
+                          icon: const Icon(Icons.grid_view_outlined),
+                          label: compact ? null : const Text('Galería'),
+                          tooltip: 'Galería',
+                        ),
+                        ButtonSegment(
+                          value: LibraryLayoutMode.list,
+                          icon: const Icon(Icons.view_list_outlined),
+                          label: compact ? null : const Text('Lista'),
+                          tooltip: 'Lista',
+                        ),
+                      ],
+                      selected: {widget.layoutMode},
+                      onSelectionChanged: (selection) {
+                        if (selection.isEmpty) return;
+                        ref
+                            .read(libraryLayoutModeProvider.notifier)
+                            .setMode(selection.first);
+                      },
+                    ),
+                    FilledButton.icon(
+                      onPressed: () => context.go('/games/new'),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Crear juego'),
                     ),
                   ],
-            ),
-          OutlinedButton.icon(
-            onPressed: () => context.go('/import/notion-csv'),
-            icon: const Icon(Icons.upload_file_outlined),
-            label: const Text('Importar CSV'),
-          ),
-          OutlinedButton.icon(
-            onPressed: () => context.go('/metadata/bulk-import'),
-            icon: const Icon(Icons.auto_fix_high_outlined),
-            label: const Text('Importar metadata'),
-          ),
-          FilledButton.icon(
-            onPressed: () => context.go('/games/new'),
-            icon: const Icon(Icons.add),
-            label: const Text('Crear juego'),
-          ),
-        ],
+                ),
+                const SizedBox(height: BvSpacing.xs),
+                Divider(color: bv.border),
+                const SizedBox(height: BvSpacing.xs),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    if (widget.layoutMode == LibraryLayoutMode.table)
+                      OutlinedButton.icon(
+                        onPressed: () => _showColumnsDialog(context, ref),
+                        icon: const Icon(Icons.view_week_outlined),
+                        label: const Text('Columnas'),
+                      ),
+                    OutlinedButton.icon(
+                      onPressed: () => _resetTableState(ref),
+                      icon: const Icon(Icons.restart_alt),
+                      label: const Text('Limpiar'),
+                    ),
+                    FilledButton.tonalIcon(
+                      onPressed: () => _saveCurrentView(context, ref),
+                      icon: const Icon(Icons.bookmark_add_outlined),
+                      label: const Text('Guardar vista'),
+                    ),
+                    PopupMenuButton<String>(
+                      tooltip: 'Acciones de biblioteca',
+                      icon: const Icon(Icons.more_horiz),
+                      onSelected: (value) {
+                        if (value == 'csv') context.go('/import/notion-csv');
+                        if (value == 'metadata') {
+                          context.go('/metadata/bulk-import');
+                        }
+                        if (activeView == null) return;
+                        if (value == 'update') {
+                          _updateCurrentView(context, ref, activeView);
+                        }
+                        if (value == 'rename') {
+                          _renameCurrentView(context, ref, activeView);
+                        }
+                        if (value == 'delete') {
+                          _deleteCurrentView(context, ref, activeView);
+                        }
+                      },
+                      itemBuilder:
+                          (context) => [
+                            const PopupMenuItem(
+                              value: 'csv',
+                              child: Text('Importar CSV'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'metadata',
+                              child: Text('Importar metadata'),
+                            ),
+                            if (isCustomView) ...const [
+                              PopupMenuDivider(),
+                              PopupMenuItem(
+                                value: 'update',
+                                child: Text('Actualizar vista'),
+                              ),
+                              PopupMenuItem(
+                                value: 'rename',
+                                child: Text('Renombrar vista'),
+                              ),
+                              PopupMenuItem(
+                                value: 'delete',
+                                child: Text('Eliminar vista'),
+                              ),
+                            ],
+                          ],
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -564,109 +759,7 @@ class _ActiveFilterChips extends ConsumerWidget {
   }
 
   Widget _chip(String label) {
-    return Chip(label: Text(label));
-  }
-}
-
-class _LibrarySummary extends StatelessWidget {
-  const _LibrarySummary({required this.summary});
-
-  final LibraryTableSummary summary;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            _summaryChip('Juegos', summary.visibleGames.toString()),
-            _summaryChip('Completados', summary.completedCount.toString()),
-            _summaryChip('Horas', summary.totalHours.toStringAsFixed(1)),
-            _summaryChip(
-              'Promedio',
-              summary.averageRating == null
-                  ? '-'
-                  : summary.averageRating!.toStringAsFixed(1),
-            ),
-            _summaryChip('Sin puntaje', summary.missingRating.toString()),
-            _summaryChip('Sin plataforma', summary.missingPlatform.toString()),
-            _summaryChip('Sin género', summary.missingGenre.toString()),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _summaryChip(String label, String value) {
-    return InputChip(onPressed: null, label: Text('$label: $value'));
-  }
-}
-
-class _LibraryBulkSelectionBar extends StatelessWidget {
-  const _LibraryBulkSelectionBar({
-    required this.selectedCount,
-    required this.visibleCount,
-    required this.totalCount,
-    required this.onSelectVisible,
-    required this.onSelectAll,
-    required this.onClear,
-    required this.onDelete,
-  });
-
-  final int selectedCount;
-  final int visibleCount;
-  final int totalCount;
-  final VoidCallback onSelectVisible;
-  final VoidCallback onSelectAll;
-  final VoidCallback onClear;
-  final VoidCallback? onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              InputChip(
-                onPressed: null,
-                label: Text('$selectedCount seleccionados'),
-              ),
-              OutlinedButton(
-                onPressed: visibleCount == 0 ? null : onSelectVisible,
-                child: Text('Seleccionar visibles ($visibleCount)'),
-              ),
-              OutlinedButton(
-                onPressed: totalCount == 0 ? null : onSelectAll,
-                child: Text('Seleccionar todos ($totalCount)'),
-              ),
-              OutlinedButton(
-                onPressed: selectedCount == 0 ? null : onClear,
-                child: const Text('Deseleccionar todos'),
-              ),
-              FilledButton.icon(
-                onPressed: onDelete,
-                icon: const Icon(Icons.delete_outline),
-                label: const Text('Eliminar seleccionados'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return BvChip(label: label, tone: BvChipTone.primary);
   }
 }
 
@@ -686,6 +779,8 @@ class _LibraryDataTable extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(libraryTableStateProvider);
+    final theme = Theme.of(context);
+    final bv = BvThemeExtension.of(context);
     final visibleColumns = state.columnConfig.visibleColumns;
     final sortedColumnIndex = visibleColumns.indexWhere(
       (column) => _sortFieldForColumn(column) == state.sort.field,
@@ -694,8 +789,30 @@ class _LibraryDataTable extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: DataTable2(
-        minWidth: 1150,
+        minWidth: _tableMinWidth(visibleColumns, selectionMode),
         fixedLeftColumns: 1,
+        columnSpacing: 16,
+        horizontalMargin: 10,
+        headingRowHeight: 44,
+        dataRowHeight: 48,
+        dividerThickness: 1,
+        headingTextStyle: theme.textTheme.labelLarge?.copyWith(
+          color: theme.colorScheme.onSurface,
+          fontWeight: FontWeight.w800,
+        ),
+        dataTextStyle: theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurface,
+        ),
+        headingRowColor: WidgetStatePropertyAll(bv.surfaceRaised),
+        dataRowColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return theme.colorScheme.primaryContainer.withValues(alpha: 0.30);
+          }
+          if (states.contains(WidgetState.hovered)) {
+            return theme.colorScheme.primary.withValues(alpha: 0.05);
+          }
+          return null;
+        }),
         sortColumnIndex: sortedColumnIndex == -1 ? null : sortedColumnIndex,
         sortAscending: state.sort.ascending,
         columns: [
@@ -714,7 +831,7 @@ class _LibraryDataTable extends ConsumerWidget {
                       ? null
                       : (index, ascending) => _toggleSort(ref, column),
             ),
-          const DataColumn2(label: Text('Acciones'), fixedWidth: 132),
+          const DataColumn2(label: Text(''), fixedWidth: 56),
         ],
         rows: [
           for (final row in rows)
@@ -740,297 +857,35 @@ class _LibraryDataTable extends ConsumerWidget {
                             ? () => context.go('/games/${row.libraryEntryId}')
                             : null,
                   ),
-                DataCell(LibraryRowActions(row: row)),
+                DataCell(LibraryRowActions(row: row, compact: true)),
               ],
             ),
         ],
       ),
     );
   }
-}
 
-class _LibraryCardList extends ConsumerWidget {
-  const _LibraryCardList({
-    required this.rows,
-    required this.selectionMode,
-    required this.selectedIds,
-    required this.onSelectionChanged,
-  });
-
-  final List<LibraryGameRow> rows;
-  final bool selectionMode;
-  final Set<String> selectedIds;
-  final void Function(String entryId, bool selected) onSelectionChanged;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-      itemCount: rows.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 8),
-      itemBuilder: (context, index) {
-        final row = rows[index];
-        final selected = selectedIds.contains(row.libraryEntryId);
-        return ListTile(
-          shape: RoundedRectangleBorder(
-            side: BorderSide(color: Theme.of(context).dividerColor),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          leading:
-              selectionMode
-                  ? Checkbox(
-                    value: selected,
-                    onChanged:
-                        (value) => onSelectionChanged(
-                          row.libraryEntryId,
-                          value ?? false,
-                        ),
-                  )
-                  : LibraryCoverThumbnail(
-                    localPath: row.selectedCoverLocalPath,
-                    width: 48,
-                    height: 64,
-                  ),
-          title: Text(row.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-          subtitle: Text(
-            [
-              row.status.label,
-              if (row.platforms.isNotEmpty)
-                _names(row.platforms.map((p) => p.name)),
-              if (row.genres.isNotEmpty) _names(row.genres.map((g) => g.name)),
-              formatStarRating(row.personalRating),
-              if (row.hoursPlayed != null)
-                '${row.hoursPlayed!.toStringAsFixed(1)} h',
-            ].join(' · '),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          selected: selected,
-          onTap:
-              selectionMode
-                  ? () => onSelectionChanged(row.libraryEntryId, !selected)
-                  : () => context.go('/games/${row.libraryEntryId}'),
-          trailing: SizedBox(
-            width: 48,
-            child:
-                selectionMode
-                    ? const SizedBox.shrink()
-                    : LibraryRowActions(row: row, compact: true),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _LibraryGalleryGrid extends StatelessWidget {
-  const _LibraryGalleryGrid({
-    required this.rows,
-    required this.selectionMode,
-    required this.selectedIds,
-    required this.onSelectionChanged,
-  });
-
-  final List<LibraryGameRow> rows;
-  final bool selectionMode;
-  final Set<String> selectedIds;
-  final void Function(String entryId, bool selected) onSelectionChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 240,
-        mainAxisExtent: 410,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-      ),
-      itemCount: rows.length,
-      itemBuilder:
-          (context, index) => _LibraryGameCard(
-            row: rows[index],
-            selectionMode: selectionMode,
-            selected: selectedIds.contains(rows[index].libraryEntryId),
-            onSelectionChanged:
-                (selected) =>
-                    onSelectionChanged(rows[index].libraryEntryId, selected),
-          ),
-    );
-  }
-}
-
-class _LibraryGameCard extends StatelessWidget {
-  const _LibraryGameCard({
-    required this.row,
-    required this.selectionMode,
-    required this.selected,
-    required this.onSelectionChanged,
-  });
-
-  final LibraryGameRow row;
-  final bool selectionMode;
-  final bool selected;
-  final ValueChanged<bool> onSelectionChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      margin: EdgeInsets.zero,
-      child: InkWell(
-        onTap:
-            selectionMode
-                ? () => onSelectionChanged(!selected)
-                : () => context.go('/games/${row.libraryEntryId}'),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 210,
-              width: double.infinity,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  LayoutBuilder(
-                    builder:
-                        (context, constraints) => LibraryCoverThumbnail(
-                          localPath: row.selectedCoverLocalPath,
-                          width: constraints.maxWidth,
-                          height: 210,
-                          borderRadius: 0,
-                        ),
-                  ),
-                  if (selectionMode)
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.surface.withValues(alpha: 0.85),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Checkbox(
-                          value: selected,
-                          onChanged:
-                              (value) => onSelectionChanged(value ?? false),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            row.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleMedium,
-                          ),
-                        ),
-                        if (!selectionMode)
-                          LibraryRowActions(row: row, compact: true),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        _compactChip(context, row.status.label),
-                        if (row.personalRating != null)
-                          _compactChip(
-                            context,
-                            formatStarRating(row.personalRating),
-                          ),
-                        if (row.hoursPlayed != null)
-                          _compactChip(
-                            context,
-                            '${row.hoursPlayed!.toStringAsFixed(1)} h',
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    _metadataLine(
-                      context,
-                      Icons.sports_esports_outlined,
-                      _limitedNames(
-                        row.platforms.map((platform) => platform.name),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    _metadataLine(
-                      context,
-                      Icons.category_outlined,
-                      _limitedNames(row.genres.map((genre) => genre.name)),
-                    ),
-                    if (row.completedAt != null) ...[
-                      const SizedBox(height: 4),
-                      _metadataLine(
-                        context,
-                        Icons.emoji_events_outlined,
-                        formatVisibleDate(row.completedAt),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _compactChip(BuildContext context, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(999),
-        color: Theme.of(context).colorScheme.secondaryContainer,
-      ),
-      child: Text(
-        label,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSecondaryContainer,
-        ),
-      ),
-    );
-  }
-
-  Widget _metadataLine(BuildContext context, IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 16,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            text,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ),
-      ],
-    );
+  double _tableMinWidth(
+    List<LibraryColumnKey> visibleColumns,
+    bool selectionMode,
+  ) {
+    var width = selectionMode ? 56.0 : 0.0;
+    for (final column in visibleColumns) {
+      width += switch (column) {
+        LibraryColumnKey.title => 280,
+        LibraryColumnKey.cover => 72,
+        LibraryColumnKey.status => 116,
+        LibraryColumnKey.platforms || LibraryColumnKey.genres => 150,
+        LibraryColumnKey.rating ||
+        LibraryColumnKey.releaseDate ||
+        LibraryColumnKey.completedDate ||
+        LibraryColumnKey.hours ||
+        LibraryColumnKey.type ||
+        LibraryColumnKey.playthroughs => 120,
+        LibraryColumnKey.notes || LibraryColumnKey.updatedAt => 150,
+      };
+    }
+    return (width + 56).clamp(760.0, 1120.0).toDouble();
   }
 }
 
@@ -1183,8 +1038,8 @@ class _FiltersDialogState extends State<_FiltersDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Filtros'),
-      content: SizedBox(
-        width: 720,
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 720),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1480,6 +1335,7 @@ class _ColumnsDialogState extends State<_ColumnsDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: const Text('Columnas visibles'),
       content: SizedBox(
         width: 360,
@@ -1519,25 +1375,14 @@ class _EmptyLibraryState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 360),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.library_add_outlined, size: 48),
-            const SizedBox(height: 16),
-            Text(
-              'Todavía no hay juegos en tu biblioteca.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: () => context.go('/games/new'),
-              icon: const Icon(Icons.add),
-              label: const Text('Crear primer juego'),
-            ),
-          ],
+      child: BvEmptyState(
+        title: 'Todavía no hay juegos en tu biblioteca.',
+        message: 'Cuando cargues el primero, el catálogo va a empezar a tomar forma.',
+        icon: Icons.library_add_outlined,
+        action: FilledButton.icon(
+          onPressed: () => context.go('/games/new'),
+          icon: const Icon(Icons.add),
+          label: const Text('Crear primer juego'),
         ),
       ),
     );
@@ -1550,41 +1395,50 @@ class _EmptyFilteredState extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.search_off_outlined, size: 48),
-          const SizedBox(height: 16),
-          Text(
-            'No hay juegos que coincidan con la vista actual.',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 16),
-          OutlinedButton.icon(
-            onPressed: () => _resetTableState(ref),
-            icon: const Icon(Icons.restart_alt),
-            label: const Text('Limpiar filtros'),
-          ),
-        ],
+      child: BvEmptyState(
+        title: 'No hay juegos que coincidan con la vista actual.',
+        message: 'Probá aflojar filtros, cambiar la vista guardada o limpiar la búsqueda.',
+        icon: Icons.search_off_outlined,
+        action: OutlinedButton.icon(
+          onPressed: () => _resetTableState(ref),
+          icon: const Icon(Icons.restart_alt),
+          label: const Text('Limpiar filtros'),
+        ),
       ),
     );
   }
 }
 
-class _ErrorState extends StatelessWidget {
-  const _ErrorState({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text('No se pudo cargar la biblioteca.\n$message'),
-      ),
+Future<void> _showFiltersPanel(
+  BuildContext context,
+  WidgetRef ref,
+  List<LibraryCatalogItem> platforms,
+  List<LibraryCatalogItem> genres,
+) async {
+  if (MediaQuery.sizeOf(context).width < BvBreakpoints.mobile) {
+    final current = ref.read(libraryTableStateProvider);
+    final result = await showModalBottomSheet<LibraryFilterState>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder:
+          (context) => FractionallySizedBox(
+            heightFactor: 0.92,
+            child: _FiltersDialog(
+              initialFilter: current.filter,
+              platforms: platforms,
+              genres: genres,
+            ),
+          ),
     );
+    if (result == null) return;
+    ref
+        .read(libraryTableStateProvider.notifier)
+        .setTableState(current.copyWith(filter: result));
+    return;
   }
+
+  await _showFiltersDialog(context, ref, platforms, genres);
 }
 
 Future<void> _showFiltersDialog(
@@ -1685,6 +1539,7 @@ Future<void> _deleteCurrentView(
     context: context,
     builder:
         (context) => AlertDialog(
+          scrollable: true,
           title: const Text('Eliminar vista'),
           content: Text('Se eliminará la vista "${view.name}".'),
           actions: [
@@ -1714,6 +1569,7 @@ Future<String?> _askViewName(
     context: context,
     builder:
         (context) => AlertDialog(
+          scrollable: true,
           title: Text(title),
           content: TextField(
             controller: controller,
@@ -1749,6 +1605,7 @@ Future<void> _confirmDelete(
     context: context,
     builder:
         (context) => AlertDialog(
+          scrollable: true,
           title: const Text('Eliminar juego'),
           content: Text('Se ocultará "${row.title}" de la biblioteca.'),
           actions: [
@@ -1822,6 +1679,7 @@ DropdownButtonFormField<int?> _ratingDropdown({
 }) {
   return DropdownButtonFormField<int?>(
     initialValue: value,
+    isExpanded: true,
     decoration: InputDecoration(labelText: label),
     items: const [
       DropdownMenuItem(value: null, child: Text('Sin límite')),
@@ -1879,14 +1737,6 @@ String _names(Iterable<String> values) {
   final list = values.toList();
   if (list.isEmpty) return '-';
   return list.join(', ');
-}
-
-String _limitedNames(Iterable<String> values, {int limit = 2}) {
-  final list = values.toList();
-  if (list.isEmpty) return '-';
-  final visible = list.take(limit).join(', ');
-  final remaining = list.length - limit;
-  return remaining > 0 ? '$visible +$remaining' : visible;
 }
 
 String _namesForIds(Set<String> ids, List<LibraryCatalogItem> items) {

@@ -3,6 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/design_system/bv_chip.dart';
+import '../../../core/design_system/bv_empty_state.dart';
+import '../../../core/design_system/bv_spacing.dart';
+import '../../../core/design_system/bv_surface.dart';
+import '../../../core/design_system/bv_theme_extension.dart';
+import '../../../core/design_system/bv_tokens.dart';
 import '../../../core/privacy/privacy_redactor.dart';
 import '../../games/application/library_game_details.dart';
 import '../application/media_providers.dart';
@@ -48,19 +54,27 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
     final providers = ref.watch(mediaProviderListProvider);
     final selectedProvider = _providerById(providers, _selectedProviderId);
     final providerName = selectedProvider.displayName;
-    return AlertDialog(
-      title: Text(
-        widget.item.selectedCover == null
-            ? 'Buscar portada'
-            : 'Cambiar portada',
-      ),
-      content: SizedBox(
-        width: 760,
-        child: SingleChildScrollView(
+    final size = MediaQuery.sizeOf(context);
+    return Dialog(
+      insetPadding: const EdgeInsets.all(BvSpacing.sm),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: size.width > 960 ? 900 : size.width * 0.94,
+          maxHeight: size.height * 0.88,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(BvSpacing.md),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(
+                widget.item.selectedCover == null
+                    ? 'Buscar portada'
+                    : 'Cambiar portada',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: BvSpacing.sm),
               TextField(
                 controller: _queryController,
                 decoration: InputDecoration(
@@ -75,33 +89,36 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
                   if (!_loading && !_saving) _searchGames();
                 },
               ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: selectedProvider.providerId,
-                decoration: const InputDecoration(labelText: 'Proveedor'),
-                items: [
-                  for (final provider in providers)
-                    DropdownMenuItem(
-                      value: provider.providerId,
-                      child: Text(provider.displayName),
-                    ),
-                ],
-                onChanged:
-                    _loading || _saving
-                        ? null
-                        : (value) {
-                          if (value == null) return;
-                          setState(() {
-                            _selectedProviderId = value;
-                            _error = null;
-                            _candidates = const [];
-                            _selectedCandidate = null;
-                            _assets = const [];
-                            _selectedAsset = null;
-                          });
-                        },
+              const SizedBox(height: BvSpacing.sm),
+              SizedBox(
+                width: 280,
+                child: DropdownButtonFormField<String>(
+                  initialValue: selectedProvider.providerId,
+                  decoration: const InputDecoration(labelText: 'Proveedor'),
+                  items: [
+                    for (final provider in providers)
+                      DropdownMenuItem(
+                        value: provider.providerId,
+                        child: Text(provider.displayName),
+                      ),
+                  ],
+                  onChanged:
+                      _loading || _saving
+                          ? null
+                          : (value) {
+                            if (value == null) return;
+                            setState(() {
+                              _selectedProviderId = value;
+                              _error = null;
+                              _candidates = const [];
+                              _selectedCandidate = null;
+                              _assets = const [];
+                              _selectedAsset = null;
+                            });
+                          },
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: BvSpacing.sm),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -112,8 +129,10 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
                     label: const Text('Usar archivo local'),
                   ),
                   if (_selectedCandidate != null)
-                    InputChip(
-                      label: Text(_selectedCandidate!.title),
+                    BvChip(
+                      label: _selectedCandidate!.title,
+                      icon: Icons.image_search_outlined,
+                      tone: BvChipTone.primary,
                       onDeleted:
                           _loading || _saving
                               ? null
@@ -127,56 +146,75 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
                     ),
                 ],
               ),
-              const SizedBox(height: 12),
-              if (_loading)
-                const Center(child: CircularProgressIndicator())
-              else if (_error != null)
-                _MediaError(
-                  message: _error!,
-                  onSettings: _goToSettings,
-                  showSettings:
-                      _error!.contains('API key') ||
-                      _error!.contains('Client ID') ||
-                      _error!.contains('Client Secret'),
-                )
-              else if (_assets.isNotEmpty)
-                _AssetGrid(
-                  assets: _assets,
-                  selectedAsset: _selectedAsset,
-                  onSelected: (asset) => setState(() => _selectedAsset = asset),
-                )
-              else if (_candidates.isNotEmpty)
-                _CandidateList(
-                  candidates: _candidates,
-                  onSelected: _selectCandidate,
-                )
-              else
-                Text(
-                  'Buscá un juego en $providerName para ver portadas, o elegí un archivo local.',
-                ),
+              const SizedBox(height: BvSpacing.md),
+              Expanded(
+                child:
+                    _loading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _error != null
+                        ? SingleChildScrollView(
+                          child: _MediaError(
+                            message: _error!,
+                            onSettings: _goToSettings,
+                            showSettings:
+                                _error!.contains('API key') ||
+                                _error!.contains('Client ID') ||
+                                _error!.contains('Client Secret'),
+                          ),
+                        )
+                        : _assets.isNotEmpty
+                        ? _AssetGrid(
+                          assets: _assets,
+                          selectedAsset: _selectedAsset,
+                          onSelected:
+                              (asset) => setState(() => _selectedAsset = asset),
+                        )
+                        : _candidates.isNotEmpty
+                        ? SingleChildScrollView(
+                          child: _CandidateList(
+                            candidates: _candidates,
+                            onSelected: _selectCandidate,
+                          ),
+                        )
+                        : BvEmptyState(
+                          title: 'Sin portadas todavía',
+                          message:
+                              'Buscá un juego en $providerName o elegí un archivo local.',
+                          icon: Icons.image_search_outlined,
+                        ),
+              ),
+              const SizedBox(height: BvSpacing.sm),
+              OverflowBar(
+                alignment: MainAxisAlignment.end,
+                spacing: BvSpacing.xs,
+                overflowSpacing: BvSpacing.xs,
+                children: [
+                  TextButton(
+                    onPressed:
+                        _saving ? null : () => Navigator.pop(context, false),
+                    child: const Text('Cerrar'),
+                  ),
+                  if (_selectedAsset != null)
+                    FilledButton.icon(
+                      onPressed: _saving ? null : _saveRemoteAsset,
+                      icon:
+                          _saving
+                              ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : const Icon(Icons.save_alt_outlined),
+                      label: const Text('Guardar portada'),
+                    ),
+                ],
+              ),
             ],
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: _saving ? null : () => Navigator.pop(context, false),
-          child: const Text('Cerrar'),
-        ),
-        if (_selectedAsset != null)
-          FilledButton.icon(
-            onPressed: _saving ? null : _saveRemoteAsset,
-            icon:
-                _saving
-                    ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                    : const Icon(Icons.save_alt_outlined),
-            label: const Text('Guardar portada'),
-          ),
-      ],
     );
   }
 
@@ -335,17 +373,41 @@ class _CandidateList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (final candidate in candidates)
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.image_search_outlined),
-            title: Text(candidate.title),
-            subtitle: Text(
-              '${candidate.providerName} · ID ${candidate.externalId}',
+          Padding(
+            padding: const EdgeInsets.only(bottom: BvSpacing.xs),
+            child: BvSurface(
+              padding: const EdgeInsets.all(BvSpacing.sm),
+              onTap: () => onSelected(candidate),
+              child: Row(
+                children: [
+                  const Icon(Icons.image_search_outlined),
+                  const SizedBox(width: BvSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          candidate.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: BvSpacing.xxs),
+                        Text(
+                          '${candidate.providerName} · ID ${candidate.externalId}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right),
+                ],
+              ),
             ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => onSelected(candidate),
           ),
       ],
     );
@@ -365,35 +427,28 @@ class _AssetGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 420,
-      child: GridView.builder(
-        itemCount: assets.length,
-        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 150,
-          childAspectRatio: 2 / 3,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-        ),
-        itemBuilder: (context, index) {
-          final asset = assets[index];
-          final selected = selectedAsset?.externalId == asset.externalId;
-          return InkWell(
-            borderRadius: BorderRadius.circular(8),
-            onTap: () => onSelected(asset),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color:
-                      selected
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).dividerColor,
-                  width: selected ? 3 : 1,
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(7),
+    final bv = BvThemeExtension.of(context);
+    return GridView.builder(
+      itemCount: assets.length,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 156,
+        childAspectRatio: 2 / 3,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      itemBuilder: (context, index) {
+        final asset = assets[index];
+        final selected = selectedAsset?.externalId == asset.externalId;
+        return BvSurface(
+          padding: EdgeInsets.zero,
+          borderRadius: BvRadii.md,
+          selected: selected,
+          onTap: () => onSelected(asset),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(BvRadii.md),
                 child: Image.network(
                   asset.thumbnailUrl ?? asset.remoteUrl,
                   fit: BoxFit.cover,
@@ -403,10 +458,25 @@ class _AssetGrid extends StatelessWidget {
                       ),
                 ),
               ),
-            ),
-          );
-        },
-      ),
+              if (selected)
+                Positioned(
+                  right: BvSpacing.xs,
+                  top: BvSpacing.xs,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: bv.focus,
+                      borderRadius: BorderRadius.circular(BvRadii.pill),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(4),
+                      child: Icon(Icons.check, size: 16),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

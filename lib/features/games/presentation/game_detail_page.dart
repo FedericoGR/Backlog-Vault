@@ -3,6 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/design_system/bv_breakpoints.dart';
+import '../../../core/design_system/bv_chip.dart';
+import '../../../core/design_system/bv_empty_state.dart';
+import '../../../core/design_system/bv_panel.dart';
+import '../../../core/design_system/bv_section.dart';
+import '../../../core/design_system/bv_spacing.dart';
+import '../../../core/design_system/bv_stat_card.dart';
+import '../../../core/design_system/bv_surface.dart';
+import '../../../core/design_system/bv_theme_extension.dart';
+import '../../../core/design_system/bv_tokens.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../../library/domain/game_status.dart';
 import '../../library/domain/rating.dart';
@@ -68,8 +78,11 @@ class GameDetailPage extends ConsumerWidget {
           ),
           body: LayoutBuilder(
             builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 920;
-              final header = _GameDetailHeader(item: item);
+              final isWide = constraints.maxWidth >= BvBreakpoints.detailWide;
+              final compact = constraints.maxWidth < BvBreakpoints.mobile;
+              final padding = compact ? BvSpacing.pageCompact : BvSpacing.page;
+              final coverPanel = _GameCoverPanel(item: item);
+              final infoPanel = _GameInfoPanel(item: item);
               final progress = _GameProgressSection(
                 item: item,
                 summary: summary,
@@ -78,18 +91,18 @@ class GameDetailPage extends ConsumerWidget {
               final notes = _NotesSection(item: item);
 
               return ListView(
-                padding: const EdgeInsets.all(16),
+                padding: padding,
                 children: [
                   if (isWide)
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          flex: 2,
+                        SizedBox(
+                          width: 300,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              header,
+                              coverPanel,
                               const SizedBox(height: 16),
                               progress,
                             ],
@@ -101,6 +114,8 @@ class GameDetailPage extends ConsumerWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              infoPanel,
+                              const SizedBox(height: 16),
                               playthroughs,
                               const SizedBox(height: 16),
                               notes,
@@ -110,7 +125,9 @@ class GameDetailPage extends ConsumerWidget {
                       ],
                     )
                   else ...[
-                    header,
+                    infoPanel,
+                    const SizedBox(height: 16),
+                    coverPanel,
                     const SizedBox(height: 16),
                     progress,
                     const SizedBox(height: 16),
@@ -137,41 +154,103 @@ class GameDetailPage extends ConsumerWidget {
   }
 }
 
-class _GameDetailHeader extends ConsumerWidget {
-  const _GameDetailHeader({required this.item});
+class _GameInfoPanel extends ConsumerWidget {
+  const _GameInfoPanel({required this.item});
 
   final LibraryGameDetails item;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final bv = BvThemeExtension.of(context);
     final status = parseGameStatus(item.entry.status);
-    return _Section(
-      title: item.game.title,
+    return BvPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  item.game.title,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(width: BvSpacing.sm),
+              PopupMenuButton<String>(
+                tooltip: 'Acciones del juego',
+                onSelected: (value) {
+                  if (value == 'cover') _showMediaDialog(context, ref, item);
+                  if (value == 'metadata') {
+                    _showMetadataDialog(context, ref, item);
+                  }
+                  if (value == 'edit') {
+                    context.go('/games/${item.entry.id}/edit');
+                  }
+                  if (value == 'delete') _confirmDelete(context, ref, item);
+                },
+                itemBuilder:
+                    (context) => const [
+                      PopupMenuItem(
+                        value: 'cover',
+                        child: Text('Cambiar portada'),
+                      ),
+                      PopupMenuItem(
+                        value: 'metadata',
+                        child: Text('Buscar metadata'),
+                      ),
+                      PopupMenuItem(value: 'edit', child: Text('Editar')),
+                      PopupMenuItem(value: 'delete', child: Text('Eliminar')),
+                    ],
+              ),
+            ],
+          ),
+          const SizedBox(height: BvSpacing.xs),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              _GameCoverPanel(item: item),
-              const SizedBox(width: 4),
-              Chip(label: Text(status.label)),
-              Chip(
-                label: Text(
-                  'Puntaje ${formatStarRating(item.entry.personalRating)}',
-                ),
+              BvChip(
+                label: status.label,
+                icon: Icons.bookmark_outline,
+                tone: _statusTone(status),
+                selected: true,
+              ),
+              BvChip(
+                label: formatStarRating(item.entry.personalRating),
+                icon: Icons.star_border,
               ),
               if (item.game.releaseDate != null)
-                Chip(
-                  label: Text(
-                    'Salida ${formatVisibleDate(item.game.releaseDate)}',
-                  ),
+                BvChip(
+                  label: formatVisibleDate(item.game.releaseDate),
+                  icon: Icons.event_outlined,
                 ),
-              Chip(label: Text('Tipo ${_displayGameType(item.game.type)}')),
+              BvChip(
+                label: _displayGameType(item.game.type),
+                icon: Icons.extension_outlined,
+              ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: BvSpacing.md),
+          _MetadataWrap(
+            title: 'Plataformas',
+            icon: Icons.sports_esports_outlined,
+            values: item.platforms.map((platform) => platform.name),
+          ),
+          const SizedBox(height: BvSpacing.sm),
+          _MetadataWrap(
+            title: 'Géneros',
+            icon: Icons.category_outlined,
+            values: item.genres.map((genre) => genre.name),
+          ),
+          const SizedBox(height: BvSpacing.md),
+          Divider(color: bv.border),
+          const SizedBox(height: BvSpacing.sm),
           _QuickProgressActions(item: item),
         ],
       ),
@@ -187,10 +266,10 @@ class _GameCoverPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cover = item.selectedCover;
-    return SizedBox(
-      width: 168,
+    return BvPanel(
+      padding: const EdgeInsets.all(BvSpacing.sm),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AspectRatio(
             aspectRatio: 2 / 3,
@@ -200,11 +279,11 @@ class _GameCoverPanel extends ConsumerWidget {
                     localPath: cover?.localPath,
                     width: constraints.maxWidth,
                     height: constraints.maxHeight,
-                    borderRadius: 8,
+                    borderRadius: BvRadii.md,
                   ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: BvSpacing.sm),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -236,45 +315,57 @@ class _GameProgressSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Section(
-      title: 'Resumen y progreso',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _InfoChip(
-                label: 'Horas',
-                value:
-                    summary.totalHours == null
-                        ? '-'
-                        : summary.totalHours!.toStringAsFixed(1),
-              ),
-              _InfoChip(
-                label: 'Último completado',
-                value: formatVisibleDate(summary.latestCompletedAt),
-              ),
-              _InfoChip(
-                label: 'Partidas',
-                value: summary.playthroughCount.toString(),
-              ),
-              _InfoChip(
-                label: 'Estado',
-                value: parseGameStatus(item.entry.status).label,
-              ),
-              _InfoChip(
-                label: 'Plataformas',
-                value: _names(item.platforms.map((platform) => platform.name)),
-              ),
-              _InfoChip(
-                label: 'Géneros',
-                value: _names(item.genres.map((genre) => genre.name)),
-              ),
-            ],
-          ),
-        ],
+    return BvPanel(
+      dense: true,
+      child: BvSection(
+        title: 'Resumen y progreso',
+        padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                BvStatCard(
+                  label: 'Horas',
+                  value:
+                      summary.totalHours == null
+                          ? '-'
+                          : summary.totalHours!.toStringAsFixed(1),
+                  icon: Icons.timer_outlined,
+                ),
+                BvStatCard(
+                  label: 'Último completado',
+                  value: formatVisibleDate(summary.latestCompletedAt),
+                  icon: Icons.emoji_events_outlined,
+                ),
+                BvStatCard(
+                  label: 'Partidas',
+                  value: summary.playthroughCount.toString(),
+                  icon: Icons.history_outlined,
+                ),
+                BvStatCard(
+                  label: 'Estado',
+                  value: parseGameStatus(item.entry.status).label,
+                  icon: Icons.flag_outlined,
+                ),
+                BvStatCard(
+                  label: 'Plataformas',
+                  value: _names(
+                    item.platforms.map((platform) => platform.name),
+                  ),
+                  icon: Icons.sports_esports_outlined,
+                ),
+                BvStatCard(
+                  label: 'Géneros',
+                  value: _names(item.genres.map((genre) => genre.name)),
+                  icon: Icons.category_outlined,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -288,79 +379,92 @@ class _QuickProgressActions extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final current = parseGameStatus(item.entry.status);
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        FilledButton.tonalIcon(
-          onPressed:
-              _can(current, GameStatus.playing)
-                  ? () => _runProgressAction(
-                    context,
-                    ref,
-                    item,
-                    () => ref
-                        .read(gameRepositoryProvider)
-                        .markPlaying(item.entry.id),
-                  )
-                  : null,
-          icon: const Icon(Icons.play_arrow),
-          label: const Text('Jugando'),
-        ),
-        FilledButton.tonalIcon(
-          onPressed:
-              _can(current, GameStatus.paused)
-                  ? () => _runProgressAction(
-                    context,
-                    ref,
-                    item,
-                    () => ref
-                        .read(gameRepositoryProvider)
-                        .markPaused(item.entry.id),
-                  )
-                  : null,
-          icon: const Icon(Icons.pause),
-          label: const Text('Pausar'),
-        ),
-        FilledButton.icon(
-          onPressed:
-              _can(current, GameStatus.completed)
-                  ? () => _showCompletionDialog(context, ref, item)
-                  : null,
-          icon: const Icon(Icons.check_circle_outline),
-          label: const Text('Completar'),
-        ),
-        FilledButton.tonalIcon(
-          onPressed:
-              _can(current, GameStatus.dropped)
-                  ? () => _runProgressAction(
-                    context,
-                    ref,
-                    item,
-                    () => ref
-                        .read(gameRepositoryProvider)
-                        .markDropped(item.entry.id),
-                  )
-                  : null,
-          icon: const Icon(Icons.cancel_outlined),
-          label: const Text('Abandonar'),
-        ),
-        OutlinedButton.icon(
-          onPressed:
-              _can(current, GameStatus.backlog)
-                  ? () => _runProgressAction(
-                    context,
-                    ref,
-                    item,
-                    () => ref
-                        .read(gameRepositoryProvider)
-                        .markBacklog(item.entry.id),
-                  )
-                  : null,
-          icon: const Icon(Icons.assignment_return_outlined),
-          label: const Text('Volver a pendiente'),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 440;
+        final actions = [
+          _ProgressAction(
+            label: 'Jugando',
+            icon: Icons.play_arrow,
+            onPressed:
+                _can(current, GameStatus.playing)
+                    ? () => _runProgressAction(
+                      context,
+                      ref,
+                      item,
+                      () => ref
+                          .read(gameRepositoryProvider)
+                          .markPlaying(item.entry.id),
+                    )
+                    : null,
+          ),
+          _ProgressAction(
+            label: 'Pausar',
+            icon: Icons.pause,
+            onPressed:
+                _can(current, GameStatus.paused)
+                    ? () => _runProgressAction(
+                      context,
+                      ref,
+                      item,
+                      () => ref
+                          .read(gameRepositoryProvider)
+                          .markPaused(item.entry.id),
+                    )
+                    : null,
+          ),
+          _ProgressAction(
+            label: 'Completar',
+            icon: Icons.check_circle_outline,
+            prominent: true,
+            onPressed:
+                _can(current, GameStatus.completed)
+                    ? () => _showCompletionDialog(context, ref, item)
+                    : null,
+          ),
+          _ProgressAction(
+            label: 'Abandonar',
+            icon: Icons.cancel_outlined,
+            onPressed:
+                _can(current, GameStatus.dropped)
+                    ? () => _runProgressAction(
+                      context,
+                      ref,
+                      item,
+                      () => ref
+                          .read(gameRepositoryProvider)
+                          .markDropped(item.entry.id),
+                    )
+                    : null,
+          ),
+          _ProgressAction(
+            label: 'Pendiente',
+            icon: Icons.assignment_return_outlined,
+            onPressed:
+                _can(current, GameStatus.backlog)
+                    ? () => _runProgressAction(
+                      context,
+                      ref,
+                      item,
+                      () => ref
+                          .read(gameRepositoryProvider)
+                          .markBacklog(item.entry.id),
+                    )
+                    : null,
+          ),
+        ];
+        return Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final action in actions)
+              SizedBox(
+                width: compact ? constraints.maxWidth : null,
+                child: action,
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -378,22 +482,47 @@ class _PlaythroughSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final playthroughs = [...item.playthroughs]
       ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-    return _Section(
-      title: 'Partidas',
-      trailing: FilledButton.icon(
-        onPressed: () => _showPlaythroughDialog(context, ref, item),
-        icon: const Icon(Icons.add),
-        label: const Text('Nueva partida'),
-      ),
-      child:
-          playthroughs.isEmpty
-              ? const Text('No hay partidas registradas.')
-              : Column(
-                children: [
-                  for (final playthrough in playthroughs)
-                    _PlaythroughTile(item: item, playthrough: playthrough),
-                ],
-              ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 520;
+        return BvPanel(
+          child: BvSection(
+            title: 'Partidas',
+            padding: EdgeInsets.zero,
+            trailing:
+                compact
+                    ? IconButton.filledTonal(
+                      tooltip: 'Nueva partida',
+                      onPressed:
+                          () => _showPlaythroughDialog(context, ref, item),
+                      icon: const Icon(Icons.add),
+                    )
+                    : FilledButton.icon(
+                      onPressed:
+                          () => _showPlaythroughDialog(context, ref, item),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Nueva partida'),
+                    ),
+            child:
+                playthroughs.isEmpty
+                    ? const BvEmptyState(
+                      title: 'Sin partidas registradas',
+                      message:
+                          'Cuando juegues o completes una partida aparecerá acá.',
+                      icon: Icons.history_outlined,
+                    )
+                    : Column(
+                      children: [
+                        for (final playthrough in playthroughs)
+                          _PlaythroughTile(
+                            item: item,
+                            playthrough: playthrough,
+                          ),
+                      ],
+                    ),
+          ),
+        );
+      },
     );
   }
 }
@@ -407,39 +536,153 @@ class _PlaythroughTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final status = parsePlaythroughStatus(playthrough.status);
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: const Icon(Icons.sports_esports_outlined),
-      title: Wrap(
-        spacing: 8,
-        runSpacing: 4,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          Text(status.label),
-          Chip(
-            label: Text(_platformName(item.platforms, playthrough.platformId)),
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: BvSpacing.xs),
+      child: BvSurface(
+        padding: const EdgeInsets.symmetric(
+          horizontal: BvSpacing.sm,
+          vertical: BvSpacing.xs,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(top: 6),
+              child: Icon(Icons.sports_esports_outlined, size: 18),
+            ),
+            const SizedBox(width: BvSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      BvChip(
+                        label: status.label,
+                        tone:
+                            status == PlaythroughStatus.completed
+                                ? BvChipTone.primary
+                                : BvChipTone.neutral,
+                      ),
+                      BvChip(
+                        label: _platformName(
+                          item.platforms,
+                          playthrough.platformId,
+                        ),
+                        icon: Icons.videogame_asset_outlined,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: BvSpacing.xxs),
+                  Text(
+                    _playthroughSubtitle(playthrough, item.platforms),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: BvSpacing.xs),
+            PopupMenuButton<String>(
+              tooltip: 'Acciones de partida',
+              onSelected: (value) {
+                if (value == 'edit') {
+                  _showPlaythroughDialog(context, ref, item, playthrough);
+                }
+                if (value == 'delete') {
+                  _confirmDeletePlaythrough(context, ref, item, playthrough);
+                }
+              },
+              itemBuilder:
+                  (context) => const [
+                    PopupMenuItem(value: 'edit', child: Text('Editar')),
+                    PopupMenuItem(value: 'delete', child: Text('Eliminar')),
+                  ],
+            ),
+          ],
+        ),
       ),
-      subtitle: Text(_playthroughSubtitle(playthrough, item.platforms)),
-      trailing: Wrap(
-        spacing: 4,
-        children: [
-          IconButton(
-            tooltip: 'Editar partida',
-            onPressed:
-                () => _showPlaythroughDialog(context, ref, item, playthrough),
-            icon: const Icon(Icons.edit_outlined),
+    );
+  }
+}
+
+class _ProgressAction extends StatelessWidget {
+  const _ProgressAction({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+    this.prominent = false,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final bool prominent;
+
+  @override
+  Widget build(BuildContext context) {
+    if (prominent) {
+      return FilledButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon),
+        label: Text(label),
+      );
+    }
+    return FilledButton.tonalIcon(
+      onPressed: onPressed,
+      icon: Icon(icon),
+      label: Text(label),
+    );
+  }
+}
+
+class _MetadataWrap extends StatelessWidget {
+  const _MetadataWrap({
+    required this.title,
+    required this.icon,
+    required this.values,
+  });
+
+  final String title;
+  final IconData icon;
+  final Iterable<String> values;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bv = BvThemeExtension.of(context);
+    final list = values
+        .where((value) => value.trim().isNotEmpty)
+        .toList(growable: false);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: bv.textMuted),
+            const SizedBox(width: BvSpacing.xxs),
+            Text(
+              title,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: BvSpacing.xs),
+        if (list.isEmpty)
+          Text('-', style: theme.textTheme.bodyMedium)
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [for (final value in list) BvChip(label: value)],
           ),
-          IconButton(
-            tooltip: 'Eliminar partida',
-            onPressed:
-                () =>
-                    _confirmDeletePlaythrough(context, ref, item, playthrough),
-            icon: const Icon(Icons.delete_outline),
-          ),
-        ],
-      ),
+      ],
     );
   }
 }
@@ -451,60 +694,17 @@ class _NotesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Section(
-      title: 'Notas personales',
-      child: Text(
-        item.entry.personalNotes?.trim().isEmpty ?? true
-            ? '-'
-            : item.entry.personalNotes!,
+    return BvPanel(
+      child: BvSection(
+        title: 'Notas personales',
+        padding: EdgeInsets.zero,
+        child: Text(
+          item.entry.personalNotes?.trim().isEmpty ?? true
+              ? '-'
+              : item.entry.personalNotes!,
+        ),
       ),
     );
-  }
-}
-
-class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.child, this.trailing});
-
-  final String title;
-  final Widget child;
-  final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ),
-              if (trailing != null) trailing!,
-            ],
-          ),
-          const SizedBox(height: 8),
-          child,
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoChip extends StatelessWidget {
-  const _InfoChip({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Chip(label: Text('$label: $value'));
   }
 }
 
@@ -552,6 +752,7 @@ Future<void> _confirmDeleteCover(
     context: context,
     builder:
         (context) => AlertDialog(
+          scrollable: true,
           title: const Text('Quitar portada'),
           content: const Text(
             'La portada se ocultará del juego, sin borrar físicamente tu historial de media.',
@@ -643,6 +844,7 @@ Future<void> _confirmDeletePlaythrough(
     context: context,
     builder:
         (context) => AlertDialog(
+          scrollable: true,
           title: const Text('Eliminar partida'),
           content: const Text('La partida se ocultará del historial.'),
           actions: [
@@ -676,6 +878,7 @@ Future<void> _confirmDelete(
     context: context,
     builder:
         (context) => AlertDialog(
+          scrollable: true,
           title: const Text('Eliminar juego'),
           content: Text('Se ocultará "${item.game.title}" de la biblioteca.'),
           actions: [
@@ -729,6 +932,7 @@ class _CompletionDialogState extends State<_CompletionDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: const Text('Marcar como completado'),
       content: SingleChildScrollView(
         child: Column(
@@ -844,6 +1048,7 @@ class _PlaythroughDialogState extends State<_PlaythroughDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: Text(
         widget.playthrough == null ? 'Registrar partida' : 'Editar partida',
       ),
@@ -1073,6 +1278,15 @@ String _displayGameType(String value) {
     'multijugador' || 'multiplayer' => 'Multijugador',
     'cooperativo' || 'cooperative' || 'coop' || 'co-op' => 'Cooperativo',
     _ => 'Sin definir',
+  };
+}
+
+BvChipTone _statusTone(GameStatus status) {
+  return switch (status) {
+    GameStatus.completed || GameStatus.playing => BvChipTone.primary,
+    GameStatus.paused => BvChipTone.warning,
+    GameStatus.dropped || GameStatus.retired => BvChipTone.danger,
+    GameStatus.wishlist || GameStatus.backlog => BvChipTone.neutral,
   };
 }
 

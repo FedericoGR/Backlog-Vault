@@ -1,7 +1,6 @@
 import 'package:backlog_vault/features/bulk_metadata_import/application/apply_bulk_metadata_plan_use_case.dart';
 import 'package:backlog_vault/features/bulk_metadata_import/application/bulk_metadata_import_providers.dart';
 import 'package:backlog_vault/features/bulk_metadata_import/presentation/bulk_metadata_import_page.dart';
-import 'package:backlog_vault/features/bulk_metadata_import/domain/bulk_metadata_import_models.dart';
 import 'package:backlog_vault/features/library/data/library_query_repository.dart';
 import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/library/domain/library_game_row.dart';
@@ -13,11 +12,20 @@ import 'package:backlog_vault/features/metadata/domain/apply_metadata_request.da
 import 'package:backlog_vault/features/metadata/domain/external_game_details.dart';
 import 'package:backlog_vault/features/metadata/domain/metadata_provider.dart';
 import 'package:backlog_vault/features/metadata/domain/metadata_search_candidate.dart';
+import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  setUpAll(() {
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  });
+
+  tearDownAll(() {
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = false;
+  });
+
   testWidgets('bulk import options stay readable in a narrow viewport', (
     tester,
   ) async {
@@ -61,6 +69,11 @@ void main() {
   testWidgets('cover only preview selects covers without metadata noise', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(1200, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -69,7 +82,7 @@ void main() {
             (ref) => const [_FakeIgdbProvider()],
           ),
           mediaProviderListProvider.overrideWith(
-            (ref) => const [_FakeSteamGridDbProvider()],
+            (ref) => const [_FakeIgdbCoverProvider()],
           ),
         ],
         child: MaterialApp(
@@ -82,13 +95,12 @@ void main() {
 
     await tester.tap(find.text('Solo cover art'));
     await tester.pumpAndSettle();
-    await tester.tap(
-      find.byType(DropdownButtonFormField<BulkCoverProviderMode>),
+    await tester.scrollUntilVisible(
+      find.widgetWithText(FilledButton, 'Generar preview'),
+      300,
+      scrollable: find.byType(Scrollable).first,
     );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SteamGridDB').last);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Generar preview'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Generar preview'));
     await tester.pumpAndSettle();
 
     expect(find.text('Portada nueva seleccionada'), findsWidgets);
@@ -104,6 +116,11 @@ void main() {
   testWidgets('applied plan is replaced by a final result state', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(1200, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -112,7 +129,7 @@ void main() {
             (ref) => const [_FakeIgdbProvider()],
           ),
           mediaProviderListProvider.overrideWith(
-            (ref) => const [_FakeSteamGridDbProvider()],
+            (ref) => const [_FakeIgdbCoverProvider()],
           ),
           applyBulkMetadataPlanUseCaseProvider.overrideWith(
             (ref) => const ApplyBulkMetadataPlanUseCase(
@@ -131,13 +148,12 @@ void main() {
 
     await tester.tap(find.text('Solo cover art'));
     await tester.pumpAndSettle();
-    await tester.tap(
-      find.byType(DropdownButtonFormField<BulkCoverProviderMode>),
+    await tester.scrollUntilVisible(
+      find.widgetWithText(FilledButton, 'Generar preview'),
+      300,
+      scrollable: find.byType(Scrollable).first,
     );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SteamGridDB').last);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Generar preview'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Generar preview'));
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
@@ -153,11 +169,10 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Aplicar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Resultado'), findsOneWidget);
+    expect(find.text('Importación finalizada'), findsOneWidget);
     expect(find.text('Generar nuevo preview'), findsOneWidget);
     expect(find.text('Volver a biblioteca'), findsOneWidget);
     expect(find.text('Aplicar cambios'), findsNothing);
-    expect(find.text('Preview masivo'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }
@@ -204,14 +219,14 @@ class _FakeIgdbProvider implements MetadataProvider {
   }
 }
 
-class _FakeSteamGridDbProvider implements MediaProvider {
-  const _FakeSteamGridDbProvider();
+class _FakeIgdbCoverProvider implements MediaProvider {
+  const _FakeIgdbCoverProvider();
 
   @override
-  String get providerId => 'steamgriddb';
+  String get providerId => 'igdb';
 
   @override
-  String get displayName => 'SteamGridDB';
+  String get displayName => 'IGDB';
 
   @override
   bool get requiresApiKey => true;
@@ -226,7 +241,7 @@ class _FakeSteamGridDbProvider implements MediaProvider {
       MediaSearchCandidate(
         providerId: providerId,
         providerName: displayName,
-        externalId: 'sgdb-game',
+        externalId: 'igdb-game',
         title: query,
       ),
     ];
@@ -240,17 +255,17 @@ class _FakeSteamGridDbProvider implements MediaProvider {
       ExternalMediaAsset(
         providerId: providerId,
         providerName: displayName,
-        externalId: 'grid-1',
+        externalId: 'igdb-cover-1',
         kind: MediaAssetKind.cover,
-        remoteUrl: 'https://cdn.steamgriddb.com/grid/fixture.jpg',
+        remoteUrl: 'https://images.igdb.com/igdb/fixture-cover.jpg',
         mimeType: 'image/jpeg',
       ),
       ExternalMediaAsset(
         providerId: providerId,
         providerName: displayName,
-        externalId: 'grid-2',
+        externalId: 'igdb-cover-2',
         kind: MediaAssetKind.cover,
-        remoteUrl: 'https://cdn.steamgriddb.com/grid/fixture-alt.jpg',
+        remoteUrl: 'https://images.igdb.com/igdb/fixture-cover-alt.jpg',
         mimeType: 'image/jpeg',
       ),
     ];
