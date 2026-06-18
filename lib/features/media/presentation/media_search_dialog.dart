@@ -183,16 +183,17 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
                         ),
               ),
               const SizedBox(height: BvSpacing.sm),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              OverflowBar(
+                alignment: MainAxisAlignment.end,
+                spacing: BvSpacing.xs,
+                overflowSpacing: BvSpacing.xs,
                 children: [
                   TextButton(
                     onPressed:
                         _saving ? null : () => Navigator.pop(context, false),
                     child: const Text('Cerrar'),
                   ),
-                  if (_selectedAsset != null) ...[
-                    const SizedBox(width: BvSpacing.xs),
+                  if (_selectedAsset != null)
                     FilledButton.icon(
                       onPressed: _saving ? null : _saveRemoteAsset,
                       icon:
@@ -207,7 +208,6 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
                               : const Icon(Icons.save_alt_outlined),
                       label: const Text('Guardar portada'),
                     ),
-                  ],
                 ],
               ),
             ],

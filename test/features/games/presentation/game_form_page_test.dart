@@ -92,9 +92,55 @@ void main() {
 
     expect(find.text('Completado / partida'), findsOneWidget);
     expect(find.textContaining('Portada pendiente'), findsNothing);
-    expect(find.text('Completado'), findsWidgets);
+    expect(find.text('Editar juego'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'GameFormPage handles many platforms and genres on android viewport',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      when(
+        () => catalogRepository.watchPlatforms(),
+      ).thenAnswer((_) => Stream.value(_densePlatforms));
+      when(
+        () => catalogRepository.watchGenres(),
+      ).thenAnswer((_) => Stream.value(_denseGenres));
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            catalogRepositoryProvider.overrideWith((ref) => catalogRepository),
+            gameRepositoryProvider.overrideWith((ref) => gameRepository),
+          ],
+          child: MaterialApp(
+            theme: buildBacklogVaultDarkTheme(),
+            home: const GameFormPage(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.text('Géneros'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.scrollUntilVisible(
+        find.text('Guardar'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+
+      expect(find.text('Plataformas'), findsOneWidget);
+      expect(find.text('Géneros'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
 
 final _now = DateTime(2026, 6, 16);
@@ -132,6 +178,28 @@ final _genres = [
     deletedAt: null,
   ),
 ];
+
+final _densePlatforms = List.generate(
+  14,
+  (index) => Platform(
+    id: 'platform-$index',
+    name: 'Platform $index With Long Name',
+    createdAt: _now,
+    updatedAt: _now,
+    deletedAt: null,
+  ),
+);
+
+final _denseGenres = List.generate(
+  18,
+  (index) => Genre(
+    id: 'genre-$index',
+    name: 'Genre $index With Long Label',
+    createdAt: _now,
+    updatedAt: _now,
+    deletedAt: null,
+  ),
+);
 
 LibraryGameDetails _details() {
   return LibraryGameDetails(

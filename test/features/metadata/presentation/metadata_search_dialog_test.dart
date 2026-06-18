@@ -92,6 +92,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Guardar portada incluida'), findsOneWidget);
+    expect(find.textContaining('Aplicar metadata'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keeps actions accessible with dense diff content', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          metadataProviderListProvider.overrideWith(
+            (ref) => const [_FakeIgdbProvider(denseDetails: true)],
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(body: MetadataSearchDialog(item: _details())),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Buscar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hades').last);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.textContaining('Aplicar metadata'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+
+    expect(find.text('Guardar portada incluida'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
@@ -127,7 +165,9 @@ LibraryGameDetails _details() {
 }
 
 class _FakeIgdbProvider implements MetadataProvider {
-  const _FakeIgdbProvider();
+  const _FakeIgdbProvider({this.denseDetails = false});
+
+  final bool denseDetails;
 
   @override
   String get providerId => 'igdb';
@@ -158,8 +198,14 @@ class _FakeIgdbProvider implements MetadataProvider {
       externalId: externalId,
       title: 'Hades',
       releaseDate: DateTime(2020, 9, 17),
-      genres: const ['Roguelite'],
-      platforms: const ['PC'],
+      genres:
+          denseDetails
+              ? List.generate(10, (index) => 'Genre $index With Long Name')
+              : const ['Roguelite'],
+      platforms:
+          denseDetails
+              ? List.generate(10, (index) => 'Platform $index With Long Name')
+              : const ['PC'],
       cover: const ExternalGameCover(
         externalId: 'cover-1',
         remoteUrl:

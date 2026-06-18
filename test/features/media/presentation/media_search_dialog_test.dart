@@ -90,6 +90,44 @@ void main() {
     expect(find.byType(GridView), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'MediaSearchDialog keeps save action accessible with many covers',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            mediaProviderListProvider.overrideWith(
+              (ref) => const [
+                _FakeMediaProvider(withAssets: true, denseAssets: true),
+              ],
+            ),
+          ],
+          child: MaterialApp(
+            theme: buildBacklogVaultDarkTheme(),
+            home: Scaffold(body: MediaSearchDialog(item: _details())),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Buscar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Hades').last);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(Image).first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Guardar portada'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
 
 final _now = DateTime(2026, 6, 16);
@@ -123,9 +161,13 @@ LibraryGameDetails _details() {
 }
 
 class _FakeMediaProvider implements MediaProvider {
-  const _FakeMediaProvider({required this.withAssets});
+  const _FakeMediaProvider({
+    required this.withAssets,
+    this.denseAssets = false,
+  });
 
   final bool withAssets;
+  final bool denseAssets;
 
   @override
   MediaProviderCapabilities get capabilities =>
@@ -145,24 +187,17 @@ class _FakeMediaProvider implements MediaProvider {
     String externalGameId,
   ) async {
     if (!withAssets) return const [];
-    return const [
-      ExternalMediaAsset(
+    return List.generate(
+      denseAssets ? 16 : 2,
+      (index) => ExternalMediaAsset(
         providerId: 'steamgriddb',
         providerName: 'SteamGridDB',
-        externalId: 'asset-1',
+        externalId: 'asset-$index',
         kind: MediaAssetKind.cover,
-        remoteUrl: 'https://example.com/cover-1.jpg',
-        thumbnailUrl: 'https://example.com/cover-1.jpg',
+        remoteUrl: 'https://example.com/cover-$index.jpg',
+        thumbnailUrl: 'https://example.com/cover-$index.jpg',
       ),
-      ExternalMediaAsset(
-        providerId: 'steamgriddb',
-        providerName: 'SteamGridDB',
-        externalId: 'asset-2',
-        kind: MediaAssetKind.cover,
-        remoteUrl: 'https://example.com/cover-2.jpg',
-        thumbnailUrl: 'https://example.com/cover-2.jpg',
-      ),
-    ];
+    );
   }
 
   @override

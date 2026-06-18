@@ -86,11 +86,54 @@ void main() {
     expect(find.textContaining('A Very Long Game Title'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'GameDetailPage handles many platforms and genres without overflow',
+    (tester) async {
+      tester.view.physicalSize = const Size(412, 915);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      when(() => gameRepository.getByEntryId('entry-3')).thenAnswer(
+        (_) async =>
+            _details(withCover: false, longTitle: true, denseMetadata: true),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            gameRepositoryProvider.overrideWith((ref) => gameRepository),
+            mediaRepositoryProvider.overrideWith((ref) => mediaRepository),
+          ],
+          child: MaterialApp(
+            theme: buildBacklogVaultDarkTheme(),
+            home: const Scaffold(body: GameDetailPage(entryId: 'entry-3')),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.text('Notas personales'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+
+      expect(find.text('Notas personales'), findsOneWidget);
+      expect(find.text('Plataformas'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
 
 final _now = DateTime(2026, 6, 16);
 
-LibraryGameDetails _details({required bool withCover, bool longTitle = false}) {
+LibraryGameDetails _details({
+  required bool withCover,
+  bool longTitle = false,
+  bool denseMetadata = false,
+}) {
   return LibraryGameDetails(
     game: Game(
       id: 'game-1',
@@ -115,24 +158,48 @@ LibraryGameDetails _details({required bool withCover, bool longTitle = false}) {
       updatedAt: _now,
       deletedAt: null,
     ),
-    platforms: [
-      Platform(
-        id: 'pc',
-        name: 'PC',
-        createdAt: _now,
-        updatedAt: _now,
-        deletedAt: null,
-      ),
-    ],
-    genres: [
-      Genre(
-        id: 'rogue',
-        name: 'Roguelike',
-        createdAt: _now,
-        updatedAt: _now,
-        deletedAt: null,
-      ),
-    ],
+    platforms:
+        denseMetadata
+            ? List.generate(
+              10,
+              (index) => Platform(
+                id: 'platform-$index',
+                name: 'Platform $index With Long Name',
+                createdAt: _now,
+                updatedAt: _now,
+                deletedAt: null,
+              ),
+            )
+            : [
+              Platform(
+                id: 'pc',
+                name: 'PC',
+                createdAt: _now,
+                updatedAt: _now,
+                deletedAt: null,
+              ),
+            ],
+    genres:
+        denseMetadata
+            ? List.generate(
+              12,
+              (index) => Genre(
+                id: 'genre-$index',
+                name: 'Genre $index With Long Label',
+                createdAt: _now,
+                updatedAt: _now,
+                deletedAt: null,
+              ),
+            )
+            : [
+              Genre(
+                id: 'rogue',
+                name: 'Roguelike',
+                createdAt: _now,
+                updatedAt: _now,
+                deletedAt: null,
+              ),
+            ],
     playthroughs: [
       Playthrough(
         id: 'pt-1',

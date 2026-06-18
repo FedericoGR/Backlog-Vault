@@ -482,30 +482,47 @@ class _PlaythroughSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final playthroughs = [...item.playthroughs]
       ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-    return BvPanel(
-      child: BvSection(
-        title: 'Partidas',
-        padding: EdgeInsets.zero,
-        trailing: FilledButton.icon(
-          onPressed: () => _showPlaythroughDialog(context, ref, item),
-          icon: const Icon(Icons.add),
-          label: const Text('Nueva partida'),
-        ),
-        child:
-            playthroughs.isEmpty
-                ? const BvEmptyState(
-                  title: 'Sin partidas registradas',
-                  message:
-                      'Cuando juegues o completes una partida aparecerá acá.',
-                  icon: Icons.history_outlined,
-                )
-                : Column(
-                  children: [
-                    for (final playthrough in playthroughs)
-                      _PlaythroughTile(item: item, playthrough: playthrough),
-                  ],
-                ),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 520;
+        return BvPanel(
+          child: BvSection(
+            title: 'Partidas',
+            padding: EdgeInsets.zero,
+            trailing:
+                compact
+                    ? IconButton.filledTonal(
+                      tooltip: 'Nueva partida',
+                      onPressed:
+                          () => _showPlaythroughDialog(context, ref, item),
+                      icon: const Icon(Icons.add),
+                    )
+                    : FilledButton.icon(
+                      onPressed:
+                          () => _showPlaythroughDialog(context, ref, item),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Nueva partida'),
+                    ),
+            child:
+                playthroughs.isEmpty
+                    ? const BvEmptyState(
+                      title: 'Sin partidas registradas',
+                      message:
+                          'Cuando juegues o completes una partida aparecerá acá.',
+                      icon: Icons.history_outlined,
+                    )
+                    : Column(
+                      children: [
+                        for (final playthrough in playthroughs)
+                          _PlaythroughTile(
+                            item: item,
+                            playthrough: playthrough,
+                          ),
+                      ],
+                    ),
+          ),
+        );
+      },
     );
   }
 }

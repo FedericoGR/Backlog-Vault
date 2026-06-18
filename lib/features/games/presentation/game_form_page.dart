@@ -1282,28 +1282,52 @@ class _DateField extends StatelessWidget {
   Widget build(BuildContext context) {
     return InputDecorator(
       decoration: InputDecoration(labelText: label),
-      child: Row(
-        children: [
-          Expanded(child: Text(formatVisibleDate(value))),
-          TextButton(
-            onPressed: () async {
-              final picked = await showDatePicker(
-                context: context,
-                initialDate: value ?? DateTime.now(),
-                firstDate: DateTime(1970),
-                lastDate: DateTime(2100),
-              );
-              if (picked != null) onChanged(picked);
-            },
-            child: const Text('Elegir'),
-          ),
-          if (value != null)
-            IconButton(
-              tooltip: 'Limpiar',
-              onPressed: () => onChanged(null),
-              icon: const Icon(Icons.clear),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final narrow = constraints.maxWidth < 280;
+          final actions = [
+            TextButton(
+              onPressed: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: value ?? DateTime.now(),
+                  firstDate: DateTime(1970),
+                  lastDate: DateTime(2100),
+                );
+                if (picked != null) onChanged(picked);
+              },
+              child: const Text('Elegir'),
             ),
-        ],
+            if (value != null)
+              IconButton(
+                tooltip: 'Limpiar',
+                onPressed: () => onChanged(null),
+                icon: const Icon(Icons.clear),
+              ),
+          ];
+
+          if (narrow) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(formatVisibleDate(value)),
+                const SizedBox(height: BvSpacing.xs),
+                Wrap(
+                  spacing: BvSpacing.xs,
+                  runSpacing: BvSpacing.xs,
+                  children: actions,
+                ),
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              Expanded(child: Text(formatVisibleDate(value))),
+              ...actions,
+            ],
+          );
+        },
       ),
     );
   }
@@ -1360,16 +1384,10 @@ class _CatalogSelector extends StatelessWidget {
           ],
         ),
         const SizedBox(height: BvSpacing.xs),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: controller,
-                decoration: InputDecoration(labelText: addLabel),
-              ),
-            ),
-            const SizedBox(width: BvSpacing.xs),
-            IconButton.filledTonal(
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final stacked = constraints.maxWidth < 360;
+            final addButton = IconButton.filledTonal(
               tooltip: addLabel,
               onPressed: onCreate,
               icon: const Icon(Icons.add),
@@ -1377,8 +1395,35 @@ class _CatalogSelector extends StatelessWidget {
                 backgroundColor: bv.surfaceHighest,
                 foregroundColor: Theme.of(context).colorScheme.primary,
               ),
-            ),
-          ],
+            );
+
+            if (stacked) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: controller,
+                    decoration: InputDecoration(labelText: addLabel),
+                  ),
+                  const SizedBox(height: BvSpacing.xs),
+                  Align(alignment: Alignment.centerRight, child: addButton),
+                ],
+              );
+            }
+
+            return Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: controller,
+                    decoration: InputDecoration(labelText: addLabel),
+                  ),
+                ),
+                const SizedBox(width: BvSpacing.xs),
+                addButton,
+              ],
+            );
+          },
         ),
       ],
     );
