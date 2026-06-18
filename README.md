@@ -1,15 +1,22 @@
 # Backlog Vault
 
-Backlog Vault es una app personal local-first para gestionar un backlog de videojuegos. La Release Candidate v1 queda preparada para uso local en Windows y Android, con biblioteca offline, metadata opcional, portadas locales, bulk import, backups normales/cifrados y empaquetado portable.
+Backlog Vault es una app personal local-first para gestionar un backlog de videojuegos. La Release Candidate v1 UI refresh queda preparada para uso local en Windows y Android, con biblioteca offline, metadata opcional, portadas locales, bulk import, backups normales/cifrados y empaquetado portable.
 
 ## Release Candidate v1
 
-- Versión de app: `0.1.0+1`.
-- Windows portable: generar con `.\tool\package_windows.ps1`; el ZIP final esperado queda en `dist/BacklogVault-windows-x64-v0.1.0.zip`.
-- Android local: generar con `flutter build apk`; el APK final puede copiarse como `dist/BacklogVault-android-v0.1.0.apk`.
+- Versión de app: `0.1.0+2`.
+- Release tag objetivo: `v0.1.0-rc2`.
+- Windows portable: generar con `.\tool\package_windows.ps1`; el ZIP final esperado queda en `dist/BacklogVault-windows-x64-v0.1.0-rc2.zip`.
+- Android local: generar con `flutter build apk`; el APK final puede copiarse como `dist/BacklogVault-android-v0.1.0-rc2.apk`.
 - Release notes: [docs/release_notes_v1.md](docs/release_notes_v1.md).
 - Instalación y portabilidad: [docs/install_and_portability.md](docs/install_and_portability.md).
 - Checklist QA v1: [docs/qa_v1_checklist.md](docs/qa_v1_checklist.md).
+
+### Qué incluye RC2
+
+- Refresh visual completo Nexus-inspired para Biblioteca, Detalle, Crear/Editar, Metadata, Covers, Home, Estadísticas, Ajustes, Backups e import flows.
+- Design system oscuro reutilizable con panels, chips, cards, banners y estados consistentes.
+- Stabilization responsive final para Windows desktop, desktop mediano y Android.
 
 Limitaciones conocidas de v1: no hay sync automático, la DB SQLite local y la carpeta `media/` no están cifradas at-rest, el APK Android es para instalación personal con signing local/debug y las API keys deben configurarse por dispositivo.
 

@@ -4,7 +4,9 @@ Use a test library or a disposable backup when possible. Do not use real provide
 
 ## RC automated validation status
 
-Last RC validation run: 2026-06-15 on branch `release/v1`.
+Last RC validation run: 2026-06-18 on branch `release/v1`.
+
+This RC includes the Nexus-inspired UI refresh and final responsive stabilization pass across the whole app shell.
 
 - [x] `flutter pub get`
 - [x] `dart run build_runner build`
@@ -34,6 +36,8 @@ Manual app-launch QA was not executed during this RC pass to avoid touching the 
 - [ ] Run bulk metadata import through preview and confirmation.
 - [ ] Toggle table and gallery.
 - [ ] Use filters, search, sort, and saved views.
+- [ ] Verificar tabla / galería / lista sin `RenderFlex overflowed`.
+- [ ] Verificar sidebar de filtros desktop y filtros modal mobile.
 - [ ] Open Home.
 - [ ] Open Statistics.
 - [ ] Create a normal `.vaultbackup`.
@@ -49,6 +53,8 @@ Manual app-launch QA was not executed during this RC pass to avoid touching the 
 - [ ] App installs from `flutter build apk` output.
 - [ ] App opens on a physical device or emulator.
 - [ ] Navigation works on phone-size screen.
+- [ ] Biblioteca no rompe en tabla / galería / lista.
+- [ ] Dialogs de metadata y covers no se salen de pantalla.
 - [ ] Create a game.
 - [ ] Edit a game.
 - [ ] Import CSV through Android file picker.

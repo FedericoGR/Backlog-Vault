@@ -1,12 +1,20 @@
-# Backlog Vault v1 Release Candidate
+# Backlog Vault v1 Release Candidate RC2
 
-Version: `0.1.0+1`
+Version: `0.1.0+2`
 
-Date: 2026-06-15
+Tag objetivo: `v0.1.0-rc2`
+
+Date: 2026-06-18
 
 Backlog Vault v1 RC is a local-first personal game backlog manager for Windows and Android. It is intended for personal use with explicit backup/restore workflows instead of cloud sync.
 
 ## Highlights
+
+- Nexus-inspired UI refresh completo:
+  - biblioteca en tabla / galería / lista con catálogo visual;
+  - sidebar de filtros desktop y modal mobile;
+  - ficha de juego, formularios y dialogs de metadata/covers alineados al mismo design system;
+  - polish visual para Home, Estadísticas, Ajustes, Backups, Import CSV y Bulk Metadata.
 
 - Offline library with SQLite/Drift persistence.
 - Manual game management with soft delete.
@@ -39,8 +47,8 @@ Backlog Vault v1 RC is a local-first personal game backlog manager for Windows a
 
 Expected local artifact paths after packaging:
 
-- `dist/BacklogVault-windows-x64-v0.1.0.zip`
-- `dist/BacklogVault-android-v0.1.0.apk`
+- `dist/BacklogVault-windows-x64-v0.1.0-rc2.zip`
+- `dist/BacklogVault-android-v0.1.0-rc2.apk`
 
 The `dist/` directory is ignored by Git. Artifacts are generated locally and are not committed.
 
