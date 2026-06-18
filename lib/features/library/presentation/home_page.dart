@@ -2,7 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/design_system/bv_action_card.dart';
+import '../../../core/design_system/bv_chip.dart';
+import '../../../core/design_system/bv_empty_state.dart';
+import '../../../core/design_system/bv_error_state.dart';
+import '../../../core/design_system/bv_loading_state.dart';
+import '../../../core/design_system/bv_page_scaffold.dart';
+import '../../../core/design_system/bv_panel.dart';
+import '../../../core/design_system/bv_section.dart';
+import '../../../core/design_system/bv_spacing.dart';
 import '../../../core/design_system/bv_stat_card.dart';
+import '../../../core/design_system/bv_surface.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../application/library_home_summary.dart';
 import '../data/library_query_repository.dart';
@@ -18,54 +28,65 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final rows = ref.watch(libraryRowsProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Inicio'),
-        actions: [
-          TextButton.icon(
-            onPressed: () => context.go('/statistics'),
-            icon: const Icon(Icons.bar_chart_outlined),
-            label: const Text('Estadísticas'),
-          ),
-        ],
-      ),
+    return BvPageScaffold(
+      title: 'Inicio',
+      actions: [
+        TextButton.icon(
+          onPressed: () => context.go('/statistics'),
+          icon: const Icon(Icons.bar_chart_outlined),
+          label: const Text('Estadísticas'),
+        ),
+      ],
       body: rows.when(
         data: (items) {
           final data = buildLibraryHomeData(items);
           if (items.isEmpty) return const _EmptyHomeState();
           return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             children: [
+              _HomeHero(data: data),
+              const SizedBox(height: BvSpacing.md),
               _HomeCounters(data: data),
-              const SizedBox(height: 16),
+              const SizedBox(height: BvSpacing.md),
               _HomeSection(
                 title: 'Jugando ahora',
+                description: 'Lo más activo de tu biblioteca personal.',
                 rows: data.playingNow,
                 emptyText: 'No hay juegos en progreso.',
               ),
+              const SizedBox(height: BvSpacing.md),
               _HomeSection(
                 title: 'Backlog',
+                description: 'Pendientes listos para volver a mirar.',
                 rows: data.backlog,
                 emptyText: 'No hay pendientes en backlog.',
               ),
+              const SizedBox(height: BvSpacing.md),
               _HomeSection(
                 title: 'Completados recientes',
+                description: 'Los últimos cierres con fecha registrada.',
                 rows: data.recentlyCompleted,
                 emptyText: 'No hay completados con fecha registrada.',
                 subtitleFor: (row) => formatVisibleDate(row.completedAt),
               ),
+              const SizedBox(height: BvSpacing.md),
               _HomeSection(
                 title: 'Sin portada',
+                description: 'Entradas que todavía piden una selección visual.',
                 rows: data.missingCover,
                 emptyText: 'Todos los juegos visibles tienen portada.',
               ),
+              const SizedBox(height: BvSpacing.md),
               _HomeSection(
                 title: 'Sin metadata',
+                description: 'Juegos que conviene enriquecer antes de ordenar.',
                 rows: data.missingMetadata,
                 emptyText: 'Todos los juegos visibles tienen metadata externa.',
               ),
+              const SizedBox(height: BvSpacing.md),
               _HomeSection(
                 title: 'Últimos actualizados',
+                description:
+                    'Movimiento reciente en estados, notas y partidas.',
                 rows: data.recentlyUpdated,
                 emptyText: 'No hay actividad reciente.',
                 subtitleFor: (row) => formatVisibleDate(row.updatedAt),
@@ -73,15 +94,79 @@ class HomePage extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const BvLoadingState(label: 'Cargando inicio'),
         error:
-            (error, stackTrace) => Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text('No se pudo cargar el inicio.\n$error'),
-              ),
+            (error, stackTrace) => BvErrorState(
+              title: 'No se pudo cargar el inicio',
+              message: error.toString(),
             ),
       ),
+    );
+  }
+}
+
+class _HomeHero extends StatelessWidget {
+  const _HomeHero({required this.data});
+
+  final LibraryHomeData data;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 760;
+        final primary = BvActionCard(
+          title: 'Biblioteca',
+          subtitle:
+              '${data.totalGames} juegos activos, ${data.completedCount} completados y ${data.playingCount} en progreso.',
+          icon: Icons.library_books_outlined,
+          emphasized: true,
+          actions: [
+            FilledButton.icon(
+              onPressed: () => context.go('/'),
+              icon: const Icon(Icons.library_books_outlined),
+              label: const Text('Abrir biblioteca'),
+            ),
+          ],
+        );
+        final secondary = BvActionCard(
+          title: 'Panel rápido',
+          subtitle:
+              'Saltá a estadísticas o revisá lo que sigue sin portada o metadata.',
+          icon: Icons.dashboard_customize_outlined,
+          actions: [
+            OutlinedButton.icon(
+              onPressed: () => context.go('/statistics'),
+              icon: const Icon(Icons.bar_chart_outlined),
+              label: const Text('Ver estadísticas'),
+            ),
+            OutlinedButton.icon(
+              onPressed: () => context.go('/games/new'),
+              icon: const Icon(Icons.add),
+              label: const Text('Crear juego'),
+            ),
+          ],
+        );
+
+        if (compact) {
+          return Column(
+            children: [
+              primary,
+              const SizedBox(height: BvSpacing.md),
+              secondary,
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(flex: 3, child: primary),
+            const SizedBox(width: BvSpacing.md),
+            Expanded(flex: 2, child: secondary),
+          ],
+        );
+      },
     );
   }
 }
@@ -94,8 +179,8 @@ class _HomeCounters extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: BvSpacing.sm,
+      runSpacing: BvSpacing.sm,
       children: [
         _CounterCard(label: 'Juegos', value: data.totalGames),
         _CounterCard(label: 'Backlog', value: data.backlogCount),
@@ -115,62 +200,57 @@ class _CounterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BvStatCard(label: label, value: value.toString(), minWidth: 132);
+    return BvStatCard(label: label, value: value.toString(), minWidth: 136);
   }
 }
 
 class _HomeSection extends StatelessWidget {
   const _HomeSection({
     required this.title,
+    required this.description,
     required this.rows,
     required this.emptyText,
     this.subtitleFor,
   });
 
   final String title;
+  final String description;
   final List<LibraryGameRow> rows;
   final String emptyText;
   final String Function(LibraryGameRow row)? subtitleFor;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleLarge,
+    return BvPanel(
+      child: BvSection(
+        title: title,
+        subtitle: description,
+        padding: EdgeInsets.zero,
+        trailing: TextButton(
+          onPressed: () => context.go('/'),
+          child: const Text('Ver biblioteca'),
+        ),
+        child:
+            rows.isEmpty
+                ? BvEmptyState(
+                  title: title,
+                  message: emptyText,
+                  icon: Icons.inbox_outlined,
+                )
+                : SizedBox(
+                  height: 280,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: rows.length,
+                    separatorBuilder:
+                        (context, index) => const SizedBox(width: BvSpacing.sm),
+                    itemBuilder:
+                        (context, index) => _HomeGameCard(
+                          row: rows[index],
+                          subtitle: subtitleFor?.call(rows[index]),
+                        ),
+                  ),
                 ),
-              ),
-              TextButton(
-                onPressed: () => context.go('/'),
-                child: const Text('Ver biblioteca'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if (rows.isEmpty)
-            Text(emptyText, style: Theme.of(context).textTheme.bodyMedium)
-          else
-            SizedBox(
-              height: 216,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: rows.length,
-                separatorBuilder: (context, index) => const SizedBox(width: 10),
-                itemBuilder:
-                    (context, index) => _HomeGameCard(
-                      row: rows[index],
-                      subtitle: subtitleFor?.call(rows[index]),
-                    ),
-              ),
-            ),
-        ],
       ),
     );
   }
@@ -185,53 +265,65 @@ class _HomeGameCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 154,
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        margin: EdgeInsets.zero,
-        child: InkWell(
-          onTap: () => context.go('/games/${row.libraryEntryId}'),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              LibraryCoverThumbnail(
-                localPath: row.selectedCoverLocalPath,
-                width: 154,
-                height: 104,
-                borderRadius: 0,
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        row.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.labelLarge,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle ?? row.status.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      if (row.personalRating != null) ...[
-                        const SizedBox(height: 2),
-                        DefaultTextStyle.merge(
-                          style: Theme.of(context).textTheme.bodySmall,
-                          child: RatingStars(rating: row.personalRating),
-                        ),
+      width: 176,
+      child: BvSurface(
+        padding: EdgeInsets.zero,
+        onTap: () => context.go('/games/${row.libraryEntryId}'),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            LibraryCoverThumbnail(
+              localPath: row.selectedCoverLocalPath,
+              width: 176,
+              height: 122,
+              borderRadius: 0,
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(BvSpacing.sm),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      row.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: BvSpacing.xs),
+                    Wrap(
+                      spacing: BvSpacing.xs,
+                      runSpacing: BvSpacing.xs,
+                      children: [
+                        BvChip(label: row.status.label, selected: true),
+                        if (row.personalRating != null)
+                          BvSurface(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: BvSpacing.xs,
+                              vertical: BvSpacing.xxs,
+                            ),
+                            child: RatingStars(rating: row.personalRating),
+                          ),
                       ],
-                    ],
-                  ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      subtitle ??
+                          [
+                            if (row.platforms.isNotEmpty)
+                              row.platforms.first.name,
+                            if (row.hoursPlayed != null)
+                              '${row.hoursPlayed!.toStringAsFixed(1)} h',
+                          ].join(' · '),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -243,27 +335,15 @@ class _EmptyHomeState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 360),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.home_outlined, size: 48),
-            const SizedBox(height: 16),
-            Text(
-              'Tu biblioteca todavía está vacía.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: () => context.go('/games/new'),
-              icon: const Icon(Icons.add),
-              label: const Text('Crear primer juego'),
-            ),
-          ],
-        ),
+    return BvEmptyState(
+      title: 'Tu biblioteca todavía está vacía.',
+      message:
+          'Cuando cargues tus primeros juegos, este panel te va a mostrar actividad, pendientes y calidad de datos.',
+      icon: Icons.home_outlined,
+      action: FilledButton.icon(
+        onPressed: () => context.go('/games/new'),
+        icon: const Icon(Icons.add),
+        label: const Text('Crear primer juego'),
       ),
     );
   }

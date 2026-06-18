@@ -2,7 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/design_system/bv_chip.dart';
+import '../../../core/design_system/bv_empty_state.dart';
+import '../../../core/design_system/bv_error_state.dart';
+import '../../../core/design_system/bv_loading_state.dart';
+import '../../../core/design_system/bv_page_scaffold.dart';
+import '../../../core/design_system/bv_panel.dart';
+import '../../../core/design_system/bv_section.dart';
+import '../../../core/design_system/bv_spacing.dart';
 import '../../../core/design_system/bv_stat_card.dart';
+import '../../../core/design_system/bv_surface.dart';
+import '../../../core/design_system/bv_theme_extension.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../../library/data/library_query_repository.dart';
 import '../../library/domain/game_status.dart';
@@ -25,8 +35,15 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     final rows = ref.watch(libraryRowsProvider);
     final playthroughs = ref.watch(statisticsPlaythroughsProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Estadísticas')),
+    return BvPageScaffold(
+      title: 'Estadísticas',
+      actions: [
+        TextButton.icon(
+          onPressed: () => context.go('/'),
+          icon: const Icon(Icons.library_books_outlined),
+          label: const Text('Biblioteca'),
+        ),
+      ],
       body: rows.when(
         data:
             (items) => playthroughs.when(
@@ -42,16 +59,19 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
                   onYearChanged: (year) => setState(() => _selectedYear = year),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const BvLoadingState(label: 'Cargando progreso'),
               error:
-                  (error, stackTrace) => _ErrorState(
-                    message: 'No se pudo cargar progreso.\n$error',
+                  (error, stackTrace) => BvErrorState(
+                    title: 'No se pudo cargar progreso',
+                    message: error.toString(),
                   ),
             ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const BvLoadingState(label: 'Cargando biblioteca'),
         error:
-            (error, stackTrace) =>
-                _ErrorState(message: 'No se pudo cargar biblioteca.\n$error'),
+            (error, stackTrace) => BvErrorState(
+              title: 'No se pudo cargar estadísticas',
+              message: error.toString(),
+            ),
       ),
     );
   }
@@ -81,47 +101,137 @@ class _StatisticsContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final selectedYearStats = stats.statsForYear(selectedYear);
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       children: [
+        _HeroSummary(stats: stats),
+        const SizedBox(height: BvSpacing.md),
         _SummaryCards(stats: stats),
-        const SizedBox(height: 16),
-        _Section(
-          title: 'Biblioteca por estado',
-          child: _StatusBreakdown(stats: stats),
-        ),
-        _Section(
-          title: 'Progreso anual',
-          trailing: _YearSelector(
-            years: stats.availableYears,
-            selectedYear: selectedYear,
-            onChanged: onYearChanged,
-          ),
-          child: _YearProgress(
-            stats: stats,
-            selectedYearStats: selectedYearStats,
-          ),
-        ),
-        _Section(title: 'Ratings', child: _RatingDistribution(stats: stats)),
-        _Section(
-          title: 'Plataformas más usadas',
-          child: _CategoryBreakdownList(
-            items: stats.platformBreakdown,
-            emptyText: 'No hay plataformas registradas.',
-          ),
-        ),
-        _Section(
-          title: 'Géneros más usados',
-          child: _CategoryBreakdownList(
-            items: stats.genreBreakdown,
-            emptyText: 'No hay géneros registrados.',
-          ),
-        ),
-        _Section(title: 'Calidad de datos', child: _QualityStats(stats: stats)),
-        _Section(
-          title: 'Últimos completados',
-          child: _LatestCompletedList(items: stats.latestCompleted),
+        const SizedBox(height: BvSpacing.md),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final stacked = constraints.maxWidth < 1040;
+            final left = Column(
+              children: [
+                _SectionPanel(
+                  title: 'Biblioteca por estado',
+                  subtitle: 'Distribución rápida del backlog actual.',
+                  child: _StatusBreakdown(stats: stats),
+                ),
+                const SizedBox(height: BvSpacing.md),
+                _SectionPanel(
+                  title: 'Ratings',
+                  subtitle:
+                      'Cómo se reparte tu valoración personal entre los juegos puntuados.',
+                  child: _RatingDistribution(stats: stats),
+                ),
+                const SizedBox(height: BvSpacing.md),
+                _SectionPanel(
+                  title: 'Calidad de datos',
+                  subtitle: 'Huecos de metadata que todavía conviene revisar.',
+                  child: _QualityStats(stats: stats),
+                ),
+              ],
+            );
+            final right = Column(
+              children: [
+                _SectionPanel(
+                  title: 'Progreso anual',
+                  subtitle:
+                      'Playthroughs completados con fecha, más horas registradas por período.',
+                  trailing: _YearSelector(
+                    years: stats.availableYears,
+                    selectedYear: selectedYear,
+                    onChanged: onYearChanged,
+                  ),
+                  child: _YearProgress(
+                    stats: stats,
+                    selectedYearStats: selectedYearStats,
+                  ),
+                ),
+                const SizedBox(height: BvSpacing.md),
+                _SectionPanel(
+                  title: 'Plataformas más usadas',
+                  subtitle: 'Dónde se concentra más actividad jugable.',
+                  child: _CategoryBreakdownList(
+                    items: stats.platformBreakdown,
+                    emptyText: 'No hay plataformas registradas.',
+                  ),
+                ),
+                const SizedBox(height: BvSpacing.md),
+                _SectionPanel(
+                  title: 'Géneros más usados',
+                  subtitle: 'Qué estilos dominan tu biblioteca personal.',
+                  child: _CategoryBreakdownList(
+                    items: stats.genreBreakdown,
+                    emptyText: 'No hay géneros registrados.',
+                  ),
+                ),
+                const SizedBox(height: BvSpacing.md),
+                _SectionPanel(
+                  title: 'Últimos completados',
+                  subtitle: 'Tus cierres más recientes con fecha registrada.',
+                  child: _LatestCompletedList(items: stats.latestCompleted),
+                ),
+              ],
+            );
+
+            if (stacked) {
+              return Column(
+                children: [left, const SizedBox(height: BvSpacing.md), right],
+              );
+            }
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: left),
+                const SizedBox(width: BvSpacing.md),
+                Expanded(child: right),
+              ],
+            );
+          },
         ),
       ],
+    );
+  }
+}
+
+class _HeroSummary extends StatelessWidget {
+  const _HeroSummary({required this.stats});
+
+  final LibraryStatistics stats;
+
+  @override
+  Widget build(BuildContext context) {
+    final bv = BvThemeExtension.of(context);
+    return BvPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: BvSpacing.sm,
+            runSpacing: BvSpacing.sm,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(
+                'Pulso de tu biblioteca',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              BvChip(
+                label:
+                    '${stats.completedCount} completados · ${_formatHours(stats.totalHours)}',
+                selected: true,
+              ),
+            ],
+          ),
+          const SizedBox(height: BvSpacing.xs),
+          Text(
+            'Un vistazo rápido a backlog, progreso y calidad de datos sin salir del mismo catálogo.',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: bv.textMuted),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -134,8 +244,8 @@ class _SummaryCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: BvSpacing.sm,
+      runSpacing: BvSpacing.sm,
       children: [
         _StatCard(label: 'Juegos', value: stats.totalGames.toString()),
         _StatCard(label: 'Backlog', value: stats.backlogCount.toString()),
@@ -168,38 +278,32 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BvStatCard(label: label, value: value, minWidth: 142);
+    return BvStatCard(label: label, value: value, minWidth: 148);
   }
 }
 
-class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.child, this.trailing});
+class _SectionPanel extends StatelessWidget {
+  const _SectionPanel({
+    required this.title,
+    required this.subtitle,
+    required this.child,
+    this.trailing,
+  });
 
   final String title;
+  final String subtitle;
   final Widget child;
   final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ),
-              if (trailing != null) trailing!,
-            ],
-          ),
-          const SizedBox(height: 10),
-          child,
-        ],
+    return BvPanel(
+      child: BvSection(
+        title: title,
+        subtitle: subtitle,
+        padding: EdgeInsets.zero,
+        trailing: trailing,
+        child: child,
       ),
     );
   }
@@ -271,16 +375,16 @@ class _YearProgress extends StatelessWidget {
     final yearlyMax = _maxInt(stats.completedByYear.values);
     final selected = selectedYearStats;
     if (stats.yearlyStatistics.isEmpty) {
-      return const Text('Todavía no hay playthroughs completados con fecha.');
+      return const BvEmptyState(
+        title: 'Todavía no hay progreso anual',
+        message:
+            'Cuando completes partidas con fecha, este panel las resume por año y mes.',
+        icon: Icons.event_note_outlined,
+      );
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'El desglose anual usa playthroughs completados con fecha. Las horas sin fecha quedan fuera del año.',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        const SizedBox(height: 8),
         for (final year in stats.yearlyStatistics)
           _StatBar(
             label: year.year.toString(),
@@ -289,12 +393,12 @@ class _YearProgress extends StatelessWidget {
             trailing: _formatHours(year.hours),
           ),
         if (selected != null) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: BvSpacing.md),
           Text(
             'Meses de ${selected.year}',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: BvSpacing.sm),
           for (final month in selected.monthlyCompletions)
             if (month.completedCount > 0 || month.hours > 0)
               _StatBar(
@@ -326,7 +430,12 @@ class _RatingDistribution extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (distribution.ratedCount == 0)
-          const Text('Todavía no hay puntajes personales registrados.')
+          const BvEmptyState(
+            title: 'Todavía no hay puntajes',
+            message:
+                'Cuando empieces a calificar juegos, esta sección va a mostrar cómo se reparte tu criterio.',
+            icon: Icons.star_border_outlined,
+          )
         else
           for (var rating = 5; rating >= 1; rating--)
             _StatBar(
@@ -334,8 +443,8 @@ class _RatingDistribution extends StatelessWidget {
               value: distribution.countByRating[rating] ?? 0,
               maxValue: maxCount,
             ),
-        const SizedBox(height: 8),
-        Text('Sin puntaje: ${distribution.unratedCount}'),
+        const SizedBox(height: BvSpacing.sm),
+        BvSurface(child: Text('Sin puntaje: ${distribution.unratedCount}')),
       ],
     );
   }
@@ -350,7 +459,13 @@ class _CategoryBreakdownList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (items.isEmpty) return Text(emptyText);
+    if (items.isEmpty) {
+      return BvEmptyState(
+        title: 'Sin datos todavía',
+        message: emptyText,
+        icon: Icons.category_outlined,
+      );
+    }
     final visibleItems = items.take(_limit).toList();
     final maxCount = _maxInt(visibleItems.map((item) => item.count));
     return Column(
@@ -401,31 +516,50 @@ class _LatestCompletedList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const Text('Todavía no hay completados con fecha registrada.');
+      return const BvEmptyState(
+        title: 'Todavía no hay completados',
+        message:
+            'Registrá una fecha de cierre en tus partidas para verlas acá.',
+        icon: Icons.history_toggle_off_outlined,
+      );
     }
     return Column(
       children: [
         for (final item in items)
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              item.row.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Text(formatVisibleDate(item.completedAt)),
-            trailing: SizedBox(
-              width: 72,
-              child: Text(
-                item.hoursPlayed == null
-                    ? '-'
-                    : _formatHours(item.hoursPlayed!),
-                textAlign: TextAlign.end,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+          Padding(
+            padding: const EdgeInsets.only(bottom: BvSpacing.sm),
+            child: BvSurface(
+              onTap: () => context.go('/games/${item.row.libraryEntryId}'),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.row.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: BvSpacing.xxs),
+                        Text(
+                          formatVisibleDate(item.completedAt),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: BvSpacing.sm),
+                  Text(
+                    item.hoursPlayed == null
+                        ? '-'
+                        : _formatHours(item.hoursPlayed!),
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                ],
               ),
             ),
-            onTap: () => context.go('/games/${item.row.libraryEntryId}'),
           ),
       ],
     );
@@ -448,23 +582,52 @@ class _StatBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ratio = maxValue <= 0 ? 0.0 : value / maxValue;
+    final compact = MediaQuery.sizeOf(context).width < 560;
+    final bar = ClipRRect(
+      borderRadius: BorderRadius.circular(999),
+      child: LinearProgressIndicator(value: ratio.clamp(0, 1)),
+    );
+
+    if (compact) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: BvSpacing.xs),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: BvSpacing.sm),
+                Text(
+                  trailing == null ? value.toString() : '$value · $trailing',
+                ),
+              ],
+            ),
+            const SizedBox(height: BvSpacing.xs),
+            bar,
+          ],
+        ),
+      );
+    }
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: BvSpacing.xs),
       child: Row(
         children: [
           SizedBox(
-            width: 150,
+            width: 156,
             child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
           ),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(999),
-              child: LinearProgressIndicator(value: ratio.clamp(0, 1)),
-            ),
-          ),
-          const SizedBox(width: 10),
+          Expanded(child: bar),
+          const SizedBox(width: BvSpacing.sm),
           SizedBox(
-            width: 88,
+            width: 92,
             child: Text(
               trailing == null ? value.toString() : '$value · $trailing',
               textAlign: TextAlign.end,
@@ -483,41 +646,16 @@ class _EmptyStatisticsState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 360),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.bar_chart_outlined, size: 48),
-            const SizedBox(height: 16),
-            Text(
-              'Todavía no hay datos para calcular estadísticas.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: () => context.go('/'),
-              icon: const Icon(Icons.library_books_outlined),
-              label: const Text('Ir a biblioteca'),
-            ),
-          ],
-        ),
+    return BvEmptyState(
+      title: 'Todavía no hay datos para calcular estadísticas.',
+      message:
+          'Cuando cargues juegos y partidas, este panel te va a resumir progreso, ratings y calidad de metadata.',
+      icon: Icons.bar_chart_outlined,
+      action: FilledButton.icon(
+        onPressed: () => context.go('/'),
+        icon: const Icon(Icons.library_books_outlined),
+        label: const Text('Ir a biblioteca'),
       ),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  const _ErrorState({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(padding: const EdgeInsets.all(24), child: Text(message)),
     );
   }
 }

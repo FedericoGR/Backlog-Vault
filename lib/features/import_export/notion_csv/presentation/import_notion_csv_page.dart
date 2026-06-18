@@ -2,17 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/design_system/bv_chip.dart';
+import '../../../../core/design_system/bv_empty_state.dart';
+import '../../../../core/design_system/bv_page_scaffold.dart';
+import '../../../../core/design_system/bv_spacing.dart';
+import '../../../../core/design_system/bv_status_banner.dart';
+import '../../../../core/design_system/bv_surface.dart';
+import '../../../../core/design_system/bv_wizard_step.dart';
 import '../../../../core/formatting/date_formatters.dart';
 import '../../../library/domain/game_status.dart';
 import '../../../library/domain/rating.dart';
 import '../application/notion_csv_import_providers.dart';
+import '../data/notion_csv_import_repository.dart';
 import '../domain/csv_column_mapping.dart';
 import '../domain/csv_document.dart';
 import '../domain/import_field.dart';
 import '../domain/import_preview.dart';
 import '../domain/import_result.dart';
 import '../domain/normalized_import_row.dart';
-import '../data/notion_csv_import_repository.dart';
 
 class ImportNotionCsvPage extends ConsumerStatefulWidget {
   const ImportNotionCsvPage({super.key});
@@ -33,22 +40,27 @@ class _ImportNotionCsvPageState extends ConsumerState<ImportNotionCsvPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Importar CSV de Notion')),
+    return BvPageScaffold(
+      title: 'Importar CSV de Notion',
       body: ListView(
-        padding: const EdgeInsets.all(16),
         children: [
+          const BvStatusBanner(
+            title: 'Flujo de importación',
+            message:
+                'Este flujo crea juegos nuevos a partir del CSV exportado desde Notion. No actualiza juegos existentes y te deja revisar el mapping antes de aplicar cambios.',
+          ),
           if (_error != null) ...[
+            const SizedBox(height: BvSpacing.md),
             _ErrorBanner(message: _error!),
-            const SizedBox(height: 16),
           ],
+          const SizedBox(height: BvSpacing.md),
           _FileStep(
             document: _document,
             loading: _loading,
             onPickFile: _pickFile,
           ),
           if (_document != null && _mapping != null && _result == null) ...[
-            const SizedBox(height: 24),
+            const SizedBox(height: BvSpacing.md),
             CsvMappingStep(
               document: _document!,
               mapping: _mapping!,
@@ -62,7 +74,7 @@ class _ImportNotionCsvPageState extends ConsumerState<ImportNotionCsvPage> {
             ),
           ],
           if (_preview != null && _result == null) ...[
-            const SizedBox(height: 24),
+            const SizedBox(height: BvSpacing.md),
             CsvPreviewStep(
               preview: _preview!,
               importing: _importing,
@@ -73,7 +85,7 @@ class _ImportNotionCsvPageState extends ConsumerState<ImportNotionCsvPage> {
             ),
           ],
           if (_result != null) ...[
-            const SizedBox(height: 24),
+            const SizedBox(height: BvSpacing.md),
             ImportResultStep(
               result: _result!,
               onBackToLibrary: () => context.go('/'),
@@ -158,8 +170,7 @@ class _ImportNotionCsvPageState extends ConsumerState<ImportNotionCsvPage> {
           (context) => AlertDialog(
             title: const Text('Confirmar importación'),
             content: Text(
-              'Se importarán ${preview.importableCount} juegos. '
-              'No se actualizarán juegos existentes.',
+              'Se importarán ${preview.importableCount} juegos. No se actualizarán juegos existentes.',
             ),
             actions: [
               TextButton(
@@ -205,35 +216,47 @@ class _FileStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Archivo CSV', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            if (document == null)
-              const Text('Seleccioná un CSV exportado desde Notion.')
-            else
-              Text(
-                '${document!.fileName} · ${document!.rowCount} filas · '
-                '${document!.headers.length} columnas · delimitador "${document!.delimiter}"',
+    return BvWizardStep(
+      step: 'Paso 1',
+      title: 'Elegir archivo',
+      subtitle:
+          'Seleccioná el CSV exportado desde Notion. La app detecta delimitador, columnas y cantidad de filas antes de avanzar.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (document == null)
+            const BvEmptyState(
+              title: 'Todavía no hay archivo seleccionado',
+              message:
+                  'Elegí un CSV para revisar headers, mapping y preview de importación.',
+              icon: Icons.upload_file_outlined,
+            )
+          else
+            BvSurface(
+              child: Wrap(
+                spacing: BvSpacing.sm,
+                runSpacing: BvSpacing.sm,
+                children: [
+                  BvChip(label: document!.fileName, selected: true),
+                  BvChip(label: '${document!.rowCount} filas'),
+                  BvChip(label: '${document!.headers.length} columnas'),
+                  BvChip(label: 'Delimitador "${document!.delimiter}"'),
+                ],
               ),
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: loading ? null : onPickFile,
-              icon:
-                  loading
-                      ? const SizedBox.square(
-                        dimension: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                      : const Icon(Icons.upload_file_outlined),
-              label: Text(document == null ? 'Seleccionar CSV' : 'Cambiar CSV'),
             ),
-          ],
-        ),
+          const SizedBox(height: BvSpacing.md),
+          FilledButton.icon(
+            onPressed: loading ? null : onPickFile,
+            icon:
+                loading
+                    ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : const Icon(Icons.upload_file_outlined),
+            label: Text(document == null ? 'Seleccionar CSV' : 'Cambiar CSV'),
+          ),
+        ],
       ),
     );
   }
@@ -255,55 +278,49 @@ class CsvMappingStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Mapping de columnas',
-              style: Theme.of(context).textTheme.titleLarge,
+    return BvWizardStep(
+      step: 'Paso 2',
+      title: 'Mapping de columnas',
+      subtitle:
+          'Definí cómo se interpretan los headers del CSV. Solo Nombre es obligatorio para generar preview.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!mapping.hasRequiredFields) ...[
+            const BvStatusBanner(
+              tone: BvBannerTone.danger,
+              message: 'Falta mapear Nombre antes de generar el preview.',
             ),
-            const SizedBox(height: 8),
-            if (!mapping.hasRequiredFields)
-              const Text(
-                'Falta mapear Nombre.',
-                style: TextStyle(color: Colors.red),
-              ),
-            const SizedBox(height: 8),
-            for (final field in ImportField.values) ...[
-              DropdownButtonFormField<String?>(
-                key: ValueKey(
-                  '${field.name}-${mapping.headerFor(field) ?? 'none'}',
-                ),
-                initialValue: mapping.headerFor(field),
-                decoration: InputDecoration(
-                  labelText: '${field.label}${field.isRequired ? ' *' : ''}',
-                ),
-                items: [
-                  const DropdownMenuItem<String?>(
-                    value: null,
-                    child: Text('No importar'),
-                  ),
-                  for (final header in document.headers)
-                    DropdownMenuItem<String?>(
-                      value: header,
-                      child: Text(header),
-                    ),
-                ],
-                onChanged:
-                    (header) => onChanged(mapping.copyWithField(field, header)),
-              ),
-              const SizedBox(height: 12),
-            ],
-            FilledButton.icon(
-              onPressed: mapping.hasRequiredFields ? onApply : null,
-              icon: const Icon(Icons.preview_outlined),
-              label: const Text('Generar preview'),
-            ),
+            const SizedBox(height: BvSpacing.md),
           ],
-        ),
+          for (final field in ImportField.values) ...[
+            DropdownButtonFormField<String?>(
+              key: ValueKey(
+                '${field.name}-${mapping.headerFor(field) ?? 'none'}',
+              ),
+              initialValue: mapping.headerFor(field),
+              decoration: InputDecoration(
+                labelText: '${field.label}${field.isRequired ? ' *' : ''}',
+              ),
+              items: [
+                const DropdownMenuItem<String?>(
+                  value: null,
+                  child: Text('No importar'),
+                ),
+                for (final header in document.headers)
+                  DropdownMenuItem<String?>(value: header, child: Text(header)),
+              ],
+              onChanged:
+                  (header) => onChanged(mapping.copyWithField(field, header)),
+            ),
+            const SizedBox(height: BvSpacing.sm),
+          ],
+          FilledButton.icon(
+            onPressed: mapping.hasRequiredFields ? onApply : null,
+            icon: const Icon(Icons.preview_outlined),
+            label: const Text('Generar preview'),
+          ),
+        ],
       ),
     );
   }
@@ -325,43 +342,54 @@ class CsvPreviewStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Preview', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                Chip(label: Text('${preview.importableCount} importables')),
-                Chip(label: Text('${preview.omittedCount} omitidas')),
-                Chip(label: Text('${preview.warningCount} con warnings')),
-                Chip(label: Text('${preview.errorCount} con errores')),
-                Chip(label: Text('${preview.duplicateCount} duplicadas')),
-              ],
-            ),
-            const SizedBox(height: 12),
+    return BvWizardStep(
+      step: 'Paso 3',
+      title: 'Preview',
+      subtitle:
+          'Revisá qué filas se importan, cuáles quedan omitidas y dónde aparecen warnings o duplicados.',
+      trailing: FilledButton.icon(
+        onPressed: importing || preview.importableCount == 0 ? null : onImport,
+        icon:
+            importing
+                ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+                : const Icon(Icons.check_circle_outline),
+        label: const Text('Confirmar importación'),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: BvSpacing.xs,
+            runSpacing: BvSpacing.xs,
+            children: [
+              BvChip(
+                label: '${preview.importableCount} importables',
+                selected: true,
+              ),
+              BvChip(label: '${preview.omittedCount} omitidas'),
+              BvChip(label: '${preview.warningCount} con warnings'),
+              BvChip(label: '${preview.errorCount} con errores'),
+              BvChip(label: '${preview.duplicateCount} duplicadas'),
+            ],
+          ),
+          const SizedBox(height: BvSpacing.md),
+          if (preview.rows.isEmpty)
+            const BvEmptyState(
+              title: 'No hay filas para revisar',
+              message:
+                  'El preview no generó resultados visibles para importar.',
+              icon: Icons.inbox_outlined,
+            )
+          else
             for (final row in preview.rows)
-              _PreviewRowTile(row: row, onChanged: onRowChanged),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed:
-                  importing || preview.importableCount == 0 ? null : onImport,
-              icon:
-                  importing
-                      ? const SizedBox.square(
-                        dimension: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                      : const Icon(Icons.check_circle_outline),
-              label: const Text('Confirmar importación'),
-            ),
-          ],
-        ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: BvSpacing.sm),
+                child: _PreviewRowTile(row: row, onChanged: onRowChanged),
+              ),
+        ],
       ),
     );
   }
@@ -380,43 +408,93 @@ class _PreviewRowTile extends StatelessWidget {
       ...row.duplicates.map((duplicate) => duplicate.reason),
     ];
 
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Checkbox(
-        value: row.include,
-        onChanged:
-            row.hasErrors
-                ? null
-                : (value) => onChanged(row.copyWith(include: value ?? false)),
-      ),
-      title: Text(
-        row.title.isEmpty ? 'Fila ${row.rowNumber} sin nombre' : row.title,
-      ),
-      subtitle: Text(
-        [
-          parseGameStatus(row.status.name).label,
-          if (row.platforms.isNotEmpty) row.platforms.join(', '),
-          if (row.genres.isNotEmpty) row.genres.join(', '),
-          if (row.completedAt != null) formatVisibleDate(row.completedAt),
-          formatStarRating(row.personalRating),
-          if (issueTexts.isNotEmpty) issueTexts.join(' | '),
-        ].join(' · '),
-      ),
-      trailing:
-          row.hasDuplicates
-              ? TextButton(
-                onPressed:
-                    () => onChanged(
-                      row.copyWith(
-                        include: true,
-                        forceCreateDuplicate: !row.forceCreateDuplicate,
-                      ),
+    return BvSurface(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Checkbox(
+            value: row.include,
+            onChanged:
+                row.hasErrors
+                    ? null
+                    : (value) =>
+                        onChanged(row.copyWith(include: value ?? false)),
+          ),
+          const SizedBox(width: BvSpacing.xs),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: BvSpacing.xs,
+                  runSpacing: BvSpacing.xs,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      row.title.isEmpty
+                          ? 'Fila ${row.rowNumber} sin nombre'
+                          : row.title,
+                      style: Theme.of(context).textTheme.titleSmall,
                     ),
-                child: Text(
-                  row.forceCreateDuplicate ? 'Omitir dup.' : 'Crear igual',
+                    if (row.hasErrors)
+                      const BvChip(
+                        label: 'Con errores',
+                        tone: BvChipTone.danger,
+                      ),
+                    if (row.hasWarnings)
+                      const BvChip(label: 'Warning', tone: BvChipTone.warning),
+                    if (row.hasDuplicates)
+                      const BvChip(
+                        label: 'Duplicado',
+                        tone: BvChipTone.warning,
+                      ),
+                  ],
                 ),
-              )
-              : null,
+                const SizedBox(height: BvSpacing.xxs),
+                Text(
+                  [
+                    parseGameStatus(row.status.name).label,
+                    if (row.platforms.isNotEmpty) row.platforms.join(', '),
+                    if (row.genres.isNotEmpty) row.genres.join(', '),
+                    if (row.completedAt != null)
+                      formatVisibleDate(row.completedAt),
+                    formatStarRating(row.personalRating),
+                  ].join(' · '),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                if (issueTexts.isNotEmpty) ...[
+                  const SizedBox(height: BvSpacing.xxs),
+                  Text(
+                    issueTexts.join(' | '),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+                if (row.hasDuplicates) ...[
+                  const SizedBox(height: BvSpacing.xs),
+                  TextButton(
+                    onPressed:
+                        () => onChanged(
+                          row.copyWith(
+                            include: true,
+                            forceCreateDuplicate: !row.forceCreateDuplicate,
+                          ),
+                        ),
+                    child: Text(
+                      row.forceCreateDuplicate
+                          ? 'Omitir duplicado'
+                          : 'Crear igual',
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -433,31 +511,35 @@ class ImportResultStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Importación finalizada',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 12),
-            Text('Juegos importados: ${result.importedGames}'),
-            Text('Filas omitidas: ${result.skippedRows}'),
-            Text('Duplicados omitidos: ${result.duplicatesSkipped}'),
-            Text('Plataformas creadas: ${result.platformsCreated}'),
-            Text('Géneros creados: ${result.genresCreated}'),
-            Text('Playthroughs creados: ${result.playthroughsCreated}'),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onBackToLibrary,
-              icon: const Icon(Icons.library_books_outlined),
-              label: const Text('Volver a biblioteca'),
-            ),
-          ],
-        ),
+    return BvWizardStep(
+      step: 'Paso 4',
+      title: 'Resultado',
+      subtitle: 'Resumen de lo que entró realmente a tu biblioteca local.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: BvSpacing.xs,
+            runSpacing: BvSpacing.xs,
+            children: [
+              BvChip(
+                label: 'Importados ${result.importedGames}',
+                selected: true,
+              ),
+              BvChip(label: 'Omitidas ${result.skippedRows}'),
+              BvChip(label: 'Duplicados ${result.duplicatesSkipped}'),
+              BvChip(label: 'Plataformas ${result.platformsCreated}'),
+              BvChip(label: 'Géneros ${result.genresCreated}'),
+              BvChip(label: 'Partidas ${result.playthroughsCreated}'),
+            ],
+          ),
+          const SizedBox(height: BvSpacing.md),
+          FilledButton.icon(
+            onPressed: onBackToLibrary,
+            icon: const Icon(Icons.library_books_outlined),
+            label: const Text('Volver a biblioteca'),
+          ),
+        ],
       ),
     );
   }
@@ -470,18 +552,10 @@ class _ErrorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Theme.of(context).colorScheme.errorContainer,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Text(
-          message,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onErrorContainer,
-          ),
-        ),
-      ),
+    return BvStatusBanner(
+      tone: BvBannerTone.danger,
+      title: 'No se pudo continuar',
+      message: message,
     );
   }
 }

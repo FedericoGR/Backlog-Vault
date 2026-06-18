@@ -2,6 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/design_system/bv_action_card.dart';
+import '../../../core/design_system/bv_danger_zone.dart';
+import '../../../core/design_system/bv_key_value_row.dart';
+import '../../../core/design_system/bv_page_scaffold.dart';
+import '../../../core/design_system/bv_panel.dart';
+import '../../../core/design_system/bv_section.dart';
+import '../../../core/design_system/bv_spacing.dart';
+import '../../../core/design_system/bv_status_banner.dart';
+import '../../../core/design_system/bv_theme_extension.dart';
 import '../../metadata/data/metadata_api_key_storage.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
@@ -38,287 +47,143 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Ajustes')),
+    return BvPageScaffold(
+      title: 'Ajustes',
       body: ListView(
-        padding: const EdgeInsets.all(16),
         children: [
-          const ListTile(
-            leading: Icon(Icons.lock_outline),
-            title: Text('Sin cuenta obligatoria'),
-            subtitle: Text('Backlog Vault funciona localmente en este equipo.'),
-          ),
-          const ListTile(
-            leading: Icon(Icons.wifi_off_outlined),
-            title: Text('Offline-first'),
-            subtitle: Text(
-              'La biblioteca funciona sin internet. La metadata externa es opcional.',
-            ),
-          ),
-          const ListTile(
-            leading: Icon(Icons.storage_outlined),
-            title: Text('Base local'),
-            subtitle: Text('Los datos se guardan en SQLite mediante Drift.'),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Datos y backups',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.archive_outlined),
-              title: const Text('Backup, exportación y restauración'),
-              subtitle: const Text(
-                'Exportá JSON/CSV, creá .vaultbackup y restaurá backups locales.',
+          _OverviewSection(loading: _loading),
+          const SizedBox(height: BvSpacing.md),
+          _ActionShortcuts(loading: _loading),
+          const SizedBox(height: BvSpacing.md),
+          _ConfigurationPanel(
+            title: 'RAWG',
+            subtitle:
+                'Fuente opcional para completar metadata de juegos. La clave se guarda localmente en el secure storage del sistema.',
+            icon: Icons.vpn_key_outlined,
+            configured: _rawgConfigured,
+            loading: _loading,
+            fields: [
+              TextField(
+                controller: _rawgApiKeyController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Nueva API key',
+                  helperText:
+                      'No se exporta en backups, no se muestra en claro y no debe terminar en commits.',
+                ),
               ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.go('/settings/backups'),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Privacidad y protección',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.privacy_tip_outlined),
-                    title: Text('Estado de protección local'),
-                    subtitle: Text(
-                      'El cifrado de DB y media local queda para una etapa futura. Los backups cifrados ya están disponibles.',
-                    ),
-                  ),
-                  _PrivacyStatusRow(
-                    label: 'DB local cifrada',
-                    value: 'No',
-                    protected: false,
-                  ),
-                  _PrivacyStatusRow(
-                    label: 'Media local cifrada',
-                    value: 'No',
-                    protected: false,
-                  ),
-                  const _PrivacyStatusRow(
-                    label: 'Backups cifrados',
-                    value: 'Disponible',
-                    protected: true,
-                  ),
-                  const _PrivacyStatusRow(
-                    label: 'API keys externas',
-                    value: 'Secure storage del sistema',
-                    protected: true,
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Los backups normales .vaultbackup no están cifrados. Para compartir o mover datos sensibles, preferí .vaultbackup.enc.',
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed:
-                        _loading ||
-                                (!_rawgConfigured &&
-                                    !_igdbConfigured &&
-                                    !_steamGridDbConfigured)
-                            ? null
-                            : _deleteAllExternalApiKeys,
-                    icon: const Icon(Icons.key_off_outlined),
-                    label: const Text('Borrar todas las claves externas'),
-                  ),
-                ],
+            ],
+            actions: [
+              FilledButton.icon(
+                onPressed: _loading ? null : _saveRawgApiKey,
+                icon: const Icon(Icons.save_outlined),
+                label: const Text('Guardar'),
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Metadata externa',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.vpn_key_outlined),
-                    title: const Text('RAWG API key'),
-                    subtitle: Text(
-                      _loading
-                          ? 'Cargando estado...'
-                          : _rawgConfigured
-                          ? 'Configurada localmente.'
-                          : 'No configurada.',
-                    ),
-                  ),
-                  TextField(
-                    controller: _rawgApiKeyController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Nueva API key',
-                      helperText:
-                          'Se guarda localmente en el storage seguro del sistema.',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      FilledButton.icon(
-                        onPressed: _loading ? null : _saveRawgApiKey,
-                        icon: const Icon(Icons.save_outlined),
-                        label: const Text('Guardar'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed:
-                            _loading || !_rawgConfigured
-                                ? null
-                                : _deleteRawgApiKey,
-                        icon: const Icon(Icons.delete_outline),
-                        label: const Text('Borrar'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'No pegues claves reales en issues, logs, README, tests ni commits.',
-                  ),
-                ],
+              OutlinedButton.icon(
+                onPressed:
+                    _loading || !_rawgConfigured ? null : _deleteRawgApiKey,
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Borrar'),
               ),
-            ),
+            ],
           ),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.cloud_sync_outlined),
-                    title: const Text('IGDB / Twitch credentials'),
-                    subtitle: Text(
-                      _loading
-                          ? 'Cargando estado...'
-                          : _igdbConfigured
-                          ? 'Configuradas localmente.'
-                          : 'No configuradas.',
-                    ),
-                  ),
-                  TextField(
-                    controller: _igdbClientIdController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Client ID',
-                      helperText:
-                          'Se guarda localmente en el storage seguro del sistema.',
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _igdbClientSecretController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Client Secret',
-                      helperText:
-                          'No se exporta en backups ni se muestra en claro.',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      FilledButton.icon(
-                        onPressed: _loading ? null : _saveIgdbCredentials,
-                        icon: const Icon(Icons.save_outlined),
-                        label: const Text('Guardar'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed:
-                            _loading || !_igdbConfigured
-                                ? null
-                                : _deleteIgdbCredentials,
-                        icon: const Icon(Icons.delete_outline),
-                        label: const Text('Borrar'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'IGDB usa OAuth de Twitch con client credentials. No pegues Client Secret en issues, logs, README, tests ni commits.',
-                  ),
-                ],
+          const SizedBox(height: BvSpacing.md),
+          _ConfigurationPanel(
+            title: 'IGDB / Twitch',
+            subtitle:
+                'Client credentials para consultar IGDB. El access token se renueva localmente y el secret no se expone en pantalla.',
+            icon: Icons.cloud_sync_outlined,
+            configured: _igdbConfigured,
+            loading: _loading,
+            fields: [
+              TextField(
+                controller: _igdbClientIdController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Client ID',
+                  helperText:
+                      'Se guarda solo en el equipo actual y no viaja en backups.',
+                ),
               ),
-            ),
+              const SizedBox(height: BvSpacing.sm),
+              TextField(
+                controller: _igdbClientSecretController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Client Secret',
+                  helperText: 'No lo pegues en logs, README, tests ni issues.',
+                ),
+              ),
+            ],
+            actions: [
+              FilledButton.icon(
+                onPressed: _loading ? null : _saveIgdbCredentials,
+                icon: const Icon(Icons.save_outlined),
+                label: const Text('Guardar'),
+              ),
+              OutlinedButton.icon(
+                onPressed:
+                    _loading || !_igdbConfigured
+                        ? null
+                        : _deleteIgdbCredentials,
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Borrar'),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.image_search_outlined),
-                    title: const Text('SteamGridDB API key'),
-                    subtitle: Text(
-                      _loading
-                          ? 'Cargando estado...'
-                          : _steamGridDbConfigured
-                          ? 'Configurada localmente.'
-                          : 'No configurada.',
-                    ),
-                  ),
-                  TextField(
-                    controller: _steamGridDbApiKeyController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Nueva API key',
-                      helperText:
-                          'Se usa solo para buscar portadas y se guarda localmente.',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      FilledButton.icon(
-                        onPressed: _loading ? null : _saveSteamGridDbApiKey,
-                        icon: const Icon(Icons.save_outlined),
-                        label: const Text('Guardar'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed:
-                            _loading || !_steamGridDbConfigured
-                                ? null
-                                : _deleteSteamGridDbApiKey,
-                        icon: const Icon(Icons.delete_outline),
-                        label: const Text('Borrar'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Backlog Vault no descarga portadas automáticamente: vos elegís qué guardar localmente.',
-                  ),
-                ],
+          const SizedBox(height: BvSpacing.md),
+          _ConfigurationPanel(
+            title: 'SteamGridDB',
+            subtitle:
+                'Clave opcional para buscar portadas. Backlog Vault sigue pidiendo confirmación explícita antes de guardar covers.',
+            icon: Icons.image_search_outlined,
+            configured: _steamGridDbConfigured,
+            loading: _loading,
+            fields: [
+              TextField(
+                controller: _steamGridDbApiKeyController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Nueva API key',
+                  helperText:
+                      'Se usa solo para búsqueda de media y se mantiene local.',
+                ),
               ),
-            ),
+            ],
+            actions: [
+              FilledButton.icon(
+                onPressed: _loading ? null : _saveSteamGridDbApiKey,
+                icon: const Icon(Icons.save_outlined),
+                label: const Text('Guardar'),
+              ),
+              OutlinedButton.icon(
+                onPressed:
+                    _loading || !_steamGridDbConfigured
+                        ? null
+                        : _deleteSteamGridDbApiKey,
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Borrar'),
+              ),
+            ],
+          ),
+          const SizedBox(height: BvSpacing.md),
+          BvDangerZone(
+            title: 'Borrado de claves externas',
+            message:
+                'Solo elimina credenciales guardadas localmente. No toca juegos, metadata ya aplicada, external IDs ni portadas almacenadas.',
+            actions: [
+              OutlinedButton.icon(
+                onPressed:
+                    _loading ||
+                            (!_rawgConfigured &&
+                                !_igdbConfigured &&
+                                !_steamGridDbConfigured)
+                        ? null
+                        : _deleteAllExternalApiKeys,
+                icon: const Icon(Icons.key_off_outlined),
+                label: const Text('Borrar todas las claves'),
+              ),
+            ],
           ),
         ],
       ),
@@ -478,39 +343,204 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 }
 
-class _PrivacyStatusRow extends StatelessWidget {
-  const _PrivacyStatusRow({
-    required this.label,
-    required this.value,
-    required this.protected,
-  });
+class _OverviewSection extends StatelessWidget {
+  const _OverviewSection({required this.loading});
 
-  final String label;
-  final String value;
-  final bool protected;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        protected
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.error;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(
-            protected ? Icons.check_circle_outline : Icons.info_outline,
-            size: 18,
-            color: color,
-          ),
-          const SizedBox(width: 8),
-          Expanded(child: Text(label)),
-          Text(
-            value,
-            style: TextStyle(color: color, fontWeight: FontWeight.w600),
-          ),
-        ],
+    final bv = BvThemeExtension.of(context);
+    return BvPanel(
+      child: BvSection(
+        title: 'Estado local',
+        subtitle:
+            'Backlog Vault sigue siendo una app offline-first: la biblioteca vive en tu equipo y las integraciones externas son opcionales.',
+        padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const BvKeyValueRow(
+              label: 'Cuenta obligatoria',
+              value: 'No',
+              leading: Icons.lock_outline,
+            ),
+            const BvKeyValueRow(
+              label: 'Modo de uso',
+              value: 'Offline-first',
+              leading: Icons.wifi_off_outlined,
+            ),
+            const BvKeyValueRow(
+              label: 'Base local',
+              value: 'SQLite + Drift',
+              leading: Icons.storage_outlined,
+            ),
+            BvKeyValueRow(
+              label: 'Estado de carga',
+              value: loading ? 'Cargando configuración…' : 'Listo',
+              valueColor: loading ? bv.warning : null,
+              leading: Icons.sync_outlined,
+            ),
+            const SizedBox(height: BvSpacing.sm),
+            const BvStatusBanner(
+              tone: BvBannerTone.warning,
+              title: 'Privacidad y protección',
+              message:
+                  'La DB local y los archivos media siguen sin cifrado en disco. Los backups cifrados ya están disponibles para exportación y restauración.',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionShortcuts extends StatelessWidget {
+  const _ActionShortcuts({required this.loading});
+
+  final bool loading;
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 860;
+    final backupCard = BvActionCard(
+      title: 'Datos y backups',
+      subtitle:
+          'Exportá JSON/CSV, generá backups normales o cifrados y restaurá archivos locales.',
+      icon: Icons.archive_outlined,
+      emphasized: true,
+      actions: [
+        FilledButton.icon(
+          onPressed: loading ? null : () => context.go('/settings/backups'),
+          icon: const Icon(Icons.chevron_right),
+          label: const Text('Abrir backups'),
+        ),
+      ],
+    );
+    final notesCard = BvActionCard(
+      title: 'Buenas prácticas',
+      subtitle:
+          'No pegues claves reales en README, issues, logs, tests ni commits. Todo queda guardado localmente en secure storage.',
+      icon: Icons.shield_outlined,
+    );
+
+    if (compact) {
+      return Column(
+        children: [backupCard, const SizedBox(height: BvSpacing.md), notesCard],
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: backupCard),
+        const SizedBox(width: BvSpacing.md),
+        Expanded(child: notesCard),
+      ],
+    );
+  }
+}
+
+class _ConfigurationPanel extends StatelessWidget {
+  const _ConfigurationPanel({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.configured,
+    required this.loading,
+    required this.fields,
+    required this.actions,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final bool configured;
+  final bool loading;
+  final List<Widget> fields;
+  final List<Widget> actions;
+
+  @override
+  Widget build(BuildContext context) {
+    return BvPanel(
+      child: BvSection(
+        title: title,
+        subtitle: subtitle,
+        padding: EdgeInsets.zero,
+        trailing: _ConfigPill(configured: configured, loading: loading),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: BvSpacing.sm),
+                Expanded(
+                  child: Text(
+                    configured
+                        ? 'Configuración presente'
+                        : 'Configuración pendiente',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: BvSpacing.md),
+            ...fields,
+            const SizedBox(height: BvSpacing.md),
+            Wrap(
+              spacing: BvSpacing.xs,
+              runSpacing: BvSpacing.xs,
+              children: actions,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ConfigPill extends StatelessWidget {
+  const _ConfigPill({required this.configured, required this.loading});
+
+  final bool configured;
+  final bool loading;
+
+  @override
+  Widget build(BuildContext context) {
+    final bv = BvThemeExtension.of(context);
+    final theme = Theme.of(context);
+    final background =
+        loading
+            ? bv.surfaceHighest
+            : configured
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.74)
+            : bv.dangerContainer;
+    final foreground =
+        loading
+            ? theme.colorScheme.onSurfaceVariant
+            : configured
+            ? theme.colorScheme.onPrimaryContainer
+            : bv.danger;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: BvSpacing.sm,
+          vertical: BvSpacing.xs,
+        ),
+        child: Text(
+          loading
+              ? 'Cargando'
+              : configured
+              ? 'Configurado'
+              : 'Pendiente',
+          style: theme.textTheme.labelLarge?.copyWith(color: foreground),
+        ),
       ),
     );
   }

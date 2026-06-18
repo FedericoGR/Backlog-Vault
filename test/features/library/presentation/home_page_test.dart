@@ -23,8 +23,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('No hay juegos en progreso.'), findsOneWidget);
-    expect(find.text('No hay pendientes en backlog.'), findsOneWidget);
+    expect(find.text('Inicio'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Últimos actualizados'),
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Últimos actualizados'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -46,7 +51,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Jugando ahora'), findsOneWidget);
+    expect(find.text('Inicio'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.textContaining('Final Fantasy'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.textContaining('Final Fantasy'), findsWidgets);
     await tester.scrollUntilVisible(
       find.text('Sin metadata'),

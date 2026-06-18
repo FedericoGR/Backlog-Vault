@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/design_system/bv_action_card.dart';
+import '../../../core/design_system/bv_danger_zone.dart';
+import '../../../core/design_system/bv_page_scaffold.dart';
+import '../../../core/design_system/bv_progress_panel.dart';
+import '../../../core/design_system/bv_status_banner.dart';
+import '../../../core/design_system/bv_spacing.dart';
 import '../../../core/privacy/privacy_redactor.dart';
 import '../application/backup_restore_providers.dart';
 import '../data/backup_service.dart';
@@ -20,139 +26,60 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Datos y backups')),
+    return BvPageScaffold(
+      title: 'Datos y backups',
       body: ListView(
-        padding: const EdgeInsets.all(16),
         children: [
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Portabilidad local',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    '.vaultbackup no está cifrado en este entregable. Puede contener notas personales, juegos, estados y media local. No incluye API keys ni secure storage.',
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    '.vaultbackup.enc cifra el backup completo con una password que no se guarda en la app. Si la olvidás, el archivo no se puede recuperar.',
-                  ),
-                ],
-              ),
-            ),
+          const BvStatusBanner(
+            title: 'Portabilidad local',
+            tone: BvBannerTone.warning,
+            message:
+                '.vaultbackup no está cifrado y puede incluir notas personales, juegos, estados y media local. .vaultbackup.enc cifra el backup completo con una password que la app no guarda.',
           ),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Exportar',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      FilledButton.icon(
-                        onPressed: _busy ? null : _createBackup,
-                        icon: const Icon(Icons.archive_outlined),
-                        label: const Text('Crear backup completo'),
-                      ),
-                      FilledButton.tonalIcon(
-                        onPressed: _busy ? null : _createEncryptedBackup,
-                        icon: const Icon(Icons.enhanced_encryption_outlined),
-                        label: const Text('Crear backup cifrado'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: _busy ? null : _exportJson,
-                        icon: const Icon(Icons.data_object_outlined),
-                        label: const Text('Exportar JSON'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: _busy ? null : _exportCsv,
-                        icon: const Icon(Icons.table_view_outlined),
-                        label: const Text('Exportar CSV'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Restaurar',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'La restauración reemplaza la biblioteca de forma lógica: inserta/actualiza lo que trae el backup y marca como borrado lo que no está en el archivo. Antes de restaurar se crea un backup previo automático.',
-                  ),
-                  const SizedBox(height: 12),
-                  FilledButton.tonalIcon(
-                    onPressed: _busy ? null : _restoreBackup,
-                    icon: const Icon(Icons.restore_outlined),
-                    label: const Text('Restaurar backup'),
-                  ),
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    onPressed: _busy ? null : _restoreEncryptedBackup,
-                    icon: const Icon(Icons.lock_open_outlined),
-                    label: const Text('Restaurar backup cifrado'),
-                  ),
-                ],
-              ),
-            ),
+          const SizedBox(height: BvSpacing.md),
+          _ActionGrid(
+            busy: _busy,
+            onCreateBackup: _createBackup,
+            onCreateEncryptedBackup: _createEncryptedBackup,
+            onExportJson: _exportJson,
+            onExportCsv: _exportCsv,
+            onRestoreBackup: _restoreBackup,
+            onRestoreEncryptedBackup: _restoreEncryptedBackup,
           ),
           if (_busy) ...[
-            const SizedBox(height: 16),
-            const LinearProgressIndicator(),
-          ],
-          if (_lastOperation != null) ...[
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Última operación',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(_lastOperation!),
-                    if (_lastWarnings.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      Text(
-                        'Warnings',
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                      const SizedBox(height: 4),
-                      for (final warning in _lastWarnings)
-                        Text('- ${warning.message}'),
-                    ],
-                  ],
-                ),
-              ),
+            const SizedBox(height: BvSpacing.md),
+            const BvProgressPanel(
+              title: 'Procesando archivo',
+              subtitle:
+                  'Esperá mientras Backlog Vault prepara o valida el contenido seleccionado.',
             ),
           ],
+          if (_lastOperation != null) ...[
+            const SizedBox(height: BvSpacing.md),
+            _OperationResultPanel(
+              title: 'Última operación',
+              message: _lastOperation!,
+              warnings: _lastWarnings,
+            ),
+          ],
+          const SizedBox(height: BvSpacing.md),
+          BvDangerZone(
+            title: 'Restauración y reemplazo lógico',
+            message:
+                'Antes de restaurar, la app crea un backup previo automático. La restauración inserta o actualiza lo que está en el archivo y marca como borrado lógico lo que quedó afuera.',
+            actions: [
+              OutlinedButton.icon(
+                onPressed: _busy ? null : _restoreBackup,
+                icon: const Icon(Icons.restore_outlined),
+                label: const Text('Restaurar backup'),
+              ),
+              OutlinedButton.icon(
+                onPressed: _busy ? null : _restoreEncryptedBackup,
+                icon: const Icon(Icons.lock_open_outlined),
+                label: const Text('Restaurar cifrado'),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -321,27 +248,31 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
       builder:
           (context) => AlertDialog(
             title: const Text('Confirmar restauración'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Fecha: ${preview.manifest.createdAt.toLocal()}'),
-                Text('Juegos: ${preview.manifest.counts.games}'),
-                Text('Playthroughs: ${preview.manifest.counts.playthroughs}'),
-                Text('Media: ${preview.manifest.counts.mediaFiles} archivos'),
-                Text('Schema: ${preview.manifest.appSchemaVersion}'),
-                if (preview.warnings.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text('Warnings: ${preview.warnings.length}'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Fecha: ${preview.manifest.createdAt.toLocal()}'),
+                  Text('Juegos: ${preview.manifest.counts.games}'),
+                  Text('Playthroughs: ${preview.manifest.counts.playthroughs}'),
+                  Text('Media: ${preview.manifest.counts.mediaFiles} archivos'),
+                  Text('Schema: ${preview.manifest.appSchemaVersion}'),
+                  if (preview.warnings.isNotEmpty) ...[
+                    const SizedBox(height: BvSpacing.sm),
+                    Text('Warnings: ${preview.warnings.length}'),
+                  ],
+                  const SizedBox(height: BvSpacing.md),
+                  const Text('Escribí RESTAURAR para continuar.'),
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Confirmación',
+                    ),
+                  ),
                 ],
-                const SizedBox(height: 12),
-                const Text('Escribí RESTAURAR para continuar.'),
-                TextField(
-                  controller: controller,
-                  autofocus: true,
-                  decoration: const InputDecoration(labelText: 'Confirmación'),
-                ),
-              ],
+              ),
             ),
             actions: [
               TextButton(
@@ -375,34 +306,36 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
                   title: Text(
                     confirm ? 'Crear backup cifrado' : 'Abrir backup cifrado',
                   ),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'La password no se guarda. Si la perdés, el backup cifrado no se puede recuperar.',
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: passwordController,
-                        autofocus: true,
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          errorText: errorText,
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'La password no se guarda. Si la perdés, el backup cifrado no se puede recuperar.',
                         ),
-                      ),
-                      if (confirm) ...[
-                        const SizedBox(height: 8),
+                        const SizedBox(height: BvSpacing.md),
                         TextField(
-                          controller: confirmationController,
+                          controller: passwordController,
+                          autofocus: true,
                           obscureText: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Repetir password',
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            errorText: errorText,
                           ),
                         ),
+                        if (confirm) ...[
+                          const SizedBox(height: BvSpacing.sm),
+                          TextField(
+                            controller: confirmationController,
+                            obscureText: true,
+                            decoration: const InputDecoration(
+                              labelText: 'Repetir password',
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                   actions: [
                     TextButton(
@@ -443,5 +376,165 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+}
+
+class _ActionGrid extends StatelessWidget {
+  const _ActionGrid({
+    required this.busy,
+    required this.onCreateBackup,
+    required this.onCreateEncryptedBackup,
+    required this.onExportJson,
+    required this.onExportCsv,
+    required this.onRestoreBackup,
+    required this.onRestoreEncryptedBackup,
+  });
+
+  final bool busy;
+  final VoidCallback onCreateBackup;
+  final VoidCallback onCreateEncryptedBackup;
+  final VoidCallback onExportJson;
+  final VoidCallback onExportCsv;
+  final VoidCallback onRestoreBackup;
+  final VoidCallback onRestoreEncryptedBackup;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: BvSpacing.md,
+      runSpacing: BvSpacing.md,
+      children: [
+        SizedBox(
+          width: 320,
+          child: BvActionCard(
+            title: 'Backup completo',
+            subtitle:
+                'Genera un .vaultbackup con juegos, partidas, metadata aplicada y media local sin cifrado.',
+            icon: Icons.archive_outlined,
+            emphasized: true,
+            actions: [
+              FilledButton.icon(
+                onPressed: busy ? null : onCreateBackup,
+                icon: const Icon(Icons.download_outlined),
+                label: const Text('Crear backup'),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          width: 320,
+          child: BvActionCard(
+            title: 'Backup cifrado',
+            subtitle:
+                'Genera un .vaultbackup.enc protegido con password. La password no queda almacenada.',
+            icon: Icons.enhanced_encryption_outlined,
+            actions: [
+              FilledButton.tonalIcon(
+                onPressed: busy ? null : onCreateEncryptedBackup,
+                icon: const Icon(Icons.lock_outlined),
+                label: const Text('Crear cifrado'),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          width: 320,
+          child: BvActionCard(
+            title: 'Exportar JSON',
+            subtitle:
+                'Exporta la biblioteca en un formato legible y útil para revisión o scripting local.',
+            icon: Icons.data_object_outlined,
+            actions: [
+              OutlinedButton.icon(
+                onPressed: busy ? null : onExportJson,
+                icon: const Icon(Icons.file_download_outlined),
+                label: const Text('Exportar JSON'),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          width: 320,
+          child: BvActionCard(
+            title: 'Exportar CSV',
+            subtitle:
+                'Genera una exportación tabular compacta para hojas de cálculo o intercambio manual.',
+            icon: Icons.table_view_outlined,
+            actions: [
+              OutlinedButton.icon(
+                onPressed: busy ? null : onExportCsv,
+                icon: const Icon(Icons.file_download_outlined),
+                label: const Text('Exportar CSV'),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          width: 320,
+          child: BvActionCard(
+            title: 'Restaurar backup',
+            subtitle:
+                'Abre un .vaultbackup, muestra preview y pide confirmación fuerte antes de aplicar cambios.',
+            icon: Icons.restore_outlined,
+            actions: [
+              FilledButton.tonalIcon(
+                onPressed: busy ? null : onRestoreBackup,
+                icon: const Icon(Icons.restore_outlined),
+                label: const Text('Restaurar backup'),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          width: 320,
+          child: BvActionCard(
+            title: 'Restaurar cifrado',
+            subtitle:
+                'Abre un .vaultbackup.enc, pide password y valida el contenido antes de reemplazar datos.',
+            icon: Icons.lock_open_outlined,
+            actions: [
+              FilledButton.tonalIcon(
+                onPressed: busy ? null : onRestoreEncryptedBackup,
+                icon: const Icon(Icons.lock_open_outlined),
+                label: const Text('Restaurar cifrado'),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _OperationResultPanel extends StatelessWidget {
+  const _OperationResultPanel({
+    required this.title,
+    required this.message,
+    required this.warnings,
+  });
+
+  final String title;
+  final String message;
+  final List<BackupWarning> warnings;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        BvStatusBanner(
+          title: title,
+          tone: BvBannerTone.success,
+          message: message,
+        ),
+        if (warnings.isNotEmpty) ...[
+          const SizedBox(height: BvSpacing.sm),
+          BvStatusBanner(
+            title: 'Warnings',
+            tone: BvBannerTone.warning,
+            message: warnings.map((warning) => warning.message).join('\n'),
+          ),
+        ],
+      ],
+    );
   }
 }
