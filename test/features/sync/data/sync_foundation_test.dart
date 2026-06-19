@@ -6,6 +6,7 @@ import 'package:backlog_vault/core/ids/id_generator.dart';
 import 'package:backlog_vault/core/time/clock.dart';
 import 'package:backlog_vault/core/version/app_versions.dart';
 import 'package:backlog_vault/features/backup_restore/data/export_repository.dart';
+import 'package:backlog_vault/features/backup_restore/domain/backup_models.dart';
 import 'package:backlog_vault/features/catalogs/data/catalog_repository.dart';
 import 'package:backlog_vault/features/games/application/game_form_model.dart';
 import 'package:backlog_vault/features/games/data/game_repository.dart';
@@ -23,11 +24,14 @@ import 'package:backlog_vault/features/metadata/data/metadata_repository.dart';
 import 'package:backlog_vault/features/metadata/domain/apply_metadata_request.dart';
 import 'package:backlog_vault/features/metadata/domain/external_game_details.dart';
 import 'package:backlog_vault/features/metadata/domain/metadata_field.dart';
+import 'package:backlog_vault/features/playthroughs/application/playthrough_form_model.dart';
+import 'package:backlog_vault/features/playthroughs/domain/playthrough_status.dart';
 import 'package:backlog_vault/features/sync/data/canonical_json.dart';
 import 'package:backlog_vault/features/sync/data/sync_change_tracking.dart';
 import 'package:backlog_vault/features/sync/data/sync_device_identity.dart';
+import 'package:backlog_vault/features/sync/data/sync_payload_sanitizer.dart';
 import 'package:backlog_vault/features/sync/domain/sync_models.dart';
-import 'package:drift/drift.dart' hide isNotNull;
+import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
@@ -61,6 +65,25 @@ void main() {
     test('rejects non-finite numbers and unsupported values', () {
       expect(() => canonicalJson.encode(double.nan), throwsFormatException);
       expect(() => canonicalJson.encode(Object()), throwsFormatException);
+    });
+
+    test('uses stable enum strings and sanitizes nested sensitive values', () {
+      final sanitized = syncPayloadSanitizer.sanitize({
+        'source': SyncChangeSource.metadata,
+        'nested': {
+          'client_secret': 'test_client_secret',
+          'notes':
+              r'Authorization: Bearer test_access_token at C:\private\vault.txt',
+        },
+      });
+      final encoded = canonicalJson.encode(sanitized);
+
+      expect(encoded, contains('"source":"metadata"'));
+      expect(encoded, isNot(contains('test_client_secret')));
+      expect(encoded, isNot(contains('test_access_token')));
+      expect(encoded, isNot(contains(r'C:\private')));
+      expect(encoded, contains('[REDACTED]'));
+      expect(encoded, contains('[LOCAL_PATH_REDACTED]'));
     });
   });
 
@@ -140,6 +163,51 @@ void main() {
       expect(state.baselineCreated, isFalse);
       expect(state.requiresReconciliation, isTrue);
       expect(state.replicaEpoch, 2);
+    });
+
+    test('rehydrates the public mirror from secure storage', () async {
+      final store = _MemoryIdentityStore(_deviceId);
+      final identity =
+          await _identityService(db, store: store).ensureIdentity();
+      final mirror = await db.select(db.syncDevices).getSingle();
+
+      expect(identity.id, _deviceId);
+      expect(mirror.id, _deviceId);
+      expect(mirror.isLocal, isTrue);
+      expect(mirror.publicKey, isNull);
+      expect(mirror.fingerprint, isNull);
+    });
+
+    test('secure storage wins an explicit SQLite divergence', () async {
+      await db
+          .into(db.syncDevices)
+          .insert(
+            SyncDevicesCompanion.insert(
+              id: _deviceId,
+              displayName: 'Stale mirror',
+              platform: 'windows',
+              isLocal: const Value(true),
+              status: SyncDeviceStatus.local.name,
+              createdAt: _now,
+            ),
+          );
+
+      final identity =
+          await _identityService(
+            db,
+            store: _MemoryIdentityStore(_secondDeviceId),
+          ).ensureIdentity();
+      final oldMirror =
+          await (db.select(db.syncDevices)
+            ..where((row) => row.id.equals(_deviceId))).getSingle();
+
+      expect(identity.id, _secondDeviceId);
+      expect(oldMirror.isLocal, isFalse);
+      expect(oldMirror.status, SyncDeviceStatus.identityMismatch.name);
+      expect(
+        (await db.select(db.syncDevices).get()).where((row) => row.isLocal),
+        hasLength(1),
+      );
     });
   });
 
@@ -286,6 +354,47 @@ void main() {
         expect((await harness.localState()).nextLocalCounter, 1);
       },
     );
+
+    test('oplog redacts credentials and absolute paths in free text', () async {
+      await harness.runner.run(
+        source: SyncChangeSource.manual,
+        action: (_) async {
+          await harness.db
+              .into(harness.db.games)
+              .insert(
+                GamesCompanion.insert(
+                  id: 'game-sensitive',
+                  title: 'Authorization: Bearer test_access_token',
+                  createdAt: _now,
+                  updatedAt: _now,
+                ),
+              );
+          await harness.db
+              .into(harness.db.libraryEntries)
+              .insert(
+                LibraryEntriesCompanion.insert(
+                  id: 'entry-sensitive',
+                  gameId: 'game-sensitive',
+                  status: 'backlog',
+                  personalNotes: const Value(
+                    r'client_secret=test_client_secret C:\private\library.txt',
+                  ),
+                  createdAt: _now,
+                  updatedAt: _now,
+                ),
+              );
+        },
+      );
+
+      final persisted = (await harness.db.select(harness.db.syncChanges).get())
+          .expand((row) => [row.payloadJson, row.snapshotJson])
+          .join('\n');
+      expect(persisted, isNot(contains('test_client_secret')));
+      expect(persisted, isNot(contains('test_access_token')));
+      expect(persisted, isNot(contains(r'C:\private')));
+      expect(persisted, contains('[REDACTED]'));
+      expect(persisted, contains('[LOCAL_PATH_REDACTED]'));
+    });
 
     test('suppressed and remote modes do not echo changes', () async {
       for (final mode in [
@@ -493,6 +602,233 @@ void main() {
         isNotNull,
       );
     });
+
+    test(
+      'catalog normalization tombstones aliases and duplicate links',
+      () async {
+        await harness.db.batch((batch) {
+          batch.insert(
+            harness.db.games,
+            GamesCompanion.insert(
+              id: 'game-normalize',
+              title: 'Normalize',
+              createdAt: _now,
+              updatedAt: _now,
+            ),
+          );
+          batch.insert(
+            harness.db.libraryEntries,
+            LibraryEntriesCompanion.insert(
+              id: 'entry-normalize',
+              gameId: 'game-normalize',
+              status: 'backlog',
+              createdAt: _now,
+              updatedAt: _now,
+            ),
+          );
+          for (final platform in [
+            ('platform-pc', 'PC'),
+            ('platform-win', 'Windows'),
+          ]) {
+            batch.insert(
+              harness.db.platforms,
+              PlatformsCompanion.insert(
+                id: platform.$1,
+                name: platform.$2,
+                createdAt: _now,
+                updatedAt: _now,
+              ),
+            );
+          }
+          for (final genre in [
+            ('genre-action-es', 'Acción'),
+            ('genre-action-en', 'Action'),
+          ]) {
+            batch.insert(
+              harness.db.genres,
+              GenresCompanion.insert(
+                id: genre.$1,
+                name: genre.$2,
+                createdAt: _now,
+                updatedAt: _now,
+              ),
+            );
+          }
+          for (final link in [
+            ('platform-link-pc', 'platform-pc'),
+            ('platform-link-win', 'platform-win'),
+          ]) {
+            batch.insert(
+              harness.db.libraryEntryPlatforms,
+              LibraryEntryPlatformsCompanion.insert(
+                id: link.$1,
+                libraryEntryId: 'entry-normalize',
+                platformId: link.$2,
+                createdAt: _now,
+                updatedAt: _now,
+              ),
+            );
+          }
+          for (final link in [
+            ('genre-link-es', 'genre-action-es'),
+            ('genre-link-en', 'genre-action-en'),
+          ]) {
+            batch.insert(
+              harness.db.gameGenres,
+              GameGenresCompanion.insert(
+                id: link.$1,
+                gameId: 'game-normalize',
+                genreId: link.$2,
+                createdAt: _now,
+                updatedAt: _now,
+              ),
+            );
+          }
+        });
+
+        await CatalogRepository(
+          harness.db,
+          ids: _SequenceIds(const []),
+          clock: _FixedClock(_now),
+          sync: harness.runner,
+        ).normalizeCatalogs();
+
+        final tombstones =
+            await harness.db.select(harness.db.syncTombstones).get();
+        expect(
+          tombstones.map((row) => '${row.entityType}:${row.entityId}'),
+          containsAll({
+            'platform:platform-win',
+            'genre:genre-action-en',
+            'library_entry_platform:platform-link-win',
+            'game_genre:genre-link-en',
+          }),
+        );
+        final changes =
+            await (harness.db.select(harness.db.syncChanges)..where(
+              (row) => row.source.equals(SyncChangeSource.normalization.name),
+            )).get();
+        expect(changes, isNotEmpty);
+        expect(changes.map((row) => row.mutationId).toSet(), hasLength(1));
+      },
+    );
+
+    test(
+      'bulk metadata replacement groups changes and tombstones old links',
+      () async {
+        await harness.db.batch((batch) {
+          batch.insert(
+            harness.db.games,
+            GamesCompanion.insert(
+              id: 'game-bulk',
+              title: 'Bulk',
+              createdAt: _now,
+              updatedAt: _now,
+            ),
+          );
+          batch.insert(
+            harness.db.libraryEntries,
+            LibraryEntriesCompanion.insert(
+              id: 'entry-bulk',
+              gameId: 'game-bulk',
+              status: 'backlog',
+              createdAt: _now,
+              updatedAt: _now,
+            ),
+          );
+          batch.insert(
+            harness.db.platforms,
+            PlatformsCompanion.insert(
+              id: 'platform-old',
+              name: 'PC',
+              createdAt: _now,
+              updatedAt: _now,
+            ),
+          );
+          batch.insert(
+            harness.db.genres,
+            GenresCompanion.insert(
+              id: 'genre-old',
+              name: 'RPG',
+              createdAt: _now,
+              updatedAt: _now,
+            ),
+          );
+          batch.insert(
+            harness.db.libraryEntryPlatforms,
+            LibraryEntryPlatformsCompanion.insert(
+              id: 'platform-link-old',
+              libraryEntryId: 'entry-bulk',
+              platformId: 'platform-old',
+              createdAt: _now,
+              updatedAt: _now,
+            ),
+          );
+          batch.insert(
+            harness.db.gameGenres,
+            GameGenresCompanion.insert(
+              id: 'genre-link-old',
+              gameId: 'game-bulk',
+              genreId: 'genre-old',
+              createdAt: _now,
+              updatedAt: _now,
+            ),
+          );
+        });
+        final metadata = MetadataRepository(
+          harness.db,
+          ids: _SequenceIds([
+            'external-bulk',
+            'genre-new',
+            'genre-link-new',
+            'platform-new',
+            'platform-link-new',
+          ]),
+          clock: _FixedClock(_now),
+          sync: harness.runner,
+        );
+
+        await SyncMutationScope.run(
+          mutationId: 'bulk-replace',
+          source: SyncChangeSource.bulk,
+          action:
+              () => metadata.applyMetadata(
+                const ApplyMetadataRequest(
+                  gameId: 'game-bulk',
+                  libraryEntryId: 'entry-bulk',
+                  details: ExternalGameDetails(
+                    providerId: 'rawg',
+                    providerName: 'RAWG',
+                    externalId: 'rawg-bulk',
+                    title: 'Bulk',
+                    genres: ['Adventure'],
+                    platforms: ['PS5'],
+                  ),
+                  selectedFields: {
+                    MetadataField.genres,
+                    MetadataField.platforms,
+                  },
+                  replaceFields: {
+                    MetadataField.genres,
+                    MetadataField.platforms,
+                  },
+                ),
+              ),
+        );
+
+        final changes = await harness.db.select(harness.db.syncChanges).get();
+        expect(changes.map((row) => row.mutationId).toSet(), {'bulk-replace'});
+        expect(changes.map((row) => row.source).toSet(), {
+          SyncChangeSource.bulk.name,
+        });
+        final tombstones =
+            await harness.db.select(harness.db.syncTombstones).get();
+        expect(
+          tombstones.map((row) => row.entityId),
+          containsAll({'platform-link-old', 'genre-link-old'}),
+        );
+      },
+    );
   });
 
   test('all mutable repositories feed the shared oplog boundary', () async {
@@ -516,6 +852,9 @@ void main() {
         'entry-1',
         'platform-link-1',
         'genre-link-1',
+        'platform-link-2',
+        'genre-link-2',
+        'playthrough-1',
       ]),
       clock: clock,
       sync: harness.runner,
@@ -528,6 +867,33 @@ void main() {
         genreIds: ['genre-1'],
       ),
     );
+    await games.save(
+      const GameFormModel(
+        entryId: 'entry-1',
+        gameId: 'game-1',
+        title: 'Tracked game edited',
+        status: GameStatus.backlog,
+        platformIds: ['platform-1'],
+        genreIds: ['genre-1'],
+      ),
+    );
+    await games.savePlaythrough(
+      const PlaythroughFormModel(
+        libraryEntryId: 'entry-1',
+        platformId: 'platform-1',
+        status: PlaythroughStatus.planned,
+      ),
+    );
+    await games.savePlaythrough(
+      PlaythroughFormModel(
+        playthroughId: 'playthrough-1',
+        libraryEntryId: 'entry-1',
+        platformId: 'platform-1',
+        status: PlaythroughStatus.active,
+        startedAt: _now,
+      ),
+    );
+    await games.softDeletePlaythrough('playthrough-1');
 
     final metadata = MetadataRepository(
       harness.db,
@@ -561,6 +927,9 @@ void main() {
       sort: const LibrarySortState(),
       columnConfig: LibraryColumnConfig(),
     );
+    final createdView = (await views.watchCustomViews().first).single;
+    await views.update(createdView.copyWith(name: 'Tracked view updated'));
+    await views.softDelete('view-1');
 
     final notion = NotionCsvImportRepository(
       harness.db,
@@ -622,6 +991,7 @@ void main() {
     );
     await media.saveLocalCover(gameId: 'game-1', sourcePath: source.path);
     await media.softDelete('media-1');
+    await games.softDelete('entry-1');
 
     final changes = await harness.db.select(harness.db.syncChanges).get();
     final entityTypes = changes.map((row) => row.entityType).toSet();
@@ -635,6 +1005,7 @@ void main() {
         'library_entry',
         'library_entry_platform',
         'game_genre',
+        'playthrough',
         'external_game_id',
         'saved_view',
         'media_asset',
@@ -654,6 +1025,112 @@ void main() {
       )).getSingleOrNull(),
       isNotNull,
     );
+    expect(
+      await (harness.db.select(
+        harness.db.syncTombstones,
+      )..where((row) => row.entityType.equals('saved_view'))).getSingleOrNull(),
+      isNotNull,
+    );
+    expect(
+      await (harness.db.select(harness.db.syncTombstones)
+        ..where((row) => row.entityType.equals('game'))).getSingleOrNull(),
+      isNotNull,
+    );
+    expect(
+      changes
+          .where((row) => row.entityType == 'saved_view')
+          .map((row) => row.operation),
+      containsAll({'created', 'updated', 'deleted'}),
+    );
+    expect(
+      changes
+          .where((row) => row.entityType == 'playthrough')
+          .map((row) => row.operation),
+      containsAll({'created', 'updated', 'deleted'}),
+    );
+  });
+
+  test('full snapshot guard handles a moderate library mutation', () async {
+    final harness = await _Harness.create();
+    addTearDown(harness.db.close);
+    await harness.db.batch((batch) {
+      for (var index = 0; index < 60; index++) {
+        batch.insert(
+          harness.db.games,
+          GamesCompanion.insert(
+            id: 'game-$index',
+            title: 'Game $index',
+            createdAt: _now,
+            updatedAt: _now,
+          ),
+        );
+        batch.insert(
+          harness.db.libraryEntries,
+          LibraryEntriesCompanion.insert(
+            id: 'entry-$index',
+            gameId: 'game-$index',
+            status: 'backlog',
+            createdAt: _now,
+            updatedAt: _now,
+          ),
+        );
+        if (index < 20) {
+          batch.insert(
+            harness.db.mediaAssets,
+            MediaAssetsCompanion.insert(
+              id: 'media-$index',
+              gameId: 'game-$index',
+              kind: 'cover',
+              source: 'local',
+              localPath: 'media/games/game-$index/cover.png',
+              fileName: 'cover-$index.png',
+              hash: Value('hash-$index'),
+              createdAt: _now,
+              updatedAt: _now,
+            ),
+          );
+        }
+      }
+      for (var index = 0; index < 6; index++) {
+        batch.insert(
+          harness.db.platforms,
+          PlatformsCompanion.insert(
+            id: 'platform-$index',
+            name: 'Platform $index',
+            createdAt: _now,
+            updatedAt: _now,
+          ),
+        );
+        batch.insert(
+          harness.db.genres,
+          GenresCompanion.insert(
+            id: 'genre-$index',
+            name: 'Genre $index',
+            createdAt: _now,
+            updatedAt: _now,
+          ),
+        );
+      }
+    });
+
+    await harness.runner.run(
+      source: SyncChangeSource.manual,
+      action:
+          (_) =>
+              (harness.db.update(harness.db.games)
+                ..where((row) => row.id.equals('game-37'))).write(
+                GamesCompanion(
+                  title: const Value('Game 37 updated'),
+                  updatedAt: Value(_now.add(const Duration(minutes: 1))),
+                ),
+              ),
+    );
+
+    final changes = await harness.db.select(harness.db.syncChanges).get();
+    expect(changes, hasLength(1));
+    expect(changes.single.entityType, 'game');
+    expect(changes.single.entityId, 'game-37');
+    expect(changes.single.operation, 'updated');
   });
 
   test(
@@ -748,11 +1225,15 @@ void main() {
 
       final export = await ExportRepository(harness.db).exportLogical();
       final json = export.toJsonString();
+      final csv = utf8.decode(
+        await ExportRepository(harness.db).exportActiveLibraryCsvBytes(),
+      );
       expect(export.schemaVersion, logicalLibrarySchemaVersion);
       expect(logicalLibrarySchemaVersion, 4);
       expect(json, isNot(contains('sync_devices')));
       expect(json, isNot(contains(_deviceId)));
       expect(json, isNot(contains('sync_changes')));
+      expect(csv, isNot(contains(_deviceId)));
     },
   );
 
@@ -760,15 +1241,48 @@ void main() {
     final harness = await _Harness.create();
     addTearDown(harness.db.close);
     final repository = ExportRepository(harness.db, sync: harness.runner);
-    final export = await repository.exportLogical();
+    final export = LogicalLibraryExport(
+      formatVersion: 1,
+      schemaVersion: 4,
+      exportedAt: _now,
+      games: [
+        {
+          'id': 'restored-game',
+          'title': 'Restored game',
+          'sortTitle': null,
+          'releaseDate': null,
+          'type': 'game',
+          'createdAt': _now.toIso8601String(),
+          'updatedAt': _now.toIso8601String(),
+          'deletedAt': null,
+        },
+      ],
+      libraryEntries: const [],
+      platforms: const [],
+      libraryEntryPlatforms: const [],
+      genres: const [],
+      gameGenres: const [],
+      playthroughs: const [],
+      savedViews: const [],
+      externalGameIds: const [],
+      mediaAssets: const [],
+    );
     final before = await harness.localState();
+    final changesBefore = await harness.db.select(harness.db.syncChanges).get();
 
     await repository.restoreLogical(export);
 
     final after = await harness.localState();
+    final changesAfter = await harness.db.select(harness.db.syncChanges).get();
     expect(after.localDeviceId, before.localDeviceId);
     expect(after.nextLocalCounter, before.nextLocalCounter);
     expect(after.requiresReconciliation, isTrue);
+    expect(changesAfter, hasLength(changesBefore.length));
+    expect(
+      await (harness.db.select(harness.db.games)
+        ..where((row) => row.id.equals('restored-game'))).getSingleOrNull(),
+      isNotNull,
+    );
     expect(
       (await harness.db.select(harness.db.syncDevices).getSingle()).id,
       _deviceId,
@@ -878,6 +1392,18 @@ class _Harness {
         'mutation-10',
         'mutation-11',
         'mutation-12',
+        'mutation-13',
+        'mutation-14',
+        'mutation-15',
+        'mutation-16',
+        'mutation-17',
+        'mutation-18',
+        'mutation-19',
+        'mutation-20',
+        'mutation-21',
+        'mutation-22',
+        'mutation-23',
+        'mutation-24',
       ]),
     );
     final harness = _Harness(

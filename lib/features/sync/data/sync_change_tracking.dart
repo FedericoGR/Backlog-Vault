@@ -9,6 +9,7 @@ import '../../../core/time/clock.dart';
 import '../domain/sync_models.dart';
 import 'canonical_json.dart';
 import 'sync_device_identity.dart';
+import 'sync_payload_sanitizer.dart';
 
 const _localSyncStateId = 'local';
 
@@ -17,6 +18,11 @@ class LogicalLibrarySnapshotReader {
 
   final AppDatabase _db;
 
+  /// Captures all logical library tables.
+  ///
+  /// E19 deliberately favors a complete transactional view over repository-
+  /// specific capture rules. This is bounded by a moderate-library smoke test;
+  /// E20 should introduce scoped snapshots before transport increases volume.
   Future<Map<SyncEntityKey, SyncEntitySnapshot>> capture() async {
     final result = <SyncEntityKey, SyncEntitySnapshot>{};
 
@@ -335,12 +341,15 @@ class SyncChangeRecorder {
   const SyncChangeRecorder(
     this._db, {
     CanonicalJson serializer = canonicalJson,
+    SyncPayloadSanitizer sanitizer = syncPayloadSanitizer,
     Clock clock = systemClock,
   }) : _serializer = serializer,
+       _sanitizer = sanitizer,
        _clock = clock;
 
   final AppDatabase _db;
   final CanonicalJson _serializer;
+  final SyncPayloadSanitizer _sanitizer;
   final Clock _clock;
 
   Future<SyncState> ensureState(LocalDeviceInfo device) async {
@@ -403,6 +412,8 @@ class SyncChangeRecorder {
       final changeId = '${device.id}:$counter';
       final causalContext = Map<String, int>.from(vector);
       final changedFields = pending.changedFields.toList()..sort();
+      final safePayload = _sanitizer.sanitizeMap(pending.payload);
+      final safeSnapshot = _sanitizer.sanitizeMap(pending.snapshot);
       final content = <String, Object?>{
         'causalContext': causalContext,
         'changedFields': changedFields,
@@ -411,12 +422,12 @@ class SyncChangeRecorder {
         'operation': pending.operation,
         'originCounter': counter,
         'originDeviceId': device.id,
-        'payload': pending.payload,
-        'snapshot': pending.snapshot,
+        'payload': safePayload,
+        'snapshot': safeSnapshot,
         'source': source.name,
       };
       final contentHash = _serializer.sha256Hex(content);
-      final snapshotHash = _serializer.sha256Hex(pending.snapshot);
+      final snapshotHash = _serializer.sha256Hex(safeSnapshot);
       final createdAt = _clock.now();
       await _db
           .into(_db.syncChanges)
@@ -431,8 +442,8 @@ class SyncChangeRecorder {
               entityId: pending.entityId,
               operation: pending.operation,
               changedFieldsJson: _serializer.encode(changedFields),
-              payloadJson: _serializer.encode(pending.payload),
-              snapshotJson: _serializer.encode(pending.snapshot),
+              payloadJson: _serializer.encode(safePayload),
+              snapshotJson: _serializer.encode(safeSnapshot),
               causalContextJson: _serializer.encode(causalContext),
               source: source.name,
               contentHash: contentHash,

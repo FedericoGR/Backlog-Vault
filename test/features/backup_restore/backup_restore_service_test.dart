@@ -5,7 +5,9 @@ import 'package:archive/archive.dart';
 import 'package:backlog_vault/core/database/app_database.dart';
 import 'package:backlog_vault/core/ids/id_generator.dart';
 import 'package:backlog_vault/core/time/clock.dart';
+import 'package:backlog_vault/core/version/app_versions.dart';
 import 'package:backlog_vault/features/backup_restore/data/backup_service.dart';
+import 'package:backlog_vault/features/backup_restore/data/encrypted_backup_codec.dart';
 import 'package:backlog_vault/features/backup_restore/data/export_repository.dart';
 import 'package:backlog_vault/features/backup_restore/domain/backup_models.dart';
 import 'package:backlog_vault/features/library/data/library_query_repository.dart';
@@ -103,17 +105,53 @@ void main() {
     'encrypted backup roundtrips and does not expose clear ZIP entries',
     () async {
       await _insertCompleteLibrary(db, mediaBase: tempDir);
+      await db
+          .into(db.syncDevices)
+          .insert(
+            SyncDevicesCompanion.insert(
+              id: '11111111-1111-4111-8111-111111111111',
+              displayName: 'Private local identity',
+              platform: 'windows',
+              isLocal: const Value(true),
+              status: 'local',
+              createdAt: DateTime.utc(2026),
+            ),
+          );
+      await db
+          .into(db.syncStates)
+          .insert(
+            SyncStatesCompanion.insert(
+              id: 'local',
+              localDeviceId: '11111111-1111-4111-8111-111111111111',
+              nextLocalCounter: const Value(42),
+              updatedAt: DateTime.utc(2026),
+            ),
+          );
 
       final result = await backupService.createEncryptedBackup(
         password: 'correct horse battery staple',
       );
       final encryptedText = String.fromCharCodes(result.bytes);
+      final clearBytes = await EncryptedBackupCodec().decrypt(
+        result.bytes,
+        'correct horse battery staple',
+      );
+      final logical = BackupPackageReader().read(clearBytes).logicalExport;
+      final logicalJson = logical.toJsonString();
 
       expect(result.fileName, endsWith('.vaultbackup.enc'));
       expect(result.bytes.take(4), [0x42, 0x56, 0x45, 0x31]);
       expect(encryptedText, isNot(contains('manifest.json')));
       expect(encryptedText, isNot(contains('data/library.json')));
       expect(encryptedText, isNot(contains('Nota privada')));
+      expect(logical.schemaVersion, logicalLibrarySchemaVersion);
+      expect(logical.schemaVersion, 4);
+      expect(logicalJson, isNot(contains('sync_')));
+      expect(logicalJson, isNot(contains('Private local identity')));
+      expect(
+        logicalJson,
+        isNot(contains('11111111-1111-4111-8111-111111111111')),
+      );
 
       final preview = await backupService.previewEncryptedBackup(
         result.bytes,
