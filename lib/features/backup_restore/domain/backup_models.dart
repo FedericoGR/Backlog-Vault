@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import '../../../core/version/app_versions.dart';
+
 const backupAppName = 'Backlog Vault';
 const backupFormatVersion = 1;
-const supportedBackupSchemaVersion = 4;
+const supportedBackupSchemaVersion = logicalLibrarySchemaVersion;
 
 class BackupException implements Exception {
   const BackupException(this.message);

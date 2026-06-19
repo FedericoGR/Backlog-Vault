@@ -3,7 +3,7 @@ import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('migrates schema 1 database to schema 4 preserving library data', () async {
+  test('migrates schema 1 database to schema 5 preserving library data', () async {
     final executor = NativeDatabase.memory(
       setup: (db) {
         db
@@ -138,7 +138,7 @@ void main() {
     expect(await db.select(db.mediaAssets).get(), isEmpty);
   });
 
-  test('migrates schema 2 database to schema 4 preserving saved views', () async {
+  test('migrates schema 2 database to schema 5 preserving saved views', () async {
     final executor = NativeDatabase.memory(
       setup: (db) {
         db
@@ -209,7 +209,7 @@ void main() {
     expect(await db.select(db.mediaAssets).get(), isEmpty);
   });
 
-  test('migrates schema 3 database to schema 4 preserving external ids', () async {
+  test('migrates schema 3 database to schema 5 preserving external ids', () async {
     final executor = NativeDatabase.memory(
       setup: (db) {
         db

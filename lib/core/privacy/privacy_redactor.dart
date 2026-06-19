@@ -2,7 +2,7 @@ class PrivacyRedactor {
   const PrivacyRedactor();
 
   static final _sensitiveQueryParam = RegExp(
-    r'([?&](?:key|api_key|apikey|token|access_token|refresh_token|client_id|client_secret)=)([^&#\s]+)',
+    r'([?&](?:key|api_key|apikey|token|access_token|refresh_token|client_id|client_secret|sync_key|group_key|private_key|session_key|pairing_secret)=)([^&#\s]+)',
     caseSensitive: false,
   );
   static final _clientIdHeader = RegExp(
@@ -10,7 +10,7 @@ class PrivacyRedactor {
     caseSensitive: false,
   );
   static final _sensitiveKeyValue = RegExp(
-    r'\b(client_id|client_secret|access_token|refresh_token|api_key|apikey|token)\s*=\s*([^\s,;&]+)',
+    r'\b(client_id|client_secret|access_token|refresh_token|api_key|apikey|token|sync_key|group_key|private_key|session_key|pairing_secret)\s*=\s*([^\s,;&]+)',
     caseSensitive: false,
   );
   static final _authorizationHeader = RegExp(

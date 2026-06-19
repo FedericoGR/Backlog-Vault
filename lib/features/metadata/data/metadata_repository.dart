@@ -6,22 +6,34 @@ import '../../../core/database/database_providers.dart';
 import '../../../core/ids/id_generator.dart';
 import '../../../core/time/clock.dart';
 import '../../catalogs/domain/catalog_normalizer.dart';
+import '../../sync/application/sync_providers.dart';
+import '../../sync/data/sync_change_tracking.dart';
+import '../../sync/domain/sync_models.dart';
 import '../domain/apply_metadata_request.dart';
 import '../domain/metadata_exception.dart';
 import '../domain/metadata_field.dart';
 
 final metadataRepositoryProvider = Provider<MetadataRepository>((ref) {
-  return MetadataRepository(ref.watch(appDatabaseProvider));
+  return MetadataRepository(
+    ref.watch(appDatabaseProvider),
+    sync: ref.watch(syncAwareTransactionProvider),
+  );
 });
 
 class MetadataRepository {
-  MetadataRepository(this._db, {IdGenerator? ids, Clock clock = systemClock})
-    : _ids = ids ?? defaultIdGenerator,
-      _clock = clock;
+  MetadataRepository(
+    this._db, {
+    IdGenerator? ids,
+    Clock clock = systemClock,
+    SyncAwareTransaction? sync,
+  }) : _ids = ids ?? defaultIdGenerator,
+       _clock = clock,
+       _sync = sync ?? SyncAwareTransaction.disabled(_db);
 
   final AppDatabase _db;
   final IdGenerator _ids;
   final Clock _clock;
+  final SyncAwareTransaction _sync;
 
   Future<List<ExternalGameId>> externalIdsForGame(String gameId) {
     return (_db.select(_db.externalGameIds)
@@ -32,84 +44,87 @@ class MetadataRepository {
   }
 
   Future<void> applyMetadata(ApplyMetadataRequest request) {
-    return _db.transaction(() async {
-      final now = _clock.now();
-      final game =
-          await ((_db.select(_db.games)
-                ..where((table) => table.id.equals(request.gameId))
-                ..where((table) => table.deletedAt.isNull()))
-              .getSingleOrNull());
-      final entry =
-          await ((_db.select(_db.libraryEntries)
-                ..where((table) => table.id.equals(request.libraryEntryId))
-                ..where((table) => table.gameId.equals(request.gameId))
-                ..where((table) => table.deletedAt.isNull()))
-              .getSingleOrNull());
-      if (game == null || entry == null) {
-        throw const MetadataException(
-          'No se encontró el juego en la biblioteca.',
-          type: MetadataErrorType.notFound,
-        );
-      }
+    return _sync.run(
+      source: SyncChangeSource.metadata,
+      action: (_) async {
+        final now = _clock.now();
+        final game =
+            await ((_db.select(_db.games)
+                  ..where((table) => table.id.equals(request.gameId))
+                  ..where((table) => table.deletedAt.isNull()))
+                .getSingleOrNull());
+        final entry =
+            await ((_db.select(_db.libraryEntries)
+                  ..where((table) => table.id.equals(request.libraryEntryId))
+                  ..where((table) => table.gameId.equals(request.gameId))
+                  ..where((table) => table.deletedAt.isNull()))
+                .getSingleOrNull());
+        if (game == null || entry == null) {
+          throw const MetadataException(
+            'No se encontró el juego en la biblioteca.',
+            type: MetadataErrorType.notFound,
+          );
+        }
 
-      await _upsertExternalId(request, now);
+        await _upsertExternalId(request, now);
 
-      var touchedGame = false;
-      if (request.selectedFields.contains(MetadataField.title)) {
-        await (_db.update(_db.games)
-          ..where((table) => table.id.equals(request.gameId))).write(
-          GamesCompanion(
-            title: Value(request.details.title.trim()),
-            updatedAt: Value(now),
-          ),
-        );
-        touchedGame = true;
-      }
-      if (request.selectedFields.contains(MetadataField.releaseDate)) {
-        await (_db.update(_db.games)
-          ..where((table) => table.id.equals(request.gameId))).write(
-          GamesCompanion(
-            releaseDate: Value(request.details.releaseDate),
-            updatedAt: Value(now),
-          ),
-        );
-        touchedGame = true;
-      }
-      if (request.selectedFields.contains(MetadataField.type)) {
-        await (_db.update(_db.games)
-          ..where((table) => table.id.equals(request.gameId))).write(
-          GamesCompanion(
-            type: Value(
-              request.details.type.trim().isEmpty
-                  ? 'game'
-                  : request.details.type.trim(),
+        var touchedGame = false;
+        if (request.selectedFields.contains(MetadataField.title)) {
+          await (_db.update(_db.games)
+            ..where((table) => table.id.equals(request.gameId))).write(
+            GamesCompanion(
+              title: Value(request.details.title.trim()),
+              updatedAt: Value(now),
             ),
-            updatedAt: Value(now),
-          ),
-        );
-        touchedGame = true;
-      }
-      if (request.selectedFields.contains(MetadataField.genres)) {
-        if (request.replaceFields.contains(MetadataField.genres)) {
-          await _softDeleteGameGenres(request.gameId, now);
+          );
+          touchedGame = true;
         }
-        await _addGenres(request.gameId, request.details.genres, now);
-        touchedGame = true;
-      }
-      if (request.selectedFields.contains(MetadataField.platforms)) {
-        if (request.replaceFields.contains(MetadataField.platforms)) {
-          await _softDeleteLibraryEntryPlatforms(request.libraryEntryId, now);
+        if (request.selectedFields.contains(MetadataField.releaseDate)) {
+          await (_db.update(_db.games)
+            ..where((table) => table.id.equals(request.gameId))).write(
+            GamesCompanion(
+              releaseDate: Value(request.details.releaseDate),
+              updatedAt: Value(now),
+            ),
+          );
+          touchedGame = true;
         }
-        await _addPlatforms(
-          request.libraryEntryId,
-          request.details.platforms,
-          now,
-        );
-        await _touchEntry(request.libraryEntryId, now);
-      }
-      if (!touchedGame) return;
-      await _touchGame(request.gameId, now);
-    });
+        if (request.selectedFields.contains(MetadataField.type)) {
+          await (_db.update(_db.games)
+            ..where((table) => table.id.equals(request.gameId))).write(
+            GamesCompanion(
+              type: Value(
+                request.details.type.trim().isEmpty
+                    ? 'game'
+                    : request.details.type.trim(),
+              ),
+              updatedAt: Value(now),
+            ),
+          );
+          touchedGame = true;
+        }
+        if (request.selectedFields.contains(MetadataField.genres)) {
+          if (request.replaceFields.contains(MetadataField.genres)) {
+            await _softDeleteGameGenres(request.gameId, now);
+          }
+          await _addGenres(request.gameId, request.details.genres, now);
+          touchedGame = true;
+        }
+        if (request.selectedFields.contains(MetadataField.platforms)) {
+          if (request.replaceFields.contains(MetadataField.platforms)) {
+            await _softDeleteLibraryEntryPlatforms(request.libraryEntryId, now);
+          }
+          await _addPlatforms(
+            request.libraryEntryId,
+            request.details.platforms,
+            now,
+          );
+          await _touchEntry(request.libraryEntryId, now);
+        }
+        if (!touchedGame) return;
+        await _touchGame(request.gameId, now);
+      },
+    );
   }
 
   Future<void> _upsertExternalId(

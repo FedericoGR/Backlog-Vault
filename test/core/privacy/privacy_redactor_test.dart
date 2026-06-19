@@ -76,4 +76,17 @@ void main() {
     expect(redacted, isNot(contains('/home/feder')));
     expect(redacted, contains('media/games/game-1/cover.png'));
   });
+
+  test('redacts future sync key labels without exposing dummy values', () {
+    final redacted = privacyRedactor.redact(
+      'sync_key=test_sync_value group_key=test_group_value '
+      'private_key=test_private_value session_key=test_session_value '
+      'pairing_secret=test_pairing_value',
+    );
+
+    expect(redacted, contains('sync_key=[REDACTED]'));
+    expect(redacted, contains('group_key=[REDACTED]'));
+    expect(redacted, isNot(contains('test_sync_value')));
+    expect(redacted, isNot(contains('test_private_value')));
+  });
 }

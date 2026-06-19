@@ -5659,6 +5659,4701 @@ class MediaAssetsCompanion extends UpdateCompanion<MediaAsset> {
   }
 }
 
+class $SyncGroupsTable extends SyncGroups
+    with TableInfo<$SyncGroupsTable, SyncGroup> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncGroupsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _displayNameMeta = const VerificationMeta(
+    'displayName',
+  );
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+    'display_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _protocolVersionMeta = const VerificationMeta(
+    'protocolVersion',
+  );
+  @override
+  late final GeneratedColumn<int> protocolVersion = GeneratedColumn<int>(
+    'protocol_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _keyIdMeta = const VerificationMeta('keyId');
+  @override
+  late final GeneratedColumn<String> keyId = GeneratedColumn<String>(
+    'key_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _keyRotatedAtMeta = const VerificationMeta(
+    'keyRotatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> keyRotatedAt = GeneratedColumn<DateTime>(
+    'key_rotated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    displayName,
+    protocolVersion,
+    keyId,
+    status,
+    createdAt,
+    updatedAt,
+    keyRotatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_groups';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncGroup> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+        _displayNameMeta,
+        displayName.isAcceptableOrUnknown(
+          data['display_name']!,
+          _displayNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_displayNameMeta);
+    }
+    if (data.containsKey('protocol_version')) {
+      context.handle(
+        _protocolVersionMeta,
+        protocolVersion.isAcceptableOrUnknown(
+          data['protocol_version']!,
+          _protocolVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_protocolVersionMeta);
+    }
+    if (data.containsKey('key_id')) {
+      context.handle(
+        _keyIdMeta,
+        keyId.isAcceptableOrUnknown(data['key_id']!, _keyIdMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('key_rotated_at')) {
+      context.handle(
+        _keyRotatedAtMeta,
+        keyRotatedAt.isAcceptableOrUnknown(
+          data['key_rotated_at']!,
+          _keyRotatedAtMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SyncGroup map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncGroup(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      displayName:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}display_name'],
+          )!,
+      protocolVersion:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}protocol_version'],
+          )!,
+      keyId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key_id'],
+      ),
+      status:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}status'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+      keyRotatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}key_rotated_at'],
+      ),
+    );
+  }
+
+  @override
+  $SyncGroupsTable createAlias(String alias) {
+    return $SyncGroupsTable(attachedDatabase, alias);
+  }
+}
+
+class SyncGroup extends DataClass implements Insertable<SyncGroup> {
+  final String id;
+  final String displayName;
+  final int protocolVersion;
+  final String? keyId;
+  final String status;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? keyRotatedAt;
+  const SyncGroup({
+    required this.id,
+    required this.displayName,
+    required this.protocolVersion,
+    this.keyId,
+    required this.status,
+    required this.createdAt,
+    required this.updatedAt,
+    this.keyRotatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['display_name'] = Variable<String>(displayName);
+    map['protocol_version'] = Variable<int>(protocolVersion);
+    if (!nullToAbsent || keyId != null) {
+      map['key_id'] = Variable<String>(keyId);
+    }
+    map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || keyRotatedAt != null) {
+      map['key_rotated_at'] = Variable<DateTime>(keyRotatedAt);
+    }
+    return map;
+  }
+
+  SyncGroupsCompanion toCompanion(bool nullToAbsent) {
+    return SyncGroupsCompanion(
+      id: Value(id),
+      displayName: Value(displayName),
+      protocolVersion: Value(protocolVersion),
+      keyId:
+          keyId == null && nullToAbsent ? const Value.absent() : Value(keyId),
+      status: Value(status),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      keyRotatedAt:
+          keyRotatedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(keyRotatedAt),
+    );
+  }
+
+  factory SyncGroup.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncGroup(
+      id: serializer.fromJson<String>(json['id']),
+      displayName: serializer.fromJson<String>(json['displayName']),
+      protocolVersion: serializer.fromJson<int>(json['protocolVersion']),
+      keyId: serializer.fromJson<String?>(json['keyId']),
+      status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      keyRotatedAt: serializer.fromJson<DateTime?>(json['keyRotatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'displayName': serializer.toJson<String>(displayName),
+      'protocolVersion': serializer.toJson<int>(protocolVersion),
+      'keyId': serializer.toJson<String?>(keyId),
+      'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'keyRotatedAt': serializer.toJson<DateTime?>(keyRotatedAt),
+    };
+  }
+
+  SyncGroup copyWith({
+    String? id,
+    String? displayName,
+    int? protocolVersion,
+    Value<String?> keyId = const Value.absent(),
+    String? status,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> keyRotatedAt = const Value.absent(),
+  }) => SyncGroup(
+    id: id ?? this.id,
+    displayName: displayName ?? this.displayName,
+    protocolVersion: protocolVersion ?? this.protocolVersion,
+    keyId: keyId.present ? keyId.value : this.keyId,
+    status: status ?? this.status,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    keyRotatedAt: keyRotatedAt.present ? keyRotatedAt.value : this.keyRotatedAt,
+  );
+  SyncGroup copyWithCompanion(SyncGroupsCompanion data) {
+    return SyncGroup(
+      id: data.id.present ? data.id.value : this.id,
+      displayName:
+          data.displayName.present ? data.displayName.value : this.displayName,
+      protocolVersion:
+          data.protocolVersion.present
+              ? data.protocolVersion.value
+              : this.protocolVersion,
+      keyId: data.keyId.present ? data.keyId.value : this.keyId,
+      status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      keyRotatedAt:
+          data.keyRotatedAt.present
+              ? data.keyRotatedAt.value
+              : this.keyRotatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncGroup(')
+          ..write('id: $id, ')
+          ..write('displayName: $displayName, ')
+          ..write('protocolVersion: $protocolVersion, ')
+          ..write('keyId: $keyId, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('keyRotatedAt: $keyRotatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    displayName,
+    protocolVersion,
+    keyId,
+    status,
+    createdAt,
+    updatedAt,
+    keyRotatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncGroup &&
+          other.id == this.id &&
+          other.displayName == this.displayName &&
+          other.protocolVersion == this.protocolVersion &&
+          other.keyId == this.keyId &&
+          other.status == this.status &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.keyRotatedAt == this.keyRotatedAt);
+}
+
+class SyncGroupsCompanion extends UpdateCompanion<SyncGroup> {
+  final Value<String> id;
+  final Value<String> displayName;
+  final Value<int> protocolVersion;
+  final Value<String?> keyId;
+  final Value<String> status;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> keyRotatedAt;
+  final Value<int> rowid;
+  const SyncGroupsCompanion({
+    this.id = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.protocolVersion = const Value.absent(),
+    this.keyId = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.keyRotatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncGroupsCompanion.insert({
+    required String id,
+    required String displayName,
+    required int protocolVersion,
+    this.keyId = const Value.absent(),
+    required String status,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.keyRotatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       displayName = Value(displayName),
+       protocolVersion = Value(protocolVersion),
+       status = Value(status),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<SyncGroup> custom({
+    Expression<String>? id,
+    Expression<String>? displayName,
+    Expression<int>? protocolVersion,
+    Expression<String>? keyId,
+    Expression<String>? status,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? keyRotatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (displayName != null) 'display_name': displayName,
+      if (protocolVersion != null) 'protocol_version': protocolVersion,
+      if (keyId != null) 'key_id': keyId,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (keyRotatedAt != null) 'key_rotated_at': keyRotatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncGroupsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? displayName,
+    Value<int>? protocolVersion,
+    Value<String?>? keyId,
+    Value<String>? status,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? keyRotatedAt,
+    Value<int>? rowid,
+  }) {
+    return SyncGroupsCompanion(
+      id: id ?? this.id,
+      displayName: displayName ?? this.displayName,
+      protocolVersion: protocolVersion ?? this.protocolVersion,
+      keyId: keyId ?? this.keyId,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      keyRotatedAt: keyRotatedAt ?? this.keyRotatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (protocolVersion.present) {
+      map['protocol_version'] = Variable<int>(protocolVersion.value);
+    }
+    if (keyId.present) {
+      map['key_id'] = Variable<String>(keyId.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (keyRotatedAt.present) {
+      map['key_rotated_at'] = Variable<DateTime>(keyRotatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncGroupsCompanion(')
+          ..write('id: $id, ')
+          ..write('displayName: $displayName, ')
+          ..write('protocolVersion: $protocolVersion, ')
+          ..write('keyId: $keyId, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('keyRotatedAt: $keyRotatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncDevicesTable extends SyncDevices
+    with TableInfo<$SyncDevicesTable, SyncDevice> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncDevicesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncGroupIdMeta = const VerificationMeta(
+    'syncGroupId',
+  );
+  @override
+  late final GeneratedColumn<String> syncGroupId = GeneratedColumn<String>(
+    'sync_group_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _displayNameMeta = const VerificationMeta(
+    'displayName',
+  );
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+    'display_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _platformMeta = const VerificationMeta(
+    'platform',
+  );
+  @override
+  late final GeneratedColumn<String> platform = GeneratedColumn<String>(
+    'platform',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isLocalMeta = const VerificationMeta(
+    'isLocal',
+  );
+  @override
+  late final GeneratedColumn<bool> isLocal = GeneratedColumn<bool>(
+    'is_local',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_local" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _publicKeyMeta = const VerificationMeta(
+    'publicKey',
+  );
+  @override
+  late final GeneratedColumn<String> publicKey = GeneratedColumn<String>(
+    'public_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fingerprintMeta = const VerificationMeta(
+    'fingerprint',
+  );
+  @override
+  late final GeneratedColumn<String> fingerprint = GeneratedColumn<String>(
+    'fingerprint',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pairedAtMeta = const VerificationMeta(
+    'pairedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> pairedAt = GeneratedColumn<DateTime>(
+    'paired_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastSeenAtMeta = const VerificationMeta(
+    'lastSeenAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastSeenAt = GeneratedColumn<DateTime>(
+    'last_seen_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastSyncAtMeta = const VerificationMeta(
+    'lastSyncAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastSyncAt = GeneratedColumn<DateTime>(
+    'last_sync_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _revokedAtMeta = const VerificationMeta(
+    'revokedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> revokedAt = GeneratedColumn<DateTime>(
+    'revoked_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    syncGroupId,
+    displayName,
+    platform,
+    isLocal,
+    publicKey,
+    fingerprint,
+    status,
+    createdAt,
+    pairedAt,
+    lastSeenAt,
+    lastSyncAt,
+    revokedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_devices';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncDevice> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('sync_group_id')) {
+      context.handle(
+        _syncGroupIdMeta,
+        syncGroupId.isAcceptableOrUnknown(
+          data['sync_group_id']!,
+          _syncGroupIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+        _displayNameMeta,
+        displayName.isAcceptableOrUnknown(
+          data['display_name']!,
+          _displayNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_displayNameMeta);
+    }
+    if (data.containsKey('platform')) {
+      context.handle(
+        _platformMeta,
+        platform.isAcceptableOrUnknown(data['platform']!, _platformMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_platformMeta);
+    }
+    if (data.containsKey('is_local')) {
+      context.handle(
+        _isLocalMeta,
+        isLocal.isAcceptableOrUnknown(data['is_local']!, _isLocalMeta),
+      );
+    }
+    if (data.containsKey('public_key')) {
+      context.handle(
+        _publicKeyMeta,
+        publicKey.isAcceptableOrUnknown(data['public_key']!, _publicKeyMeta),
+      );
+    }
+    if (data.containsKey('fingerprint')) {
+      context.handle(
+        _fingerprintMeta,
+        fingerprint.isAcceptableOrUnknown(
+          data['fingerprint']!,
+          _fingerprintMeta,
+        ),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('paired_at')) {
+      context.handle(
+        _pairedAtMeta,
+        pairedAt.isAcceptableOrUnknown(data['paired_at']!, _pairedAtMeta),
+      );
+    }
+    if (data.containsKey('last_seen_at')) {
+      context.handle(
+        _lastSeenAtMeta,
+        lastSeenAt.isAcceptableOrUnknown(
+          data['last_seen_at']!,
+          _lastSeenAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_sync_at')) {
+      context.handle(
+        _lastSyncAtMeta,
+        lastSyncAt.isAcceptableOrUnknown(
+          data['last_sync_at']!,
+          _lastSyncAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('revoked_at')) {
+      context.handle(
+        _revokedAtMeta,
+        revokedAt.isAcceptableOrUnknown(data['revoked_at']!, _revokedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SyncDevice map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncDevice(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      syncGroupId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_group_id'],
+      ),
+      displayName:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}display_name'],
+          )!,
+      platform:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}platform'],
+          )!,
+      isLocal:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_local'],
+          )!,
+      publicKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}public_key'],
+      ),
+      fingerprint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}fingerprint'],
+      ),
+      status:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}status'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      pairedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}paired_at'],
+      ),
+      lastSeenAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_seen_at'],
+      ),
+      lastSyncAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_sync_at'],
+      ),
+      revokedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}revoked_at'],
+      ),
+    );
+  }
+
+  @override
+  $SyncDevicesTable createAlias(String alias) {
+    return $SyncDevicesTable(attachedDatabase, alias);
+  }
+}
+
+class SyncDevice extends DataClass implements Insertable<SyncDevice> {
+  final String id;
+  final String? syncGroupId;
+  final String displayName;
+  final String platform;
+  final bool isLocal;
+  final String? publicKey;
+  final String? fingerprint;
+  final String status;
+  final DateTime createdAt;
+  final DateTime? pairedAt;
+  final DateTime? lastSeenAt;
+  final DateTime? lastSyncAt;
+  final DateTime? revokedAt;
+  const SyncDevice({
+    required this.id,
+    this.syncGroupId,
+    required this.displayName,
+    required this.platform,
+    required this.isLocal,
+    this.publicKey,
+    this.fingerprint,
+    required this.status,
+    required this.createdAt,
+    this.pairedAt,
+    this.lastSeenAt,
+    this.lastSyncAt,
+    this.revokedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    if (!nullToAbsent || syncGroupId != null) {
+      map['sync_group_id'] = Variable<String>(syncGroupId);
+    }
+    map['display_name'] = Variable<String>(displayName);
+    map['platform'] = Variable<String>(platform);
+    map['is_local'] = Variable<bool>(isLocal);
+    if (!nullToAbsent || publicKey != null) {
+      map['public_key'] = Variable<String>(publicKey);
+    }
+    if (!nullToAbsent || fingerprint != null) {
+      map['fingerprint'] = Variable<String>(fingerprint);
+    }
+    map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || pairedAt != null) {
+      map['paired_at'] = Variable<DateTime>(pairedAt);
+    }
+    if (!nullToAbsent || lastSeenAt != null) {
+      map['last_seen_at'] = Variable<DateTime>(lastSeenAt);
+    }
+    if (!nullToAbsent || lastSyncAt != null) {
+      map['last_sync_at'] = Variable<DateTime>(lastSyncAt);
+    }
+    if (!nullToAbsent || revokedAt != null) {
+      map['revoked_at'] = Variable<DateTime>(revokedAt);
+    }
+    return map;
+  }
+
+  SyncDevicesCompanion toCompanion(bool nullToAbsent) {
+    return SyncDevicesCompanion(
+      id: Value(id),
+      syncGroupId:
+          syncGroupId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(syncGroupId),
+      displayName: Value(displayName),
+      platform: Value(platform),
+      isLocal: Value(isLocal),
+      publicKey:
+          publicKey == null && nullToAbsent
+              ? const Value.absent()
+              : Value(publicKey),
+      fingerprint:
+          fingerprint == null && nullToAbsent
+              ? const Value.absent()
+              : Value(fingerprint),
+      status: Value(status),
+      createdAt: Value(createdAt),
+      pairedAt:
+          pairedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(pairedAt),
+      lastSeenAt:
+          lastSeenAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lastSeenAt),
+      lastSyncAt:
+          lastSyncAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lastSyncAt),
+      revokedAt:
+          revokedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(revokedAt),
+    );
+  }
+
+  factory SyncDevice.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncDevice(
+      id: serializer.fromJson<String>(json['id']),
+      syncGroupId: serializer.fromJson<String?>(json['syncGroupId']),
+      displayName: serializer.fromJson<String>(json['displayName']),
+      platform: serializer.fromJson<String>(json['platform']),
+      isLocal: serializer.fromJson<bool>(json['isLocal']),
+      publicKey: serializer.fromJson<String?>(json['publicKey']),
+      fingerprint: serializer.fromJson<String?>(json['fingerprint']),
+      status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      pairedAt: serializer.fromJson<DateTime?>(json['pairedAt']),
+      lastSeenAt: serializer.fromJson<DateTime?>(json['lastSeenAt']),
+      lastSyncAt: serializer.fromJson<DateTime?>(json['lastSyncAt']),
+      revokedAt: serializer.fromJson<DateTime?>(json['revokedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'syncGroupId': serializer.toJson<String?>(syncGroupId),
+      'displayName': serializer.toJson<String>(displayName),
+      'platform': serializer.toJson<String>(platform),
+      'isLocal': serializer.toJson<bool>(isLocal),
+      'publicKey': serializer.toJson<String?>(publicKey),
+      'fingerprint': serializer.toJson<String?>(fingerprint),
+      'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'pairedAt': serializer.toJson<DateTime?>(pairedAt),
+      'lastSeenAt': serializer.toJson<DateTime?>(lastSeenAt),
+      'lastSyncAt': serializer.toJson<DateTime?>(lastSyncAt),
+      'revokedAt': serializer.toJson<DateTime?>(revokedAt),
+    };
+  }
+
+  SyncDevice copyWith({
+    String? id,
+    Value<String?> syncGroupId = const Value.absent(),
+    String? displayName,
+    String? platform,
+    bool? isLocal,
+    Value<String?> publicKey = const Value.absent(),
+    Value<String?> fingerprint = const Value.absent(),
+    String? status,
+    DateTime? createdAt,
+    Value<DateTime?> pairedAt = const Value.absent(),
+    Value<DateTime?> lastSeenAt = const Value.absent(),
+    Value<DateTime?> lastSyncAt = const Value.absent(),
+    Value<DateTime?> revokedAt = const Value.absent(),
+  }) => SyncDevice(
+    id: id ?? this.id,
+    syncGroupId: syncGroupId.present ? syncGroupId.value : this.syncGroupId,
+    displayName: displayName ?? this.displayName,
+    platform: platform ?? this.platform,
+    isLocal: isLocal ?? this.isLocal,
+    publicKey: publicKey.present ? publicKey.value : this.publicKey,
+    fingerprint: fingerprint.present ? fingerprint.value : this.fingerprint,
+    status: status ?? this.status,
+    createdAt: createdAt ?? this.createdAt,
+    pairedAt: pairedAt.present ? pairedAt.value : this.pairedAt,
+    lastSeenAt: lastSeenAt.present ? lastSeenAt.value : this.lastSeenAt,
+    lastSyncAt: lastSyncAt.present ? lastSyncAt.value : this.lastSyncAt,
+    revokedAt: revokedAt.present ? revokedAt.value : this.revokedAt,
+  );
+  SyncDevice copyWithCompanion(SyncDevicesCompanion data) {
+    return SyncDevice(
+      id: data.id.present ? data.id.value : this.id,
+      syncGroupId:
+          data.syncGroupId.present ? data.syncGroupId.value : this.syncGroupId,
+      displayName:
+          data.displayName.present ? data.displayName.value : this.displayName,
+      platform: data.platform.present ? data.platform.value : this.platform,
+      isLocal: data.isLocal.present ? data.isLocal.value : this.isLocal,
+      publicKey: data.publicKey.present ? data.publicKey.value : this.publicKey,
+      fingerprint:
+          data.fingerprint.present ? data.fingerprint.value : this.fingerprint,
+      status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      pairedAt: data.pairedAt.present ? data.pairedAt.value : this.pairedAt,
+      lastSeenAt:
+          data.lastSeenAt.present ? data.lastSeenAt.value : this.lastSeenAt,
+      lastSyncAt:
+          data.lastSyncAt.present ? data.lastSyncAt.value : this.lastSyncAt,
+      revokedAt: data.revokedAt.present ? data.revokedAt.value : this.revokedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncDevice(')
+          ..write('id: $id, ')
+          ..write('syncGroupId: $syncGroupId, ')
+          ..write('displayName: $displayName, ')
+          ..write('platform: $platform, ')
+          ..write('isLocal: $isLocal, ')
+          ..write('publicKey: $publicKey, ')
+          ..write('fingerprint: $fingerprint, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('pairedAt: $pairedAt, ')
+          ..write('lastSeenAt: $lastSeenAt, ')
+          ..write('lastSyncAt: $lastSyncAt, ')
+          ..write('revokedAt: $revokedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    syncGroupId,
+    displayName,
+    platform,
+    isLocal,
+    publicKey,
+    fingerprint,
+    status,
+    createdAt,
+    pairedAt,
+    lastSeenAt,
+    lastSyncAt,
+    revokedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncDevice &&
+          other.id == this.id &&
+          other.syncGroupId == this.syncGroupId &&
+          other.displayName == this.displayName &&
+          other.platform == this.platform &&
+          other.isLocal == this.isLocal &&
+          other.publicKey == this.publicKey &&
+          other.fingerprint == this.fingerprint &&
+          other.status == this.status &&
+          other.createdAt == this.createdAt &&
+          other.pairedAt == this.pairedAt &&
+          other.lastSeenAt == this.lastSeenAt &&
+          other.lastSyncAt == this.lastSyncAt &&
+          other.revokedAt == this.revokedAt);
+}
+
+class SyncDevicesCompanion extends UpdateCompanion<SyncDevice> {
+  final Value<String> id;
+  final Value<String?> syncGroupId;
+  final Value<String> displayName;
+  final Value<String> platform;
+  final Value<bool> isLocal;
+  final Value<String?> publicKey;
+  final Value<String?> fingerprint;
+  final Value<String> status;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> pairedAt;
+  final Value<DateTime?> lastSeenAt;
+  final Value<DateTime?> lastSyncAt;
+  final Value<DateTime?> revokedAt;
+  final Value<int> rowid;
+  const SyncDevicesCompanion({
+    this.id = const Value.absent(),
+    this.syncGroupId = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.platform = const Value.absent(),
+    this.isLocal = const Value.absent(),
+    this.publicKey = const Value.absent(),
+    this.fingerprint = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.pairedAt = const Value.absent(),
+    this.lastSeenAt = const Value.absent(),
+    this.lastSyncAt = const Value.absent(),
+    this.revokedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncDevicesCompanion.insert({
+    required String id,
+    this.syncGroupId = const Value.absent(),
+    required String displayName,
+    required String platform,
+    this.isLocal = const Value.absent(),
+    this.publicKey = const Value.absent(),
+    this.fingerprint = const Value.absent(),
+    required String status,
+    required DateTime createdAt,
+    this.pairedAt = const Value.absent(),
+    this.lastSeenAt = const Value.absent(),
+    this.lastSyncAt = const Value.absent(),
+    this.revokedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       displayName = Value(displayName),
+       platform = Value(platform),
+       status = Value(status),
+       createdAt = Value(createdAt);
+  static Insertable<SyncDevice> custom({
+    Expression<String>? id,
+    Expression<String>? syncGroupId,
+    Expression<String>? displayName,
+    Expression<String>? platform,
+    Expression<bool>? isLocal,
+    Expression<String>? publicKey,
+    Expression<String>? fingerprint,
+    Expression<String>? status,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? pairedAt,
+    Expression<DateTime>? lastSeenAt,
+    Expression<DateTime>? lastSyncAt,
+    Expression<DateTime>? revokedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (syncGroupId != null) 'sync_group_id': syncGroupId,
+      if (displayName != null) 'display_name': displayName,
+      if (platform != null) 'platform': platform,
+      if (isLocal != null) 'is_local': isLocal,
+      if (publicKey != null) 'public_key': publicKey,
+      if (fingerprint != null) 'fingerprint': fingerprint,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
+      if (pairedAt != null) 'paired_at': pairedAt,
+      if (lastSeenAt != null) 'last_seen_at': lastSeenAt,
+      if (lastSyncAt != null) 'last_sync_at': lastSyncAt,
+      if (revokedAt != null) 'revoked_at': revokedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncDevicesCompanion copyWith({
+    Value<String>? id,
+    Value<String?>? syncGroupId,
+    Value<String>? displayName,
+    Value<String>? platform,
+    Value<bool>? isLocal,
+    Value<String?>? publicKey,
+    Value<String?>? fingerprint,
+    Value<String>? status,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? pairedAt,
+    Value<DateTime?>? lastSeenAt,
+    Value<DateTime?>? lastSyncAt,
+    Value<DateTime?>? revokedAt,
+    Value<int>? rowid,
+  }) {
+    return SyncDevicesCompanion(
+      id: id ?? this.id,
+      syncGroupId: syncGroupId ?? this.syncGroupId,
+      displayName: displayName ?? this.displayName,
+      platform: platform ?? this.platform,
+      isLocal: isLocal ?? this.isLocal,
+      publicKey: publicKey ?? this.publicKey,
+      fingerprint: fingerprint ?? this.fingerprint,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      pairedAt: pairedAt ?? this.pairedAt,
+      lastSeenAt: lastSeenAt ?? this.lastSeenAt,
+      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
+      revokedAt: revokedAt ?? this.revokedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (syncGroupId.present) {
+      map['sync_group_id'] = Variable<String>(syncGroupId.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (platform.present) {
+      map['platform'] = Variable<String>(platform.value);
+    }
+    if (isLocal.present) {
+      map['is_local'] = Variable<bool>(isLocal.value);
+    }
+    if (publicKey.present) {
+      map['public_key'] = Variable<String>(publicKey.value);
+    }
+    if (fingerprint.present) {
+      map['fingerprint'] = Variable<String>(fingerprint.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (pairedAt.present) {
+      map['paired_at'] = Variable<DateTime>(pairedAt.value);
+    }
+    if (lastSeenAt.present) {
+      map['last_seen_at'] = Variable<DateTime>(lastSeenAt.value);
+    }
+    if (lastSyncAt.present) {
+      map['last_sync_at'] = Variable<DateTime>(lastSyncAt.value);
+    }
+    if (revokedAt.present) {
+      map['revoked_at'] = Variable<DateTime>(revokedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncDevicesCompanion(')
+          ..write('id: $id, ')
+          ..write('syncGroupId: $syncGroupId, ')
+          ..write('displayName: $displayName, ')
+          ..write('platform: $platform, ')
+          ..write('isLocal: $isLocal, ')
+          ..write('publicKey: $publicKey, ')
+          ..write('fingerprint: $fingerprint, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('pairedAt: $pairedAt, ')
+          ..write('lastSeenAt: $lastSeenAt, ')
+          ..write('lastSyncAt: $lastSyncAt, ')
+          ..write('revokedAt: $revokedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncChangesTable extends SyncChanges
+    with TableInfo<$SyncChangesTable, SyncChange> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncChangesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _changeIdMeta = const VerificationMeta(
+    'changeId',
+  );
+  @override
+  late final GeneratedColumn<String> changeId = GeneratedColumn<String>(
+    'change_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncGroupIdMeta = const VerificationMeta(
+    'syncGroupId',
+  );
+  @override
+  late final GeneratedColumn<String> syncGroupId = GeneratedColumn<String>(
+    'sync_group_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _originDeviceIdMeta = const VerificationMeta(
+    'originDeviceId',
+  );
+  @override
+  late final GeneratedColumn<String> originDeviceId = GeneratedColumn<String>(
+    'origin_device_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _originCounterMeta = const VerificationMeta(
+    'originCounter',
+  );
+  @override
+  late final GeneratedColumn<int> originCounter = GeneratedColumn<int>(
+    'origin_counter',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mutationIdMeta = const VerificationMeta(
+    'mutationId',
+  );
+  @override
+  late final GeneratedColumn<String> mutationId = GeneratedColumn<String>(
+    'mutation_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mutationSequenceMeta = const VerificationMeta(
+    'mutationSequence',
+  );
+  @override
+  late final GeneratedColumn<int> mutationSequence = GeneratedColumn<int>(
+    'mutation_sequence',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entityTypeMeta = const VerificationMeta(
+    'entityType',
+  );
+  @override
+  late final GeneratedColumn<String> entityType = GeneratedColumn<String>(
+    'entity_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entityIdMeta = const VerificationMeta(
+    'entityId',
+  );
+  @override
+  late final GeneratedColumn<String> entityId = GeneratedColumn<String>(
+    'entity_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _operationMeta = const VerificationMeta(
+    'operation',
+  );
+  @override
+  late final GeneratedColumn<String> operation = GeneratedColumn<String>(
+    'operation',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _changedFieldsJsonMeta = const VerificationMeta(
+    'changedFieldsJson',
+  );
+  @override
+  late final GeneratedColumn<String> changedFieldsJson =
+      GeneratedColumn<String>(
+        'changed_fields_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _payloadJsonMeta = const VerificationMeta(
+    'payloadJson',
+  );
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+    'payload_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _snapshotJsonMeta = const VerificationMeta(
+    'snapshotJson',
+  );
+  @override
+  late final GeneratedColumn<String> snapshotJson = GeneratedColumn<String>(
+    'snapshot_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _causalContextJsonMeta = const VerificationMeta(
+    'causalContextJson',
+  );
+  @override
+  late final GeneratedColumn<String> causalContextJson =
+      GeneratedColumn<String>(
+        'causal_context_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentHashMeta = const VerificationMeta(
+    'contentHash',
+  );
+  @override
+  late final GeneratedColumn<String> contentHash = GeneratedColumn<String>(
+    'content_hash',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _appliedAtMeta = const VerificationMeta(
+    'appliedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> appliedAt = GeneratedColumn<DateTime>(
+    'applied_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    changeId,
+    syncGroupId,
+    originDeviceId,
+    originCounter,
+    mutationId,
+    mutationSequence,
+    entityType,
+    entityId,
+    operation,
+    changedFieldsJson,
+    payloadJson,
+    snapshotJson,
+    causalContextJson,
+    source,
+    contentHash,
+    createdAt,
+    appliedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_changes';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncChange> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('change_id')) {
+      context.handle(
+        _changeIdMeta,
+        changeId.isAcceptableOrUnknown(data['change_id']!, _changeIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_changeIdMeta);
+    }
+    if (data.containsKey('sync_group_id')) {
+      context.handle(
+        _syncGroupIdMeta,
+        syncGroupId.isAcceptableOrUnknown(
+          data['sync_group_id']!,
+          _syncGroupIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('origin_device_id')) {
+      context.handle(
+        _originDeviceIdMeta,
+        originDeviceId.isAcceptableOrUnknown(
+          data['origin_device_id']!,
+          _originDeviceIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_originDeviceIdMeta);
+    }
+    if (data.containsKey('origin_counter')) {
+      context.handle(
+        _originCounterMeta,
+        originCounter.isAcceptableOrUnknown(
+          data['origin_counter']!,
+          _originCounterMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_originCounterMeta);
+    }
+    if (data.containsKey('mutation_id')) {
+      context.handle(
+        _mutationIdMeta,
+        mutationId.isAcceptableOrUnknown(data['mutation_id']!, _mutationIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_mutationIdMeta);
+    }
+    if (data.containsKey('mutation_sequence')) {
+      context.handle(
+        _mutationSequenceMeta,
+        mutationSequence.isAcceptableOrUnknown(
+          data['mutation_sequence']!,
+          _mutationSequenceMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_mutationSequenceMeta);
+    }
+    if (data.containsKey('entity_type')) {
+      context.handle(
+        _entityTypeMeta,
+        entityType.isAcceptableOrUnknown(data['entity_type']!, _entityTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityTypeMeta);
+    }
+    if (data.containsKey('entity_id')) {
+      context.handle(
+        _entityIdMeta,
+        entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityIdMeta);
+    }
+    if (data.containsKey('operation')) {
+      context.handle(
+        _operationMeta,
+        operation.isAcceptableOrUnknown(data['operation']!, _operationMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_operationMeta);
+    }
+    if (data.containsKey('changed_fields_json')) {
+      context.handle(
+        _changedFieldsJsonMeta,
+        changedFieldsJson.isAcceptableOrUnknown(
+          data['changed_fields_json']!,
+          _changedFieldsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_changedFieldsJsonMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+        _payloadJsonMeta,
+        payloadJson.isAcceptableOrUnknown(
+          data['payload_json']!,
+          _payloadJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    if (data.containsKey('snapshot_json')) {
+      context.handle(
+        _snapshotJsonMeta,
+        snapshotJson.isAcceptableOrUnknown(
+          data['snapshot_json']!,
+          _snapshotJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_snapshotJsonMeta);
+    }
+    if (data.containsKey('causal_context_json')) {
+      context.handle(
+        _causalContextJsonMeta,
+        causalContextJson.isAcceptableOrUnknown(
+          data['causal_context_json']!,
+          _causalContextJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_causalContextJsonMeta);
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceMeta);
+    }
+    if (data.containsKey('content_hash')) {
+      context.handle(
+        _contentHashMeta,
+        contentHash.isAcceptableOrUnknown(
+          data['content_hash']!,
+          _contentHashMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_contentHashMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('applied_at')) {
+      context.handle(
+        _appliedAtMeta,
+        appliedAt.isAcceptableOrUnknown(data['applied_at']!, _appliedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {changeId};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {originDeviceId, originCounter},
+  ];
+  @override
+  SyncChange map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncChange(
+      changeId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}change_id'],
+          )!,
+      syncGroupId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_group_id'],
+      ),
+      originDeviceId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}origin_device_id'],
+          )!,
+      originCounter:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}origin_counter'],
+          )!,
+      mutationId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}mutation_id'],
+          )!,
+      mutationSequence:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}mutation_sequence'],
+          )!,
+      entityType:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}entity_type'],
+          )!,
+      entityId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}entity_id'],
+          )!,
+      operation:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}operation'],
+          )!,
+      changedFieldsJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}changed_fields_json'],
+          )!,
+      payloadJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}payload_json'],
+          )!,
+      snapshotJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}snapshot_json'],
+          )!,
+      causalContextJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}causal_context_json'],
+          )!,
+      source:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}source'],
+          )!,
+      contentHash:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}content_hash'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      appliedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}applied_at'],
+      ),
+    );
+  }
+
+  @override
+  $SyncChangesTable createAlias(String alias) {
+    return $SyncChangesTable(attachedDatabase, alias);
+  }
+}
+
+class SyncChange extends DataClass implements Insertable<SyncChange> {
+  final String changeId;
+  final String? syncGroupId;
+  final String originDeviceId;
+  final int originCounter;
+  final String mutationId;
+  final int mutationSequence;
+  final String entityType;
+  final String entityId;
+  final String operation;
+  final String changedFieldsJson;
+  final String payloadJson;
+  final String snapshotJson;
+  final String causalContextJson;
+  final String source;
+  final String contentHash;
+  final DateTime createdAt;
+  final DateTime? appliedAt;
+  const SyncChange({
+    required this.changeId,
+    this.syncGroupId,
+    required this.originDeviceId,
+    required this.originCounter,
+    required this.mutationId,
+    required this.mutationSequence,
+    required this.entityType,
+    required this.entityId,
+    required this.operation,
+    required this.changedFieldsJson,
+    required this.payloadJson,
+    required this.snapshotJson,
+    required this.causalContextJson,
+    required this.source,
+    required this.contentHash,
+    required this.createdAt,
+    this.appliedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['change_id'] = Variable<String>(changeId);
+    if (!nullToAbsent || syncGroupId != null) {
+      map['sync_group_id'] = Variable<String>(syncGroupId);
+    }
+    map['origin_device_id'] = Variable<String>(originDeviceId);
+    map['origin_counter'] = Variable<int>(originCounter);
+    map['mutation_id'] = Variable<String>(mutationId);
+    map['mutation_sequence'] = Variable<int>(mutationSequence);
+    map['entity_type'] = Variable<String>(entityType);
+    map['entity_id'] = Variable<String>(entityId);
+    map['operation'] = Variable<String>(operation);
+    map['changed_fields_json'] = Variable<String>(changedFieldsJson);
+    map['payload_json'] = Variable<String>(payloadJson);
+    map['snapshot_json'] = Variable<String>(snapshotJson);
+    map['causal_context_json'] = Variable<String>(causalContextJson);
+    map['source'] = Variable<String>(source);
+    map['content_hash'] = Variable<String>(contentHash);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || appliedAt != null) {
+      map['applied_at'] = Variable<DateTime>(appliedAt);
+    }
+    return map;
+  }
+
+  SyncChangesCompanion toCompanion(bool nullToAbsent) {
+    return SyncChangesCompanion(
+      changeId: Value(changeId),
+      syncGroupId:
+          syncGroupId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(syncGroupId),
+      originDeviceId: Value(originDeviceId),
+      originCounter: Value(originCounter),
+      mutationId: Value(mutationId),
+      mutationSequence: Value(mutationSequence),
+      entityType: Value(entityType),
+      entityId: Value(entityId),
+      operation: Value(operation),
+      changedFieldsJson: Value(changedFieldsJson),
+      payloadJson: Value(payloadJson),
+      snapshotJson: Value(snapshotJson),
+      causalContextJson: Value(causalContextJson),
+      source: Value(source),
+      contentHash: Value(contentHash),
+      createdAt: Value(createdAt),
+      appliedAt:
+          appliedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(appliedAt),
+    );
+  }
+
+  factory SyncChange.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncChange(
+      changeId: serializer.fromJson<String>(json['changeId']),
+      syncGroupId: serializer.fromJson<String?>(json['syncGroupId']),
+      originDeviceId: serializer.fromJson<String>(json['originDeviceId']),
+      originCounter: serializer.fromJson<int>(json['originCounter']),
+      mutationId: serializer.fromJson<String>(json['mutationId']),
+      mutationSequence: serializer.fromJson<int>(json['mutationSequence']),
+      entityType: serializer.fromJson<String>(json['entityType']),
+      entityId: serializer.fromJson<String>(json['entityId']),
+      operation: serializer.fromJson<String>(json['operation']),
+      changedFieldsJson: serializer.fromJson<String>(json['changedFieldsJson']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+      snapshotJson: serializer.fromJson<String>(json['snapshotJson']),
+      causalContextJson: serializer.fromJson<String>(json['causalContextJson']),
+      source: serializer.fromJson<String>(json['source']),
+      contentHash: serializer.fromJson<String>(json['contentHash']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      appliedAt: serializer.fromJson<DateTime?>(json['appliedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'changeId': serializer.toJson<String>(changeId),
+      'syncGroupId': serializer.toJson<String?>(syncGroupId),
+      'originDeviceId': serializer.toJson<String>(originDeviceId),
+      'originCounter': serializer.toJson<int>(originCounter),
+      'mutationId': serializer.toJson<String>(mutationId),
+      'mutationSequence': serializer.toJson<int>(mutationSequence),
+      'entityType': serializer.toJson<String>(entityType),
+      'entityId': serializer.toJson<String>(entityId),
+      'operation': serializer.toJson<String>(operation),
+      'changedFieldsJson': serializer.toJson<String>(changedFieldsJson),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+      'snapshotJson': serializer.toJson<String>(snapshotJson),
+      'causalContextJson': serializer.toJson<String>(causalContextJson),
+      'source': serializer.toJson<String>(source),
+      'contentHash': serializer.toJson<String>(contentHash),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'appliedAt': serializer.toJson<DateTime?>(appliedAt),
+    };
+  }
+
+  SyncChange copyWith({
+    String? changeId,
+    Value<String?> syncGroupId = const Value.absent(),
+    String? originDeviceId,
+    int? originCounter,
+    String? mutationId,
+    int? mutationSequence,
+    String? entityType,
+    String? entityId,
+    String? operation,
+    String? changedFieldsJson,
+    String? payloadJson,
+    String? snapshotJson,
+    String? causalContextJson,
+    String? source,
+    String? contentHash,
+    DateTime? createdAt,
+    Value<DateTime?> appliedAt = const Value.absent(),
+  }) => SyncChange(
+    changeId: changeId ?? this.changeId,
+    syncGroupId: syncGroupId.present ? syncGroupId.value : this.syncGroupId,
+    originDeviceId: originDeviceId ?? this.originDeviceId,
+    originCounter: originCounter ?? this.originCounter,
+    mutationId: mutationId ?? this.mutationId,
+    mutationSequence: mutationSequence ?? this.mutationSequence,
+    entityType: entityType ?? this.entityType,
+    entityId: entityId ?? this.entityId,
+    operation: operation ?? this.operation,
+    changedFieldsJson: changedFieldsJson ?? this.changedFieldsJson,
+    payloadJson: payloadJson ?? this.payloadJson,
+    snapshotJson: snapshotJson ?? this.snapshotJson,
+    causalContextJson: causalContextJson ?? this.causalContextJson,
+    source: source ?? this.source,
+    contentHash: contentHash ?? this.contentHash,
+    createdAt: createdAt ?? this.createdAt,
+    appliedAt: appliedAt.present ? appliedAt.value : this.appliedAt,
+  );
+  SyncChange copyWithCompanion(SyncChangesCompanion data) {
+    return SyncChange(
+      changeId: data.changeId.present ? data.changeId.value : this.changeId,
+      syncGroupId:
+          data.syncGroupId.present ? data.syncGroupId.value : this.syncGroupId,
+      originDeviceId:
+          data.originDeviceId.present
+              ? data.originDeviceId.value
+              : this.originDeviceId,
+      originCounter:
+          data.originCounter.present
+              ? data.originCounter.value
+              : this.originCounter,
+      mutationId:
+          data.mutationId.present ? data.mutationId.value : this.mutationId,
+      mutationSequence:
+          data.mutationSequence.present
+              ? data.mutationSequence.value
+              : this.mutationSequence,
+      entityType:
+          data.entityType.present ? data.entityType.value : this.entityType,
+      entityId: data.entityId.present ? data.entityId.value : this.entityId,
+      operation: data.operation.present ? data.operation.value : this.operation,
+      changedFieldsJson:
+          data.changedFieldsJson.present
+              ? data.changedFieldsJson.value
+              : this.changedFieldsJson,
+      payloadJson:
+          data.payloadJson.present ? data.payloadJson.value : this.payloadJson,
+      snapshotJson:
+          data.snapshotJson.present
+              ? data.snapshotJson.value
+              : this.snapshotJson,
+      causalContextJson:
+          data.causalContextJson.present
+              ? data.causalContextJson.value
+              : this.causalContextJson,
+      source: data.source.present ? data.source.value : this.source,
+      contentHash:
+          data.contentHash.present ? data.contentHash.value : this.contentHash,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      appliedAt: data.appliedAt.present ? data.appliedAt.value : this.appliedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncChange(')
+          ..write('changeId: $changeId, ')
+          ..write('syncGroupId: $syncGroupId, ')
+          ..write('originDeviceId: $originDeviceId, ')
+          ..write('originCounter: $originCounter, ')
+          ..write('mutationId: $mutationId, ')
+          ..write('mutationSequence: $mutationSequence, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('operation: $operation, ')
+          ..write('changedFieldsJson: $changedFieldsJson, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('snapshotJson: $snapshotJson, ')
+          ..write('causalContextJson: $causalContextJson, ')
+          ..write('source: $source, ')
+          ..write('contentHash: $contentHash, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('appliedAt: $appliedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    changeId,
+    syncGroupId,
+    originDeviceId,
+    originCounter,
+    mutationId,
+    mutationSequence,
+    entityType,
+    entityId,
+    operation,
+    changedFieldsJson,
+    payloadJson,
+    snapshotJson,
+    causalContextJson,
+    source,
+    contentHash,
+    createdAt,
+    appliedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncChange &&
+          other.changeId == this.changeId &&
+          other.syncGroupId == this.syncGroupId &&
+          other.originDeviceId == this.originDeviceId &&
+          other.originCounter == this.originCounter &&
+          other.mutationId == this.mutationId &&
+          other.mutationSequence == this.mutationSequence &&
+          other.entityType == this.entityType &&
+          other.entityId == this.entityId &&
+          other.operation == this.operation &&
+          other.changedFieldsJson == this.changedFieldsJson &&
+          other.payloadJson == this.payloadJson &&
+          other.snapshotJson == this.snapshotJson &&
+          other.causalContextJson == this.causalContextJson &&
+          other.source == this.source &&
+          other.contentHash == this.contentHash &&
+          other.createdAt == this.createdAt &&
+          other.appliedAt == this.appliedAt);
+}
+
+class SyncChangesCompanion extends UpdateCompanion<SyncChange> {
+  final Value<String> changeId;
+  final Value<String?> syncGroupId;
+  final Value<String> originDeviceId;
+  final Value<int> originCounter;
+  final Value<String> mutationId;
+  final Value<int> mutationSequence;
+  final Value<String> entityType;
+  final Value<String> entityId;
+  final Value<String> operation;
+  final Value<String> changedFieldsJson;
+  final Value<String> payloadJson;
+  final Value<String> snapshotJson;
+  final Value<String> causalContextJson;
+  final Value<String> source;
+  final Value<String> contentHash;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> appliedAt;
+  final Value<int> rowid;
+  const SyncChangesCompanion({
+    this.changeId = const Value.absent(),
+    this.syncGroupId = const Value.absent(),
+    this.originDeviceId = const Value.absent(),
+    this.originCounter = const Value.absent(),
+    this.mutationId = const Value.absent(),
+    this.mutationSequence = const Value.absent(),
+    this.entityType = const Value.absent(),
+    this.entityId = const Value.absent(),
+    this.operation = const Value.absent(),
+    this.changedFieldsJson = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.snapshotJson = const Value.absent(),
+    this.causalContextJson = const Value.absent(),
+    this.source = const Value.absent(),
+    this.contentHash = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.appliedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncChangesCompanion.insert({
+    required String changeId,
+    this.syncGroupId = const Value.absent(),
+    required String originDeviceId,
+    required int originCounter,
+    required String mutationId,
+    required int mutationSequence,
+    required String entityType,
+    required String entityId,
+    required String operation,
+    required String changedFieldsJson,
+    required String payloadJson,
+    required String snapshotJson,
+    required String causalContextJson,
+    required String source,
+    required String contentHash,
+    required DateTime createdAt,
+    this.appliedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : changeId = Value(changeId),
+       originDeviceId = Value(originDeviceId),
+       originCounter = Value(originCounter),
+       mutationId = Value(mutationId),
+       mutationSequence = Value(mutationSequence),
+       entityType = Value(entityType),
+       entityId = Value(entityId),
+       operation = Value(operation),
+       changedFieldsJson = Value(changedFieldsJson),
+       payloadJson = Value(payloadJson),
+       snapshotJson = Value(snapshotJson),
+       causalContextJson = Value(causalContextJson),
+       source = Value(source),
+       contentHash = Value(contentHash),
+       createdAt = Value(createdAt);
+  static Insertable<SyncChange> custom({
+    Expression<String>? changeId,
+    Expression<String>? syncGroupId,
+    Expression<String>? originDeviceId,
+    Expression<int>? originCounter,
+    Expression<String>? mutationId,
+    Expression<int>? mutationSequence,
+    Expression<String>? entityType,
+    Expression<String>? entityId,
+    Expression<String>? operation,
+    Expression<String>? changedFieldsJson,
+    Expression<String>? payloadJson,
+    Expression<String>? snapshotJson,
+    Expression<String>? causalContextJson,
+    Expression<String>? source,
+    Expression<String>? contentHash,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? appliedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (changeId != null) 'change_id': changeId,
+      if (syncGroupId != null) 'sync_group_id': syncGroupId,
+      if (originDeviceId != null) 'origin_device_id': originDeviceId,
+      if (originCounter != null) 'origin_counter': originCounter,
+      if (mutationId != null) 'mutation_id': mutationId,
+      if (mutationSequence != null) 'mutation_sequence': mutationSequence,
+      if (entityType != null) 'entity_type': entityType,
+      if (entityId != null) 'entity_id': entityId,
+      if (operation != null) 'operation': operation,
+      if (changedFieldsJson != null) 'changed_fields_json': changedFieldsJson,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (snapshotJson != null) 'snapshot_json': snapshotJson,
+      if (causalContextJson != null) 'causal_context_json': causalContextJson,
+      if (source != null) 'source': source,
+      if (contentHash != null) 'content_hash': contentHash,
+      if (createdAt != null) 'created_at': createdAt,
+      if (appliedAt != null) 'applied_at': appliedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncChangesCompanion copyWith({
+    Value<String>? changeId,
+    Value<String?>? syncGroupId,
+    Value<String>? originDeviceId,
+    Value<int>? originCounter,
+    Value<String>? mutationId,
+    Value<int>? mutationSequence,
+    Value<String>? entityType,
+    Value<String>? entityId,
+    Value<String>? operation,
+    Value<String>? changedFieldsJson,
+    Value<String>? payloadJson,
+    Value<String>? snapshotJson,
+    Value<String>? causalContextJson,
+    Value<String>? source,
+    Value<String>? contentHash,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? appliedAt,
+    Value<int>? rowid,
+  }) {
+    return SyncChangesCompanion(
+      changeId: changeId ?? this.changeId,
+      syncGroupId: syncGroupId ?? this.syncGroupId,
+      originDeviceId: originDeviceId ?? this.originDeviceId,
+      originCounter: originCounter ?? this.originCounter,
+      mutationId: mutationId ?? this.mutationId,
+      mutationSequence: mutationSequence ?? this.mutationSequence,
+      entityType: entityType ?? this.entityType,
+      entityId: entityId ?? this.entityId,
+      operation: operation ?? this.operation,
+      changedFieldsJson: changedFieldsJson ?? this.changedFieldsJson,
+      payloadJson: payloadJson ?? this.payloadJson,
+      snapshotJson: snapshotJson ?? this.snapshotJson,
+      causalContextJson: causalContextJson ?? this.causalContextJson,
+      source: source ?? this.source,
+      contentHash: contentHash ?? this.contentHash,
+      createdAt: createdAt ?? this.createdAt,
+      appliedAt: appliedAt ?? this.appliedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (changeId.present) {
+      map['change_id'] = Variable<String>(changeId.value);
+    }
+    if (syncGroupId.present) {
+      map['sync_group_id'] = Variable<String>(syncGroupId.value);
+    }
+    if (originDeviceId.present) {
+      map['origin_device_id'] = Variable<String>(originDeviceId.value);
+    }
+    if (originCounter.present) {
+      map['origin_counter'] = Variable<int>(originCounter.value);
+    }
+    if (mutationId.present) {
+      map['mutation_id'] = Variable<String>(mutationId.value);
+    }
+    if (mutationSequence.present) {
+      map['mutation_sequence'] = Variable<int>(mutationSequence.value);
+    }
+    if (entityType.present) {
+      map['entity_type'] = Variable<String>(entityType.value);
+    }
+    if (entityId.present) {
+      map['entity_id'] = Variable<String>(entityId.value);
+    }
+    if (operation.present) {
+      map['operation'] = Variable<String>(operation.value);
+    }
+    if (changedFieldsJson.present) {
+      map['changed_fields_json'] = Variable<String>(changedFieldsJson.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (snapshotJson.present) {
+      map['snapshot_json'] = Variable<String>(snapshotJson.value);
+    }
+    if (causalContextJson.present) {
+      map['causal_context_json'] = Variable<String>(causalContextJson.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (contentHash.present) {
+      map['content_hash'] = Variable<String>(contentHash.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (appliedAt.present) {
+      map['applied_at'] = Variable<DateTime>(appliedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncChangesCompanion(')
+          ..write('changeId: $changeId, ')
+          ..write('syncGroupId: $syncGroupId, ')
+          ..write('originDeviceId: $originDeviceId, ')
+          ..write('originCounter: $originCounter, ')
+          ..write('mutationId: $mutationId, ')
+          ..write('mutationSequence: $mutationSequence, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('operation: $operation, ')
+          ..write('changedFieldsJson: $changedFieldsJson, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('snapshotJson: $snapshotJson, ')
+          ..write('causalContextJson: $causalContextJson, ')
+          ..write('source: $source, ')
+          ..write('contentHash: $contentHash, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('appliedAt: $appliedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncTombstonesTable extends SyncTombstones
+    with TableInfo<$SyncTombstonesTable, SyncTombstone> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncTombstonesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _tombstoneIdMeta = const VerificationMeta(
+    'tombstoneId',
+  );
+  @override
+  late final GeneratedColumn<String> tombstoneId = GeneratedColumn<String>(
+    'tombstone_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncGroupIdMeta = const VerificationMeta(
+    'syncGroupId',
+  );
+  @override
+  late final GeneratedColumn<String> syncGroupId = GeneratedColumn<String>(
+    'sync_group_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _entityTypeMeta = const VerificationMeta(
+    'entityType',
+  );
+  @override
+  late final GeneratedColumn<String> entityType = GeneratedColumn<String>(
+    'entity_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entityIdMeta = const VerificationMeta(
+    'entityId',
+  );
+  @override
+  late final GeneratedColumn<String> entityId = GeneratedColumn<String>(
+    'entity_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deleteChangeIdMeta = const VerificationMeta(
+    'deleteChangeId',
+  );
+  @override
+  late final GeneratedColumn<String> deleteChangeId = GeneratedColumn<String>(
+    'delete_change_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _originDeviceIdMeta = const VerificationMeta(
+    'originDeviceId',
+  );
+  @override
+  late final GeneratedColumn<String> originDeviceId = GeneratedColumn<String>(
+    'origin_device_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _originCounterMeta = const VerificationMeta(
+    'originCounter',
+  );
+  @override
+  late final GeneratedColumn<int> originCounter = GeneratedColumn<int>(
+    'origin_counter',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _causalContextJsonMeta = const VerificationMeta(
+    'causalContextJson',
+  );
+  @override
+  late final GeneratedColumn<String> causalContextJson =
+      GeneratedColumn<String>(
+        'causal_context_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _lastContentHashMeta = const VerificationMeta(
+    'lastContentHash',
+  );
+  @override
+  late final GeneratedColumn<String> lastContentHash = GeneratedColumn<String>(
+    'last_content_hash',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fullyAcknowledgedAtMeta =
+      const VerificationMeta('fullyAcknowledgedAt');
+  @override
+  late final GeneratedColumn<DateTime> fullyAcknowledgedAt =
+      GeneratedColumn<DateTime>(
+        'fully_acknowledged_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _retainUntilMeta = const VerificationMeta(
+    'retainUntil',
+  );
+  @override
+  late final GeneratedColumn<DateTime> retainUntil = GeneratedColumn<DateTime>(
+    'retain_until',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    tombstoneId,
+    syncGroupId,
+    entityType,
+    entityId,
+    deleteChangeId,
+    originDeviceId,
+    originCounter,
+    causalContextJson,
+    lastContentHash,
+    deletedAt,
+    fullyAcknowledgedAt,
+    retainUntil,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_tombstones';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncTombstone> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('tombstone_id')) {
+      context.handle(
+        _tombstoneIdMeta,
+        tombstoneId.isAcceptableOrUnknown(
+          data['tombstone_id']!,
+          _tombstoneIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_tombstoneIdMeta);
+    }
+    if (data.containsKey('sync_group_id')) {
+      context.handle(
+        _syncGroupIdMeta,
+        syncGroupId.isAcceptableOrUnknown(
+          data['sync_group_id']!,
+          _syncGroupIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('entity_type')) {
+      context.handle(
+        _entityTypeMeta,
+        entityType.isAcceptableOrUnknown(data['entity_type']!, _entityTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityTypeMeta);
+    }
+    if (data.containsKey('entity_id')) {
+      context.handle(
+        _entityIdMeta,
+        entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityIdMeta);
+    }
+    if (data.containsKey('delete_change_id')) {
+      context.handle(
+        _deleteChangeIdMeta,
+        deleteChangeId.isAcceptableOrUnknown(
+          data['delete_change_id']!,
+          _deleteChangeIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_deleteChangeIdMeta);
+    }
+    if (data.containsKey('origin_device_id')) {
+      context.handle(
+        _originDeviceIdMeta,
+        originDeviceId.isAcceptableOrUnknown(
+          data['origin_device_id']!,
+          _originDeviceIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_originDeviceIdMeta);
+    }
+    if (data.containsKey('origin_counter')) {
+      context.handle(
+        _originCounterMeta,
+        originCounter.isAcceptableOrUnknown(
+          data['origin_counter']!,
+          _originCounterMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_originCounterMeta);
+    }
+    if (data.containsKey('causal_context_json')) {
+      context.handle(
+        _causalContextJsonMeta,
+        causalContextJson.isAcceptableOrUnknown(
+          data['causal_context_json']!,
+          _causalContextJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_causalContextJsonMeta);
+    }
+    if (data.containsKey('last_content_hash')) {
+      context.handle(
+        _lastContentHashMeta,
+        lastContentHash.isAcceptableOrUnknown(
+          data['last_content_hash']!,
+          _lastContentHashMeta,
+        ),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_deletedAtMeta);
+    }
+    if (data.containsKey('fully_acknowledged_at')) {
+      context.handle(
+        _fullyAcknowledgedAtMeta,
+        fullyAcknowledgedAt.isAcceptableOrUnknown(
+          data['fully_acknowledged_at']!,
+          _fullyAcknowledgedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('retain_until')) {
+      context.handle(
+        _retainUntilMeta,
+        retainUntil.isAcceptableOrUnknown(
+          data['retain_until']!,
+          _retainUntilMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {tombstoneId};
+  @override
+  SyncTombstone map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncTombstone(
+      tombstoneId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}tombstone_id'],
+          )!,
+      syncGroupId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_group_id'],
+      ),
+      entityType:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}entity_type'],
+          )!,
+      entityId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}entity_id'],
+          )!,
+      deleteChangeId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}delete_change_id'],
+          )!,
+      originDeviceId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}origin_device_id'],
+          )!,
+      originCounter:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}origin_counter'],
+          )!,
+      causalContextJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}causal_context_json'],
+          )!,
+      lastContentHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_content_hash'],
+      ),
+      deletedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}deleted_at'],
+          )!,
+      fullyAcknowledgedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fully_acknowledged_at'],
+      ),
+      retainUntil: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}retain_until'],
+      ),
+    );
+  }
+
+  @override
+  $SyncTombstonesTable createAlias(String alias) {
+    return $SyncTombstonesTable(attachedDatabase, alias);
+  }
+}
+
+class SyncTombstone extends DataClass implements Insertable<SyncTombstone> {
+  final String tombstoneId;
+  final String? syncGroupId;
+  final String entityType;
+  final String entityId;
+  final String deleteChangeId;
+  final String originDeviceId;
+  final int originCounter;
+  final String causalContextJson;
+  final String? lastContentHash;
+  final DateTime deletedAt;
+  final DateTime? fullyAcknowledgedAt;
+  final DateTime? retainUntil;
+  const SyncTombstone({
+    required this.tombstoneId,
+    this.syncGroupId,
+    required this.entityType,
+    required this.entityId,
+    required this.deleteChangeId,
+    required this.originDeviceId,
+    required this.originCounter,
+    required this.causalContextJson,
+    this.lastContentHash,
+    required this.deletedAt,
+    this.fullyAcknowledgedAt,
+    this.retainUntil,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['tombstone_id'] = Variable<String>(tombstoneId);
+    if (!nullToAbsent || syncGroupId != null) {
+      map['sync_group_id'] = Variable<String>(syncGroupId);
+    }
+    map['entity_type'] = Variable<String>(entityType);
+    map['entity_id'] = Variable<String>(entityId);
+    map['delete_change_id'] = Variable<String>(deleteChangeId);
+    map['origin_device_id'] = Variable<String>(originDeviceId);
+    map['origin_counter'] = Variable<int>(originCounter);
+    map['causal_context_json'] = Variable<String>(causalContextJson);
+    if (!nullToAbsent || lastContentHash != null) {
+      map['last_content_hash'] = Variable<String>(lastContentHash);
+    }
+    map['deleted_at'] = Variable<DateTime>(deletedAt);
+    if (!nullToAbsent || fullyAcknowledgedAt != null) {
+      map['fully_acknowledged_at'] = Variable<DateTime>(fullyAcknowledgedAt);
+    }
+    if (!nullToAbsent || retainUntil != null) {
+      map['retain_until'] = Variable<DateTime>(retainUntil);
+    }
+    return map;
+  }
+
+  SyncTombstonesCompanion toCompanion(bool nullToAbsent) {
+    return SyncTombstonesCompanion(
+      tombstoneId: Value(tombstoneId),
+      syncGroupId:
+          syncGroupId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(syncGroupId),
+      entityType: Value(entityType),
+      entityId: Value(entityId),
+      deleteChangeId: Value(deleteChangeId),
+      originDeviceId: Value(originDeviceId),
+      originCounter: Value(originCounter),
+      causalContextJson: Value(causalContextJson),
+      lastContentHash:
+          lastContentHash == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lastContentHash),
+      deletedAt: Value(deletedAt),
+      fullyAcknowledgedAt:
+          fullyAcknowledgedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(fullyAcknowledgedAt),
+      retainUntil:
+          retainUntil == null && nullToAbsent
+              ? const Value.absent()
+              : Value(retainUntil),
+    );
+  }
+
+  factory SyncTombstone.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncTombstone(
+      tombstoneId: serializer.fromJson<String>(json['tombstoneId']),
+      syncGroupId: serializer.fromJson<String?>(json['syncGroupId']),
+      entityType: serializer.fromJson<String>(json['entityType']),
+      entityId: serializer.fromJson<String>(json['entityId']),
+      deleteChangeId: serializer.fromJson<String>(json['deleteChangeId']),
+      originDeviceId: serializer.fromJson<String>(json['originDeviceId']),
+      originCounter: serializer.fromJson<int>(json['originCounter']),
+      causalContextJson: serializer.fromJson<String>(json['causalContextJson']),
+      lastContentHash: serializer.fromJson<String?>(json['lastContentHash']),
+      deletedAt: serializer.fromJson<DateTime>(json['deletedAt']),
+      fullyAcknowledgedAt: serializer.fromJson<DateTime?>(
+        json['fullyAcknowledgedAt'],
+      ),
+      retainUntil: serializer.fromJson<DateTime?>(json['retainUntil']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'tombstoneId': serializer.toJson<String>(tombstoneId),
+      'syncGroupId': serializer.toJson<String?>(syncGroupId),
+      'entityType': serializer.toJson<String>(entityType),
+      'entityId': serializer.toJson<String>(entityId),
+      'deleteChangeId': serializer.toJson<String>(deleteChangeId),
+      'originDeviceId': serializer.toJson<String>(originDeviceId),
+      'originCounter': serializer.toJson<int>(originCounter),
+      'causalContextJson': serializer.toJson<String>(causalContextJson),
+      'lastContentHash': serializer.toJson<String?>(lastContentHash),
+      'deletedAt': serializer.toJson<DateTime>(deletedAt),
+      'fullyAcknowledgedAt': serializer.toJson<DateTime?>(fullyAcknowledgedAt),
+      'retainUntil': serializer.toJson<DateTime?>(retainUntil),
+    };
+  }
+
+  SyncTombstone copyWith({
+    String? tombstoneId,
+    Value<String?> syncGroupId = const Value.absent(),
+    String? entityType,
+    String? entityId,
+    String? deleteChangeId,
+    String? originDeviceId,
+    int? originCounter,
+    String? causalContextJson,
+    Value<String?> lastContentHash = const Value.absent(),
+    DateTime? deletedAt,
+    Value<DateTime?> fullyAcknowledgedAt = const Value.absent(),
+    Value<DateTime?> retainUntil = const Value.absent(),
+  }) => SyncTombstone(
+    tombstoneId: tombstoneId ?? this.tombstoneId,
+    syncGroupId: syncGroupId.present ? syncGroupId.value : this.syncGroupId,
+    entityType: entityType ?? this.entityType,
+    entityId: entityId ?? this.entityId,
+    deleteChangeId: deleteChangeId ?? this.deleteChangeId,
+    originDeviceId: originDeviceId ?? this.originDeviceId,
+    originCounter: originCounter ?? this.originCounter,
+    causalContextJson: causalContextJson ?? this.causalContextJson,
+    lastContentHash:
+        lastContentHash.present ? lastContentHash.value : this.lastContentHash,
+    deletedAt: deletedAt ?? this.deletedAt,
+    fullyAcknowledgedAt:
+        fullyAcknowledgedAt.present
+            ? fullyAcknowledgedAt.value
+            : this.fullyAcknowledgedAt,
+    retainUntil: retainUntil.present ? retainUntil.value : this.retainUntil,
+  );
+  SyncTombstone copyWithCompanion(SyncTombstonesCompanion data) {
+    return SyncTombstone(
+      tombstoneId:
+          data.tombstoneId.present ? data.tombstoneId.value : this.tombstoneId,
+      syncGroupId:
+          data.syncGroupId.present ? data.syncGroupId.value : this.syncGroupId,
+      entityType:
+          data.entityType.present ? data.entityType.value : this.entityType,
+      entityId: data.entityId.present ? data.entityId.value : this.entityId,
+      deleteChangeId:
+          data.deleteChangeId.present
+              ? data.deleteChangeId.value
+              : this.deleteChangeId,
+      originDeviceId:
+          data.originDeviceId.present
+              ? data.originDeviceId.value
+              : this.originDeviceId,
+      originCounter:
+          data.originCounter.present
+              ? data.originCounter.value
+              : this.originCounter,
+      causalContextJson:
+          data.causalContextJson.present
+              ? data.causalContextJson.value
+              : this.causalContextJson,
+      lastContentHash:
+          data.lastContentHash.present
+              ? data.lastContentHash.value
+              : this.lastContentHash,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      fullyAcknowledgedAt:
+          data.fullyAcknowledgedAt.present
+              ? data.fullyAcknowledgedAt.value
+              : this.fullyAcknowledgedAt,
+      retainUntil:
+          data.retainUntil.present ? data.retainUntil.value : this.retainUntil,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncTombstone(')
+          ..write('tombstoneId: $tombstoneId, ')
+          ..write('syncGroupId: $syncGroupId, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('deleteChangeId: $deleteChangeId, ')
+          ..write('originDeviceId: $originDeviceId, ')
+          ..write('originCounter: $originCounter, ')
+          ..write('causalContextJson: $causalContextJson, ')
+          ..write('lastContentHash: $lastContentHash, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('fullyAcknowledgedAt: $fullyAcknowledgedAt, ')
+          ..write('retainUntil: $retainUntil')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    tombstoneId,
+    syncGroupId,
+    entityType,
+    entityId,
+    deleteChangeId,
+    originDeviceId,
+    originCounter,
+    causalContextJson,
+    lastContentHash,
+    deletedAt,
+    fullyAcknowledgedAt,
+    retainUntil,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncTombstone &&
+          other.tombstoneId == this.tombstoneId &&
+          other.syncGroupId == this.syncGroupId &&
+          other.entityType == this.entityType &&
+          other.entityId == this.entityId &&
+          other.deleteChangeId == this.deleteChangeId &&
+          other.originDeviceId == this.originDeviceId &&
+          other.originCounter == this.originCounter &&
+          other.causalContextJson == this.causalContextJson &&
+          other.lastContentHash == this.lastContentHash &&
+          other.deletedAt == this.deletedAt &&
+          other.fullyAcknowledgedAt == this.fullyAcknowledgedAt &&
+          other.retainUntil == this.retainUntil);
+}
+
+class SyncTombstonesCompanion extends UpdateCompanion<SyncTombstone> {
+  final Value<String> tombstoneId;
+  final Value<String?> syncGroupId;
+  final Value<String> entityType;
+  final Value<String> entityId;
+  final Value<String> deleteChangeId;
+  final Value<String> originDeviceId;
+  final Value<int> originCounter;
+  final Value<String> causalContextJson;
+  final Value<String?> lastContentHash;
+  final Value<DateTime> deletedAt;
+  final Value<DateTime?> fullyAcknowledgedAt;
+  final Value<DateTime?> retainUntil;
+  final Value<int> rowid;
+  const SyncTombstonesCompanion({
+    this.tombstoneId = const Value.absent(),
+    this.syncGroupId = const Value.absent(),
+    this.entityType = const Value.absent(),
+    this.entityId = const Value.absent(),
+    this.deleteChangeId = const Value.absent(),
+    this.originDeviceId = const Value.absent(),
+    this.originCounter = const Value.absent(),
+    this.causalContextJson = const Value.absent(),
+    this.lastContentHash = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.fullyAcknowledgedAt = const Value.absent(),
+    this.retainUntil = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncTombstonesCompanion.insert({
+    required String tombstoneId,
+    this.syncGroupId = const Value.absent(),
+    required String entityType,
+    required String entityId,
+    required String deleteChangeId,
+    required String originDeviceId,
+    required int originCounter,
+    required String causalContextJson,
+    this.lastContentHash = const Value.absent(),
+    required DateTime deletedAt,
+    this.fullyAcknowledgedAt = const Value.absent(),
+    this.retainUntil = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : tombstoneId = Value(tombstoneId),
+       entityType = Value(entityType),
+       entityId = Value(entityId),
+       deleteChangeId = Value(deleteChangeId),
+       originDeviceId = Value(originDeviceId),
+       originCounter = Value(originCounter),
+       causalContextJson = Value(causalContextJson),
+       deletedAt = Value(deletedAt);
+  static Insertable<SyncTombstone> custom({
+    Expression<String>? tombstoneId,
+    Expression<String>? syncGroupId,
+    Expression<String>? entityType,
+    Expression<String>? entityId,
+    Expression<String>? deleteChangeId,
+    Expression<String>? originDeviceId,
+    Expression<int>? originCounter,
+    Expression<String>? causalContextJson,
+    Expression<String>? lastContentHash,
+    Expression<DateTime>? deletedAt,
+    Expression<DateTime>? fullyAcknowledgedAt,
+    Expression<DateTime>? retainUntil,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (tombstoneId != null) 'tombstone_id': tombstoneId,
+      if (syncGroupId != null) 'sync_group_id': syncGroupId,
+      if (entityType != null) 'entity_type': entityType,
+      if (entityId != null) 'entity_id': entityId,
+      if (deleteChangeId != null) 'delete_change_id': deleteChangeId,
+      if (originDeviceId != null) 'origin_device_id': originDeviceId,
+      if (originCounter != null) 'origin_counter': originCounter,
+      if (causalContextJson != null) 'causal_context_json': causalContextJson,
+      if (lastContentHash != null) 'last_content_hash': lastContentHash,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (fullyAcknowledgedAt != null)
+        'fully_acknowledged_at': fullyAcknowledgedAt,
+      if (retainUntil != null) 'retain_until': retainUntil,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncTombstonesCompanion copyWith({
+    Value<String>? tombstoneId,
+    Value<String?>? syncGroupId,
+    Value<String>? entityType,
+    Value<String>? entityId,
+    Value<String>? deleteChangeId,
+    Value<String>? originDeviceId,
+    Value<int>? originCounter,
+    Value<String>? causalContextJson,
+    Value<String?>? lastContentHash,
+    Value<DateTime>? deletedAt,
+    Value<DateTime?>? fullyAcknowledgedAt,
+    Value<DateTime?>? retainUntil,
+    Value<int>? rowid,
+  }) {
+    return SyncTombstonesCompanion(
+      tombstoneId: tombstoneId ?? this.tombstoneId,
+      syncGroupId: syncGroupId ?? this.syncGroupId,
+      entityType: entityType ?? this.entityType,
+      entityId: entityId ?? this.entityId,
+      deleteChangeId: deleteChangeId ?? this.deleteChangeId,
+      originDeviceId: originDeviceId ?? this.originDeviceId,
+      originCounter: originCounter ?? this.originCounter,
+      causalContextJson: causalContextJson ?? this.causalContextJson,
+      lastContentHash: lastContentHash ?? this.lastContentHash,
+      deletedAt: deletedAt ?? this.deletedAt,
+      fullyAcknowledgedAt: fullyAcknowledgedAt ?? this.fullyAcknowledgedAt,
+      retainUntil: retainUntil ?? this.retainUntil,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (tombstoneId.present) {
+      map['tombstone_id'] = Variable<String>(tombstoneId.value);
+    }
+    if (syncGroupId.present) {
+      map['sync_group_id'] = Variable<String>(syncGroupId.value);
+    }
+    if (entityType.present) {
+      map['entity_type'] = Variable<String>(entityType.value);
+    }
+    if (entityId.present) {
+      map['entity_id'] = Variable<String>(entityId.value);
+    }
+    if (deleteChangeId.present) {
+      map['delete_change_id'] = Variable<String>(deleteChangeId.value);
+    }
+    if (originDeviceId.present) {
+      map['origin_device_id'] = Variable<String>(originDeviceId.value);
+    }
+    if (originCounter.present) {
+      map['origin_counter'] = Variable<int>(originCounter.value);
+    }
+    if (causalContextJson.present) {
+      map['causal_context_json'] = Variable<String>(causalContextJson.value);
+    }
+    if (lastContentHash.present) {
+      map['last_content_hash'] = Variable<String>(lastContentHash.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (fullyAcknowledgedAt.present) {
+      map['fully_acknowledged_at'] = Variable<DateTime>(
+        fullyAcknowledgedAt.value,
+      );
+    }
+    if (retainUntil.present) {
+      map['retain_until'] = Variable<DateTime>(retainUntil.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncTombstonesCompanion(')
+          ..write('tombstoneId: $tombstoneId, ')
+          ..write('syncGroupId: $syncGroupId, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('deleteChangeId: $deleteChangeId, ')
+          ..write('originDeviceId: $originDeviceId, ')
+          ..write('originCounter: $originCounter, ')
+          ..write('causalContextJson: $causalContextJson, ')
+          ..write('lastContentHash: $lastContentHash, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('fullyAcknowledgedAt: $fullyAcknowledgedAt, ')
+          ..write('retainUntil: $retainUntil, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncStatesTable extends SyncStates
+    with TableInfo<$SyncStatesTable, SyncState> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncStatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncGroupIdMeta = const VerificationMeta(
+    'syncGroupId',
+  );
+  @override
+  late final GeneratedColumn<String> syncGroupId = GeneratedColumn<String>(
+    'sync_group_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localDeviceIdMeta = const VerificationMeta(
+    'localDeviceId',
+  );
+  @override
+  late final GeneratedColumn<String> localDeviceId = GeneratedColumn<String>(
+    'local_device_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _peerDeviceIdMeta = const VerificationMeta(
+    'peerDeviceId',
+  );
+  @override
+  late final GeneratedColumn<String> peerDeviceId = GeneratedColumn<String>(
+    'peer_device_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nextLocalCounterMeta = const VerificationMeta(
+    'nextLocalCounter',
+  );
+  @override
+  late final GeneratedColumn<int> nextLocalCounter = GeneratedColumn<int>(
+    'next_local_counter',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _seenVectorJsonMeta = const VerificationMeta(
+    'seenVectorJson',
+  );
+  @override
+  late final GeneratedColumn<String> seenVectorJson = GeneratedColumn<String>(
+    'seen_vector_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _peerAckVectorJsonMeta = const VerificationMeta(
+    'peerAckVectorJson',
+  );
+  @override
+  late final GeneratedColumn<String> peerAckVectorJson =
+      GeneratedColumn<String>(
+        'peer_ack_vector_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('{}'),
+      );
+  static const VerificationMeta _lastExportedVectorJsonMeta =
+      const VerificationMeta('lastExportedVectorJson');
+  @override
+  late final GeneratedColumn<String> lastExportedVectorJson =
+      GeneratedColumn<String>(
+        'last_exported_vector_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('{}'),
+      );
+  static const VerificationMeta _lastImportedPackageIdMeta =
+      const VerificationMeta('lastImportedPackageId');
+  @override
+  late final GeneratedColumn<String> lastImportedPackageId =
+      GeneratedColumn<String>(
+        'last_imported_package_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _replicaEpochMeta = const VerificationMeta(
+    'replicaEpoch',
+  );
+  @override
+  late final GeneratedColumn<int> replicaEpoch = GeneratedColumn<int>(
+    'replica_epoch',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _baselineCreatedMeta = const VerificationMeta(
+    'baselineCreated',
+  );
+  @override
+  late final GeneratedColumn<bool> baselineCreated = GeneratedColumn<bool>(
+    'baseline_created',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("baseline_created" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _requiresReconciliationMeta =
+      const VerificationMeta('requiresReconciliation');
+  @override
+  late final GeneratedColumn<bool> requiresReconciliation =
+      GeneratedColumn<bool>(
+        'requires_reconciliation',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("requires_reconciliation" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _lastSuccessfulSyncAtMeta =
+      const VerificationMeta('lastSuccessfulSyncAt');
+  @override
+  late final GeneratedColumn<DateTime> lastSuccessfulSyncAt =
+      GeneratedColumn<DateTime>(
+        'last_successful_sync_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    syncGroupId,
+    localDeviceId,
+    peerDeviceId,
+    nextLocalCounter,
+    seenVectorJson,
+    peerAckVectorJson,
+    lastExportedVectorJson,
+    lastImportedPackageId,
+    replicaEpoch,
+    baselineCreated,
+    requiresReconciliation,
+    lastSuccessfulSyncAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_states';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncState> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('sync_group_id')) {
+      context.handle(
+        _syncGroupIdMeta,
+        syncGroupId.isAcceptableOrUnknown(
+          data['sync_group_id']!,
+          _syncGroupIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_device_id')) {
+      context.handle(
+        _localDeviceIdMeta,
+        localDeviceId.isAcceptableOrUnknown(
+          data['local_device_id']!,
+          _localDeviceIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_localDeviceIdMeta);
+    }
+    if (data.containsKey('peer_device_id')) {
+      context.handle(
+        _peerDeviceIdMeta,
+        peerDeviceId.isAcceptableOrUnknown(
+          data['peer_device_id']!,
+          _peerDeviceIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('next_local_counter')) {
+      context.handle(
+        _nextLocalCounterMeta,
+        nextLocalCounter.isAcceptableOrUnknown(
+          data['next_local_counter']!,
+          _nextLocalCounterMeta,
+        ),
+      );
+    }
+    if (data.containsKey('seen_vector_json')) {
+      context.handle(
+        _seenVectorJsonMeta,
+        seenVectorJson.isAcceptableOrUnknown(
+          data['seen_vector_json']!,
+          _seenVectorJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('peer_ack_vector_json')) {
+      context.handle(
+        _peerAckVectorJsonMeta,
+        peerAckVectorJson.isAcceptableOrUnknown(
+          data['peer_ack_vector_json']!,
+          _peerAckVectorJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_exported_vector_json')) {
+      context.handle(
+        _lastExportedVectorJsonMeta,
+        lastExportedVectorJson.isAcceptableOrUnknown(
+          data['last_exported_vector_json']!,
+          _lastExportedVectorJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_imported_package_id')) {
+      context.handle(
+        _lastImportedPackageIdMeta,
+        lastImportedPackageId.isAcceptableOrUnknown(
+          data['last_imported_package_id']!,
+          _lastImportedPackageIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('replica_epoch')) {
+      context.handle(
+        _replicaEpochMeta,
+        replicaEpoch.isAcceptableOrUnknown(
+          data['replica_epoch']!,
+          _replicaEpochMeta,
+        ),
+      );
+    }
+    if (data.containsKey('baseline_created')) {
+      context.handle(
+        _baselineCreatedMeta,
+        baselineCreated.isAcceptableOrUnknown(
+          data['baseline_created']!,
+          _baselineCreatedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('requires_reconciliation')) {
+      context.handle(
+        _requiresReconciliationMeta,
+        requiresReconciliation.isAcceptableOrUnknown(
+          data['requires_reconciliation']!,
+          _requiresReconciliationMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_successful_sync_at')) {
+      context.handle(
+        _lastSuccessfulSyncAtMeta,
+        lastSuccessfulSyncAt.isAcceptableOrUnknown(
+          data['last_successful_sync_at']!,
+          _lastSuccessfulSyncAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SyncState map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncState(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      syncGroupId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_group_id'],
+      ),
+      localDeviceId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}local_device_id'],
+          )!,
+      peerDeviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}peer_device_id'],
+      ),
+      nextLocalCounter:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}next_local_counter'],
+          )!,
+      seenVectorJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}seen_vector_json'],
+          )!,
+      peerAckVectorJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}peer_ack_vector_json'],
+          )!,
+      lastExportedVectorJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}last_exported_vector_json'],
+          )!,
+      lastImportedPackageId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_imported_package_id'],
+      ),
+      replicaEpoch:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}replica_epoch'],
+          )!,
+      baselineCreated:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}baseline_created'],
+          )!,
+      requiresReconciliation:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}requires_reconciliation'],
+          )!,
+      lastSuccessfulSyncAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_successful_sync_at'],
+      ),
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+    );
+  }
+
+  @override
+  $SyncStatesTable createAlias(String alias) {
+    return $SyncStatesTable(attachedDatabase, alias);
+  }
+}
+
+class SyncState extends DataClass implements Insertable<SyncState> {
+  final String id;
+  final String? syncGroupId;
+  final String localDeviceId;
+  final String? peerDeviceId;
+  final int nextLocalCounter;
+  final String seenVectorJson;
+  final String peerAckVectorJson;
+  final String lastExportedVectorJson;
+  final String? lastImportedPackageId;
+  final int replicaEpoch;
+  final bool baselineCreated;
+  final bool requiresReconciliation;
+  final DateTime? lastSuccessfulSyncAt;
+  final DateTime updatedAt;
+  const SyncState({
+    required this.id,
+    this.syncGroupId,
+    required this.localDeviceId,
+    this.peerDeviceId,
+    required this.nextLocalCounter,
+    required this.seenVectorJson,
+    required this.peerAckVectorJson,
+    required this.lastExportedVectorJson,
+    this.lastImportedPackageId,
+    required this.replicaEpoch,
+    required this.baselineCreated,
+    required this.requiresReconciliation,
+    this.lastSuccessfulSyncAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    if (!nullToAbsent || syncGroupId != null) {
+      map['sync_group_id'] = Variable<String>(syncGroupId);
+    }
+    map['local_device_id'] = Variable<String>(localDeviceId);
+    if (!nullToAbsent || peerDeviceId != null) {
+      map['peer_device_id'] = Variable<String>(peerDeviceId);
+    }
+    map['next_local_counter'] = Variable<int>(nextLocalCounter);
+    map['seen_vector_json'] = Variable<String>(seenVectorJson);
+    map['peer_ack_vector_json'] = Variable<String>(peerAckVectorJson);
+    map['last_exported_vector_json'] = Variable<String>(lastExportedVectorJson);
+    if (!nullToAbsent || lastImportedPackageId != null) {
+      map['last_imported_package_id'] = Variable<String>(lastImportedPackageId);
+    }
+    map['replica_epoch'] = Variable<int>(replicaEpoch);
+    map['baseline_created'] = Variable<bool>(baselineCreated);
+    map['requires_reconciliation'] = Variable<bool>(requiresReconciliation);
+    if (!nullToAbsent || lastSuccessfulSyncAt != null) {
+      map['last_successful_sync_at'] = Variable<DateTime>(lastSuccessfulSyncAt);
+    }
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  SyncStatesCompanion toCompanion(bool nullToAbsent) {
+    return SyncStatesCompanion(
+      id: Value(id),
+      syncGroupId:
+          syncGroupId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(syncGroupId),
+      localDeviceId: Value(localDeviceId),
+      peerDeviceId:
+          peerDeviceId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(peerDeviceId),
+      nextLocalCounter: Value(nextLocalCounter),
+      seenVectorJson: Value(seenVectorJson),
+      peerAckVectorJson: Value(peerAckVectorJson),
+      lastExportedVectorJson: Value(lastExportedVectorJson),
+      lastImportedPackageId:
+          lastImportedPackageId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lastImportedPackageId),
+      replicaEpoch: Value(replicaEpoch),
+      baselineCreated: Value(baselineCreated),
+      requiresReconciliation: Value(requiresReconciliation),
+      lastSuccessfulSyncAt:
+          lastSuccessfulSyncAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lastSuccessfulSyncAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory SyncState.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncState(
+      id: serializer.fromJson<String>(json['id']),
+      syncGroupId: serializer.fromJson<String?>(json['syncGroupId']),
+      localDeviceId: serializer.fromJson<String>(json['localDeviceId']),
+      peerDeviceId: serializer.fromJson<String?>(json['peerDeviceId']),
+      nextLocalCounter: serializer.fromJson<int>(json['nextLocalCounter']),
+      seenVectorJson: serializer.fromJson<String>(json['seenVectorJson']),
+      peerAckVectorJson: serializer.fromJson<String>(json['peerAckVectorJson']),
+      lastExportedVectorJson: serializer.fromJson<String>(
+        json['lastExportedVectorJson'],
+      ),
+      lastImportedPackageId: serializer.fromJson<String?>(
+        json['lastImportedPackageId'],
+      ),
+      replicaEpoch: serializer.fromJson<int>(json['replicaEpoch']),
+      baselineCreated: serializer.fromJson<bool>(json['baselineCreated']),
+      requiresReconciliation: serializer.fromJson<bool>(
+        json['requiresReconciliation'],
+      ),
+      lastSuccessfulSyncAt: serializer.fromJson<DateTime?>(
+        json['lastSuccessfulSyncAt'],
+      ),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'syncGroupId': serializer.toJson<String?>(syncGroupId),
+      'localDeviceId': serializer.toJson<String>(localDeviceId),
+      'peerDeviceId': serializer.toJson<String?>(peerDeviceId),
+      'nextLocalCounter': serializer.toJson<int>(nextLocalCounter),
+      'seenVectorJson': serializer.toJson<String>(seenVectorJson),
+      'peerAckVectorJson': serializer.toJson<String>(peerAckVectorJson),
+      'lastExportedVectorJson': serializer.toJson<String>(
+        lastExportedVectorJson,
+      ),
+      'lastImportedPackageId': serializer.toJson<String?>(
+        lastImportedPackageId,
+      ),
+      'replicaEpoch': serializer.toJson<int>(replicaEpoch),
+      'baselineCreated': serializer.toJson<bool>(baselineCreated),
+      'requiresReconciliation': serializer.toJson<bool>(requiresReconciliation),
+      'lastSuccessfulSyncAt': serializer.toJson<DateTime?>(
+        lastSuccessfulSyncAt,
+      ),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  SyncState copyWith({
+    String? id,
+    Value<String?> syncGroupId = const Value.absent(),
+    String? localDeviceId,
+    Value<String?> peerDeviceId = const Value.absent(),
+    int? nextLocalCounter,
+    String? seenVectorJson,
+    String? peerAckVectorJson,
+    String? lastExportedVectorJson,
+    Value<String?> lastImportedPackageId = const Value.absent(),
+    int? replicaEpoch,
+    bool? baselineCreated,
+    bool? requiresReconciliation,
+    Value<DateTime?> lastSuccessfulSyncAt = const Value.absent(),
+    DateTime? updatedAt,
+  }) => SyncState(
+    id: id ?? this.id,
+    syncGroupId: syncGroupId.present ? syncGroupId.value : this.syncGroupId,
+    localDeviceId: localDeviceId ?? this.localDeviceId,
+    peerDeviceId: peerDeviceId.present ? peerDeviceId.value : this.peerDeviceId,
+    nextLocalCounter: nextLocalCounter ?? this.nextLocalCounter,
+    seenVectorJson: seenVectorJson ?? this.seenVectorJson,
+    peerAckVectorJson: peerAckVectorJson ?? this.peerAckVectorJson,
+    lastExportedVectorJson:
+        lastExportedVectorJson ?? this.lastExportedVectorJson,
+    lastImportedPackageId:
+        lastImportedPackageId.present
+            ? lastImportedPackageId.value
+            : this.lastImportedPackageId,
+    replicaEpoch: replicaEpoch ?? this.replicaEpoch,
+    baselineCreated: baselineCreated ?? this.baselineCreated,
+    requiresReconciliation:
+        requiresReconciliation ?? this.requiresReconciliation,
+    lastSuccessfulSyncAt:
+        lastSuccessfulSyncAt.present
+            ? lastSuccessfulSyncAt.value
+            : this.lastSuccessfulSyncAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  SyncState copyWithCompanion(SyncStatesCompanion data) {
+    return SyncState(
+      id: data.id.present ? data.id.value : this.id,
+      syncGroupId:
+          data.syncGroupId.present ? data.syncGroupId.value : this.syncGroupId,
+      localDeviceId:
+          data.localDeviceId.present
+              ? data.localDeviceId.value
+              : this.localDeviceId,
+      peerDeviceId:
+          data.peerDeviceId.present
+              ? data.peerDeviceId.value
+              : this.peerDeviceId,
+      nextLocalCounter:
+          data.nextLocalCounter.present
+              ? data.nextLocalCounter.value
+              : this.nextLocalCounter,
+      seenVectorJson:
+          data.seenVectorJson.present
+              ? data.seenVectorJson.value
+              : this.seenVectorJson,
+      peerAckVectorJson:
+          data.peerAckVectorJson.present
+              ? data.peerAckVectorJson.value
+              : this.peerAckVectorJson,
+      lastExportedVectorJson:
+          data.lastExportedVectorJson.present
+              ? data.lastExportedVectorJson.value
+              : this.lastExportedVectorJson,
+      lastImportedPackageId:
+          data.lastImportedPackageId.present
+              ? data.lastImportedPackageId.value
+              : this.lastImportedPackageId,
+      replicaEpoch:
+          data.replicaEpoch.present
+              ? data.replicaEpoch.value
+              : this.replicaEpoch,
+      baselineCreated:
+          data.baselineCreated.present
+              ? data.baselineCreated.value
+              : this.baselineCreated,
+      requiresReconciliation:
+          data.requiresReconciliation.present
+              ? data.requiresReconciliation.value
+              : this.requiresReconciliation,
+      lastSuccessfulSyncAt:
+          data.lastSuccessfulSyncAt.present
+              ? data.lastSuccessfulSyncAt.value
+              : this.lastSuccessfulSyncAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncState(')
+          ..write('id: $id, ')
+          ..write('syncGroupId: $syncGroupId, ')
+          ..write('localDeviceId: $localDeviceId, ')
+          ..write('peerDeviceId: $peerDeviceId, ')
+          ..write('nextLocalCounter: $nextLocalCounter, ')
+          ..write('seenVectorJson: $seenVectorJson, ')
+          ..write('peerAckVectorJson: $peerAckVectorJson, ')
+          ..write('lastExportedVectorJson: $lastExportedVectorJson, ')
+          ..write('lastImportedPackageId: $lastImportedPackageId, ')
+          ..write('replicaEpoch: $replicaEpoch, ')
+          ..write('baselineCreated: $baselineCreated, ')
+          ..write('requiresReconciliation: $requiresReconciliation, ')
+          ..write('lastSuccessfulSyncAt: $lastSuccessfulSyncAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    syncGroupId,
+    localDeviceId,
+    peerDeviceId,
+    nextLocalCounter,
+    seenVectorJson,
+    peerAckVectorJson,
+    lastExportedVectorJson,
+    lastImportedPackageId,
+    replicaEpoch,
+    baselineCreated,
+    requiresReconciliation,
+    lastSuccessfulSyncAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncState &&
+          other.id == this.id &&
+          other.syncGroupId == this.syncGroupId &&
+          other.localDeviceId == this.localDeviceId &&
+          other.peerDeviceId == this.peerDeviceId &&
+          other.nextLocalCounter == this.nextLocalCounter &&
+          other.seenVectorJson == this.seenVectorJson &&
+          other.peerAckVectorJson == this.peerAckVectorJson &&
+          other.lastExportedVectorJson == this.lastExportedVectorJson &&
+          other.lastImportedPackageId == this.lastImportedPackageId &&
+          other.replicaEpoch == this.replicaEpoch &&
+          other.baselineCreated == this.baselineCreated &&
+          other.requiresReconciliation == this.requiresReconciliation &&
+          other.lastSuccessfulSyncAt == this.lastSuccessfulSyncAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class SyncStatesCompanion extends UpdateCompanion<SyncState> {
+  final Value<String> id;
+  final Value<String?> syncGroupId;
+  final Value<String> localDeviceId;
+  final Value<String?> peerDeviceId;
+  final Value<int> nextLocalCounter;
+  final Value<String> seenVectorJson;
+  final Value<String> peerAckVectorJson;
+  final Value<String> lastExportedVectorJson;
+  final Value<String?> lastImportedPackageId;
+  final Value<int> replicaEpoch;
+  final Value<bool> baselineCreated;
+  final Value<bool> requiresReconciliation;
+  final Value<DateTime?> lastSuccessfulSyncAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const SyncStatesCompanion({
+    this.id = const Value.absent(),
+    this.syncGroupId = const Value.absent(),
+    this.localDeviceId = const Value.absent(),
+    this.peerDeviceId = const Value.absent(),
+    this.nextLocalCounter = const Value.absent(),
+    this.seenVectorJson = const Value.absent(),
+    this.peerAckVectorJson = const Value.absent(),
+    this.lastExportedVectorJson = const Value.absent(),
+    this.lastImportedPackageId = const Value.absent(),
+    this.replicaEpoch = const Value.absent(),
+    this.baselineCreated = const Value.absent(),
+    this.requiresReconciliation = const Value.absent(),
+    this.lastSuccessfulSyncAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncStatesCompanion.insert({
+    required String id,
+    this.syncGroupId = const Value.absent(),
+    required String localDeviceId,
+    this.peerDeviceId = const Value.absent(),
+    this.nextLocalCounter = const Value.absent(),
+    this.seenVectorJson = const Value.absent(),
+    this.peerAckVectorJson = const Value.absent(),
+    this.lastExportedVectorJson = const Value.absent(),
+    this.lastImportedPackageId = const Value.absent(),
+    this.replicaEpoch = const Value.absent(),
+    this.baselineCreated = const Value.absent(),
+    this.requiresReconciliation = const Value.absent(),
+    this.lastSuccessfulSyncAt = const Value.absent(),
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       localDeviceId = Value(localDeviceId),
+       updatedAt = Value(updatedAt);
+  static Insertable<SyncState> custom({
+    Expression<String>? id,
+    Expression<String>? syncGroupId,
+    Expression<String>? localDeviceId,
+    Expression<String>? peerDeviceId,
+    Expression<int>? nextLocalCounter,
+    Expression<String>? seenVectorJson,
+    Expression<String>? peerAckVectorJson,
+    Expression<String>? lastExportedVectorJson,
+    Expression<String>? lastImportedPackageId,
+    Expression<int>? replicaEpoch,
+    Expression<bool>? baselineCreated,
+    Expression<bool>? requiresReconciliation,
+    Expression<DateTime>? lastSuccessfulSyncAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (syncGroupId != null) 'sync_group_id': syncGroupId,
+      if (localDeviceId != null) 'local_device_id': localDeviceId,
+      if (peerDeviceId != null) 'peer_device_id': peerDeviceId,
+      if (nextLocalCounter != null) 'next_local_counter': nextLocalCounter,
+      if (seenVectorJson != null) 'seen_vector_json': seenVectorJson,
+      if (peerAckVectorJson != null) 'peer_ack_vector_json': peerAckVectorJson,
+      if (lastExportedVectorJson != null)
+        'last_exported_vector_json': lastExportedVectorJson,
+      if (lastImportedPackageId != null)
+        'last_imported_package_id': lastImportedPackageId,
+      if (replicaEpoch != null) 'replica_epoch': replicaEpoch,
+      if (baselineCreated != null) 'baseline_created': baselineCreated,
+      if (requiresReconciliation != null)
+        'requires_reconciliation': requiresReconciliation,
+      if (lastSuccessfulSyncAt != null)
+        'last_successful_sync_at': lastSuccessfulSyncAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncStatesCompanion copyWith({
+    Value<String>? id,
+    Value<String?>? syncGroupId,
+    Value<String>? localDeviceId,
+    Value<String?>? peerDeviceId,
+    Value<int>? nextLocalCounter,
+    Value<String>? seenVectorJson,
+    Value<String>? peerAckVectorJson,
+    Value<String>? lastExportedVectorJson,
+    Value<String?>? lastImportedPackageId,
+    Value<int>? replicaEpoch,
+    Value<bool>? baselineCreated,
+    Value<bool>? requiresReconciliation,
+    Value<DateTime?>? lastSuccessfulSyncAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return SyncStatesCompanion(
+      id: id ?? this.id,
+      syncGroupId: syncGroupId ?? this.syncGroupId,
+      localDeviceId: localDeviceId ?? this.localDeviceId,
+      peerDeviceId: peerDeviceId ?? this.peerDeviceId,
+      nextLocalCounter: nextLocalCounter ?? this.nextLocalCounter,
+      seenVectorJson: seenVectorJson ?? this.seenVectorJson,
+      peerAckVectorJson: peerAckVectorJson ?? this.peerAckVectorJson,
+      lastExportedVectorJson:
+          lastExportedVectorJson ?? this.lastExportedVectorJson,
+      lastImportedPackageId:
+          lastImportedPackageId ?? this.lastImportedPackageId,
+      replicaEpoch: replicaEpoch ?? this.replicaEpoch,
+      baselineCreated: baselineCreated ?? this.baselineCreated,
+      requiresReconciliation:
+          requiresReconciliation ?? this.requiresReconciliation,
+      lastSuccessfulSyncAt: lastSuccessfulSyncAt ?? this.lastSuccessfulSyncAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (syncGroupId.present) {
+      map['sync_group_id'] = Variable<String>(syncGroupId.value);
+    }
+    if (localDeviceId.present) {
+      map['local_device_id'] = Variable<String>(localDeviceId.value);
+    }
+    if (peerDeviceId.present) {
+      map['peer_device_id'] = Variable<String>(peerDeviceId.value);
+    }
+    if (nextLocalCounter.present) {
+      map['next_local_counter'] = Variable<int>(nextLocalCounter.value);
+    }
+    if (seenVectorJson.present) {
+      map['seen_vector_json'] = Variable<String>(seenVectorJson.value);
+    }
+    if (peerAckVectorJson.present) {
+      map['peer_ack_vector_json'] = Variable<String>(peerAckVectorJson.value);
+    }
+    if (lastExportedVectorJson.present) {
+      map['last_exported_vector_json'] = Variable<String>(
+        lastExportedVectorJson.value,
+      );
+    }
+    if (lastImportedPackageId.present) {
+      map['last_imported_package_id'] = Variable<String>(
+        lastImportedPackageId.value,
+      );
+    }
+    if (replicaEpoch.present) {
+      map['replica_epoch'] = Variable<int>(replicaEpoch.value);
+    }
+    if (baselineCreated.present) {
+      map['baseline_created'] = Variable<bool>(baselineCreated.value);
+    }
+    if (requiresReconciliation.present) {
+      map['requires_reconciliation'] = Variable<bool>(
+        requiresReconciliation.value,
+      );
+    }
+    if (lastSuccessfulSyncAt.present) {
+      map['last_successful_sync_at'] = Variable<DateTime>(
+        lastSuccessfulSyncAt.value,
+      );
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncStatesCompanion(')
+          ..write('id: $id, ')
+          ..write('syncGroupId: $syncGroupId, ')
+          ..write('localDeviceId: $localDeviceId, ')
+          ..write('peerDeviceId: $peerDeviceId, ')
+          ..write('nextLocalCounter: $nextLocalCounter, ')
+          ..write('seenVectorJson: $seenVectorJson, ')
+          ..write('peerAckVectorJson: $peerAckVectorJson, ')
+          ..write('lastExportedVectorJson: $lastExportedVectorJson, ')
+          ..write('lastImportedPackageId: $lastImportedPackageId, ')
+          ..write('replicaEpoch: $replicaEpoch, ')
+          ..write('baselineCreated: $baselineCreated, ')
+          ..write('requiresReconciliation: $requiresReconciliation, ')
+          ..write('lastSuccessfulSyncAt: $lastSuccessfulSyncAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncEntityStatesTable extends SyncEntityStates
+    with TableInfo<$SyncEntityStatesTable, SyncEntityState> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncEntityStatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncGroupIdMeta = const VerificationMeta(
+    'syncGroupId',
+  );
+  @override
+  late final GeneratedColumn<String> syncGroupId = GeneratedColumn<String>(
+    'sync_group_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _entityTypeMeta = const VerificationMeta(
+    'entityType',
+  );
+  @override
+  late final GeneratedColumn<String> entityType = GeneratedColumn<String>(
+    'entity_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entityIdMeta = const VerificationMeta(
+    'entityId',
+  );
+  @override
+  late final GeneratedColumn<String> entityId = GeneratedColumn<String>(
+    'entity_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fieldVersionsJsonMeta = const VerificationMeta(
+    'fieldVersionsJson',
+  );
+  @override
+  late final GeneratedColumn<String> fieldVersionsJson =
+      GeneratedColumn<String>(
+        'field_versions_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _entityVectorJsonMeta = const VerificationMeta(
+    'entityVectorJson',
+  );
+  @override
+  late final GeneratedColumn<String> entityVectorJson = GeneratedColumn<String>(
+    'entity_vector_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastChangeIdMeta = const VerificationMeta(
+    'lastChangeId',
+  );
+  @override
+  late final GeneratedColumn<String> lastChangeId = GeneratedColumn<String>(
+    'last_change_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentHashMeta = const VerificationMeta(
+    'contentHash',
+  );
+  @override
+  late final GeneratedColumn<String> contentHash = GeneratedColumn<String>(
+    'content_hash',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
+    'isDeleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+    'is_deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    syncGroupId,
+    entityType,
+    entityId,
+    fieldVersionsJson,
+    entityVectorJson,
+    lastChangeId,
+    contentHash,
+    isDeleted,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_entity_states';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncEntityState> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('sync_group_id')) {
+      context.handle(
+        _syncGroupIdMeta,
+        syncGroupId.isAcceptableOrUnknown(
+          data['sync_group_id']!,
+          _syncGroupIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('entity_type')) {
+      context.handle(
+        _entityTypeMeta,
+        entityType.isAcceptableOrUnknown(data['entity_type']!, _entityTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityTypeMeta);
+    }
+    if (data.containsKey('entity_id')) {
+      context.handle(
+        _entityIdMeta,
+        entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityIdMeta);
+    }
+    if (data.containsKey('field_versions_json')) {
+      context.handle(
+        _fieldVersionsJsonMeta,
+        fieldVersionsJson.isAcceptableOrUnknown(
+          data['field_versions_json']!,
+          _fieldVersionsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_fieldVersionsJsonMeta);
+    }
+    if (data.containsKey('entity_vector_json')) {
+      context.handle(
+        _entityVectorJsonMeta,
+        entityVectorJson.isAcceptableOrUnknown(
+          data['entity_vector_json']!,
+          _entityVectorJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_entityVectorJsonMeta);
+    }
+    if (data.containsKey('last_change_id')) {
+      context.handle(
+        _lastChangeIdMeta,
+        lastChangeId.isAcceptableOrUnknown(
+          data['last_change_id']!,
+          _lastChangeIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_lastChangeIdMeta);
+    }
+    if (data.containsKey('content_hash')) {
+      context.handle(
+        _contentHashMeta,
+        contentHash.isAcceptableOrUnknown(
+          data['content_hash']!,
+          _contentHashMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_contentHashMeta);
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(
+        _isDeletedMeta,
+        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SyncEntityState map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncEntityState(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      syncGroupId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_group_id'],
+      ),
+      entityType:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}entity_type'],
+          )!,
+      entityId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}entity_id'],
+          )!,
+      fieldVersionsJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}field_versions_json'],
+          )!,
+      entityVectorJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}entity_vector_json'],
+          )!,
+      lastChangeId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}last_change_id'],
+          )!,
+      contentHash:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}content_hash'],
+          )!,
+      isDeleted:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_deleted'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+    );
+  }
+
+  @override
+  $SyncEntityStatesTable createAlias(String alias) {
+    return $SyncEntityStatesTable(attachedDatabase, alias);
+  }
+}
+
+class SyncEntityState extends DataClass implements Insertable<SyncEntityState> {
+  final String id;
+  final String? syncGroupId;
+  final String entityType;
+  final String entityId;
+  final String fieldVersionsJson;
+  final String entityVectorJson;
+  final String lastChangeId;
+  final String contentHash;
+  final bool isDeleted;
+  final DateTime updatedAt;
+  const SyncEntityState({
+    required this.id,
+    this.syncGroupId,
+    required this.entityType,
+    required this.entityId,
+    required this.fieldVersionsJson,
+    required this.entityVectorJson,
+    required this.lastChangeId,
+    required this.contentHash,
+    required this.isDeleted,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    if (!nullToAbsent || syncGroupId != null) {
+      map['sync_group_id'] = Variable<String>(syncGroupId);
+    }
+    map['entity_type'] = Variable<String>(entityType);
+    map['entity_id'] = Variable<String>(entityId);
+    map['field_versions_json'] = Variable<String>(fieldVersionsJson);
+    map['entity_vector_json'] = Variable<String>(entityVectorJson);
+    map['last_change_id'] = Variable<String>(lastChangeId);
+    map['content_hash'] = Variable<String>(contentHash);
+    map['is_deleted'] = Variable<bool>(isDeleted);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  SyncEntityStatesCompanion toCompanion(bool nullToAbsent) {
+    return SyncEntityStatesCompanion(
+      id: Value(id),
+      syncGroupId:
+          syncGroupId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(syncGroupId),
+      entityType: Value(entityType),
+      entityId: Value(entityId),
+      fieldVersionsJson: Value(fieldVersionsJson),
+      entityVectorJson: Value(entityVectorJson),
+      lastChangeId: Value(lastChangeId),
+      contentHash: Value(contentHash),
+      isDeleted: Value(isDeleted),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory SyncEntityState.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncEntityState(
+      id: serializer.fromJson<String>(json['id']),
+      syncGroupId: serializer.fromJson<String?>(json['syncGroupId']),
+      entityType: serializer.fromJson<String>(json['entityType']),
+      entityId: serializer.fromJson<String>(json['entityId']),
+      fieldVersionsJson: serializer.fromJson<String>(json['fieldVersionsJson']),
+      entityVectorJson: serializer.fromJson<String>(json['entityVectorJson']),
+      lastChangeId: serializer.fromJson<String>(json['lastChangeId']),
+      contentHash: serializer.fromJson<String>(json['contentHash']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'syncGroupId': serializer.toJson<String?>(syncGroupId),
+      'entityType': serializer.toJson<String>(entityType),
+      'entityId': serializer.toJson<String>(entityId),
+      'fieldVersionsJson': serializer.toJson<String>(fieldVersionsJson),
+      'entityVectorJson': serializer.toJson<String>(entityVectorJson),
+      'lastChangeId': serializer.toJson<String>(lastChangeId),
+      'contentHash': serializer.toJson<String>(contentHash),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  SyncEntityState copyWith({
+    String? id,
+    Value<String?> syncGroupId = const Value.absent(),
+    String? entityType,
+    String? entityId,
+    String? fieldVersionsJson,
+    String? entityVectorJson,
+    String? lastChangeId,
+    String? contentHash,
+    bool? isDeleted,
+    DateTime? updatedAt,
+  }) => SyncEntityState(
+    id: id ?? this.id,
+    syncGroupId: syncGroupId.present ? syncGroupId.value : this.syncGroupId,
+    entityType: entityType ?? this.entityType,
+    entityId: entityId ?? this.entityId,
+    fieldVersionsJson: fieldVersionsJson ?? this.fieldVersionsJson,
+    entityVectorJson: entityVectorJson ?? this.entityVectorJson,
+    lastChangeId: lastChangeId ?? this.lastChangeId,
+    contentHash: contentHash ?? this.contentHash,
+    isDeleted: isDeleted ?? this.isDeleted,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  SyncEntityState copyWithCompanion(SyncEntityStatesCompanion data) {
+    return SyncEntityState(
+      id: data.id.present ? data.id.value : this.id,
+      syncGroupId:
+          data.syncGroupId.present ? data.syncGroupId.value : this.syncGroupId,
+      entityType:
+          data.entityType.present ? data.entityType.value : this.entityType,
+      entityId: data.entityId.present ? data.entityId.value : this.entityId,
+      fieldVersionsJson:
+          data.fieldVersionsJson.present
+              ? data.fieldVersionsJson.value
+              : this.fieldVersionsJson,
+      entityVectorJson:
+          data.entityVectorJson.present
+              ? data.entityVectorJson.value
+              : this.entityVectorJson,
+      lastChangeId:
+          data.lastChangeId.present
+              ? data.lastChangeId.value
+              : this.lastChangeId,
+      contentHash:
+          data.contentHash.present ? data.contentHash.value : this.contentHash,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncEntityState(')
+          ..write('id: $id, ')
+          ..write('syncGroupId: $syncGroupId, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('fieldVersionsJson: $fieldVersionsJson, ')
+          ..write('entityVectorJson: $entityVectorJson, ')
+          ..write('lastChangeId: $lastChangeId, ')
+          ..write('contentHash: $contentHash, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    syncGroupId,
+    entityType,
+    entityId,
+    fieldVersionsJson,
+    entityVectorJson,
+    lastChangeId,
+    contentHash,
+    isDeleted,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncEntityState &&
+          other.id == this.id &&
+          other.syncGroupId == this.syncGroupId &&
+          other.entityType == this.entityType &&
+          other.entityId == this.entityId &&
+          other.fieldVersionsJson == this.fieldVersionsJson &&
+          other.entityVectorJson == this.entityVectorJson &&
+          other.lastChangeId == this.lastChangeId &&
+          other.contentHash == this.contentHash &&
+          other.isDeleted == this.isDeleted &&
+          other.updatedAt == this.updatedAt);
+}
+
+class SyncEntityStatesCompanion extends UpdateCompanion<SyncEntityState> {
+  final Value<String> id;
+  final Value<String?> syncGroupId;
+  final Value<String> entityType;
+  final Value<String> entityId;
+  final Value<String> fieldVersionsJson;
+  final Value<String> entityVectorJson;
+  final Value<String> lastChangeId;
+  final Value<String> contentHash;
+  final Value<bool> isDeleted;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const SyncEntityStatesCompanion({
+    this.id = const Value.absent(),
+    this.syncGroupId = const Value.absent(),
+    this.entityType = const Value.absent(),
+    this.entityId = const Value.absent(),
+    this.fieldVersionsJson = const Value.absent(),
+    this.entityVectorJson = const Value.absent(),
+    this.lastChangeId = const Value.absent(),
+    this.contentHash = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncEntityStatesCompanion.insert({
+    required String id,
+    this.syncGroupId = const Value.absent(),
+    required String entityType,
+    required String entityId,
+    required String fieldVersionsJson,
+    required String entityVectorJson,
+    required String lastChangeId,
+    required String contentHash,
+    this.isDeleted = const Value.absent(),
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       entityType = Value(entityType),
+       entityId = Value(entityId),
+       fieldVersionsJson = Value(fieldVersionsJson),
+       entityVectorJson = Value(entityVectorJson),
+       lastChangeId = Value(lastChangeId),
+       contentHash = Value(contentHash),
+       updatedAt = Value(updatedAt);
+  static Insertable<SyncEntityState> custom({
+    Expression<String>? id,
+    Expression<String>? syncGroupId,
+    Expression<String>? entityType,
+    Expression<String>? entityId,
+    Expression<String>? fieldVersionsJson,
+    Expression<String>? entityVectorJson,
+    Expression<String>? lastChangeId,
+    Expression<String>? contentHash,
+    Expression<bool>? isDeleted,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (syncGroupId != null) 'sync_group_id': syncGroupId,
+      if (entityType != null) 'entity_type': entityType,
+      if (entityId != null) 'entity_id': entityId,
+      if (fieldVersionsJson != null) 'field_versions_json': fieldVersionsJson,
+      if (entityVectorJson != null) 'entity_vector_json': entityVectorJson,
+      if (lastChangeId != null) 'last_change_id': lastChangeId,
+      if (contentHash != null) 'content_hash': contentHash,
+      if (isDeleted != null) 'is_deleted': isDeleted,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncEntityStatesCompanion copyWith({
+    Value<String>? id,
+    Value<String?>? syncGroupId,
+    Value<String>? entityType,
+    Value<String>? entityId,
+    Value<String>? fieldVersionsJson,
+    Value<String>? entityVectorJson,
+    Value<String>? lastChangeId,
+    Value<String>? contentHash,
+    Value<bool>? isDeleted,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return SyncEntityStatesCompanion(
+      id: id ?? this.id,
+      syncGroupId: syncGroupId ?? this.syncGroupId,
+      entityType: entityType ?? this.entityType,
+      entityId: entityId ?? this.entityId,
+      fieldVersionsJson: fieldVersionsJson ?? this.fieldVersionsJson,
+      entityVectorJson: entityVectorJson ?? this.entityVectorJson,
+      lastChangeId: lastChangeId ?? this.lastChangeId,
+      contentHash: contentHash ?? this.contentHash,
+      isDeleted: isDeleted ?? this.isDeleted,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (syncGroupId.present) {
+      map['sync_group_id'] = Variable<String>(syncGroupId.value);
+    }
+    if (entityType.present) {
+      map['entity_type'] = Variable<String>(entityType.value);
+    }
+    if (entityId.present) {
+      map['entity_id'] = Variable<String>(entityId.value);
+    }
+    if (fieldVersionsJson.present) {
+      map['field_versions_json'] = Variable<String>(fieldVersionsJson.value);
+    }
+    if (entityVectorJson.present) {
+      map['entity_vector_json'] = Variable<String>(entityVectorJson.value);
+    }
+    if (lastChangeId.present) {
+      map['last_change_id'] = Variable<String>(lastChangeId.value);
+    }
+    if (contentHash.present) {
+      map['content_hash'] = Variable<String>(contentHash.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncEntityStatesCompanion(')
+          ..write('id: $id, ')
+          ..write('syncGroupId: $syncGroupId, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('fieldVersionsJson: $fieldVersionsJson, ')
+          ..write('entityVectorJson: $entityVectorJson, ')
+          ..write('lastChangeId: $lastChangeId, ')
+          ..write('contentHash: $contentHash, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5675,6 +10370,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $MediaAssetsTable mediaAssets = $MediaAssetsTable(this);
+  late final $SyncGroupsTable syncGroups = $SyncGroupsTable(this);
+  late final $SyncDevicesTable syncDevices = $SyncDevicesTable(this);
+  late final $SyncChangesTable syncChanges = $SyncChangesTable(this);
+  late final $SyncTombstonesTable syncTombstones = $SyncTombstonesTable(this);
+  late final $SyncStatesTable syncStates = $SyncStatesTable(this);
+  late final $SyncEntityStatesTable syncEntityStates = $SyncEntityStatesTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5690,6 +10393,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     savedViews,
     externalGameIds,
     mediaAssets,
+    syncGroups,
+    syncDevices,
+    syncChanges,
+    syncTombstones,
+    syncStates,
+    syncEntityStates,
   ];
 }
 
@@ -10413,6 +15122,2193 @@ typedef $$MediaAssetsTableProcessedTableManager =
       MediaAsset,
       PrefetchHooks Function({bool gameId})
     >;
+typedef $$SyncGroupsTableCreateCompanionBuilder =
+    SyncGroupsCompanion Function({
+      required String id,
+      required String displayName,
+      required int protocolVersion,
+      Value<String?> keyId,
+      required String status,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> keyRotatedAt,
+      Value<int> rowid,
+    });
+typedef $$SyncGroupsTableUpdateCompanionBuilder =
+    SyncGroupsCompanion Function({
+      Value<String> id,
+      Value<String> displayName,
+      Value<int> protocolVersion,
+      Value<String?> keyId,
+      Value<String> status,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> keyRotatedAt,
+      Value<int> rowid,
+    });
+
+class $$SyncGroupsTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncGroupsTable> {
+  $$SyncGroupsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get protocolVersion => $composableBuilder(
+    column: $table.protocolVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get keyId => $composableBuilder(
+    column: $table.keyId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get keyRotatedAt => $composableBuilder(
+    column: $table.keyRotatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncGroupsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncGroupsTable> {
+  $$SyncGroupsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get protocolVersion => $composableBuilder(
+    column: $table.protocolVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get keyId => $composableBuilder(
+    column: $table.keyId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get keyRotatedAt => $composableBuilder(
+    column: $table.keyRotatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncGroupsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncGroupsTable> {
+  $$SyncGroupsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get protocolVersion => $composableBuilder(
+    column: $table.protocolVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get keyId =>
+      $composableBuilder(column: $table.keyId, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get keyRotatedAt => $composableBuilder(
+    column: $table.keyRotatedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$SyncGroupsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncGroupsTable,
+          SyncGroup,
+          $$SyncGroupsTableFilterComposer,
+          $$SyncGroupsTableOrderingComposer,
+          $$SyncGroupsTableAnnotationComposer,
+          $$SyncGroupsTableCreateCompanionBuilder,
+          $$SyncGroupsTableUpdateCompanionBuilder,
+          (
+            SyncGroup,
+            BaseReferences<_$AppDatabase, $SyncGroupsTable, SyncGroup>,
+          ),
+          SyncGroup,
+          PrefetchHooks Function()
+        > {
+  $$SyncGroupsTableTableManager(_$AppDatabase db, $SyncGroupsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$SyncGroupsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$SyncGroupsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$SyncGroupsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> displayName = const Value.absent(),
+                Value<int> protocolVersion = const Value.absent(),
+                Value<String?> keyId = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> keyRotatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncGroupsCompanion(
+                id: id,
+                displayName: displayName,
+                protocolVersion: protocolVersion,
+                keyId: keyId,
+                status: status,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                keyRotatedAt: keyRotatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String displayName,
+                required int protocolVersion,
+                Value<String?> keyId = const Value.absent(),
+                required String status,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> keyRotatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncGroupsCompanion.insert(
+                id: id,
+                displayName: displayName,
+                protocolVersion: protocolVersion,
+                keyId: keyId,
+                status: status,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                keyRotatedAt: keyRotatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncGroupsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncGroupsTable,
+      SyncGroup,
+      $$SyncGroupsTableFilterComposer,
+      $$SyncGroupsTableOrderingComposer,
+      $$SyncGroupsTableAnnotationComposer,
+      $$SyncGroupsTableCreateCompanionBuilder,
+      $$SyncGroupsTableUpdateCompanionBuilder,
+      (SyncGroup, BaseReferences<_$AppDatabase, $SyncGroupsTable, SyncGroup>),
+      SyncGroup,
+      PrefetchHooks Function()
+    >;
+typedef $$SyncDevicesTableCreateCompanionBuilder =
+    SyncDevicesCompanion Function({
+      required String id,
+      Value<String?> syncGroupId,
+      required String displayName,
+      required String platform,
+      Value<bool> isLocal,
+      Value<String?> publicKey,
+      Value<String?> fingerprint,
+      required String status,
+      required DateTime createdAt,
+      Value<DateTime?> pairedAt,
+      Value<DateTime?> lastSeenAt,
+      Value<DateTime?> lastSyncAt,
+      Value<DateTime?> revokedAt,
+      Value<int> rowid,
+    });
+typedef $$SyncDevicesTableUpdateCompanionBuilder =
+    SyncDevicesCompanion Function({
+      Value<String> id,
+      Value<String?> syncGroupId,
+      Value<String> displayName,
+      Value<String> platform,
+      Value<bool> isLocal,
+      Value<String?> publicKey,
+      Value<String?> fingerprint,
+      Value<String> status,
+      Value<DateTime> createdAt,
+      Value<DateTime?> pairedAt,
+      Value<DateTime?> lastSeenAt,
+      Value<DateTime?> lastSyncAt,
+      Value<DateTime?> revokedAt,
+      Value<int> rowid,
+    });
+
+class $$SyncDevicesTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncDevicesTable> {
+  $$SyncDevicesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncGroupId => $composableBuilder(
+    column: $table.syncGroupId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get platform => $composableBuilder(
+    column: $table.platform,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isLocal => $composableBuilder(
+    column: $table.isLocal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get publicKey => $composableBuilder(
+    column: $table.publicKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fingerprint => $composableBuilder(
+    column: $table.fingerprint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get pairedAt => $composableBuilder(
+    column: $table.pairedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSeenAt => $composableBuilder(
+    column: $table.lastSeenAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSyncAt => $composableBuilder(
+    column: $table.lastSyncAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get revokedAt => $composableBuilder(
+    column: $table.revokedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncDevicesTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncDevicesTable> {
+  $$SyncDevicesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncGroupId => $composableBuilder(
+    column: $table.syncGroupId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get platform => $composableBuilder(
+    column: $table.platform,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isLocal => $composableBuilder(
+    column: $table.isLocal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get publicKey => $composableBuilder(
+    column: $table.publicKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fingerprint => $composableBuilder(
+    column: $table.fingerprint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get pairedAt => $composableBuilder(
+    column: $table.pairedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSeenAt => $composableBuilder(
+    column: $table.lastSeenAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSyncAt => $composableBuilder(
+    column: $table.lastSyncAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get revokedAt => $composableBuilder(
+    column: $table.revokedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncDevicesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncDevicesTable> {
+  $$SyncDevicesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get syncGroupId => $composableBuilder(
+    column: $table.syncGroupId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get platform =>
+      $composableBuilder(column: $table.platform, builder: (column) => column);
+
+  GeneratedColumn<bool> get isLocal =>
+      $composableBuilder(column: $table.isLocal, builder: (column) => column);
+
+  GeneratedColumn<String> get publicKey =>
+      $composableBuilder(column: $table.publicKey, builder: (column) => column);
+
+  GeneratedColumn<String> get fingerprint => $composableBuilder(
+    column: $table.fingerprint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get pairedAt =>
+      $composableBuilder(column: $table.pairedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastSeenAt => $composableBuilder(
+    column: $table.lastSeenAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastSyncAt => $composableBuilder(
+    column: $table.lastSyncAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get revokedAt =>
+      $composableBuilder(column: $table.revokedAt, builder: (column) => column);
+}
+
+class $$SyncDevicesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncDevicesTable,
+          SyncDevice,
+          $$SyncDevicesTableFilterComposer,
+          $$SyncDevicesTableOrderingComposer,
+          $$SyncDevicesTableAnnotationComposer,
+          $$SyncDevicesTableCreateCompanionBuilder,
+          $$SyncDevicesTableUpdateCompanionBuilder,
+          (
+            SyncDevice,
+            BaseReferences<_$AppDatabase, $SyncDevicesTable, SyncDevice>,
+          ),
+          SyncDevice,
+          PrefetchHooks Function()
+        > {
+  $$SyncDevicesTableTableManager(_$AppDatabase db, $SyncDevicesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$SyncDevicesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$SyncDevicesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () =>
+                  $$SyncDevicesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String?> syncGroupId = const Value.absent(),
+                Value<String> displayName = const Value.absent(),
+                Value<String> platform = const Value.absent(),
+                Value<bool> isLocal = const Value.absent(),
+                Value<String?> publicKey = const Value.absent(),
+                Value<String?> fingerprint = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> pairedAt = const Value.absent(),
+                Value<DateTime?> lastSeenAt = const Value.absent(),
+                Value<DateTime?> lastSyncAt = const Value.absent(),
+                Value<DateTime?> revokedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncDevicesCompanion(
+                id: id,
+                syncGroupId: syncGroupId,
+                displayName: displayName,
+                platform: platform,
+                isLocal: isLocal,
+                publicKey: publicKey,
+                fingerprint: fingerprint,
+                status: status,
+                createdAt: createdAt,
+                pairedAt: pairedAt,
+                lastSeenAt: lastSeenAt,
+                lastSyncAt: lastSyncAt,
+                revokedAt: revokedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                Value<String?> syncGroupId = const Value.absent(),
+                required String displayName,
+                required String platform,
+                Value<bool> isLocal = const Value.absent(),
+                Value<String?> publicKey = const Value.absent(),
+                Value<String?> fingerprint = const Value.absent(),
+                required String status,
+                required DateTime createdAt,
+                Value<DateTime?> pairedAt = const Value.absent(),
+                Value<DateTime?> lastSeenAt = const Value.absent(),
+                Value<DateTime?> lastSyncAt = const Value.absent(),
+                Value<DateTime?> revokedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncDevicesCompanion.insert(
+                id: id,
+                syncGroupId: syncGroupId,
+                displayName: displayName,
+                platform: platform,
+                isLocal: isLocal,
+                publicKey: publicKey,
+                fingerprint: fingerprint,
+                status: status,
+                createdAt: createdAt,
+                pairedAt: pairedAt,
+                lastSeenAt: lastSeenAt,
+                lastSyncAt: lastSyncAt,
+                revokedAt: revokedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncDevicesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncDevicesTable,
+      SyncDevice,
+      $$SyncDevicesTableFilterComposer,
+      $$SyncDevicesTableOrderingComposer,
+      $$SyncDevicesTableAnnotationComposer,
+      $$SyncDevicesTableCreateCompanionBuilder,
+      $$SyncDevicesTableUpdateCompanionBuilder,
+      (
+        SyncDevice,
+        BaseReferences<_$AppDatabase, $SyncDevicesTable, SyncDevice>,
+      ),
+      SyncDevice,
+      PrefetchHooks Function()
+    >;
+typedef $$SyncChangesTableCreateCompanionBuilder =
+    SyncChangesCompanion Function({
+      required String changeId,
+      Value<String?> syncGroupId,
+      required String originDeviceId,
+      required int originCounter,
+      required String mutationId,
+      required int mutationSequence,
+      required String entityType,
+      required String entityId,
+      required String operation,
+      required String changedFieldsJson,
+      required String payloadJson,
+      required String snapshotJson,
+      required String causalContextJson,
+      required String source,
+      required String contentHash,
+      required DateTime createdAt,
+      Value<DateTime?> appliedAt,
+      Value<int> rowid,
+    });
+typedef $$SyncChangesTableUpdateCompanionBuilder =
+    SyncChangesCompanion Function({
+      Value<String> changeId,
+      Value<String?> syncGroupId,
+      Value<String> originDeviceId,
+      Value<int> originCounter,
+      Value<String> mutationId,
+      Value<int> mutationSequence,
+      Value<String> entityType,
+      Value<String> entityId,
+      Value<String> operation,
+      Value<String> changedFieldsJson,
+      Value<String> payloadJson,
+      Value<String> snapshotJson,
+      Value<String> causalContextJson,
+      Value<String> source,
+      Value<String> contentHash,
+      Value<DateTime> createdAt,
+      Value<DateTime?> appliedAt,
+      Value<int> rowid,
+    });
+
+class $$SyncChangesTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncChangesTable> {
+  $$SyncChangesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get changeId => $composableBuilder(
+    column: $table.changeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncGroupId => $composableBuilder(
+    column: $table.syncGroupId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get originDeviceId => $composableBuilder(
+    column: $table.originDeviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get originCounter => $composableBuilder(
+    column: $table.originCounter,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mutationId => $composableBuilder(
+    column: $table.mutationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get mutationSequence => $composableBuilder(
+    column: $table.mutationSequence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get operation => $composableBuilder(
+    column: $table.operation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get changedFieldsJson => $composableBuilder(
+    column: $table.changedFieldsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get causalContextJson => $composableBuilder(
+    column: $table.causalContextJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get appliedAt => $composableBuilder(
+    column: $table.appliedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncChangesTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncChangesTable> {
+  $$SyncChangesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get changeId => $composableBuilder(
+    column: $table.changeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncGroupId => $composableBuilder(
+    column: $table.syncGroupId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get originDeviceId => $composableBuilder(
+    column: $table.originDeviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get originCounter => $composableBuilder(
+    column: $table.originCounter,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mutationId => $composableBuilder(
+    column: $table.mutationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get mutationSequence => $composableBuilder(
+    column: $table.mutationSequence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get operation => $composableBuilder(
+    column: $table.operation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get changedFieldsJson => $composableBuilder(
+    column: $table.changedFieldsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get causalContextJson => $composableBuilder(
+    column: $table.causalContextJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get appliedAt => $composableBuilder(
+    column: $table.appliedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncChangesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncChangesTable> {
+  $$SyncChangesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get changeId =>
+      $composableBuilder(column: $table.changeId, builder: (column) => column);
+
+  GeneratedColumn<String> get syncGroupId => $composableBuilder(
+    column: $table.syncGroupId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get originDeviceId => $composableBuilder(
+    column: $table.originDeviceId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get originCounter => $composableBuilder(
+    column: $table.originCounter,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get mutationId => $composableBuilder(
+    column: $table.mutationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get mutationSequence => $composableBuilder(
+    column: $table.mutationSequence,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => column);
+
+  GeneratedColumn<String> get operation =>
+      $composableBuilder(column: $table.operation, builder: (column) => column);
+
+  GeneratedColumn<String> get changedFieldsJson => $composableBuilder(
+    column: $table.changedFieldsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get causalContextJson => $composableBuilder(
+    column: $table.causalContextJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get appliedAt =>
+      $composableBuilder(column: $table.appliedAt, builder: (column) => column);
+}
+
+class $$SyncChangesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncChangesTable,
+          SyncChange,
+          $$SyncChangesTableFilterComposer,
+          $$SyncChangesTableOrderingComposer,
+          $$SyncChangesTableAnnotationComposer,
+          $$SyncChangesTableCreateCompanionBuilder,
+          $$SyncChangesTableUpdateCompanionBuilder,
+          (
+            SyncChange,
+            BaseReferences<_$AppDatabase, $SyncChangesTable, SyncChange>,
+          ),
+          SyncChange,
+          PrefetchHooks Function()
+        > {
+  $$SyncChangesTableTableManager(_$AppDatabase db, $SyncChangesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$SyncChangesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$SyncChangesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () =>
+                  $$SyncChangesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> changeId = const Value.absent(),
+                Value<String?> syncGroupId = const Value.absent(),
+                Value<String> originDeviceId = const Value.absent(),
+                Value<int> originCounter = const Value.absent(),
+                Value<String> mutationId = const Value.absent(),
+                Value<int> mutationSequence = const Value.absent(),
+                Value<String> entityType = const Value.absent(),
+                Value<String> entityId = const Value.absent(),
+                Value<String> operation = const Value.absent(),
+                Value<String> changedFieldsJson = const Value.absent(),
+                Value<String> payloadJson = const Value.absent(),
+                Value<String> snapshotJson = const Value.absent(),
+                Value<String> causalContextJson = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String> contentHash = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> appliedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncChangesCompanion(
+                changeId: changeId,
+                syncGroupId: syncGroupId,
+                originDeviceId: originDeviceId,
+                originCounter: originCounter,
+                mutationId: mutationId,
+                mutationSequence: mutationSequence,
+                entityType: entityType,
+                entityId: entityId,
+                operation: operation,
+                changedFieldsJson: changedFieldsJson,
+                payloadJson: payloadJson,
+                snapshotJson: snapshotJson,
+                causalContextJson: causalContextJson,
+                source: source,
+                contentHash: contentHash,
+                createdAt: createdAt,
+                appliedAt: appliedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String changeId,
+                Value<String?> syncGroupId = const Value.absent(),
+                required String originDeviceId,
+                required int originCounter,
+                required String mutationId,
+                required int mutationSequence,
+                required String entityType,
+                required String entityId,
+                required String operation,
+                required String changedFieldsJson,
+                required String payloadJson,
+                required String snapshotJson,
+                required String causalContextJson,
+                required String source,
+                required String contentHash,
+                required DateTime createdAt,
+                Value<DateTime?> appliedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncChangesCompanion.insert(
+                changeId: changeId,
+                syncGroupId: syncGroupId,
+                originDeviceId: originDeviceId,
+                originCounter: originCounter,
+                mutationId: mutationId,
+                mutationSequence: mutationSequence,
+                entityType: entityType,
+                entityId: entityId,
+                operation: operation,
+                changedFieldsJson: changedFieldsJson,
+                payloadJson: payloadJson,
+                snapshotJson: snapshotJson,
+                causalContextJson: causalContextJson,
+                source: source,
+                contentHash: contentHash,
+                createdAt: createdAt,
+                appliedAt: appliedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncChangesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncChangesTable,
+      SyncChange,
+      $$SyncChangesTableFilterComposer,
+      $$SyncChangesTableOrderingComposer,
+      $$SyncChangesTableAnnotationComposer,
+      $$SyncChangesTableCreateCompanionBuilder,
+      $$SyncChangesTableUpdateCompanionBuilder,
+      (
+        SyncChange,
+        BaseReferences<_$AppDatabase, $SyncChangesTable, SyncChange>,
+      ),
+      SyncChange,
+      PrefetchHooks Function()
+    >;
+typedef $$SyncTombstonesTableCreateCompanionBuilder =
+    SyncTombstonesCompanion Function({
+      required String tombstoneId,
+      Value<String?> syncGroupId,
+      required String entityType,
+      required String entityId,
+      required String deleteChangeId,
+      required String originDeviceId,
+      required int originCounter,
+      required String causalContextJson,
+      Value<String?> lastContentHash,
+      required DateTime deletedAt,
+      Value<DateTime?> fullyAcknowledgedAt,
+      Value<DateTime?> retainUntil,
+      Value<int> rowid,
+    });
+typedef $$SyncTombstonesTableUpdateCompanionBuilder =
+    SyncTombstonesCompanion Function({
+      Value<String> tombstoneId,
+      Value<String?> syncGroupId,
+      Value<String> entityType,
+      Value<String> entityId,
+      Value<String> deleteChangeId,
+      Value<String> originDeviceId,
+      Value<int> originCounter,
+      Value<String> causalContextJson,
+      Value<String?> lastContentHash,
+      Value<DateTime> deletedAt,
+      Value<DateTime?> fullyAcknowledgedAt,
+      Value<DateTime?> retainUntil,
+      Value<int> rowid,
+    });
+
+class $$SyncTombstonesTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncTombstonesTable> {
+  $$SyncTombstonesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get tombstoneId => $composableBuilder(
+    column: $table.tombstoneId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncGroupId => $composableBuilder(
+    column: $table.syncGroupId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deleteChangeId => $composableBuilder(
+    column: $table.deleteChangeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get originDeviceId => $composableBuilder(
+    column: $table.originDeviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get originCounter => $composableBuilder(
+    column: $table.originCounter,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get causalContextJson => $composableBuilder(
+    column: $table.causalContextJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastContentHash => $composableBuilder(
+    column: $table.lastContentHash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fullyAcknowledgedAt => $composableBuilder(
+    column: $table.fullyAcknowledgedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get retainUntil => $composableBuilder(
+    column: $table.retainUntil,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncTombstonesTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncTombstonesTable> {
+  $$SyncTombstonesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get tombstoneId => $composableBuilder(
+    column: $table.tombstoneId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncGroupId => $composableBuilder(
+    column: $table.syncGroupId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deleteChangeId => $composableBuilder(
+    column: $table.deleteChangeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get originDeviceId => $composableBuilder(
+    column: $table.originDeviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get originCounter => $composableBuilder(
+    column: $table.originCounter,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get causalContextJson => $composableBuilder(
+    column: $table.causalContextJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastContentHash => $composableBuilder(
+    column: $table.lastContentHash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fullyAcknowledgedAt => $composableBuilder(
+    column: $table.fullyAcknowledgedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get retainUntil => $composableBuilder(
+    column: $table.retainUntil,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncTombstonesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncTombstonesTable> {
+  $$SyncTombstonesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get tombstoneId => $composableBuilder(
+    column: $table.tombstoneId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncGroupId => $composableBuilder(
+    column: $table.syncGroupId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => column);
+
+  GeneratedColumn<String> get deleteChangeId => $composableBuilder(
+    column: $table.deleteChangeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get originDeviceId => $composableBuilder(
+    column: $table.originDeviceId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get originCounter => $composableBuilder(
+    column: $table.originCounter,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get causalContextJson => $composableBuilder(
+    column: $table.causalContextJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastContentHash => $composableBuilder(
+    column: $table.lastContentHash,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fullyAcknowledgedAt => $composableBuilder(
+    column: $table.fullyAcknowledgedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get retainUntil => $composableBuilder(
+    column: $table.retainUntil,
+    builder: (column) => column,
+  );
+}
+
+class $$SyncTombstonesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncTombstonesTable,
+          SyncTombstone,
+          $$SyncTombstonesTableFilterComposer,
+          $$SyncTombstonesTableOrderingComposer,
+          $$SyncTombstonesTableAnnotationComposer,
+          $$SyncTombstonesTableCreateCompanionBuilder,
+          $$SyncTombstonesTableUpdateCompanionBuilder,
+          (
+            SyncTombstone,
+            BaseReferences<_$AppDatabase, $SyncTombstonesTable, SyncTombstone>,
+          ),
+          SyncTombstone,
+          PrefetchHooks Function()
+        > {
+  $$SyncTombstonesTableTableManager(
+    _$AppDatabase db,
+    $SyncTombstonesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$SyncTombstonesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () =>
+                  $$SyncTombstonesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$SyncTombstonesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> tombstoneId = const Value.absent(),
+                Value<String?> syncGroupId = const Value.absent(),
+                Value<String> entityType = const Value.absent(),
+                Value<String> entityId = const Value.absent(),
+                Value<String> deleteChangeId = const Value.absent(),
+                Value<String> originDeviceId = const Value.absent(),
+                Value<int> originCounter = const Value.absent(),
+                Value<String> causalContextJson = const Value.absent(),
+                Value<String?> lastContentHash = const Value.absent(),
+                Value<DateTime> deletedAt = const Value.absent(),
+                Value<DateTime?> fullyAcknowledgedAt = const Value.absent(),
+                Value<DateTime?> retainUntil = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncTombstonesCompanion(
+                tombstoneId: tombstoneId,
+                syncGroupId: syncGroupId,
+                entityType: entityType,
+                entityId: entityId,
+                deleteChangeId: deleteChangeId,
+                originDeviceId: originDeviceId,
+                originCounter: originCounter,
+                causalContextJson: causalContextJson,
+                lastContentHash: lastContentHash,
+                deletedAt: deletedAt,
+                fullyAcknowledgedAt: fullyAcknowledgedAt,
+                retainUntil: retainUntil,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String tombstoneId,
+                Value<String?> syncGroupId = const Value.absent(),
+                required String entityType,
+                required String entityId,
+                required String deleteChangeId,
+                required String originDeviceId,
+                required int originCounter,
+                required String causalContextJson,
+                Value<String?> lastContentHash = const Value.absent(),
+                required DateTime deletedAt,
+                Value<DateTime?> fullyAcknowledgedAt = const Value.absent(),
+                Value<DateTime?> retainUntil = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncTombstonesCompanion.insert(
+                tombstoneId: tombstoneId,
+                syncGroupId: syncGroupId,
+                entityType: entityType,
+                entityId: entityId,
+                deleteChangeId: deleteChangeId,
+                originDeviceId: originDeviceId,
+                originCounter: originCounter,
+                causalContextJson: causalContextJson,
+                lastContentHash: lastContentHash,
+                deletedAt: deletedAt,
+                fullyAcknowledgedAt: fullyAcknowledgedAt,
+                retainUntil: retainUntil,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncTombstonesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncTombstonesTable,
+      SyncTombstone,
+      $$SyncTombstonesTableFilterComposer,
+      $$SyncTombstonesTableOrderingComposer,
+      $$SyncTombstonesTableAnnotationComposer,
+      $$SyncTombstonesTableCreateCompanionBuilder,
+      $$SyncTombstonesTableUpdateCompanionBuilder,
+      (
+        SyncTombstone,
+        BaseReferences<_$AppDatabase, $SyncTombstonesTable, SyncTombstone>,
+      ),
+      SyncTombstone,
+      PrefetchHooks Function()
+    >;
+typedef $$SyncStatesTableCreateCompanionBuilder =
+    SyncStatesCompanion Function({
+      required String id,
+      Value<String?> syncGroupId,
+      required String localDeviceId,
+      Value<String?> peerDeviceId,
+      Value<int> nextLocalCounter,
+      Value<String> seenVectorJson,
+      Value<String> peerAckVectorJson,
+      Value<String> lastExportedVectorJson,
+      Value<String?> lastImportedPackageId,
+      Value<int> replicaEpoch,
+      Value<bool> baselineCreated,
+      Value<bool> requiresReconciliation,
+      Value<DateTime?> lastSuccessfulSyncAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$SyncStatesTableUpdateCompanionBuilder =
+    SyncStatesCompanion Function({
+      Value<String> id,
+      Value<String?> syncGroupId,
+      Value<String> localDeviceId,
+      Value<String?> peerDeviceId,
+      Value<int> nextLocalCounter,
+      Value<String> seenVectorJson,
+      Value<String> peerAckVectorJson,
+      Value<String> lastExportedVectorJson,
+      Value<String?> lastImportedPackageId,
+      Value<int> replicaEpoch,
+      Value<bool> baselineCreated,
+      Value<bool> requiresReconciliation,
+      Value<DateTime?> lastSuccessfulSyncAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$SyncStatesTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncStatesTable> {
+  $$SyncStatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncGroupId => $composableBuilder(
+    column: $table.syncGroupId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localDeviceId => $composableBuilder(
+    column: $table.localDeviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get peerDeviceId => $composableBuilder(
+    column: $table.peerDeviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get nextLocalCounter => $composableBuilder(
+    column: $table.nextLocalCounter,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seenVectorJson => $composableBuilder(
+    column: $table.seenVectorJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get peerAckVectorJson => $composableBuilder(
+    column: $table.peerAckVectorJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastExportedVectorJson => $composableBuilder(
+    column: $table.lastExportedVectorJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastImportedPackageId => $composableBuilder(
+    column: $table.lastImportedPackageId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get replicaEpoch => $composableBuilder(
+    column: $table.replicaEpoch,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get baselineCreated => $composableBuilder(
+    column: $table.baselineCreated,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get requiresReconciliation => $composableBuilder(
+    column: $table.requiresReconciliation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSuccessfulSyncAt => $composableBuilder(
+    column: $table.lastSuccessfulSyncAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncStatesTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncStatesTable> {
+  $$SyncStatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncGroupId => $composableBuilder(
+    column: $table.syncGroupId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localDeviceId => $composableBuilder(
+    column: $table.localDeviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get peerDeviceId => $composableBuilder(
+    column: $table.peerDeviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get nextLocalCounter => $composableBuilder(
+    column: $table.nextLocalCounter,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seenVectorJson => $composableBuilder(
+    column: $table.seenVectorJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get peerAckVectorJson => $composableBuilder(
+    column: $table.peerAckVectorJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastExportedVectorJson => $composableBuilder(
+    column: $table.lastExportedVectorJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastImportedPackageId => $composableBuilder(
+    column: $table.lastImportedPackageId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get replicaEpoch => $composableBuilder(
+    column: $table.replicaEpoch,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get baselineCreated => $composableBuilder(
+    column: $table.baselineCreated,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get requiresReconciliation => $composableBuilder(
+    column: $table.requiresReconciliation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSuccessfulSyncAt => $composableBuilder(
+    column: $table.lastSuccessfulSyncAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncStatesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncStatesTable> {
+  $$SyncStatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get syncGroupId => $composableBuilder(
+    column: $table.syncGroupId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get localDeviceId => $composableBuilder(
+    column: $table.localDeviceId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get peerDeviceId => $composableBuilder(
+    column: $table.peerDeviceId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get nextLocalCounter => $composableBuilder(
+    column: $table.nextLocalCounter,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seenVectorJson => $composableBuilder(
+    column: $table.seenVectorJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get peerAckVectorJson => $composableBuilder(
+    column: $table.peerAckVectorJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastExportedVectorJson => $composableBuilder(
+    column: $table.lastExportedVectorJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastImportedPackageId => $composableBuilder(
+    column: $table.lastImportedPackageId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get replicaEpoch => $composableBuilder(
+    column: $table.replicaEpoch,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get baselineCreated => $composableBuilder(
+    column: $table.baselineCreated,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get requiresReconciliation => $composableBuilder(
+    column: $table.requiresReconciliation,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastSuccessfulSyncAt => $composableBuilder(
+    column: $table.lastSuccessfulSyncAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$SyncStatesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncStatesTable,
+          SyncState,
+          $$SyncStatesTableFilterComposer,
+          $$SyncStatesTableOrderingComposer,
+          $$SyncStatesTableAnnotationComposer,
+          $$SyncStatesTableCreateCompanionBuilder,
+          $$SyncStatesTableUpdateCompanionBuilder,
+          (
+            SyncState,
+            BaseReferences<_$AppDatabase, $SyncStatesTable, SyncState>,
+          ),
+          SyncState,
+          PrefetchHooks Function()
+        > {
+  $$SyncStatesTableTableManager(_$AppDatabase db, $SyncStatesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$SyncStatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$SyncStatesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$SyncStatesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String?> syncGroupId = const Value.absent(),
+                Value<String> localDeviceId = const Value.absent(),
+                Value<String?> peerDeviceId = const Value.absent(),
+                Value<int> nextLocalCounter = const Value.absent(),
+                Value<String> seenVectorJson = const Value.absent(),
+                Value<String> peerAckVectorJson = const Value.absent(),
+                Value<String> lastExportedVectorJson = const Value.absent(),
+                Value<String?> lastImportedPackageId = const Value.absent(),
+                Value<int> replicaEpoch = const Value.absent(),
+                Value<bool> baselineCreated = const Value.absent(),
+                Value<bool> requiresReconciliation = const Value.absent(),
+                Value<DateTime?> lastSuccessfulSyncAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncStatesCompanion(
+                id: id,
+                syncGroupId: syncGroupId,
+                localDeviceId: localDeviceId,
+                peerDeviceId: peerDeviceId,
+                nextLocalCounter: nextLocalCounter,
+                seenVectorJson: seenVectorJson,
+                peerAckVectorJson: peerAckVectorJson,
+                lastExportedVectorJson: lastExportedVectorJson,
+                lastImportedPackageId: lastImportedPackageId,
+                replicaEpoch: replicaEpoch,
+                baselineCreated: baselineCreated,
+                requiresReconciliation: requiresReconciliation,
+                lastSuccessfulSyncAt: lastSuccessfulSyncAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                Value<String?> syncGroupId = const Value.absent(),
+                required String localDeviceId,
+                Value<String?> peerDeviceId = const Value.absent(),
+                Value<int> nextLocalCounter = const Value.absent(),
+                Value<String> seenVectorJson = const Value.absent(),
+                Value<String> peerAckVectorJson = const Value.absent(),
+                Value<String> lastExportedVectorJson = const Value.absent(),
+                Value<String?> lastImportedPackageId = const Value.absent(),
+                Value<int> replicaEpoch = const Value.absent(),
+                Value<bool> baselineCreated = const Value.absent(),
+                Value<bool> requiresReconciliation = const Value.absent(),
+                Value<DateTime?> lastSuccessfulSyncAt = const Value.absent(),
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => SyncStatesCompanion.insert(
+                id: id,
+                syncGroupId: syncGroupId,
+                localDeviceId: localDeviceId,
+                peerDeviceId: peerDeviceId,
+                nextLocalCounter: nextLocalCounter,
+                seenVectorJson: seenVectorJson,
+                peerAckVectorJson: peerAckVectorJson,
+                lastExportedVectorJson: lastExportedVectorJson,
+                lastImportedPackageId: lastImportedPackageId,
+                replicaEpoch: replicaEpoch,
+                baselineCreated: baselineCreated,
+                requiresReconciliation: requiresReconciliation,
+                lastSuccessfulSyncAt: lastSuccessfulSyncAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncStatesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncStatesTable,
+      SyncState,
+      $$SyncStatesTableFilterComposer,
+      $$SyncStatesTableOrderingComposer,
+      $$SyncStatesTableAnnotationComposer,
+      $$SyncStatesTableCreateCompanionBuilder,
+      $$SyncStatesTableUpdateCompanionBuilder,
+      (SyncState, BaseReferences<_$AppDatabase, $SyncStatesTable, SyncState>),
+      SyncState,
+      PrefetchHooks Function()
+    >;
+typedef $$SyncEntityStatesTableCreateCompanionBuilder =
+    SyncEntityStatesCompanion Function({
+      required String id,
+      Value<String?> syncGroupId,
+      required String entityType,
+      required String entityId,
+      required String fieldVersionsJson,
+      required String entityVectorJson,
+      required String lastChangeId,
+      required String contentHash,
+      Value<bool> isDeleted,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$SyncEntityStatesTableUpdateCompanionBuilder =
+    SyncEntityStatesCompanion Function({
+      Value<String> id,
+      Value<String?> syncGroupId,
+      Value<String> entityType,
+      Value<String> entityId,
+      Value<String> fieldVersionsJson,
+      Value<String> entityVectorJson,
+      Value<String> lastChangeId,
+      Value<String> contentHash,
+      Value<bool> isDeleted,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$SyncEntityStatesTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncEntityStatesTable> {
+  $$SyncEntityStatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncGroupId => $composableBuilder(
+    column: $table.syncGroupId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fieldVersionsJson => $composableBuilder(
+    column: $table.fieldVersionsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityVectorJson => $composableBuilder(
+    column: $table.entityVectorJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastChangeId => $composableBuilder(
+    column: $table.lastChangeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncEntityStatesTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncEntityStatesTable> {
+  $$SyncEntityStatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncGroupId => $composableBuilder(
+    column: $table.syncGroupId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fieldVersionsJson => $composableBuilder(
+    column: $table.fieldVersionsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityVectorJson => $composableBuilder(
+    column: $table.entityVectorJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastChangeId => $composableBuilder(
+    column: $table.lastChangeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncEntityStatesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncEntityStatesTable> {
+  $$SyncEntityStatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get syncGroupId => $composableBuilder(
+    column: $table.syncGroupId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => column);
+
+  GeneratedColumn<String> get fieldVersionsJson => $composableBuilder(
+    column: $table.fieldVersionsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get entityVectorJson => $composableBuilder(
+    column: $table.entityVectorJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastChangeId => $composableBuilder(
+    column: $table.lastChangeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$SyncEntityStatesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncEntityStatesTable,
+          SyncEntityState,
+          $$SyncEntityStatesTableFilterComposer,
+          $$SyncEntityStatesTableOrderingComposer,
+          $$SyncEntityStatesTableAnnotationComposer,
+          $$SyncEntityStatesTableCreateCompanionBuilder,
+          $$SyncEntityStatesTableUpdateCompanionBuilder,
+          (
+            SyncEntityState,
+            BaseReferences<
+              _$AppDatabase,
+              $SyncEntityStatesTable,
+              SyncEntityState
+            >,
+          ),
+          SyncEntityState,
+          PrefetchHooks Function()
+        > {
+  $$SyncEntityStatesTableTableManager(
+    _$AppDatabase db,
+    $SyncEntityStatesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () =>
+                  $$SyncEntityStatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$SyncEntityStatesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$SyncEntityStatesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String?> syncGroupId = const Value.absent(),
+                Value<String> entityType = const Value.absent(),
+                Value<String> entityId = const Value.absent(),
+                Value<String> fieldVersionsJson = const Value.absent(),
+                Value<String> entityVectorJson = const Value.absent(),
+                Value<String> lastChangeId = const Value.absent(),
+                Value<String> contentHash = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncEntityStatesCompanion(
+                id: id,
+                syncGroupId: syncGroupId,
+                entityType: entityType,
+                entityId: entityId,
+                fieldVersionsJson: fieldVersionsJson,
+                entityVectorJson: entityVectorJson,
+                lastChangeId: lastChangeId,
+                contentHash: contentHash,
+                isDeleted: isDeleted,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                Value<String?> syncGroupId = const Value.absent(),
+                required String entityType,
+                required String entityId,
+                required String fieldVersionsJson,
+                required String entityVectorJson,
+                required String lastChangeId,
+                required String contentHash,
+                Value<bool> isDeleted = const Value.absent(),
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => SyncEntityStatesCompanion.insert(
+                id: id,
+                syncGroupId: syncGroupId,
+                entityType: entityType,
+                entityId: entityId,
+                fieldVersionsJson: fieldVersionsJson,
+                entityVectorJson: entityVectorJson,
+                lastChangeId: lastChangeId,
+                contentHash: contentHash,
+                isDeleted: isDeleted,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncEntityStatesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncEntityStatesTable,
+      SyncEntityState,
+      $$SyncEntityStatesTableFilterComposer,
+      $$SyncEntityStatesTableOrderingComposer,
+      $$SyncEntityStatesTableAnnotationComposer,
+      $$SyncEntityStatesTableCreateCompanionBuilder,
+      $$SyncEntityStatesTableUpdateCompanionBuilder,
+      (
+        SyncEntityState,
+        BaseReferences<_$AppDatabase, $SyncEntityStatesTable, SyncEntityState>,
+      ),
+      SyncEntityState,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -10437,4 +17333,16 @@ class $AppDatabaseManager {
       $$ExternalGameIdsTableTableManager(_db, _db.externalGameIds);
   $$MediaAssetsTableTableManager get mediaAssets =>
       $$MediaAssetsTableTableManager(_db, _db.mediaAssets);
+  $$SyncGroupsTableTableManager get syncGroups =>
+      $$SyncGroupsTableTableManager(_db, _db.syncGroups);
+  $$SyncDevicesTableTableManager get syncDevices =>
+      $$SyncDevicesTableTableManager(_db, _db.syncDevices);
+  $$SyncChangesTableTableManager get syncChanges =>
+      $$SyncChangesTableTableManager(_db, _db.syncChanges);
+  $$SyncTombstonesTableTableManager get syncTombstones =>
+      $$SyncTombstonesTableTableManager(_db, _db.syncTombstones);
+  $$SyncStatesTableTableManager get syncStates =>
+      $$SyncStatesTableTableManager(_db, _db.syncStates);
+  $$SyncEntityStatesTableTableManager get syncEntityStates =>
+      $$SyncEntityStatesTableTableManager(_db, _db.syncEntityStates);
 }

@@ -8,27 +8,39 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/database_providers.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../../../core/time/clock.dart';
+import '../../../core/version/app_versions.dart';
 import '../../library/data/library_query_repository.dart';
 import '../../library/domain/game_status.dart';
+import '../../sync/application/sync_providers.dart';
+import '../../sync/data/sync_change_tracking.dart';
+import '../../sync/domain/sync_models.dart';
 import '../domain/backup_models.dart';
 
 final exportRepositoryProvider = Provider<ExportRepository>((ref) {
-  return ExportRepository(ref.watch(appDatabaseProvider));
+  return ExportRepository(
+    ref.watch(appDatabaseProvider),
+    sync: ref.watch(syncAwareTransactionProvider),
+  );
 });
 
 class ExportRepository {
-  const ExportRepository(this._db, {Clock clock = systemClock})
-    : _clock = clock;
+  const ExportRepository(
+    this._db, {
+    Clock clock = systemClock,
+    SyncAwareTransaction? sync,
+  }) : _clock = clock,
+       _sync = sync;
 
   final AppDatabase _db;
   final Clock _clock;
+  final SyncAwareTransaction? _sync;
 
   Future<LogicalLibraryExport> exportLogical({
     bool includeSoftDeleted = true,
   }) async {
     return LogicalLibraryExport(
       formatVersion: 1,
-      schemaVersion: _db.schemaVersion,
+      schemaVersion: logicalLibrarySchemaVersion,
       exportedAt: _clock.now(),
       games: await _games(includeSoftDeleted),
       libraryEntries: await _libraryEntries(includeSoftDeleted),
@@ -82,42 +94,49 @@ class ExportRepository {
   }
 
   Future<void> restoreLogical(LogicalLibraryExport export) {
-    if (export.schemaVersion > _db.schemaVersion) {
+    if (export.schemaVersion > logicalLibrarySchemaVersion) {
       throw const BackupException(
         'El backup usa un schema más nuevo que esta versión de la app.',
       );
     }
 
-    return _db.transaction(() async {
-      final now = _clock.now();
-      await _upsertGames(export.games);
-      await _upsertPlatforms(export.platforms);
-      await _upsertGenres(export.genres);
-      await _upsertLibraryEntries(export.libraryEntries);
-      await _upsertLibraryEntryPlatforms(export.libraryEntryPlatforms);
-      await _upsertGameGenres(export.gameGenres);
-      await _upsertPlaythroughs(export.playthroughs);
-      await _upsertSavedViews(export.savedViews);
-      await _upsertExternalGameIds(export.externalGameIds);
-      await _upsertMediaAssets(export.mediaAssets);
+    final sync = _sync ?? SyncAwareTransaction.disabled(_db);
+    return sync.run(
+      source: SyncChangeSource.restore,
+      action: (_) async {
+        final now = _clock.now();
+        await _upsertGames(export.games);
+        await _upsertPlatforms(export.platforms);
+        await _upsertGenres(export.genres);
+        await _upsertLibraryEntries(export.libraryEntries);
+        await _upsertLibraryEntryPlatforms(export.libraryEntryPlatforms);
+        await _upsertGameGenres(export.gameGenres);
+        await _upsertPlaythroughs(export.playthroughs);
+        await _upsertSavedViews(export.savedViews);
+        await _upsertExternalGameIds(export.externalGameIds);
+        await _upsertMediaAssets(export.mediaAssets);
 
-      await _softDeleteMissingGames(_ids(export.games), now);
-      await _softDeleteMissingPlatforms(_ids(export.platforms), now);
-      await _softDeleteMissingGenres(_ids(export.genres), now);
-      await _softDeleteMissingLibraryEntries(_ids(export.libraryEntries), now);
-      await _softDeleteMissingLibraryEntryPlatforms(
-        _ids(export.libraryEntryPlatforms),
-        now,
-      );
-      await _softDeleteMissingGameGenres(_ids(export.gameGenres), now);
-      await _softDeleteMissingPlaythroughs(_ids(export.playthroughs), now);
-      await _softDeleteMissingSavedViews(_ids(export.savedViews), now);
-      await _softDeleteMissingExternalGameIds(
-        _ids(export.externalGameIds),
-        now,
-      );
-      await _softDeleteMissingMediaAssets(_ids(export.mediaAssets), now);
-    });
+        await _softDeleteMissingGames(_ids(export.games), now);
+        await _softDeleteMissingPlatforms(_ids(export.platforms), now);
+        await _softDeleteMissingGenres(_ids(export.genres), now);
+        await _softDeleteMissingLibraryEntries(
+          _ids(export.libraryEntries),
+          now,
+        );
+        await _softDeleteMissingLibraryEntryPlatforms(
+          _ids(export.libraryEntryPlatforms),
+          now,
+        );
+        await _softDeleteMissingGameGenres(_ids(export.gameGenres), now);
+        await _softDeleteMissingPlaythroughs(_ids(export.playthroughs), now);
+        await _softDeleteMissingSavedViews(_ids(export.savedViews), now);
+        await _softDeleteMissingExternalGameIds(
+          _ids(export.externalGameIds),
+          now,
+        );
+        await _softDeleteMissingMediaAssets(_ids(export.mediaAssets), now);
+      },
+    );
   }
 
   Future<List<Map<String, Object?>>> _games(bool includeSoftDeleted) async {

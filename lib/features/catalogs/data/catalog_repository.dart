@@ -5,10 +5,16 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/database_providers.dart';
 import '../../../core/ids/id_generator.dart';
 import '../../../core/time/clock.dart';
+import '../../sync/application/sync_providers.dart';
+import '../../sync/data/sync_change_tracking.dart';
+import '../../sync/domain/sync_models.dart';
 import '../domain/catalog_normalizer.dart';
 
 final catalogRepositoryProvider = Provider<CatalogRepository>((ref) {
-  return CatalogRepository(ref.watch(appDatabaseProvider));
+  return CatalogRepository(
+    ref.watch(appDatabaseProvider),
+    sync: ref.watch(syncAwareTransactionProvider),
+  );
 });
 
 final platformsProvider = StreamProvider.autoDispose<List<Platform>>((ref) {
@@ -20,13 +26,19 @@ final genresProvider = StreamProvider.autoDispose<List<Genre>>((ref) {
 });
 
 class CatalogRepository {
-  CatalogRepository(this._db, {IdGenerator? ids, Clock clock = systemClock})
-    : _ids = ids ?? defaultIdGenerator,
-      _clock = clock;
+  CatalogRepository(
+    this._db, {
+    IdGenerator? ids,
+    Clock clock = systemClock,
+    SyncAwareTransaction? sync,
+  }) : _ids = ids ?? defaultIdGenerator,
+       _clock = clock,
+       _sync = sync ?? SyncAwareTransaction.disabled(_db);
 
   final AppDatabase _db;
   final IdGenerator _ids;
   final Clock _clock;
+  final SyncAwareTransaction _sync;
 
   Stream<List<Platform>> watchPlatforms() {
     return (_db.select(_db.platforms)
@@ -42,74 +54,84 @@ class CatalogRepository {
         .watch();
   }
 
-  Future<String> createPlatform(String name, {String? shortName}) async {
-    final normalized = canonicalPlatformName(name);
-    if (normalized.isEmpty) {
-      throw ArgumentError('El nombre de la plataforma es obligatorio.');
-    }
+  Future<String> createPlatform(String name, {String? shortName}) {
+    return _sync.run(
+      source: SyncChangeSource.manual,
+      action: (_) async {
+        final normalized = canonicalPlatformName(name);
+        if (normalized.isEmpty) {
+          throw ArgumentError('El nombre de la plataforma es obligatorio.');
+        }
 
-    final existing = _firstOrNull(
-      (await ((_db.select(_db.platforms)
-            ..where((table) => table.deletedAt.isNull())).get()))
-          .where(
-            (platform) =>
-                catalogComparisonKey(platform.name) ==
-                catalogComparisonKey(normalized),
-          ),
-    );
-    if (existing != null) return existing.id;
-
-    final now = _clock.now();
-    final id = _ids.newId();
-    await _db
-        .into(_db.platforms)
-        .insert(
-          PlatformsCompanion.insert(
-            id: id,
-            name: normalized,
-            shortName: Value(
-              shortName?.trim().isEmpty ?? true ? null : shortName!.trim(),
-            ),
-            createdAt: now,
-            updatedAt: now,
-          ),
+        final existing = _firstOrNull(
+          (await ((_db.select(_db.platforms)
+                ..where((table) => table.deletedAt.isNull())).get()))
+              .where(
+                (platform) =>
+                    catalogComparisonKey(platform.name) ==
+                    catalogComparisonKey(normalized),
+              ),
         );
-    return id;
+        if (existing != null) return existing.id;
+
+        final now = _clock.now();
+        final id = _ids.newId();
+        await _db
+            .into(_db.platforms)
+            .insert(
+              PlatformsCompanion.insert(
+                id: id,
+                name: normalized,
+                shortName: Value(
+                  shortName?.trim().isEmpty ?? true ? null : shortName!.trim(),
+                ),
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+        return id;
+      },
+    );
   }
 
-  Future<String> createGenre(String name) async {
-    final normalized = canonicalGenreName(name);
-    if (normalized.isEmpty) {
-      throw ArgumentError('El nombre del género es obligatorio.');
-    }
+  Future<String> createGenre(String name) {
+    return _sync.run(
+      source: SyncChangeSource.manual,
+      action: (_) async {
+        final normalized = canonicalGenreName(name);
+        if (normalized.isEmpty) {
+          throw ArgumentError('El nombre del género es obligatorio.');
+        }
 
-    final existing = _firstOrNull(
-      (await ((_db.select(_db.genres)
-            ..where((table) => table.deletedAt.isNull())).get()))
-          .where(
-            (genre) => genre.name.toLowerCase() == normalized.toLowerCase(),
-          )
-          .where(
-            (genre) =>
-                catalogComparisonKey(genre.name) ==
-                catalogComparisonKey(normalized),
-          ),
-    );
-    if (existing != null) return existing.id;
-
-    final now = _clock.now();
-    final id = _ids.newId();
-    await _db
-        .into(_db.genres)
-        .insert(
-          GenresCompanion.insert(
-            id: id,
-            name: normalized,
-            createdAt: now,
-            updatedAt: now,
-          ),
+        final existing = _firstOrNull(
+          (await ((_db.select(_db.genres)
+                ..where((table) => table.deletedAt.isNull())).get()))
+              .where(
+                (genre) => genre.name.toLowerCase() == normalized.toLowerCase(),
+              )
+              .where(
+                (genre) =>
+                    catalogComparisonKey(genre.name) ==
+                    catalogComparisonKey(normalized),
+              ),
         );
-    return id;
+        if (existing != null) return existing.id;
+
+        final now = _clock.now();
+        final id = _ids.newId();
+        await _db
+            .into(_db.genres)
+            .insert(
+              GenresCompanion.insert(
+                id: id,
+                name: normalized,
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+        return id;
+      },
+    );
   }
 
   Future<void> seedDefaultsIfEmpty() async {
@@ -162,11 +184,14 @@ class CatalogRepository {
   }
 
   Future<void> normalizeCatalogs() async {
-    await _db.transaction(() async {
-      final now = _clock.now();
-      await _normalizePlatforms(now);
-      await _normalizeGenres(now);
-    });
+    await _sync.run(
+      source: SyncChangeSource.normalization,
+      action: (_) async {
+        final now = _clock.now();
+        await _normalizePlatforms(now);
+        await _normalizeGenres(now);
+      },
+    );
   }
 
   Future<void> _normalizePlatforms(DateTime now) async {
