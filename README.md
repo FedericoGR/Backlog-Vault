@@ -15,6 +15,7 @@ Backlog Vault is an offline-first videogame backlog manager for Windows and Andr
 - Bulk metadata and cover matching with explicit preview and replacement controls.
 - Local media storage using relative paths.
 - Regular `.vaultbackup` and encrypted `.vaultbackup.enc` backups.
+- Password-encrypted `.vaultsync` change packages with preview, deduplication, and conservative conflict handling.
 - Conservative backup restore with an automatic pre-restore backup.
 - Home dashboard and library statistics.
 - System, light, dark, and OLED-friendly UI behavior.
@@ -28,7 +29,7 @@ Backlog Vault is an offline-first videogame backlog manager for Windows and Andr
 - Encrypted backups are available and should be used when a backup leaves the device.
 - Provider credentials are stored with the operating system's secure storage.
 - RAWG keys, IGDB/Twitch credentials and tokens, and SteamGridDB keys are excluded from backups and exports.
-- Automatic sync is not available yet. Encrypted PC ↔ Android sync is planned.
+- Manual encrypted change packages are available. Pairing, automatic sync, LAN, cloud, and media-file transfer are not available yet.
 
 See [install and portability](docs/install_and_portability.md) for the current data-transfer workflow.
 
@@ -89,11 +90,12 @@ Never commit real keys, client secrets, bearer tokens, access tokens, `.secure` 
 
 - `.vaultbackup` contains the logical library and media but is not encrypted.
 - `.vaultbackup.enc` encrypts the complete backup with a user-provided password.
+- `.vaultsync` is a separate encrypted change package. It is not a complete backup and does not contain media file bytes.
 - The password is never stored. Losing it makes the encrypted backup unrecoverable.
 - Restore is complete and conservative: current records absent from the backup are soft-deleted, not physically erased.
 - Provider credentials and secure-storage values never travel in backups.
 
-Until sync exists, the supported PC ↔ Android workflow is to create an encrypted backup, move it manually, and restore it on the other device. Configure provider credentials separately on each device.
+Use `.vaultbackup.enc` for full migration, disaster recovery, or copying the complete library with media. Use `.vaultsync` to exchange library changes manually: export on one device, move the file, preview it on the other, and apply only safe changes. Conflicts are reported and skipped; cover files are not transferred in this stage. Configure provider credentials separately on each device.
 
 ## Language
 
@@ -107,12 +109,12 @@ The preference is stored per device and is not part of the library database or b
 
 ## Sync roadmap
 
-Sync is planned but not implemented in this release.
+Manual password-encrypted sync packages are the first implemented sync transport. They require no account, backend, or network connection.
 
 - v0.1.x: stabilization, bilingual UI, backup/restore hardening.
-- v0.2: manual encrypted PC ↔ Android sync packages.
+- v0.2 foundation: deterministic change tracking and manual encrypted PC ↔ Android sync packages.
 - Pairing through a QR code or short code, with the sync key in secure storage.
-- End-to-end encrypted packages and media addressed by hash.
+- Media addressed by hash and transferred without creating broken cover references.
 - Visible, conservative conflict resolution with no silent destructive merge.
 - LAN transport after the manual package workflow is stable.
 - No cloud dependency in the first sync stage.

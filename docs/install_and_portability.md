@@ -3,7 +3,7 @@
 Version: `0.1.0+3`
 Release candidate: `v0.1.0-rc3`
 
-Backlog Vault is local-first. App data, media, provider credentials, and language preferences live on each device unless explicitly moved through a backup.
+Backlog Vault is local-first. App data, media, provider credentials, and language preferences live on each device unless library data is explicitly moved through a backup or encrypted sync package.
 
 ## Windows
 
@@ -47,7 +47,9 @@ The selected UI language is stored through platform preferences. It is device-lo
 
 ## PC ↔ Android transfer
 
-Automatic sync does not exist in RC3. Use the supported manual workflow:
+Automatic, paired, LAN, and cloud sync do not exist yet. Two manual workflows serve different purposes.
+
+For full migration or disaster recovery, including media:
 
 1. Create `.vaultbackup.enc` on the source device.
 2. Move the file through a channel you control.
@@ -55,6 +57,15 @@ Automatic sync does not exist in RC3. Use the supported manual workflow:
 4. Configure RAWG, IGDB/Twitch, and SteamGridDB credentials again on that device.
 
 Plain `.vaultbackup` also works but is not encrypted and may expose personal notes and library data.
+
+For exchanging library changes between existing installations:
+
+1. In **Settings → Sync**, export a `.vaultsync` package and choose a strong password.
+2. Move the file manually to the other device.
+3. Import it with the same password and inspect the preview.
+4. Apply safe changes. Duplicate changes are skipped and conflicts are reported without overwriting local values.
+
+`.vaultsync` is encrypted and contains no provider credentials or secure-storage data. It is not a backup, and this stage does not carry media file bytes. Cover-related changes remain pending so the destination never selects a missing image. A forgotten package password cannot be recovered.
 
 ## Restore guarantees and limits
 
@@ -64,6 +75,7 @@ Plain `.vaultbackup` also works but is not encrypted and may expose personal not
 - Existing media is not hard-deleted during restore.
 - Restore is complete/conservative, not a field-level merge or sync conflict resolver.
 - Provider credentials and secure-storage values are never restored.
+- Sync identities, counters, and change history are device-local and are not cloned by restore.
 
 ## Security reminder
 

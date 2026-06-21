@@ -1980,4 +1980,142 @@ class AppLocalizationsEn extends AppLocalizations {
   String bulkReplacesCover(Object cover) {
     return 'replaces $cover';
   }
+
+  @override
+  String get syncSectionTitle => 'Manual synchronization';
+
+  @override
+  String get syncSectionDescription =>
+      'Encrypted device-to-device change exchange without accounts, cloud, or a network connection.';
+
+  @override
+  String get syncFoundationReady => 'Technical foundation ready';
+
+  @override
+  String get syncManualAvailable =>
+      'Encrypted manual sync packages are available.';
+
+  @override
+  String get syncNotReady => 'Sync foundation is not ready on this device.';
+
+  @override
+  String get syncLocalDevice => 'Local device';
+
+  @override
+  String get syncExportPackage => 'Export sync package';
+
+  @override
+  String get syncImportPackage => 'Import sync package';
+
+  @override
+  String get syncEncryptedNotice =>
+      'This package is encrypted with a password.';
+
+  @override
+  String get syncConflictNotice =>
+      'Conflicting changes will not be applied automatically.';
+
+  @override
+  String get syncMediaNotice =>
+      'Cover file synchronization will arrive in a later stage.';
+
+  @override
+  String get syncPackageVsBackup =>
+      '.vaultsync carries encrypted changes; it is not a complete backup. Use .vaultbackup.enc for full migration or recovery.';
+
+  @override
+  String get syncPasswordExportTitle => 'Encrypt sync package';
+
+  @override
+  String get syncPasswordImportTitle => 'Open sync package';
+
+  @override
+  String get syncPassword => 'Password';
+
+  @override
+  String get syncRepeatPassword => 'Repeat password';
+
+  @override
+  String get syncPasswordRequired => 'Enter a password.';
+
+  @override
+  String get syncPasswordMismatch => 'Passwords do not match.';
+
+  @override
+  String get syncPasswordForgotten =>
+      'The password is not stored. If you lose it, this package cannot be recovered.';
+
+  @override
+  String get syncSaveDialogTitle => 'Save encrypted sync package';
+
+  @override
+  String syncExportCreated(Object count) {
+    return 'Encrypted sync package created with $count changes.';
+  }
+
+  @override
+  String get syncPreviewTitle => 'Sync package preview';
+
+  @override
+  String syncFromDevice(Object name) {
+    return 'From: $name';
+  }
+
+  @override
+  String syncPackageDate(Object date) {
+    return 'Created: $date';
+  }
+
+  @override
+  String syncPreviewChanges(Object count) {
+    return 'Changes: $count';
+  }
+
+  @override
+  String syncPreviewAlreadyApplied(Object count) {
+    return 'Already applied: $count';
+  }
+
+  @override
+  String syncPreviewApplicable(Object count) {
+    return 'Safe to apply: $count';
+  }
+
+  @override
+  String syncPreviewConflicts(Object count) {
+    return 'Conflicts skipped: $count';
+  }
+
+  @override
+  String syncPreviewUnsupported(Object count) {
+    return 'Unsupported: $count';
+  }
+
+  @override
+  String syncPreviewInvalid(Object count) {
+    return 'Invalid: $count';
+  }
+
+  @override
+  String syncPreviewPendingMedia(Object count) {
+    return 'Pending cover files: $count';
+  }
+
+  @override
+  String get syncApplySafeChanges => 'Apply safe changes';
+
+  @override
+  String syncAppliedCount(Object count) {
+    return 'Applied $count safe changes.';
+  }
+
+  @override
+  String get syncNoSafeChanges => 'There are no new safe changes to apply.';
+
+  @override
+  String get syncImportResultTitle => 'Manual sync result';
+
+  @override
+  String get syncOperationFailed =>
+      'The sync package operation could not be completed. Check the password and file.';
 }

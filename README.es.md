@@ -15,6 +15,7 @@ Backlog Vault es un gestor offline-first de backlog de videojuegos para Windows 
 - Importación masiva de metadata y covers con preview y reemplazos explícitos.
 - Media local almacenada con paths relativos.
 - Backups normales `.vaultbackup` y cifrados `.vaultbackup.enc`.
+- Paquetes de cambios `.vaultsync` cifrados con password, preview, deduplicación y manejo conservador de conflictos.
 - Restore conservador con backup previo automático.
 - Home y estadísticas de biblioteca.
 - Tema claro/oscuro con diseño OLED-friendly.
@@ -28,7 +29,7 @@ Backlog Vault es un gestor offline-first de backlog de videojuegos para Windows 
 - Los backups cifrados están disponibles cuando el archivo sale del dispositivo.
 - Las credenciales de providers se guardan en el secure storage del sistema.
 - Claves RAWG, credenciales y tokens IGDB/Twitch, y claves SteamGridDB no se incluyen en backups ni exports.
-- El sync automático todavía no está disponible; el sync cifrado PC ↔ Android está planificado.
+- Ya existen paquetes manuales cifrados de cambios. Pairing, sync automático, LAN, cloud y transferencia de archivos de media todavía no están disponibles.
 
 ## Instalación
 
@@ -75,11 +76,12 @@ Nunca commitees claves, client secrets, bearer/access tokens, archivos `.secure`
 
 - `.vaultbackup` incluye biblioteca lógica y media, pero no está cifrado.
 - `.vaultbackup.enc` cifra el backup completo con una password elegida por el usuario.
+- `.vaultsync` es un paquete cifrado separado que transporta cambios; no es un backup completo ni incluye los bytes de la media.
 - La password no se guarda; si se pierde, el backup no se puede recuperar.
 - El restore es completo y conservador: lo ausente se marca con borrado lógico, sin hard delete.
 - Las credenciales externas y el secure storage no viajan en backups.
 
-Hasta que exista sync, el flujo PC ↔ Android soportado es crear un backup cifrado, moverlo manualmente y restaurarlo en el otro dispositivo. Las credenciales se configuran por separado.
+Usá `.vaultbackup.enc` para una migración completa, recuperación o copia de biblioteca con media. Usá `.vaultsync` para intercambiar cambios: exportá en un dispositivo, mové el archivo, revisá el preview en el otro y aplicá sólo los cambios seguros. Los conflictos se informan y se omiten; las portadas no se transfieren en esta etapa. Las credenciales se configuran por separado.
 
 ## Idioma
 
@@ -87,12 +89,12 @@ La app detecta el idioma del sistema por default. En **Ajustes → Idioma** pod�
 
 ## Roadmap de sync
 
-El sync está planificado, pero no se implementa en este RC:
+Los paquetes manuales de sync cifrado con password son el primer transporte implementado y no requieren cuenta, backend ni red:
 
 - v0.1.x: estabilización, UI bilingüe y hardening de backup/restore.
-- v0.2: paquetes manuales de sync cifrado PC ↔ Android.
+- Foundation v0.2: change tracking determinista y paquetes manuales cifrados PC ↔ Android.
 - Emparejamiento por QR/código corto y clave en secure storage.
-- Cifrado end-to-end, media por hash y conflictos visibles.
+- Media por hash sin referencias rotas y resolución visible de conflictos.
 - Transporte LAN después del flujo manual.
 - Sin dependencia cloud al principio; cloud E2EE opcional mucho más adelante.
 

@@ -11,10 +11,14 @@ void main() {
     expect(english.settingsTitle, 'Settings');
     expect(english.backupTitle, 'Data and backups');
     expect(english.bulkTitle, 'Import metadata');
+    expect(english.syncExportPackage, 'Export sync package');
+    expect(english.syncImportPackage, 'Import sync package');
 
     expect(spanish.navigationLibrary, 'Biblioteca');
     expect(spanish.settingsTitle, 'Ajustes');
     expect(spanish.backupTitle, 'Datos y backups');
     expect(spanish.bulkTitle, 'Importar metadata');
+    expect(spanish.syncExportPackage, 'Exportar paquete de sincronización');
+    expect(spanish.syncImportPackage, 'Importar paquete de sincronización');
   });
 }

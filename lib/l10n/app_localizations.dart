@@ -3615,6 +3615,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'replaces {cover}'**
   String bulkReplacesCover(Object cover);
+
+  /// No description provided for @syncSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual synchronization'**
+  String get syncSectionTitle;
+
+  /// No description provided for @syncSectionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypted device-to-device change exchange without accounts, cloud, or a network connection.'**
+  String get syncSectionDescription;
+
+  /// No description provided for @syncFoundationReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Technical foundation ready'**
+  String get syncFoundationReady;
+
+  /// No description provided for @syncManualAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypted manual sync packages are available.'**
+  String get syncManualAvailable;
+
+  /// No description provided for @syncNotReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync foundation is not ready on this device.'**
+  String get syncNotReady;
+
+  /// No description provided for @syncLocalDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Local device'**
+  String get syncLocalDevice;
+
+  /// No description provided for @syncExportPackage.
+  ///
+  /// In en, this message translates to:
+  /// **'Export sync package'**
+  String get syncExportPackage;
+
+  /// No description provided for @syncImportPackage.
+  ///
+  /// In en, this message translates to:
+  /// **'Import sync package'**
+  String get syncImportPackage;
+
+  /// No description provided for @syncEncryptedNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'This package is encrypted with a password.'**
+  String get syncEncryptedNotice;
+
+  /// No description provided for @syncConflictNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Conflicting changes will not be applied automatically.'**
+  String get syncConflictNotice;
+
+  /// No description provided for @syncMediaNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover file synchronization will arrive in a later stage.'**
+  String get syncMediaNotice;
+
+  /// No description provided for @syncPackageVsBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'.vaultsync carries encrypted changes; it is not a complete backup. Use .vaultbackup.enc for full migration or recovery.'**
+  String get syncPackageVsBackup;
+
+  /// No description provided for @syncPasswordExportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypt sync package'**
+  String get syncPasswordExportTitle;
+
+  /// No description provided for @syncPasswordImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Open sync package'**
+  String get syncPasswordImportTitle;
+
+  /// No description provided for @syncPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get syncPassword;
+
+  /// No description provided for @syncRepeatPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat password'**
+  String get syncRepeatPassword;
+
+  /// No description provided for @syncPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a password.'**
+  String get syncPasswordRequired;
+
+  /// No description provided for @syncPasswordMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match.'**
+  String get syncPasswordMismatch;
+
+  /// No description provided for @syncPasswordForgotten.
+  ///
+  /// In en, this message translates to:
+  /// **'The password is not stored. If you lose it, this package cannot be recovered.'**
+  String get syncPasswordForgotten;
+
+  /// No description provided for @syncSaveDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save encrypted sync package'**
+  String get syncSaveDialogTitle;
+
+  /// No description provided for @syncExportCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypted sync package created with {count} changes.'**
+  String syncExportCreated(Object count);
+
+  /// No description provided for @syncPreviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync package preview'**
+  String get syncPreviewTitle;
+
+  /// No description provided for @syncFromDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'From: {name}'**
+  String syncFromDevice(Object name);
+
+  /// No description provided for @syncPackageDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Created: {date}'**
+  String syncPackageDate(Object date);
+
+  /// No description provided for @syncPreviewChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes: {count}'**
+  String syncPreviewChanges(Object count);
+
+  /// No description provided for @syncPreviewAlreadyApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Already applied: {count}'**
+  String syncPreviewAlreadyApplied(Object count);
+
+  /// No description provided for @syncPreviewApplicable.
+  ///
+  /// In en, this message translates to:
+  /// **'Safe to apply: {count}'**
+  String syncPreviewApplicable(Object count);
+
+  /// No description provided for @syncPreviewConflicts.
+  ///
+  /// In en, this message translates to:
+  /// **'Conflicts skipped: {count}'**
+  String syncPreviewConflicts(Object count);
+
+  /// No description provided for @syncPreviewUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported: {count}'**
+  String syncPreviewUnsupported(Object count);
+
+  /// No description provided for @syncPreviewInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid: {count}'**
+  String syncPreviewInvalid(Object count);
+
+  /// No description provided for @syncPreviewPendingMedia.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending cover files: {count}'**
+  String syncPreviewPendingMedia(Object count);
+
+  /// No description provided for @syncApplySafeChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply safe changes'**
+  String get syncApplySafeChanges;
+
+  /// No description provided for @syncAppliedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied {count} safe changes.'**
+  String syncAppliedCount(Object count);
+
+  /// No description provided for @syncNoSafeChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no new safe changes to apply.'**
+  String get syncNoSafeChanges;
+
+  /// No description provided for @syncImportResultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual sync result'**
+  String get syncImportResultTitle;
+
+  /// No description provided for @syncOperationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The sync package operation could not be completed. Check the password and file.'**
+  String get syncOperationFailed;
 }
 
 class _AppLocalizationsDelegate

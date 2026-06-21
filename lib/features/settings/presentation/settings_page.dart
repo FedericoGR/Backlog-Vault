@@ -13,6 +13,7 @@ import '../../../core/design_system/bv_status_banner.dart';
 import '../../../core/design_system/bv_theme_extension.dart';
 import '../../../l10n/l10n.dart';
 import '../../metadata/data/metadata_api_key_storage.dart';
+import '../../sync/presentation/manual_sync_section.dart';
 import '../application/app_language.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
@@ -64,6 +65,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           _OverviewSection(loading: _loading),
           const SizedBox(height: BvSpacing.md),
           _ActionShortcuts(loading: _loading),
+          const SizedBox(height: BvSpacing.md),
+          const ManualSyncSection(),
           const SizedBox(height: BvSpacing.md),
           _ConfigurationPanel(
             title: 'RAWG',

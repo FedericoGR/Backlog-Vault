@@ -1,6 +1,8 @@
 import 'package:backlog_vault/app/theme.dart';
 import 'package:backlog_vault/features/metadata/data/metadata_api_key_storage.dart';
 import 'package:backlog_vault/features/settings/presentation/settings_page.dart';
+import 'package:backlog_vault/features/sync/application/sync_providers.dart';
+import 'package:backlog_vault/features/sync/domain/sync_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,6 +22,15 @@ void main() {
             metadataApiKeyStorageProvider.overrideWithValue(
               _FakeMetadataApiKeyStorage(),
             ),
+            syncFoundationReadyProvider.overrideWith(
+              (ref) async => LocalDeviceInfo(
+                id: '11111111-1111-4111-8111-111111111111',
+                displayName: 'Test Windows device',
+                platform: 'windows',
+                createdAt: DateTime.utc(2026),
+                status: SyncDeviceStatus.local,
+              ),
+            ),
           ],
           child: MaterialApp(
             theme: buildBacklogVaultDarkTheme(),
@@ -32,15 +43,32 @@ void main() {
       expect(find.text('Ajustes'), findsOneWidget);
       expect(find.text('Datos y backups'), findsOneWidget);
       await tester.scrollUntilVisible(
-        find.text('SteamGridDB'),
+        find.text('Sincronización manual'),
+        500,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Exportar paquete de sincronización'), findsOneWidget);
+      expect(find.text('Importar paquete de sincronización'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('RAWG'),
         500,
         scrollable: find.byType(Scrollable).first,
       );
       expect(find.text('RAWG'), findsOneWidget);
-      expect(find.text('IGDB / Twitch'), findsOneWidget);
-      expect(find.text('SteamGridDB'), findsOneWidget);
       expect(find.textContaining('super-secret-rawg'), findsNothing);
+      await tester.scrollUntilVisible(
+        find.text('IGDB / Twitch'),
+        500,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('IGDB / Twitch'), findsOneWidget);
       expect(find.textContaining('igdb-client-secret'), findsNothing);
+      await tester.scrollUntilVisible(
+        find.text('SteamGridDB'),
+        500,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('SteamGridDB'), findsOneWidget);
       expect(find.textContaining('steamgrid-secret'), findsNothing);
       expect(tester.takeException(), isNull);
     },

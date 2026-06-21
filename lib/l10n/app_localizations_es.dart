@@ -1986,4 +1986,142 @@ class AppLocalizationsEs extends AppLocalizations {
   String bulkReplacesCover(Object cover) {
     return 'reemplaza $cover';
   }
+
+  @override
+  String get syncSectionTitle => 'Sincronización manual';
+
+  @override
+  String get syncSectionDescription =>
+      'Intercambio cifrado de cambios entre dispositivos, sin cuenta, cloud ni conexión de red.';
+
+  @override
+  String get syncFoundationReady => 'Base técnica preparada';
+
+  @override
+  String get syncManualAvailable =>
+      'Los paquetes cifrados de sincronización manual están disponibles.';
+
+  @override
+  String get syncNotReady =>
+      'La base de sincronización no está lista en este dispositivo.';
+
+  @override
+  String get syncLocalDevice => 'Dispositivo local';
+
+  @override
+  String get syncExportPackage => 'Exportar paquete de sincronización';
+
+  @override
+  String get syncImportPackage => 'Importar paquete de sincronización';
+
+  @override
+  String get syncEncryptedNotice => 'Este paquete está cifrado con contraseña.';
+
+  @override
+  String get syncConflictNotice =>
+      'Los cambios conflictivos no se aplicarán automáticamente.';
+
+  @override
+  String get syncMediaNotice =>
+      'La sincronización de archivos de portada llegará en una etapa posterior.';
+
+  @override
+  String get syncPackageVsBackup =>
+      '.vaultsync transporta cambios cifrados; no es un backup completo. Usá .vaultbackup.enc para migración o recuperación completa.';
+
+  @override
+  String get syncPasswordExportTitle => 'Cifrar paquete de sincronización';
+
+  @override
+  String get syncPasswordImportTitle => 'Abrir paquete de sincronización';
+
+  @override
+  String get syncPassword => 'Contraseña';
+
+  @override
+  String get syncRepeatPassword => 'Repetir contraseña';
+
+  @override
+  String get syncPasswordRequired => 'Ingresá una contraseña.';
+
+  @override
+  String get syncPasswordMismatch => 'Las contraseñas no coinciden.';
+
+  @override
+  String get syncPasswordForgotten =>
+      'La contraseña no se guarda. Si la perdés, este paquete no se puede recuperar.';
+
+  @override
+  String get syncSaveDialogTitle => 'Guardar paquete cifrado de sincronización';
+
+  @override
+  String syncExportCreated(Object count) {
+    return 'Paquete cifrado creado con $count cambios.';
+  }
+
+  @override
+  String get syncPreviewTitle => 'Vista previa del paquete de sincronización';
+
+  @override
+  String syncFromDevice(Object name) {
+    return 'Origen: $name';
+  }
+
+  @override
+  String syncPackageDate(Object date) {
+    return 'Creado: $date';
+  }
+
+  @override
+  String syncPreviewChanges(Object count) {
+    return 'Cambios: $count';
+  }
+
+  @override
+  String syncPreviewAlreadyApplied(Object count) {
+    return 'Ya aplicados: $count';
+  }
+
+  @override
+  String syncPreviewApplicable(Object count) {
+    return 'Seguros para aplicar: $count';
+  }
+
+  @override
+  String syncPreviewConflicts(Object count) {
+    return 'Conflictos omitidos: $count';
+  }
+
+  @override
+  String syncPreviewUnsupported(Object count) {
+    return 'No soportados: $count';
+  }
+
+  @override
+  String syncPreviewInvalid(Object count) {
+    return 'Inválidos: $count';
+  }
+
+  @override
+  String syncPreviewPendingMedia(Object count) {
+    return 'Archivos de portada pendientes: $count';
+  }
+
+  @override
+  String get syncApplySafeChanges => 'Aplicar cambios seguros';
+
+  @override
+  String syncAppliedCount(Object count) {
+    return 'Se aplicaron $count cambios seguros.';
+  }
+
+  @override
+  String get syncNoSafeChanges => 'No hay cambios seguros nuevos para aplicar.';
+
+  @override
+  String get syncImportResultTitle => 'Resultado de sincronización manual';
+
+  @override
+  String get syncOperationFailed =>
+      'No se pudo completar la operación del paquete. Revisá la contraseña y el archivo.';
 }
