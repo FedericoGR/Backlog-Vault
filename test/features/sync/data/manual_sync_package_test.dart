@@ -132,6 +132,45 @@ void main() {
     },
   );
 
+  test(
+    'preview handles own packages, duplicate changes and reversed order',
+    () async {
+      final a = await _SyncHarness.create(_deviceA, seed: 17);
+      final b = await _SyncHarness.create(_deviceB, seed: 18);
+      addTearDown(a.close);
+      addTearDown(b.close);
+      await _insertCompleteGraph(a);
+      final ownPackage = await a.service.export(password: 'test password');
+      final ownPreview = await a.service.preview(
+        ownPackage.bytes,
+        password: 'test password',
+      );
+      final document = await a.builder.build();
+
+      expect(
+        ownPreview.count(SyncImportDisposition.alreadyApplied),
+        document.changes.length,
+      );
+
+      final reversedPreview = await b.detector.preview(
+        _documentWith(document, document.changes.reversed.toList()),
+      );
+      expect(
+        reversedPreview.count(SyncImportDisposition.applicable),
+        document.changes.length,
+      );
+      expect(reversedPreview.count(SyncImportDisposition.invalid), 0);
+
+      final duplicate = document.changes.first;
+      final duplicatePreview = await b.detector.preview(
+        _documentWith(document, [duplicate, duplicate]),
+      );
+      expect(duplicatePreview.count(SyncImportDisposition.applicable), 1);
+      expect(duplicatePreview.count(SyncImportDisposition.invalid), 1);
+      expect(duplicatePreview.items.last.reason, 'duplicate_change');
+    },
+  );
+
   test('different-field edits merge without last-write-wins', () async {
     final a = await _SyncHarness.create(_deviceA, seed: 5);
     final b = await _SyncHarness.create(_deviceB, seed: 6);
@@ -207,6 +246,13 @@ void main() {
         );
       },
     );
+    final sourceDocument = await a.builder.build();
+    expect(sourceDocument.tombstones, hasLength(2));
+    expect(
+      sourceDocument.entityStates.where((state) => state.isDeleted),
+      hasLength(2),
+    );
+    expect(sourceDocument.exportedVector[_deviceA], isNotNull);
     final deletion = await a.service.export(password: 'test password');
     final result = await b.service.applySafeChanges(
       deletion.bytes,
@@ -221,6 +267,186 @@ void main() {
     );
     expect(await b.db.select(b.db.syncTombstones).get(), hasLength(2));
     expect(await b.db.select(b.db.games).get(), hasLength(1));
+  });
+
+  test(
+    'missing and locally deleted entities reject incoming updates',
+    () async {
+      final a = await _SyncHarness.create(_deviceA, seed: 19);
+      final b = await _SyncHarness.create(_deviceB, seed: 20);
+      final empty = await _SyncHarness.create(
+        'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+        seed: 21,
+      );
+      addTearDown(a.close);
+      addTearDown(b.close);
+      addTearDown(empty.close);
+      await _insertCompleteGraph(a);
+      final initial = await a.service.export(password: 'test password');
+      await b.service.applySafeChanges(
+        initial.bytes,
+        password: 'test password',
+      );
+
+      await b.runner.run(
+        source: SyncChangeSource.manual,
+        action:
+            (_) =>
+                (b.db.update(b.db.games)
+                  ..where((row) => row.id.equals('game-1'))).write(
+                  GamesCompanion(
+                    deletedAt: Value(_now.add(const Duration(minutes: 1))),
+                    updatedAt: Value(_now.add(const Duration(minutes: 1))),
+                  ),
+                ),
+      );
+      await a.runner.run(
+        source: SyncChangeSource.manual,
+        action:
+            (_) =>
+                (a.db.update(a.db.games)
+                  ..where((row) => row.id.equals('game-1'))).write(
+                  GamesCompanion(
+                    title: const Value('Incoming update'),
+                    updatedAt: Value(_now.add(const Duration(minutes: 2))),
+                  ),
+                ),
+      );
+      final document = await a.builder.build();
+      final update = document.changes.lastWhere(
+        (change) =>
+            change.entityType == 'game' && change.operation == 'updated',
+      );
+
+      final deletedPreview = await b.detector.preview(
+        _documentWith(document, [update]),
+      );
+      expect(deletedPreview.count(SyncImportDisposition.conflict), 1);
+      expect(deletedPreview.items.single.reason, 'local_deleted');
+
+      final missing = _changeWith(
+        update,
+        entityId: 'missing-game',
+        snapshot: {...update.snapshot, 'id': 'missing-game'},
+      );
+      final missingPreview = await empty.detector.preview(
+        _documentWith(document, [missing]),
+      );
+      expect(missingPreview.count(SyncImportDisposition.conflict), 1);
+      expect(missingPreview.items.single.reason, 'entity_missing');
+    },
+  );
+
+  test('incoming delete conflicts with a later local update', () async {
+    final a = await _SyncHarness.create(_deviceA, seed: 22);
+    final b = await _SyncHarness.create(_deviceB, seed: 23);
+    addTearDown(a.close);
+    addTearDown(b.close);
+    await _insertCompleteGraph(a);
+    final initial = await a.service.export(password: 'test password');
+    await b.service.applySafeChanges(initial.bytes, password: 'test password');
+
+    await b.runner.run(
+      source: SyncChangeSource.manual,
+      action:
+          (_) =>
+              (b.db.update(b.db.games)
+                ..where((row) => row.id.equals('game-1'))).write(
+                GamesCompanion(
+                  title: const Value('Keep local edit'),
+                  updatedAt: Value(_now.add(const Duration(minutes: 1))),
+                ),
+              ),
+    );
+    await a.runner.run(
+      source: SyncChangeSource.manual,
+      action:
+          (_) =>
+              (a.db.update(a.db.games)
+                ..where((row) => row.id.equals('game-1'))).write(
+                GamesCompanion(
+                  deletedAt: Value(_now.add(const Duration(minutes: 2))),
+                  updatedAt: Value(_now.add(const Duration(minutes: 2))),
+                ),
+              ),
+    );
+    final deletion = await a.service.export(password: 'test password');
+    final preview = await b.service.preview(
+      deletion.bytes,
+      password: 'test password',
+    );
+    expect(preview.count(SyncImportDisposition.conflict), 1);
+    expect(
+      preview.items
+          .singleWhere(
+            (item) => item.disposition == SyncImportDisposition.conflict,
+          )
+          .reason,
+      'delete_vs_local_update',
+    );
+
+    final result = await b.service.applySafeChanges(
+      deletion.bytes,
+      password: 'test password',
+    );
+    expect(result.applied, 0);
+    final game = await b.db.select(b.db.games).getSingle();
+    expect(game.title, 'Keep local edit');
+    expect(game.deletedAt, isNull);
+  });
+
+  test('remote relation unlink is soft, tombstoned and idempotent', () async {
+    final a = await _SyncHarness.create(_deviceA, seed: 24);
+    final b = await _SyncHarness.create(_deviceB, seed: 25);
+    addTearDown(a.close);
+    addTearDown(b.close);
+    await _insertCompleteGraph(a);
+    final initial = await a.service.export(password: 'test password');
+    await b.service.applySafeChanges(initial.bytes, password: 'test password');
+
+    await a.runner.run(
+      source: SyncChangeSource.manual,
+      action: (_) async {
+        final deletedAt = _now.add(const Duration(minutes: 4));
+        await (a.db.update(a.db.libraryEntryPlatforms)
+          ..where((row) => row.id.equals('platform-link-1'))).write(
+          LibraryEntryPlatformsCompanion(
+            updatedAt: Value(deletedAt),
+            deletedAt: Value(deletedAt),
+          ),
+        );
+        await (a.db.update(a.db.gameGenres)
+          ..where((row) => row.id.equals('genre-link-1'))).write(
+          GameGenresCompanion(
+            updatedAt: Value(deletedAt),
+            deletedAt: Value(deletedAt),
+          ),
+        );
+      },
+    );
+    final unlink = await a.service.export(password: 'test password');
+    final result = await b.service.applySafeChanges(
+      unlink.bytes,
+      password: 'test password',
+    );
+
+    expect(result.applied, 2);
+    expect(
+      (await b.db.select(b.db.libraryEntryPlatforms).getSingle()).deletedAt,
+      isNotNull,
+    );
+    expect(
+      (await b.db.select(b.db.gameGenres).getSingle()).deletedAt,
+      isNotNull,
+    );
+    expect(await b.db.select(b.db.syncTombstones).get(), hasLength(2));
+    expect(
+      (await b.service.applySafeChanges(
+        unlink.bytes,
+        password: 'test password',
+      )).applied,
+      0,
+    );
   });
 
   test('media changes stay pending and never create a broken cover', () async {
@@ -291,6 +517,12 @@ void main() {
       },
     );
     final exported = await a.service.export(password: 'test password');
+    final document = await a.builder.build();
+    expect(document.mediaManifest, hasLength(1));
+    expect(document.warnings, contains('media_files_not_included'));
+    final manifestJson = canonicalJson.encode(document.toJson());
+    expect(manifestJson, isNot(contains('localPath')));
+    expect(manifestJson, isNot(contains(r'C:\device-a')));
 
     final preview = await b.service.preview(
       exported.bytes,
@@ -434,20 +666,33 @@ void main() {
     },
   );
 
-  test('service preview rejects wrong passwords and invalid files', () async {
-    final a = await _SyncHarness.create(_deviceA, seed: 15);
-    addTearDown(a.close);
-    final exported = await a.service.export(password: 'test password');
+  test(
+    'service preview rejects wrong passwords, invalid files and versions',
+    () async {
+      final a = await _SyncHarness.create(_deviceA, seed: 15);
+      addTearDown(a.close);
+      final exported = await a.service.export(password: 'test password');
 
-    await expectLater(
-      a.service.preview(exported.bytes, password: 'wrong test password'),
-      throwsA(isA<SyncPackageException>()),
-    );
-    await expectLater(
-      a.service.preview([1, 2, 3], password: 'test password'),
-      throwsA(isA<SyncPackageException>()),
-    );
-  });
+      await expectLater(
+        a.service.preview(exported.bytes, password: 'wrong test password'),
+        throwsA(isA<SyncPackageException>()),
+      );
+      await expectLater(
+        a.service.preview([1, 2, 3], password: 'test password'),
+        throwsA(isA<SyncPackageException>()),
+      );
+      final incompatible =
+          (await a.builder.build()).toJson()..['formatVersion'] = 2;
+      final incompatibleBytes = await a.codec.encrypt(
+        utf8.encode(canonicalJson.encode(incompatible)),
+        'test password',
+      );
+      await expectLater(
+        a.service.preview(incompatibleBytes, password: 'test password'),
+        throwsA(isA<SyncPackageException>()),
+      );
+    },
+  );
 }
 
 Future<void> _insertCompleteGraph(_SyncHarness harness) {
@@ -581,6 +826,11 @@ SyncPackageDocument _documentWith(
 SyncPackageChange _changeWith(
   SyncPackageChange source, {
   String? entityType,
+  String? entityId,
+  String? operation,
+  List<String>? changedFields,
+  Map<String, Object?>? payload,
+  Map<String, Object?>? snapshot,
   String? contentHash,
 }) {
   final changed = SyncPackageChange(
@@ -590,11 +840,11 @@ SyncPackageChange _changeWith(
     mutationId: source.mutationId,
     mutationSequence: source.mutationSequence,
     entityType: entityType ?? source.entityType,
-    entityId: source.entityId,
-    operation: source.operation,
-    changedFields: source.changedFields,
-    payload: source.payload,
-    snapshot: source.snapshot,
+    entityId: entityId ?? source.entityId,
+    operation: operation ?? source.operation,
+    changedFields: changedFields ?? source.changedFields,
+    payload: payload ?? source.payload,
+    snapshot: snapshot ?? source.snapshot,
     causalContext: source.causalContext,
     source: source.source,
     contentHash: contentHash ?? '',

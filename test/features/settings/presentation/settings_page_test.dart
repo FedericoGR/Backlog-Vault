@@ -3,6 +3,7 @@ import 'package:backlog_vault/features/metadata/data/metadata_api_key_storage.da
 import 'package:backlog_vault/features/settings/presentation/settings_page.dart';
 import 'package:backlog_vault/features/sync/application/sync_providers.dart';
 import 'package:backlog_vault/features/sync/domain/sync_models.dart';
+import 'package:backlog_vault/features/sync/presentation/manual_sync_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -73,6 +74,64 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('manual sync export rejects mismatched passwords safely', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          syncFoundationReadyProvider.overrideWith(
+            (ref) async => LocalDeviceInfo(
+              id: '11111111-1111-4111-8111-111111111111',
+              displayName: 'Test Windows device',
+              platform: 'windows',
+              createdAt: DateTime.utc(2026),
+              status: SyncDeviceStatus.local,
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          theme: buildBacklogVaultDarkTheme(),
+          home: const Scaffold(
+            body: SingleChildScrollView(child: ManualSyncSection()),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.widgetWithText(FilledButton, 'Exportar paquete de sincronización'),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsNWidgets(2));
+    await tester.enterText(find.byType(TextField).first, 'test password one');
+    await tester.enterText(find.byType(TextField).last, 'test password two');
+    await tester.tap(
+      find
+          .widgetWithText(FilledButton, 'Exportar paquete de sincronización')
+          .last,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Las contraseñas no coinciden.'), findsOneWidget);
+    expect(
+      tester
+          .widgetList<EditableText>(find.byType(EditableText))
+          .every((field) => field.obscureText),
+      isTrue,
+    );
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Text &&
+            (widget.data?.contains('test password one') ?? false),
+      ),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }
 
 class _FakeMetadataApiKeyStorage implements MetadataApiKeyStorage {

@@ -19,6 +19,7 @@ void main() {
     );
 
     final encrypted = await codec.encrypt(clear, 'test package password');
+    final second = await codec.encrypt(clear, 'test package password');
     final decrypted = await codec.decrypt(encrypted, 'test package password');
 
     expect(encrypted.take(4), [0x42, 0x56, 0x53, 0x31]);
@@ -27,6 +28,7 @@ void main() {
       isNot(contains('Secret Game Name')),
     );
     expect(decrypted, clear);
+    expect(second, isNot(equals(encrypted)));
   });
 
   test('wrong password fails without exposing the password', () async {
@@ -62,6 +64,7 @@ void main() {
   test('invalid magic and truncated package fail safely', () async {
     final encrypted = await codec.encrypt([1, 2, 3], 'test password');
     final invalidMagic = [...encrypted]..[0] = 0;
+    final missingAuthTag = encrypted.sublist(0, encrypted.length - 16);
 
     await expectLater(
       codec.decrypt(invalidMagic, 'test password'),
@@ -69,6 +72,10 @@ void main() {
     );
     await expectLater(
       codec.decrypt(encrypted.sublist(0, 7), 'test password'),
+      throwsA(isA<SyncPackageException>()),
+    );
+    await expectLater(
+      codec.decrypt(missingAuthTag, 'test password'),
       throwsA(isA<SyncPackageException>()),
     );
   });
@@ -80,6 +87,12 @@ void main() {
       final invalidIterations = _rewriteHeader(encrypted, (header) {
         header['iterations'] = 2000000000;
       });
+      final incompatibleFormat = _rewriteHeader(encrypted, (header) {
+        header['version'] = 2;
+      });
+      final incompatibleProtocol = _rewriteHeader(encrypted, (header) {
+        header['syncProtocolVersion'] = 2;
+      });
       final invalidSalt = _rewriteHeader(encrypted, (header) {
         header['salt'] = base64Encode([1, 2]);
       });
@@ -89,6 +102,14 @@ void main() {
 
       await expectLater(
         codec.decrypt(invalidIterations, 'test password'),
+        throwsA(isA<SyncPackageException>()),
+      );
+      await expectLater(
+        codec.decrypt(incompatibleFormat, 'test password'),
+        throwsA(isA<SyncPackageException>()),
+      );
+      await expectLater(
+        codec.decrypt(incompatibleProtocol, 'test password'),
         throwsA(isA<SyncPackageException>()),
       );
       await expectLater(

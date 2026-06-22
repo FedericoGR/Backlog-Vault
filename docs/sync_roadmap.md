@@ -1,6 +1,6 @@
 # Secure PC ↔ Android sync roadmap
 
-Status: deterministic sync foundation and password-encrypted manual `.vaultsync` packages are implemented on the development branch. Pairing, network transport, conflict-resolution UI, and media-byte transfer remain future work.
+Status: deterministic sync foundation and password-encrypted manual `.vaultsync` packages are implemented. Pairing, network transport, conflict-resolution UI, and media-byte transfer remain future work.
 
 ## Principles
 

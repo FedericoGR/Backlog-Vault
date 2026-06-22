@@ -77,7 +77,7 @@ Nunca commitees claves, client secrets, bearer/access tokens, archivos `.secure`
 - `.vaultbackup` incluye biblioteca lógica y media, pero no está cifrado.
 - `.vaultbackup.enc` cifra el backup completo con una password elegida por el usuario.
 - `.vaultsync` es un paquete cifrado separado que transporta cambios; no es un backup completo ni incluye los bytes de la media.
-- La password no se guarda; si se pierde, el backup no se puede recuperar.
+- Las passwords no se guardan; si se pierde una, su backup cifrado o paquete `.vaultsync` no se puede recuperar.
 - El restore es completo y conservador: lo ausente se marca con borrado lógico, sin hard delete.
 - Las credenciales externas y el secure storage no viajan en backups.
 

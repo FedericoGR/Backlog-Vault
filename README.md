@@ -91,7 +91,7 @@ Never commit real keys, client secrets, bearer tokens, access tokens, `.secure` 
 - `.vaultbackup` contains the logical library and media but is not encrypted.
 - `.vaultbackup.enc` encrypts the complete backup with a user-provided password.
 - `.vaultsync` is a separate encrypted change package. It is not a complete backup and does not contain media file bytes.
-- The password is never stored. Losing it makes the encrypted backup unrecoverable.
+- Passwords are never stored. Losing one makes its encrypted backup or `.vaultsync` package unrecoverable.
 - Restore is complete and conservative: current records absent from the backup are soft-deleted, not physically erased.
 - Provider credentials and secure-storage values never travel in backups.
 
