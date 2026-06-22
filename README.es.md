@@ -16,6 +16,7 @@ Backlog Vault es un gestor offline-first de backlog de videojuegos para Windows 
 - Media local almacenada con paths relativos.
 - Backups normales `.vaultbackup` y cifrados `.vaultbackup.enc`.
 - Paquetes de cambios `.vaultsync` cifrados con password, preview, deduplicación y manejo conservador de conflictos.
+- Invitaciones `.vaultpair` cifradas con password para pairing manual y paquetes `.vaultsync` con clave de grupo reutilizable.
 - Restore conservador con backup previo automático.
 - Home y estadísticas de biblioteca.
 - Tema claro/oscuro con diseño OLED-friendly.
@@ -29,7 +30,8 @@ Backlog Vault es un gestor offline-first de backlog de videojuegos para Windows 
 - Los backups cifrados están disponibles cuando el archivo sale del dispositivo.
 - Las credenciales de providers se guardan en el secure storage del sistema.
 - Claves RAWG, credenciales y tokens IGDB/Twitch, y claves SteamGridDB no se incluyen en backups ni exports.
-- Ya existen paquetes manuales cifrados de cambios. Pairing, sync automático, LAN, cloud y transferencia de archivos de media todavía no están disponibles.
+- Ya existen paquetes manuales cifrados y pairing manual. El pairing no habilita sync automático, LAN, cloud, background sync ni transferencia de media.
+- La clave aleatoria de grupo de 256 bits vive únicamente en el secure storage del sistema de cada dispositivo emparejado y no entra en backups.
 
 ## Instalación
 
@@ -77,11 +79,12 @@ Nunca commitees claves, client secrets, bearer/access tokens, archivos `.secure`
 - `.vaultbackup` incluye biblioteca lógica y media, pero no está cifrado.
 - `.vaultbackup.enc` cifra el backup completo con una password elegida por el usuario.
 - `.vaultsync` es un paquete cifrado separado que transporta cambios; no es un backup completo ni incluye los bytes de la media.
+- `.vaultpair` es una invitación temporal cifrada con password que transporta la clave de grupo para emparejar otro dispositivo; no contiene biblioteca, media ni credenciales de providers.
 - Las passwords no se guardan; si se pierde una, su backup cifrado o paquete `.vaultsync` no se puede recuperar.
 - El restore es completo y conservador: lo ausente se marca con borrado lógico, sin hard delete.
 - Las credenciales externas y el secure storage no viajan en backups.
 
-Usá `.vaultbackup.enc` para una migración completa, recuperación o copia de biblioteca con media. Usá `.vaultsync` para intercambiar cambios: exportá en un dispositivo, mové el archivo, revisá el preview en el otro y aplicá sólo los cambios seguros. Los conflictos se informan y se omiten; las portadas no se transfieren en esta etapa. Las credenciales se configuran por separado.
+Usá `.vaultbackup.enc` para migración completa, recuperación o copia con media. Usá `.vaultpair` para establecer una clave de grupo compartida y después `.vaultsync` para intercambiar cambios sin escribir una password cada vez. El modo `.vaultsync` con password sigue disponible. Las invitaciones vencen después de 24 horas; compartí el archivo y la password temporal por canales confiables separados. Los conflictos se omiten de forma segura y las portadas no se transfieren. Las credenciales se configuran por separado.
 
 ## Idioma
 
@@ -89,11 +92,11 @@ La app detecta el idioma del sistema por default. En **Ajustes → Idioma** pod�
 
 ## Roadmap de sync
 
-Los paquetes manuales de sync cifrado con password son el primer transporte implementado y no requieren cuenta, backend ni red:
+Los paquetes manuales con password o clave de grupo emparejado están implementados y no requieren cuenta, backend ni red:
 
 - v0.1.x: estabilización, UI bilingüe y hardening de backup/restore.
 - Foundation v0.2: change tracking determinista y paquetes manuales cifrados PC ↔ Android.
-- Emparejamiento por QR/código corto y clave en secure storage.
+- Pairing manual `.vaultpair` con clave en secure storage; QR queda para una etapa posterior.
 - Media por hash sin referencias rotas y resolución visible de conflictos.
 - Transporte LAN después del flujo manual.
 - Sin dependencia cloud al principio; cloud E2EE opcional mucho más adelante.

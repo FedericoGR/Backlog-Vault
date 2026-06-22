@@ -9,6 +9,7 @@ import '../../../core/design_system/bv_status_banner.dart';
 import '../../../l10n/l10n.dart';
 import '../application/sync_providers.dart';
 import '../domain/sync_package_models.dart';
+import '../domain/sync_pairing_models.dart';
 
 class ManualSyncSection extends ConsumerStatefulWidget {
   const ManualSyncSection({super.key});
@@ -24,6 +25,7 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
   @override
   Widget build(BuildContext context) {
     final foundation = ref.watch(syncFoundationReadyProvider);
+    final pairing = ref.watch(syncPairingStateProvider);
     return BvPanel(
       child: BvSection(
         title: context.l10n.syncSectionTitle,
@@ -62,6 +64,8 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
                     message: context.l10n.syncOperationFailed,
                   ),
             ),
+            const SizedBox(height: BvSpacing.md),
+            _buildPairingState(pairing),
             const SizedBox(height: BvSpacing.md),
             BvStatusBanner(
               title: context.l10n.syncEncryptedNotice,
@@ -109,6 +113,252 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
         ),
       ),
     );
+  }
+
+  Widget _buildPairingState(AsyncValue<SyncPairingState> pairing) {
+    return pairing.when(
+      loading:
+          () => BvProgressPanel(
+            title: context.l10n.syncPairingTitle,
+            subtitle: context.l10n.syncPairingDescription,
+          ),
+      error:
+          (_, _) => BvStatusBanner(
+            title: context.l10n.syncPairingTitle,
+            tone: BvBannerTone.warning,
+            message: context.l10n.syncPairingOperationFailed,
+          ),
+      data: (state) {
+        final group = state.group;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            BvStatusBanner(
+              title:
+                  group == null
+                      ? context.l10n.syncNoGroup
+                      : context.l10n.syncGroupConfigured,
+              tone:
+                  group == null
+                      ? BvBannerTone.info
+                      : state.hasGroupKey
+                      ? BvBannerTone.success
+                      : BvBannerTone.warning,
+              message:
+                  '${context.l10n.syncPairingDescription}\n'
+                  '${context.l10n.syncNoAutomaticSync}',
+            ),
+            if (group != null) ...[
+              const SizedBox(height: BvSpacing.sm),
+              Text(context.l10n.syncGroupName(group.displayName)),
+              Text(context.l10n.syncPairedDevices(state.pairedDeviceCount)),
+              Text(
+                state.hasGroupKey
+                    ? context.l10n.syncGroupKeyAvailable
+                    : context.l10n.syncGroupKeyMissing,
+              ),
+            ],
+            const SizedBox(height: BvSpacing.sm),
+            Text(context.l10n.syncInvitationNotice),
+            const SizedBox(height: BvSpacing.sm),
+            Wrap(
+              spacing: BvSpacing.sm,
+              runSpacing: BvSpacing.sm,
+              children: [
+                if (group == null)
+                  FilledButton.icon(
+                    onPressed: _busy ? null : _createGroup,
+                    icon: const Icon(Icons.group_add_outlined),
+                    label: Text(context.l10n.syncCreateGroup),
+                  ),
+                if (group != null)
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : _exportPairingInvitation,
+                    icon: const Icon(Icons.ios_share_outlined),
+                    label: Text(context.l10n.syncExportInvitation),
+                  ),
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : _importPairingInvitation,
+                  icon: const Icon(Icons.file_open_outlined),
+                  label: Text(context.l10n.syncImportInvitation),
+                ),
+                if (group != null && state.hasGroupKey) ...[
+                  FilledButton.icon(
+                    onPressed: _busy ? null : _exportGroupPackage,
+                    icon: const Icon(Icons.lock_outline),
+                    label: Text(context.l10n.syncExportGroupPackage),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : _importGroupPackage,
+                    icon: const Icon(Icons.lock_open_outlined),
+                    label: Text(context.l10n.syncImportGroupPackage),
+                  ),
+                ],
+                if (group != null)
+                  TextButton.icon(
+                    onPressed: _busy ? null : _leaveGroup,
+                    icon: const Icon(Icons.link_off_outlined),
+                    label: Text(context.l10n.syncLeaveGroup),
+                  ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _createGroup() async {
+    final name = await _askGroupName();
+    if (name == null || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await ref.read(syncPairingServiceProvider).createGroup(name);
+      if (!mounted) return;
+      ref.invalidate(syncPairingStateProvider);
+      _finishWithMessage(context.l10n.syncGroupConfigured);
+    } on Object catch (error) {
+      _handlePairingFailure(error);
+    }
+  }
+
+  Future<void> _exportPairingInvitation() async {
+    final passphrase = await _askPassword(
+      confirm: true,
+      title: context.l10n.syncPairingPasswordTitle,
+      helper: context.l10n.syncInvitationNotice,
+      submitLabel: context.l10n.syncExportInvitation,
+    );
+    if (passphrase == null || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      final exported = await ref
+          .read(syncPairingServiceProvider)
+          .exportInvitation(passphrase: passphrase);
+      if (!mounted) return;
+      final files = ref.read(syncPairingFileServiceProvider);
+      final path = await files.pickSavePath(
+        fileName: exported.fileName,
+        dialogTitle: context.l10n.syncPairingSaveDialogTitle,
+      );
+      if (path == null) {
+        if (mounted) setState(() => _busy = false);
+        return;
+      }
+      await files.writeBytes(path, exported.bytes);
+      if (!mounted) return;
+      _finishWithMessage(context.l10n.syncInvitationCreated);
+    } on Object catch (error) {
+      _handlePairingFailure(error);
+    }
+  }
+
+  Future<void> _importPairingInvitation() async {
+    try {
+      final files = ref.read(syncPairingFileServiceProvider);
+      final path = await files.pickImportPath();
+      if (path == null || !mounted) return;
+      final passphrase = await _askPassword(
+        confirm: false,
+        title: context.l10n.syncPairingPasswordOpenTitle,
+        helper: context.l10n.syncInvitationNotice,
+        submitLabel: context.l10n.openAction,
+      );
+      if (passphrase == null || !mounted) return;
+      setState(() => _busy = true);
+      final bytes = await files.readBytes(path);
+      await ref
+          .read(syncPairingServiceProvider)
+          .importInvitation(bytes, passphrase: passphrase);
+      if (!mounted) return;
+      ref.invalidate(syncPairingStateProvider);
+      _finishWithMessage(context.l10n.syncInvitationImported);
+    } on Object catch (error) {
+      _handlePairingFailure(error);
+    }
+  }
+
+  Future<void> _leaveGroup() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text(context.l10n.syncLeaveGroupTitle),
+            content: Text(context.l10n.syncLeaveGroupWarning),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(context.l10n.cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(context.l10n.syncLeaveGroup),
+              ),
+            ],
+          ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await ref.read(syncGroupManagerProvider).leaveGroup();
+      if (!mounted) return;
+      ref.invalidate(syncPairingStateProvider);
+      _finishWithMessage(context.l10n.syncLeaveGroupDone);
+    } on Object catch (error) {
+      _handlePairingFailure(error);
+    }
+  }
+
+  Future<void> _exportGroupPackage() async {
+    setState(() => _busy = true);
+    try {
+      final exported =
+          await ref.read(syncPackageServiceProvider).exportWithGroupKey();
+      if (!mounted) return;
+      final files = ref.read(syncPackageFileServiceProvider);
+      final path = await files.pickSavePath(
+        fileName: exported.fileName,
+        dialogTitle: context.l10n.syncSaveDialogTitle,
+      );
+      if (path == null) {
+        if (mounted) setState(() => _busy = false);
+        return;
+      }
+      await files.writeBytes(path, exported.bytes);
+      if (!mounted) return;
+      _finishWithMessage(
+        context.l10n.syncGroupPackageCreated(exported.changeCount),
+      );
+    } on Object catch (error) {
+      _handlePairingFailure(error);
+    }
+  }
+
+  Future<void> _importGroupPackage() async {
+    try {
+      final files = ref.read(syncPackageFileServiceProvider);
+      final path = await files.pickImportPath();
+      if (path == null || !mounted) return;
+      setState(() => _busy = true);
+      final bytes = await files.readBytes(path);
+      final service = ref.read(syncPackageServiceProvider);
+      final preview = await service.previewWithGroupKey(bytes);
+      if (!mounted) return;
+      setState(() => _busy = false);
+      final apply = await _showPreview(preview);
+      if (apply != true || !mounted) return;
+      setState(() => _busy = true);
+      final result = await service.applySafeChangesWithGroupKey(bytes);
+      if (!mounted) return;
+      ref.invalidate(syncPairingStateProvider);
+      _finishWithMessage(
+        result.applied == 0
+            ? context.l10n.syncNoSafeChanges
+            : context.l10n.syncAppliedCount(result.applied),
+      );
+    } on Object catch (error) {
+      _handlePairingFailure(error);
+    }
   }
 
   Future<void> _exportPackage() async {
@@ -246,7 +496,12 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
     );
   }
 
-  Future<String?> _askPassword({required bool confirm}) {
+  Future<String?> _askPassword({
+    required bool confirm,
+    String? title,
+    String? helper,
+    String? submitLabel,
+  }) {
     final password = TextEditingController();
     final repeated = TextEditingController();
     String? error;
@@ -257,16 +512,17 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
             builder:
                 (context, setDialogState) => AlertDialog(
                   title: Text(
-                    confirm
-                        ? context.l10n.syncPasswordExportTitle
-                        : context.l10n.syncPasswordImportTitle,
+                    title ??
+                        (confirm
+                            ? context.l10n.syncPasswordExportTitle
+                            : context.l10n.syncPasswordImportTitle),
                   ),
                   content: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(context.l10n.syncPasswordForgotten),
+                        Text(helper ?? context.l10n.syncPasswordForgotten),
                         const SizedBox(height: BvSpacing.md),
                         TextField(
                           controller: password,
@@ -312,9 +568,10 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
                         Navigator.pop(context, password.text);
                       },
                       child: Text(
-                        confirm
-                            ? context.l10n.syncExportPackage
-                            : context.l10n.openAction,
+                        submitLabel ??
+                            (confirm
+                                ? context.l10n.syncExportPackage
+                                : context.l10n.openAction),
                       ),
                     ),
                   ],
@@ -326,6 +583,49 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
     });
   }
 
+  Future<String?> _askGroupName() {
+    final controller = TextEditingController();
+    String? error;
+    return showDialog<String>(
+      context: context,
+      builder:
+          (context) => StatefulBuilder(
+            builder:
+                (context, setDialogState) => AlertDialog(
+                  title: Text(context.l10n.syncCreateGroupTitle),
+                  content: TextField(
+                    controller: controller,
+                    autofocus: true,
+                    maxLength: 100,
+                    decoration: InputDecoration(
+                      labelText: context.l10n.syncGroupNameLabel,
+                      errorText: error,
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(context.l10n.cancel),
+                    ),
+                    FilledButton(
+                      onPressed: () {
+                        final value = controller.text.trim();
+                        if (value.isEmpty) {
+                          setDialogState(
+                            () => error = context.l10n.syncGroupNameRequired,
+                          );
+                          return;
+                        }
+                        Navigator.pop(context, value);
+                      },
+                      child: Text(context.l10n.syncCreateGroup),
+                    ),
+                  ],
+                ),
+          ),
+    ).whenComplete(controller.dispose);
+  }
+
   String _shortId(String id) => id.length <= 8 ? id : '${id.substring(0, 8)}…';
 
   void _handleFailure() {
@@ -334,6 +634,37 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
     setState(() {
       _busy = false;
       _result = null;
+    });
+    _showMessage(message);
+  }
+
+  void _handlePairingFailure(Object error) {
+    if (!mounted) return;
+    final message = switch (error) {
+      SyncPairingException(failure: SyncPairingFailure.invitationExpired) =>
+        context.l10n.syncInvitationExpired,
+      SyncPairingException(failure: SyncPairingFailure.existingGroup) =>
+        context.l10n.syncPairingExistingGroup,
+      SyncPairingException(failure: SyncPairingFailure.keyMissing) =>
+        context.l10n.syncGroupKeyMissing,
+      SyncPairingException(failure: SyncPairingFailure.groupMismatch) =>
+        context.l10n.syncGroupPackageMismatch,
+      SyncPairingException(failure: SyncPairingFailure.keyIdMismatch) =>
+        context.l10n.syncGroupKeyMismatch,
+      _ => context.l10n.syncPairingOperationFailed,
+    };
+    setState(() {
+      _busy = false;
+      _result = null;
+    });
+    _showMessage(message);
+  }
+
+  void _finishWithMessage(String message) {
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _result = message;
     });
     _showMessage(message);
   }

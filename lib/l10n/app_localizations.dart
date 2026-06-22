@@ -3831,6 +3831,210 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The sync package operation could not be completed. Check the password and file.'**
   String get syncOperationFailed;
+
+  /// No description provided for @syncPairingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Device pairing'**
+  String get syncPairingTitle;
+
+  /// No description provided for @syncPairingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing lets you use sync packages without typing a password every time. Local network sync will come in a later stage.'**
+  String get syncPairingDescription;
+
+  /// No description provided for @syncNoGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'No sync group configured'**
+  String get syncNoGroup;
+
+  /// No description provided for @syncGroupConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync group configured'**
+  String get syncGroupConfigured;
+
+  /// No description provided for @syncGroupName.
+  ///
+  /// In en, this message translates to:
+  /// **'Group: {name}'**
+  String syncGroupName(Object name);
+
+  /// No description provided for @syncPairedDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Known paired devices: {count}'**
+  String syncPairedDevices(Object count);
+
+  /// No description provided for @syncGroupKeyAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The group key is protected by this device\'s secure storage.'**
+  String get syncGroupKeyAvailable;
+
+  /// No description provided for @syncGroupKeyMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'The group key is missing on this device. Pair it again before using group packages.'**
+  String get syncGroupKeyMissing;
+
+  /// No description provided for @syncCreateGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Create sync group'**
+  String get syncCreateGroup;
+
+  /// No description provided for @syncCreateGroupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create sync group'**
+  String get syncCreateGroupTitle;
+
+  /// No description provided for @syncGroupNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Group name'**
+  String get syncGroupNameLabel;
+
+  /// No description provided for @syncGroupNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a group name.'**
+  String get syncGroupNameRequired;
+
+  /// No description provided for @syncExportInvitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Export pairing invitation'**
+  String get syncExportInvitation;
+
+  /// No description provided for @syncImportInvitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Import pairing invitation'**
+  String get syncImportInvitation;
+
+  /// No description provided for @syncInvitationNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'The .vaultpair invitation contains the group key inside a password-encrypted payload. Share the file and its temporary password through separate trusted channels.'**
+  String get syncInvitationNotice;
+
+  /// No description provided for @syncPairingPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Protect pairing invitation'**
+  String get syncPairingPasswordTitle;
+
+  /// No description provided for @syncPairingPasswordOpenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Open pairing invitation'**
+  String get syncPairingPasswordOpenTitle;
+
+  /// No description provided for @syncPairingSaveDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save encrypted pairing invitation'**
+  String get syncPairingSaveDialogTitle;
+
+  /// No description provided for @syncInvitationCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypted pairing invitation created. It expires after 24 hours.'**
+  String get syncInvitationCreated;
+
+  /// No description provided for @syncInvitationImported.
+  ///
+  /// In en, this message translates to:
+  /// **'This device joined the sync group.'**
+  String get syncInvitationImported;
+
+  /// No description provided for @syncInvitationExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'This pairing invitation has expired.'**
+  String get syncInvitationExpired;
+
+  /// No description provided for @syncPairingExistingGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'This device already belongs to another sync group. Leave it before importing a different invitation.'**
+  String get syncPairingExistingGroup;
+
+  /// No description provided for @syncGroupPackageMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'This sync package belongs to another sync group.'**
+  String get syncGroupPackageMismatch;
+
+  /// No description provided for @syncGroupKeyMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'This sync package uses another group key. Pair this device again.'**
+  String get syncGroupKeyMismatch;
+
+  /// No description provided for @syncLeaveGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave sync group'**
+  String get syncLeaveGroup;
+
+  /// No description provided for @syncLeaveGroupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave sync group?'**
+  String get syncLeaveGroupTitle;
+
+  /// No description provided for @syncLeaveGroupWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'The group key will be removed from secure storage. Your library and change history will not be deleted.'**
+  String get syncLeaveGroupWarning;
+
+  /// No description provided for @syncLeaveGroupDone.
+  ///
+  /// In en, this message translates to:
+  /// **'This device left the sync group.'**
+  String get syncLeaveGroupDone;
+
+  /// No description provided for @syncGroupPackagesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paired group packages'**
+  String get syncGroupPackagesTitle;
+
+  /// No description provided for @syncExportGroupPackage.
+  ///
+  /// In en, this message translates to:
+  /// **'Export with group key'**
+  String get syncExportGroupPackage;
+
+  /// No description provided for @syncImportGroupPackage.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from paired group'**
+  String get syncImportGroupPackage;
+
+  /// No description provided for @syncGroupPackageCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Group-encrypted sync package created with {count} changes.'**
+  String syncGroupPackageCreated(Object count);
+
+  /// No description provided for @syncPairingOperationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The pairing operation could not be completed. Check the invitation and temporary password.'**
+  String get syncPairingOperationFailed;
+
+  /// No description provided for @syncNoAutomaticSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing does not synchronize automatically and does not enable LAN sync yet.'**
+  String get syncNoAutomaticSync;
 }
 
 class _AppLocalizationsDelegate

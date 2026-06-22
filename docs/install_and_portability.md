@@ -47,7 +47,7 @@ The selected UI language is stored through platform preferences. It is device-lo
 
 ## PC ↔ Android transfer
 
-Automatic, paired, LAN, and cloud sync do not exist yet. Two manual workflows serve different purposes.
+Automatic, LAN, and cloud sync do not exist yet. Manual pairing and manual file transfer provide three distinct workflows.
 
 For full migration or disaster recovery, including media:
 
@@ -66,6 +66,15 @@ For exchanging library changes between existing installations:
 4. Apply safe changes. Duplicate changes are skipped and conflicts are reported without overwriting local values.
 
 `.vaultsync` is encrypted and contains no provider credentials or secure-storage data. It is not a backup, and this stage does not carry media file bytes. Cover-related changes remain pending so the destination never selects a missing image. A forgotten package password cannot be recovered.
+
+To pair installations and avoid entering a password for every later package:
+
+1. Create a sync group on the first device under **Settings → Sync**.
+2. Export a `.vaultpair` invitation protected with a temporary password. It expires after 24 hours.
+3. Move the invitation to the second device and import it with that password.
+4. Exchange group-encrypted `.vaultsync` files manually. Preview and conflict rules remain unchanged.
+
+The random group key is inside the encrypted invitation and is then stored only in OS secure storage. SQLite stores its public key ID, never the key. Share the invitation file and temporary password through separate trusted channels. Pairing does not start LAN or automatic sync. If secure storage is erased or a device leaves the group, it must be paired again. API keys and media files never travel in `.vaultpair`.
 
 ## Restore guarantees and limits
 

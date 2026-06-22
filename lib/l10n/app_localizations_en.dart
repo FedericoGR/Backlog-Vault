@@ -2118,4 +2118,123 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get syncOperationFailed =>
       'The sync package operation could not be completed. Check the password and file.';
+
+  @override
+  String get syncPairingTitle => 'Device pairing';
+
+  @override
+  String get syncPairingDescription =>
+      'Pairing lets you use sync packages without typing a password every time. Local network sync will come in a later stage.';
+
+  @override
+  String get syncNoGroup => 'No sync group configured';
+
+  @override
+  String get syncGroupConfigured => 'Sync group configured';
+
+  @override
+  String syncGroupName(Object name) {
+    return 'Group: $name';
+  }
+
+  @override
+  String syncPairedDevices(Object count) {
+    return 'Known paired devices: $count';
+  }
+
+  @override
+  String get syncGroupKeyAvailable =>
+      'The group key is protected by this device\'s secure storage.';
+
+  @override
+  String get syncGroupKeyMissing =>
+      'The group key is missing on this device. Pair it again before using group packages.';
+
+  @override
+  String get syncCreateGroup => 'Create sync group';
+
+  @override
+  String get syncCreateGroupTitle => 'Create sync group';
+
+  @override
+  String get syncGroupNameLabel => 'Group name';
+
+  @override
+  String get syncGroupNameRequired => 'Enter a group name.';
+
+  @override
+  String get syncExportInvitation => 'Export pairing invitation';
+
+  @override
+  String get syncImportInvitation => 'Import pairing invitation';
+
+  @override
+  String get syncInvitationNotice =>
+      'The .vaultpair invitation contains the group key inside a password-encrypted payload. Share the file and its temporary password through separate trusted channels.';
+
+  @override
+  String get syncPairingPasswordTitle => 'Protect pairing invitation';
+
+  @override
+  String get syncPairingPasswordOpenTitle => 'Open pairing invitation';
+
+  @override
+  String get syncPairingSaveDialogTitle => 'Save encrypted pairing invitation';
+
+  @override
+  String get syncInvitationCreated =>
+      'Encrypted pairing invitation created. It expires after 24 hours.';
+
+  @override
+  String get syncInvitationImported => 'This device joined the sync group.';
+
+  @override
+  String get syncInvitationExpired => 'This pairing invitation has expired.';
+
+  @override
+  String get syncPairingExistingGroup =>
+      'This device already belongs to another sync group. Leave it before importing a different invitation.';
+
+  @override
+  String get syncGroupPackageMismatch =>
+      'This sync package belongs to another sync group.';
+
+  @override
+  String get syncGroupKeyMismatch =>
+      'This sync package uses another group key. Pair this device again.';
+
+  @override
+  String get syncLeaveGroup => 'Leave sync group';
+
+  @override
+  String get syncLeaveGroupTitle => 'Leave sync group?';
+
+  @override
+  String get syncLeaveGroupWarning =>
+      'The group key will be removed from secure storage. Your library and change history will not be deleted.';
+
+  @override
+  String get syncLeaveGroupDone => 'This device left the sync group.';
+
+  @override
+  String get syncGroupPackagesTitle => 'Paired group packages';
+
+  @override
+  String get syncExportGroupPackage => 'Export with group key';
+
+  @override
+  String get syncImportGroupPackage => 'Import from paired group';
+
+  @override
+  String syncGroupPackageCreated(Object count) {
+    return 'Group-encrypted sync package created with $count changes.';
+  }
+
+  @override
+  String get syncPairingOperationFailed =>
+      'The pairing operation could not be completed. Check the invitation and temporary password.';
+
+  @override
+  String get syncNoAutomaticSync =>
+      'Pairing does not synchronize automatically and does not enable LAN sync yet.';
 }

@@ -16,6 +16,7 @@ Backlog Vault is an offline-first videogame backlog manager for Windows and Andr
 - Local media storage using relative paths.
 - Regular `.vaultbackup` and encrypted `.vaultbackup.enc` backups.
 - Password-encrypted `.vaultsync` change packages with preview, deduplication, and conservative conflict handling.
+- Password-encrypted `.vaultpair` invitations for manual device pairing and reusable group-key `.vaultsync` packages.
 - Conservative backup restore with an automatic pre-restore backup.
 - Home dashboard and library statistics.
 - System, light, dark, and OLED-friendly UI behavior.
@@ -30,6 +31,8 @@ Backlog Vault is an offline-first videogame backlog manager for Windows and Andr
 - Provider credentials are stored with the operating system's secure storage.
 - RAWG keys, IGDB/Twitch credentials and tokens, and SteamGridDB keys are excluded from backups and exports.
 - Manual encrypted change packages are available. Pairing, automatic sync, LAN, cloud, and media-file transfer are not available yet.
+- Manual device pairing is available; it does not enable automatic, LAN, cloud, or background synchronization.
+- The random 256-bit sync group key is stored only in each paired device's operating-system secure storage and never enters library backups.
 
 See [install and portability](docs/install_and_portability.md) for the current data-transfer workflow.
 
@@ -91,11 +94,12 @@ Never commit real keys, client secrets, bearer tokens, access tokens, `.secure` 
 - `.vaultbackup` contains the logical library and media but is not encrypted.
 - `.vaultbackup.enc` encrypts the complete backup with a user-provided password.
 - `.vaultsync` is a separate encrypted change package. It is not a complete backup and does not contain media file bytes.
+- `.vaultpair` is a temporary password-encrypted invitation that carries the group key needed to pair another device. It contains no library, media, or provider credentials.
 - Passwords are never stored. Losing one makes its encrypted backup or `.vaultsync` package unrecoverable.
 - Restore is complete and conservative: current records absent from the backup are soft-deleted, not physically erased.
 - Provider credentials and secure-storage values never travel in backups.
 
-Use `.vaultbackup.enc` for full migration, disaster recovery, or copying the complete library with media. Use `.vaultsync` to exchange library changes manually: export on one device, move the file, preview it on the other, and apply only safe changes. Conflicts are reported and skipped; cover files are not transferred in this stage. Configure provider credentials separately on each device.
+Use `.vaultbackup.enc` for full migration, disaster recovery, or copying the complete library with media. Use `.vaultpair` to establish a shared group key, then `.vaultsync` to exchange library changes without typing a password each time. Password-mode `.vaultsync` remains available. Pairing invitations expire after 24 hours; share the file and temporary password through separate trusted channels. Conflicts are reported and skipped, and cover files are not transferred. Configure provider credentials separately on each device.
 
 ## Language
 
@@ -109,11 +113,11 @@ The preference is stored per device and is not part of the library database or b
 
 ## Sync roadmap
 
-Manual password-encrypted sync packages are the first implemented sync transport. They require no account, backend, or network connection.
+Manual password and paired-group sync packages are implemented. They require no account, backend, or network connection.
 
 - v0.1.x: stabilization, bilingual UI, backup/restore hardening.
 - v0.2 foundation: deterministic change tracking and manual encrypted PC ↔ Android sync packages.
-- Pairing through a QR code or short code, with the sync key in secure storage.
+- Manual `.vaultpair` pairing with the sync key in secure storage; QR remains future work.
 - Media addressed by hash and transferred without creating broken cover references.
 - Visible, conservative conflict resolution with no silent destructive merge.
 - LAN transport after the manual package workflow is stable.

@@ -1,6 +1,6 @@
 # Secure PC ↔ Android sync roadmap
 
-Status: deterministic sync foundation and password-encrypted manual `.vaultsync` packages are implemented. Pairing, network transport, conflict-resolution UI, and media-byte transfer remain future work.
+Status: deterministic sync foundation, encrypted `.vaultsync` packages, and manual `.vaultpair` device pairing with secure-storage group keys are implemented. QR, network transport, conflict-resolution UI, and media-byte transfer remain future work.
 
 ## Principles
 
@@ -33,11 +33,14 @@ Current limitations:
 
 ### Stage 2 — Device pairing
 
-- Pair Windows and Android with a QR code or short code.
-- Establish a random sync key; never derive it from provider credentials.
-- Store the sync key in platform secure storage on each device.
-- Show paired-device identity and allow explicit revocation.
-- Never include the sync key in backups, logs, analytics, or QR screenshots after pairing.
+Implemented in E21:
+
+- Create a logical sync group with a random 256-bit key that is never derived from provider credentials.
+- Store the key only in platform secure storage; SQLite retains public group, key ID, and device metadata.
+- Export/import a dedicated `BVP1` `.vaultpair` invitation encrypted with a temporary password and expiring after 24 hours.
+- Keep legacy password-mode `.vaultsync` while allowing authenticated group-key packages without repeated password entry.
+- Leave/revoke locally by deleting the group key without deleting the library or changelog.
+- QR rendering/scanning and network transport remain explicitly unavailable.
 
 ### Stage 3 — LAN transport
 
@@ -86,8 +89,8 @@ Current limitations:
 
 1. Completed: threat model, device identity, change schema, causal state, and tombstone rules.
 2. Completed: versioned encrypted manual packages, preview, conservative apply, and cross-device fixtures.
-3. E21: pairing UX, group key lifecycle in secure storage, fingerprint verification, and revocation.
-4. E22: authenticated LAN transport reusing the same package and apply engine.
+3. Completed E21: manual pairing, group-key lifecycle in secure storage, group package authentication, and local leave/revocation.
+4. E21.5/E22: pairing hardening, optional fingerprint verification, and authenticated LAN transport reusing the same package and apply engine.
 5. E23: hash-addressed media-byte transfer and visible conflict-resolution workflows.
 6. E24: performance, recovery, security, Windows/Android, and v0.2 stabilization.
 

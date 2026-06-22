@@ -2124,4 +2124,129 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get syncOperationFailed =>
       'No se pudo completar la operación del paquete. Revisá la contraseña y el archivo.';
+
+  @override
+  String get syncPairingTitle => 'Emparejamiento de dispositivos';
+
+  @override
+  String get syncPairingDescription =>
+      'El emparejamiento permite usar paquetes de sincronización sin escribir una contraseña cada vez. La sincronización por red local llegará en una etapa posterior.';
+
+  @override
+  String get syncNoGroup => 'No hay un grupo de sincronización configurado';
+
+  @override
+  String get syncGroupConfigured => 'Grupo de sincronización configurado';
+
+  @override
+  String syncGroupName(Object name) {
+    return 'Grupo: $name';
+  }
+
+  @override
+  String syncPairedDevices(Object count) {
+    return 'Dispositivos emparejados conocidos: $count';
+  }
+
+  @override
+  String get syncGroupKeyAvailable =>
+      'La clave del grupo está protegida por el secure storage de este dispositivo.';
+
+  @override
+  String get syncGroupKeyMissing =>
+      'Falta la clave del grupo en este dispositivo. Volvé a emparejarlo antes de usar paquetes de grupo.';
+
+  @override
+  String get syncCreateGroup => 'Crear grupo de sincronización';
+
+  @override
+  String get syncCreateGroupTitle => 'Crear grupo de sincronización';
+
+  @override
+  String get syncGroupNameLabel => 'Nombre del grupo';
+
+  @override
+  String get syncGroupNameRequired => 'Ingresá un nombre para el grupo.';
+
+  @override
+  String get syncExportInvitation => 'Exportar invitación de emparejamiento';
+
+  @override
+  String get syncImportInvitation => 'Importar invitación de emparejamiento';
+
+  @override
+  String get syncInvitationNotice =>
+      'La invitación .vaultpair contiene la clave del grupo dentro de un payload cifrado con contraseña. Compartí el archivo y su contraseña temporal por canales confiables separados.';
+
+  @override
+  String get syncPairingPasswordTitle =>
+      'Proteger invitación de emparejamiento';
+
+  @override
+  String get syncPairingPasswordOpenTitle =>
+      'Abrir invitación de emparejamiento';
+
+  @override
+  String get syncPairingSaveDialogTitle =>
+      'Guardar invitación cifrada de emparejamiento';
+
+  @override
+  String get syncInvitationCreated =>
+      'Invitación cifrada creada. Vence después de 24 horas.';
+
+  @override
+  String get syncInvitationImported =>
+      'Este dispositivo se unió al grupo de sincronización.';
+
+  @override
+  String get syncInvitationExpired =>
+      'Esta invitación de emparejamiento venció.';
+
+  @override
+  String get syncPairingExistingGroup =>
+      'Este dispositivo ya pertenece a otro grupo. Salí de ese grupo antes de importar una invitación distinta.';
+
+  @override
+  String get syncGroupPackageMismatch =>
+      'Este paquete pertenece a otro grupo de sincronización.';
+
+  @override
+  String get syncGroupKeyMismatch =>
+      'Este paquete usa otra clave de grupo. Volvé a emparejar este dispositivo.';
+
+  @override
+  String get syncLeaveGroup => 'Salir del grupo de sincronización';
+
+  @override
+  String get syncLeaveGroupTitle => '¿Salir del grupo de sincronización?';
+
+  @override
+  String get syncLeaveGroupWarning =>
+      'La clave del grupo se borrará del secure storage. La biblioteca y el historial de cambios no se eliminarán.';
+
+  @override
+  String get syncLeaveGroupDone =>
+      'Este dispositivo salió del grupo de sincronización.';
+
+  @override
+  String get syncGroupPackagesTitle => 'Paquetes del grupo emparejado';
+
+  @override
+  String get syncExportGroupPackage => 'Exportar con clave de grupo';
+
+  @override
+  String get syncImportGroupPackage => 'Importar desde grupo emparejado';
+
+  @override
+  String syncGroupPackageCreated(Object count) {
+    return 'Paquete cifrado con clave de grupo creado con $count cambios.';
+  }
+
+  @override
+  String get syncPairingOperationFailed =>
+      'No se pudo completar el emparejamiento. Revisá la invitación y la contraseña temporal.';
+
+  @override
+  String get syncNoAutomaticSync =>
+      'El emparejamiento no sincroniza automáticamente ni habilita sync por LAN todavía.';
 }

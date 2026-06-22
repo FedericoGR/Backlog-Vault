@@ -31,6 +31,7 @@ class EncryptedSyncPackageCodec {
   static const _algorithm = 'AES-256-GCM';
   static const _kdfName = 'PBKDF2-HMAC-SHA256';
   static const _saltLength = 16;
+  static const _groupKeyLength = 32;
 
   final AesGcm _cipher;
   final Pbkdf2 _kdf;
@@ -61,7 +62,7 @@ class EncryptedSyncPackageCodec {
     _validatePassword(password);
     try {
       final parsed = _parse(encryptedBytes);
-      _validateHeader(parsed.header);
+      _validatePasswordHeader(parsed.header);
       final salt = base64Decode(parsed.header['salt']! as String);
       if (salt.length != _saltLength) {
         throw const SyncPackageException('Invalid sync package salt.');
@@ -100,6 +101,95 @@ class EncryptedSyncPackageCodec {
     }
   }
 
+  Future<List<int>> encryptWithGroupKey(
+    List<int> clearBytes, {
+    required String groupId,
+    required String keyId,
+    required List<int> groupKey,
+  }) async {
+    _validateGroupParameters(groupId, keyId, groupKey);
+    final headerBytes = utf8.encode(jsonEncode(_groupHeader(groupId, keyId)));
+    final box = await _cipher.encrypt(
+      clearBytes,
+      secretKey: SecretKey(groupKey),
+      nonce: _cipher.newNonce(),
+      aad: headerBytes,
+    );
+    return [
+      ..._magic,
+      ..._uint32(headerBytes.length),
+      ...headerBytes,
+      ...box.concatenation(),
+    ];
+  }
+
+  Future<List<int>> decryptWithGroupKey(
+    List<int> encryptedBytes, {
+    required String expectedGroupId,
+    required String expectedKeyId,
+    required List<int> groupKey,
+  }) async {
+    _validateGroupParameters(expectedGroupId, expectedKeyId, groupKey);
+    try {
+      final parsed = _parse(encryptedBytes);
+      final info = _validateGroupHeader(parsed.header);
+      if (info.groupId != expectedGroupId) {
+        throw const SyncPackageException(
+          'This sync package belongs to another sync group.',
+        );
+      }
+      if (info.keyId != expectedKeyId) {
+        throw const SyncPackageException(
+          'This sync package uses another group key.',
+        );
+      }
+      final nonceLength = parsed.header['nonceLength']! as int;
+      final macLength = parsed.header['macLength']! as int;
+      if (parsed.payload.length <= nonceLength + macLength) {
+        throw const SyncPackageException('The sync package is incomplete.');
+      }
+      final box = SecretBox.fromConcatenation(
+        parsed.payload,
+        nonceLength: nonceLength,
+        macLength: macLength,
+      );
+      return await _cipher.decrypt(
+        box,
+        secretKey: SecretKey(groupKey),
+        aad: parsed.headerBytes,
+      );
+    } on SyncPackageException {
+      rethrow;
+    } on SecretBoxAuthenticationError {
+      throw const SyncPackageException(
+        'The sync package group key is unavailable or the file was modified.',
+      );
+    } on Object {
+      throw const SyncPackageException(
+        'The encrypted sync package is invalid or corrupted.',
+      );
+    }
+  }
+
+  SyncPackageEncryptionInfo inspect(List<int> encryptedBytes) {
+    try {
+      final parsed = _parse(encryptedBytes);
+      if (parsed.header['keyMode'] == 'group') {
+        return _validateGroupHeader(parsed.header);
+      }
+      _validatePasswordHeader(parsed.header);
+      return const SyncPackageEncryptionInfo(
+        keyMode: SyncPackageKeyMode.password,
+      );
+    } on SyncPackageException {
+      rethrow;
+    } on Object {
+      throw const SyncPackageException(
+        'The encrypted sync package is invalid or corrupted.',
+      );
+    }
+  }
+
   Future<SecretKey> _deriveKey(
     String password,
     List<int> salt, {
@@ -125,6 +215,19 @@ class EncryptedSyncPackageCodec {
     'iterations': _iterations,
     'keyBits': 256,
     'salt': base64Encode(salt),
+    'nonceLength': _cipher.nonceLength,
+    'macLength': _cipher.macAlgorithm.macLength,
+  };
+
+  Map<String, Object?> _groupHeader(String groupId, String keyId) => {
+    'format': _format,
+    'version': _version,
+    'syncProtocolVersion': syncProtocolVersion,
+    'algorithm': _algorithm,
+    'keyMode': 'group',
+    'groupId': groupId,
+    'keyId': keyId,
+    'keyBits': 256,
     'nonceLength': _cipher.nonceLength,
     'macLength': _cipher.macAlgorithm.macLength,
   };
@@ -160,19 +263,63 @@ class EncryptedSyncPackageCodec {
     );
   }
 
-  void _validateHeader(Map<String, Object?> header) {
+  void _validatePasswordHeader(Map<String, Object?> header) {
+    _validateCommonHeader(header);
+    if (header['format'] != _format ||
+        (header['keyMode'] != null && header['keyMode'] != 'password') ||
+        header['kdf'] != _kdfName ||
+        header['iterations'] != _iterations ||
+        header['salt'] is! String) {
+      throw const SyncPackageException(
+        'The sync package encryption header is not supported.',
+      );
+    }
+  }
+
+  SyncPackageEncryptionInfo _validateGroupHeader(Map<String, Object?> header) {
+    _validateCommonHeader(header);
+    final groupId = header['groupId'];
+    final keyId = header['keyId'];
+    if (header['keyMode'] != 'group' ||
+        groupId is! String ||
+        keyId is! String ||
+        !_uuidV4.hasMatch(groupId) ||
+        !_uuidV4.hasMatch(keyId)) {
+      throw const SyncPackageException(
+        'The sync package group header is not supported.',
+      );
+    }
+    return SyncPackageEncryptionInfo(
+      keyMode: SyncPackageKeyMode.group,
+      groupId: groupId,
+      keyId: keyId,
+    );
+  }
+
+  void _validateCommonHeader(Map<String, Object?> header) {
     if (header['format'] != _format ||
         header['version'] != _version ||
         header['syncProtocolVersion'] != syncProtocolVersion ||
         header['algorithm'] != _algorithm ||
-        header['kdf'] != _kdfName ||
         header['keyBits'] != 256 ||
-        header['iterations'] != _iterations ||
         header['nonceLength'] != _cipher.nonceLength ||
-        header['macLength'] != _cipher.macAlgorithm.macLength ||
-        header['salt'] is! String) {
+        header['macLength'] != _cipher.macAlgorithm.macLength) {
       throw const SyncPackageException(
         'The sync package encryption header is not supported.',
+      );
+    }
+  }
+
+  void _validateGroupParameters(
+    String groupId,
+    String keyId,
+    List<int> groupKey,
+  ) {
+    if (!_uuidV4.hasMatch(groupId) ||
+        !_uuidV4.hasMatch(keyId) ||
+        groupKey.length != _groupKeyLength) {
+      throw const SyncPackageException(
+        'The sync package group key is invalid.',
       );
     }
   }
@@ -200,6 +347,20 @@ class EncryptedSyncPackageCodec {
   }
 }
 
+enum SyncPackageKeyMode { password, group }
+
+class SyncPackageEncryptionInfo {
+  const SyncPackageEncryptionInfo({
+    required this.keyMode,
+    this.groupId,
+    this.keyId,
+  });
+
+  final SyncPackageKeyMode keyMode;
+  final String? groupId;
+  final String? keyId;
+}
+
 class _ParsedSyncPackage {
   const _ParsedSyncPackage({
     required this.header,
@@ -211,3 +372,8 @@ class _ParsedSyncPackage {
   final List<int> headerBytes;
   final List<int> payload;
 }
+
+final _uuidV4 = RegExp(
+  r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
+  caseSensitive: false,
+);

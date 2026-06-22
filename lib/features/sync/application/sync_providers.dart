@@ -2,14 +2,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_providers.dart';
 import '../data/encrypted_sync_package_codec.dart';
+import '../data/encrypted_pairing_codec.dart';
 import '../data/sync_change_applier.dart';
 import '../data/sync_change_tracking.dart';
 import '../data/sync_conflict_detector.dart';
 import '../data/sync_device_identity.dart';
+import '../data/sync_group_management.dart';
+import '../data/sync_pairing_file_service.dart';
+import '../data/sync_pairing_service.dart';
 import '../data/sync_package_builder.dart';
 import '../data/sync_package_file_service.dart';
 import '../data/sync_package_service.dart';
 import '../domain/sync_models.dart';
+import '../domain/sync_pairing_models.dart';
 
 final syncIdentityStoreProvider = Provider<SyncIdentityStore>((ref) {
   return SecureSyncIdentityStore();
@@ -26,6 +31,10 @@ final syncDeviceIdentityServiceProvider = Provider<SyncDeviceIdentityService>((
     store: ref.watch(syncIdentityStoreProvider),
     repository: ref.watch(syncDeviceRepositoryProvider),
   );
+});
+
+final syncGroupKeyStoreProvider = Provider<SyncGroupKeyStore>((ref) {
+  return SecureSyncGroupKeyStore();
 });
 
 final logicalLibrarySnapshotReaderProvider =
@@ -72,6 +81,34 @@ final syncFoundationReadyProvider = FutureProvider<LocalDeviceInfo>((
   return device;
 });
 
+final syncGroupManagerProvider = Provider<SyncGroupManager>((ref) {
+  return SyncGroupManager(
+    database: ref.watch(appDatabaseProvider),
+    keyStore: ref.watch(syncGroupKeyStoreProvider),
+    identityService: ref.watch(syncDeviceIdentityServiceProvider),
+    initializer: ref.watch(syncFoundationInitializerProvider),
+  );
+});
+
+final syncPairingStateProvider = FutureProvider<SyncPairingState>((ref) {
+  return ref.watch(syncGroupManagerProvider).state();
+});
+
+final encryptedPairingCodecProvider = Provider<EncryptedPairingCodec>((ref) {
+  return EncryptedPairingCodec();
+});
+
+final syncPairingServiceProvider = Provider<SyncPairingService>((ref) {
+  return SyncPairingService(
+    groupManager: ref.watch(syncGroupManagerProvider),
+    codec: ref.watch(encryptedPairingCodecProvider),
+  );
+});
+
+final syncPairingFileServiceProvider = Provider<SyncPairingFileService>((ref) {
+  return const SyncPairingFileService();
+});
+
 final encryptedSyncPackageCodecProvider = Provider<EncryptedSyncPackageCodec>((
   ref,
 ) {
@@ -107,6 +144,7 @@ final syncPackageServiceProvider = Provider<SyncPackageService>((ref) {
     codec: ref.watch(encryptedSyncPackageCodecProvider),
     conflictDetector: ref.watch(syncConflictDetectorProvider),
     changeApplier: ref.watch(syncChangeApplierProvider),
+    groupKeys: ref.watch(syncGroupManagerProvider),
   );
 });
 

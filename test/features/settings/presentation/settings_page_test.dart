@@ -3,6 +3,8 @@ import 'package:backlog_vault/features/metadata/data/metadata_api_key_storage.da
 import 'package:backlog_vault/features/settings/presentation/settings_page.dart';
 import 'package:backlog_vault/features/sync/application/sync_providers.dart';
 import 'package:backlog_vault/features/sync/domain/sync_models.dart';
+import 'package:backlog_vault/features/sync/domain/sync_package_models.dart';
+import 'package:backlog_vault/features/sync/domain/sync_pairing_models.dart';
 import 'package:backlog_vault/features/sync/presentation/manual_sync_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,6 +33,9 @@ void main() {
                 createdAt: DateTime.utc(2026),
                 status: SyncDeviceStatus.local,
               ),
+            ),
+            syncPairingStateProvider.overrideWith(
+              (ref) async => _pairingState(),
             ),
           ],
           child: MaterialApp(
@@ -78,6 +83,10 @@ void main() {
   testWidgets('manual sync export rejects mismatched passwords safely', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(800, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -90,6 +99,7 @@ void main() {
               status: SyncDeviceStatus.local,
             ),
           ),
+          syncPairingStateProvider.overrideWith((ref) async => _pairingState()),
         ],
         child: MaterialApp(
           theme: buildBacklogVaultDarkTheme(),
@@ -132,6 +142,74 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('manual sync shows paired group actions without LAN claims', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          syncFoundationReadyProvider.overrideWith(
+            (ref) async => _localDevice(),
+          ),
+          syncPairingStateProvider.overrideWith(
+            (ref) async => _pairingState(configured: true),
+          ),
+        ],
+        child: MaterialApp(
+          theme: buildBacklogVaultDarkTheme(),
+          home: const Scaffold(
+            body: SingleChildScrollView(child: ManualSyncSection()),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Grupo de sincronización configurado'), findsOneWidget);
+    expect(find.text('Grupo: Test group'), findsOneWidget);
+    expect(find.text('Dispositivos emparejados conocidos: 1'), findsOneWidget);
+    expect(find.text('Exportar invitación de emparejamiento'), findsOneWidget);
+    expect(find.text('Exportar con clave de grupo'), findsOneWidget);
+    expect(find.text('Importar desde grupo emparejado'), findsOneWidget);
+    expect(find.text('Salir del grupo de sincronización'), findsOneWidget);
+    expect(find.text('Sincronizar ahora'), findsNothing);
+    expect(find.text('Escanear QR'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+}
+
+LocalDeviceInfo _localDevice() => LocalDeviceInfo(
+  id: '11111111-1111-4111-8111-111111111111',
+  displayName: 'Test Windows device',
+  platform: 'windows',
+  createdAt: DateTime.utc(2026),
+  status: SyncDeviceStatus.local,
+);
+
+SyncPairingState _pairingState({bool configured = false}) {
+  final device = _localDevice();
+  return SyncPairingState(
+    localDevice: SyncPackageDevice(
+      deviceId: device.id,
+      displayName: device.displayName,
+      platform: device.platform,
+    ),
+    group:
+        configured
+            ? SyncGroupInfo(
+              id: '22222222-2222-4222-8222-222222222222',
+              displayName: 'Test group',
+              keyId: '33333333-3333-4333-8333-333333333333',
+              protocolVersion: 1,
+              status: 'active',
+              createdAt: DateTime.utc(2026),
+              updatedAt: DateTime.utc(2026),
+            )
+            : null,
+    pairedDeviceCount: configured ? 1 : 0,
+    hasGroupKey: configured,
+  );
 }
 
 class _FakeMetadataApiKeyStorage implements MetadataApiKeyStorage {
