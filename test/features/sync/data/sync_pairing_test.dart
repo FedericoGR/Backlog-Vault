@@ -69,6 +69,54 @@ void main() {
     },
   );
 
+  test('BVP1 pairing codec rejects corrupt headers and payloads', () async {
+    final codec = EncryptedPairingCodec(iterations: 1, random: Random(21));
+    final clear = utf8.encode(
+      '{"groupKey":"test_group_key_material","displayName":"My devices"}',
+    );
+    final encrypted = await codec.encrypt(clear, 'test pairing passphrase');
+    final payloadStart = _packagePayloadStart(encrypted);
+
+    Future<void> expectRejected(List<int> bytes) {
+      return expectLater(
+        codec.decrypt(bytes, 'test pairing passphrase'),
+        throwsA(isA<SyncPairingException>()),
+      );
+    }
+
+    await expectRejected(
+      _withPairingHeader(encrypted, (header) {
+        header['version'] = 2;
+        return header;
+      }),
+    );
+    await expectRejected(
+      _withPairingHeader(encrypted, (header) {
+        header['syncProtocolVersion'] = 2;
+        return header;
+      }),
+    );
+    await expectRejected(
+      _withPairingHeader(encrypted, (header) {
+        header['iterations'] = 999999999;
+        return header;
+      }),
+    );
+    await expectRejected(
+      _withPairingHeader(encrypted, (header) {
+        header['salt'] = base64Encode(List<int>.filled(16, 9));
+        return header;
+      }),
+    );
+    await expectRejected(encrypted.sublist(0, encrypted.length - 4));
+
+    final ciphertextTampered = [...encrypted]..[payloadStart + 12] ^= 0x20;
+    await expectRejected(ciphertextTampered);
+
+    final tagTampered = [...encrypted]..[encrypted.length - 1] ^= 0x20;
+    await expectRejected(tagTampered);
+  });
+
   test('create group stores only public metadata in SQLite', () async {
     final a = await _PairingHarness.create(_deviceA, seed: 2);
     addTearDown(a.close);
@@ -91,6 +139,31 @@ void main() {
       group.id,
     );
   });
+
+  test(
+    'orphan secure-storage keys do not enable group sync by themselves',
+    () async {
+      final a = await _PairingHarness.create(_deviceA, seed: 22);
+      addTearDown(a.close);
+      const orphanKeyId = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
+
+      await a.keys.save(orphanKeyId, List<int>.filled(32, 4));
+
+      final state = await a.manager.state();
+      expect(state.group, isNull);
+      expect(state.hasGroupKey, isFalse);
+      await expectLater(
+        a.syncPackages.exportWithGroupKey(),
+        throwsA(
+          isA<SyncPairingException>().having(
+            (error) => error.failure,
+            'failure',
+            SyncPairingFailure.noGroup,
+          ),
+        ),
+      );
+    },
+  );
 
   test(
     'encrypted invitation pairs another device and expires safely',
@@ -249,6 +322,13 @@ void main() {
         a.syncPackages.exportWithGroupKey(),
         throwsA(isA<SyncPairingException>()),
       );
+      final passwordPackage = await a.syncPackages.export(
+        password: 'test manual password',
+      );
+      expect(
+        a.syncCodec.inspect(passwordPackage.bytes).keyMode,
+        SyncPackageKeyMode.password,
+      );
 
       final replacement = await a.pairing.createGroup('Replacement group');
       expect(replacement.id, isNot(group.id));
@@ -329,6 +409,23 @@ void main() {
         )).count(SyncImportDisposition.alreadyApplied),
         1,
       );
+      await expectLater(
+        b.syncPackages.previewWithGroupKey(passwordPackage.bytes),
+        throwsA(
+          isA<SyncPairingException>().having(
+            (error) => error.failure,
+            'failure',
+            SyncPairingFailure.invalidInvitation,
+          ),
+        ),
+      );
+      await expectLater(
+        b.syncPackages.preview(
+          groupPackage.bytes,
+          password: 'test manual password',
+        ),
+        throwsA(isA<SyncPackageException>()),
+      );
     },
   );
 
@@ -351,6 +448,7 @@ void main() {
       );
       await c.pairing.createGroup('Other group');
       final package = await a.syncPackages.exportWithGroupKey();
+      final originalKey = await a.keys.read(group.keyId);
 
       await b.keys.delete(group.keyId);
       await expectLater(
@@ -362,6 +460,12 @@ void main() {
             SyncPairingFailure.keyMissing,
           ),
         ),
+      );
+      await b.keys.save(group.keyId, originalKey!);
+      final tampered = [...package.bytes]..[package.bytes.length - 1] ^= 0x20;
+      await expectLater(
+        b.syncPackages.previewWithGroupKey(tampered),
+        throwsA(isA<SyncPackageException>()),
       );
       await expectLater(
         c.syncPackages.previewWithGroupKey(package.bytes),
@@ -391,6 +495,37 @@ void main() {
     },
   );
 }
+
+List<int> _withPairingHeader(
+  List<int> bytes,
+  Map<String, Object?> Function(Map<String, Object?> header) edit,
+) {
+  final headerEnd = _packagePayloadStart(bytes);
+  final decoded =
+      jsonDecode(utf8.decode(bytes.sublist(8, headerEnd)))
+          as Map<String, Object?>;
+  final header = edit(Map<String, Object?>.from(decoded));
+  final headerBytes = utf8.encode(jsonEncode(header));
+  return [
+    ...bytes.take(4),
+    ..._uint32(headerBytes.length),
+    ...headerBytes,
+    ...bytes.sublist(headerEnd),
+  ];
+}
+
+int _packagePayloadStart(List<int> bytes) {
+  final headerLength =
+      (bytes[4] << 24) | (bytes[5] << 16) | (bytes[6] << 8) | bytes[7];
+  return 8 + headerLength;
+}
+
+List<int> _uint32(int value) => [
+  (value >> 24) & 0xff,
+  (value >> 16) & 0xff,
+  (value >> 8) & 0xff,
+  value & 0xff,
+];
 
 class _PairingHarness {
   _PairingHarness({
