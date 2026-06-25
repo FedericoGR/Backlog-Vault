@@ -143,40 +143,50 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('manual sync shows paired group actions without LAN claims', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          syncFoundationReadyProvider.overrideWith(
-            (ref) async => _localDevice(),
-          ),
-          syncPairingStateProvider.overrideWith(
-            (ref) async => _pairingState(configured: true),
-          ),
-        ],
-        child: MaterialApp(
-          theme: buildBacklogVaultDarkTheme(),
-          home: const Scaffold(
-            body: SingleChildScrollView(child: ManualSyncSection()),
+  testWidgets(
+    'manual sync shows paired LAN actions without future-feature claims',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            syncFoundationReadyProvider.overrideWith(
+              (ref) async => _localDevice(),
+            ),
+            syncPairingStateProvider.overrideWith(
+              (ref) async => _pairingState(configured: true),
+            ),
+          ],
+          child: MaterialApp(
+            theme: buildBacklogVaultDarkTheme(),
+            home: const Scaffold(
+              body: SingleChildScrollView(child: ManualSyncSection()),
+            ),
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text('Grupo de sincronización configurado'), findsOneWidget);
-    expect(find.text('Grupo: Test group'), findsOneWidget);
-    expect(find.text('Dispositivos emparejados conocidos: 1'), findsOneWidget);
-    expect(find.text('Exportar invitación de emparejamiento'), findsOneWidget);
-    expect(find.text('Exportar con clave de grupo'), findsOneWidget);
-    expect(find.text('Importar desde grupo emparejado'), findsOneWidget);
-    expect(find.text('Salir del grupo de sincronización'), findsOneWidget);
-    expect(find.text('Sincronizar ahora'), findsNothing);
-    expect(find.text('Escanear QR'), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
+      expect(find.text('Grupo de sincronización configurado'), findsOneWidget);
+      expect(find.text('Grupo: Test group'), findsOneWidget);
+      expect(
+        find.text('Dispositivos emparejados conocidos: 1'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Exportar invitación de emparejamiento'),
+        findsOneWidget,
+      );
+      expect(find.text('Exportar con clave de grupo'), findsOneWidget);
+      expect(find.text('Importar desde grupo emparejado'), findsOneWidget);
+      expect(find.text('Salir del grupo de sincronización'), findsOneWidget);
+      expect(find.text('Sync por red local'), findsOneWidget);
+      expect(find.text('Iniciar sesión LAN'), findsOneWidget);
+      expect(find.text('Conectarse a sesión LAN'), findsOneWidget);
+      expect(find.text('Sincronizar ahora'), findsNothing);
+      expect(find.text('Escanear QR'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
 
 LocalDeviceInfo _localDevice() => LocalDeviceInfo(

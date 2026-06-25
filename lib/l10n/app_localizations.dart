@@ -3625,7 +3625,7 @@ abstract class AppLocalizations {
   /// No description provided for @syncSectionDescription.
   ///
   /// In en, this message translates to:
-  /// **'Encrypted device-to-device change exchange without accounts, cloud, or a network connection.'**
+  /// **'Encrypted device-to-device change exchange without accounts or cloud. Manual file packages and local network sync are available.'**
   String get syncSectionDescription;
 
   /// No description provided for @syncFoundationReady.
@@ -3841,7 +3841,7 @@ abstract class AppLocalizations {
   /// No description provided for @syncPairingDescription.
   ///
   /// In en, this message translates to:
-  /// **'Pairing lets you use sync packages without typing a password every time. Local network sync will come in a later stage.'**
+  /// **'Pairing lets you use sync packages without typing a password every time and enables manual local network sync.'**
   String get syncPairingDescription;
 
   /// No description provided for @syncNoGroup.
@@ -4033,8 +4033,206 @@ abstract class AppLocalizations {
   /// No description provided for @syncNoAutomaticSync.
   ///
   /// In en, this message translates to:
-  /// **'Pairing does not synchronize automatically and does not enable LAN sync yet.'**
+  /// **'Pairing does not synchronize automatically and does not enable background sync.'**
   String get syncNoAutomaticSync;
+
+  /// No description provided for @syncLanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Local network sync'**
+  String get syncLanTitle;
+
+  /// No description provided for @syncLanDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a temporary LAN session on one paired device, then connect from the other device with the shown IP, port, and session code.'**
+  String get syncLanDescription;
+
+  /// No description provided for @syncLanPairFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair devices first. LAN sync requires a sync group and its group key in secure storage.'**
+  String get syncLanPairFirst;
+
+  /// No description provided for @syncLanMediaNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover files are not transferred by LAN sync yet.'**
+  String get syncLanMediaNotice;
+
+  /// No description provided for @syncLanStartSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Start LAN sync session'**
+  String get syncLanStartSession;
+
+  /// No description provided for @syncLanStopSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop session'**
+  String get syncLanStopSession;
+
+  /// No description provided for @syncLanConnectSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to LAN sync session'**
+  String get syncLanConnectSession;
+
+  /// No description provided for @syncLanWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for a paired device.'**
+  String get syncLanWaiting;
+
+  /// No description provided for @syncLanHostAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Host/IP: {host}'**
+  String syncLanHostAddress(Object host);
+
+  /// No description provided for @syncLanPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Port: {port}'**
+  String syncLanPort(Object port);
+
+  /// No description provided for @syncLanSessionCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Session code: {code}'**
+  String syncLanSessionCode(Object code);
+
+  /// No description provided for @syncLanHostDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Host device: {name}'**
+  String syncLanHostDevice(Object name);
+
+  /// No description provided for @syncLanClientHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the host/IP, port, and session code shown on the other paired device.'**
+  String get syncLanClientHelp;
+
+  /// No description provided for @syncLanHostField.
+  ///
+  /// In en, this message translates to:
+  /// **'IP or host'**
+  String get syncLanHostField;
+
+  /// No description provided for @syncLanPortField.
+  ///
+  /// In en, this message translates to:
+  /// **'Port'**
+  String get syncLanPortField;
+
+  /// No description provided for @syncLanSessionCodeField.
+  ///
+  /// In en, this message translates to:
+  /// **'Session code'**
+  String get syncLanSessionCodeField;
+
+  /// No description provided for @syncLanConnectAndSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect and sync'**
+  String get syncLanConnectAndSync;
+
+  /// No description provided for @syncLanInvalidInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a host, valid port, and session code.'**
+  String get syncLanInvalidInput;
+
+  /// No description provided for @syncLanInvalidSessionCode.
+  ///
+  /// In en, this message translates to:
+  /// **'The session code was rejected.'**
+  String get syncLanInvalidSessionCode;
+
+  /// No description provided for @syncLanRequestTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'The LAN sync request is too large.'**
+  String get syncLanRequestTooLarge;
+
+  /// No description provided for @syncLanTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The LAN sync session timed out.'**
+  String get syncLanTimeout;
+
+  /// No description provided for @syncLanFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The LAN sync session could not be completed.'**
+  String get syncLanFailed;
+
+  /// No description provided for @syncLanStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'LAN sync session stopped.'**
+  String get syncLanStopped;
+
+  /// No description provided for @syncLanResultPeer.
+  ///
+  /// In en, this message translates to:
+  /// **'Peer: {name}'**
+  String syncLanResultPeer(Object name);
+
+  /// No description provided for @syncLanResultSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes sent: {count}'**
+  String syncLanResultSent(Object count);
+
+  /// No description provided for @syncLanResultReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes received: {count}'**
+  String syncLanResultReceived(Object count);
+
+  /// No description provided for @syncLanResultApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied locally: {count}'**
+  String syncLanResultApplied(Object count);
+
+  /// No description provided for @syncLanResultAlreadyApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Already applied locally: {count}'**
+  String syncLanResultAlreadyApplied(Object count);
+
+  /// No description provided for @syncLanResultConflicts.
+  ///
+  /// In en, this message translates to:
+  /// **'Local conflicts skipped: {count}'**
+  String syncLanResultConflicts(Object count);
+
+  /// No description provided for @syncLanResultPendingMedia.
+  ///
+  /// In en, this message translates to:
+  /// **'Local pending cover files: {count}'**
+  String syncLanResultPendingMedia(Object count);
+
+  /// No description provided for @syncLanPeerApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Peer applied: {count}'**
+  String syncLanPeerApplied(Object count);
+
+  /// No description provided for @syncLanPeerConflicts.
+  ///
+  /// In en, this message translates to:
+  /// **'Peer conflicts skipped: {count}'**
+  String syncLanPeerConflicts(Object count);
+
+  /// No description provided for @syncLanPeerPendingMedia.
+  ///
+  /// In en, this message translates to:
+  /// **'Peer pending cover files: {count}'**
+  String syncLanPeerPendingMedia(Object count);
 }
 
 class _AppLocalizationsDelegate

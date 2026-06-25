@@ -16,6 +16,9 @@ void main() {
     expect(english.syncCreateGroup, 'Create sync group');
     expect(english.syncExportInvitation, 'Export pairing invitation');
     expect(english.syncNoAutomaticSync, contains('does not synchronize'));
+    expect(english.syncLanTitle, 'Local network sync');
+    expect(english.syncLanStartSession, 'Start LAN sync session');
+    expect(english.syncLanMediaNotice, contains('not transferred'));
 
     expect(spanish.navigationLibrary, 'Biblioteca');
     expect(spanish.settingsTitle, 'Ajustes');
@@ -29,5 +32,8 @@ void main() {
       'Exportar invitación de emparejamiento',
     );
     expect(spanish.syncNoAutomaticSync, contains('no sincroniza'));
+    expect(spanish.syncLanTitle, 'Sync por red local');
+    expect(spanish.syncLanStartSession, 'Iniciar sesión LAN');
+    expect(spanish.syncLanMediaNotice, contains('todavía no se transfieren'));
   });
 }

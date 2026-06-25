@@ -1,12 +1,12 @@
 # Secure PC ↔ Android sync roadmap
 
-Status: deterministic sync foundation, encrypted `.vaultsync` packages, and manual `.vaultpair` device pairing with secure-storage group keys are implemented. QR, network transport, conflict-resolution UI, and media-byte transfer remain future work.
+Status: deterministic sync foundation, encrypted `.vaultsync` packages, manual `.vaultpair` device pairing with secure-storage group keys, and manual paired LAN sync are implemented. QR scanning, automatic discovery, background sync, conflict-resolution UI, cloud transport, and media-byte transfer remain future work.
 
 ## Principles
 
 1. **Local-first:** SQLite and media on each device remain authoritative local working copies.
 2. **No account required:** pairing and sync must work without a Backlog Vault backend.
-3. **End-to-end confidentiality:** sync payloads are encrypted before transport and decrypted only by a user holding the package password; future pairing will replace manual passwords with managed sync keys.
+3. **End-to-end confidentiality:** sync payloads are encrypted before transport and decrypted only by a user holding the package password or a paired device holding the group key.
 4. **Conservative writes:** ambiguous conflicts are visible; no silent hard delete or last-writer-wins data loss.
 5. **Transport independence:** package format, encryption, and merge logic must not depend on LAN, file sharing, or future cloud transport.
 6. **Recoverability:** every apply operation should be previewable and protected by a local safety snapshot.
@@ -40,14 +40,23 @@ Implemented in E21:
 - Export/import a dedicated `BVP1` `.vaultpair` invitation encrypted with a temporary password and expiring after 24 hours.
 - Keep legacy password-mode `.vaultsync` while allowing authenticated group-key packages without repeated password entry.
 - Leave/revoke locally by deleting the group key without deleting the library or changelog.
-- QR rendering/scanning and network transport remain explicitly unavailable.
+- QR rendering/scanning remains explicitly unavailable; LAN transport is a separate manual stage implemented in E22.
 
 ### Stage 3 — LAN transport
 
-- Discover or address a paired device on the local network.
-- Authenticate both endpoints before exchanging encrypted packages.
-- Keep the same package validation, preview, and conflict engine as manual sync.
-- Treat LAN as untrusted: encryption and authentication remain mandatory.
+Implemented in E22:
+
+- Address a paired device manually on the local network with host IP, port, and a short session code.
+- Run a temporary HTTP host/client session; the server shuts down when the session completes or is stopped.
+- Authenticate session messages with HMAC-SHA256 proofs derived from the stored sync group key; the group key itself never travels.
+- Exchange the same group-encrypted `.vaultsync` packages used by manual file sync.
+- Keep the same package validation, preview/apply, idempotency, conflict, and pending-media behavior as manual sync.
+- Treat LAN as untrusted: library payloads are still encrypted and authenticated before they leave the device.
+
+Current limitations:
+
+- No QR scanner, mDNS, automatic discovery, background sync, cloud relay, or media-byte transfer.
+- The user must start a host session and manually enter IP, port, and session code on the client.
 
 ### Stage 4 — Optional cloud transport
 
@@ -90,8 +99,9 @@ Implemented in E21:
 1. Completed: threat model, device identity, change schema, causal state, and tombstone rules.
 2. Completed: versioned encrypted manual packages, preview, conservative apply, and cross-device fixtures.
 3. Completed E21: manual pairing, group-key lifecycle in secure storage, group package authentication, and local leave/revocation.
-4. E21.5/E22: pairing hardening, optional fingerprint verification, and authenticated LAN transport reusing the same package and apply engine.
-5. E23: hash-addressed media-byte transfer and visible conflict-resolution workflows.
-6. E24: performance, recovery, security, Windows/Android, and v0.2 stabilization.
+4. Completed E22: authenticated manual LAN transport reusing the same package and apply engine.
+5. E22.5: LAN hardening, endpoint UX polish, timeout/error coverage, and optional fingerprint verification.
+6. E23: hash-addressed media-byte transfer and visible conflict-resolution workflows.
+7. E24: performance, recovery, security, Windows/Android, and v0.2 stabilization.
 
 Each stage should preserve Windows, Android, metadata, covers, backup/restore, bulk import, gallery, statistics, and the current RC behavior before advancing.

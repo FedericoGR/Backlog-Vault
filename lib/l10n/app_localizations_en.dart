@@ -1986,7 +1986,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syncSectionDescription =>
-      'Encrypted device-to-device change exchange without accounts, cloud, or a network connection.';
+      'Encrypted device-to-device change exchange without accounts or cloud. Manual file packages and local network sync are available.';
 
   @override
   String get syncFoundationReady => 'Technical foundation ready';
@@ -2124,7 +2124,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syncPairingDescription =>
-      'Pairing lets you use sync packages without typing a password every time. Local network sync will come in a later stage.';
+      'Pairing lets you use sync packages without typing a password every time and enables manual local network sync.';
 
   @override
   String get syncNoGroup => 'No sync group configured';
@@ -2236,5 +2236,137 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syncNoAutomaticSync =>
-      'Pairing does not synchronize automatically and does not enable LAN sync yet.';
+      'Pairing does not synchronize automatically and does not enable background sync.';
+
+  @override
+  String get syncLanTitle => 'Local network sync';
+
+  @override
+  String get syncLanDescription =>
+      'Start a temporary LAN session on one paired device, then connect from the other device with the shown IP, port, and session code.';
+
+  @override
+  String get syncLanPairFirst =>
+      'Pair devices first. LAN sync requires a sync group and its group key in secure storage.';
+
+  @override
+  String get syncLanMediaNotice =>
+      'Cover files are not transferred by LAN sync yet.';
+
+  @override
+  String get syncLanStartSession => 'Start LAN sync session';
+
+  @override
+  String get syncLanStopSession => 'Stop session';
+
+  @override
+  String get syncLanConnectSession => 'Connect to LAN sync session';
+
+  @override
+  String get syncLanWaiting => 'Waiting for a paired device.';
+
+  @override
+  String syncLanHostAddress(Object host) {
+    return 'Host/IP: $host';
+  }
+
+  @override
+  String syncLanPort(Object port) {
+    return 'Port: $port';
+  }
+
+  @override
+  String syncLanSessionCode(Object code) {
+    return 'Session code: $code';
+  }
+
+  @override
+  String syncLanHostDevice(Object name) {
+    return 'Host device: $name';
+  }
+
+  @override
+  String get syncLanClientHelp =>
+      'Enter the host/IP, port, and session code shown on the other paired device.';
+
+  @override
+  String get syncLanHostField => 'IP or host';
+
+  @override
+  String get syncLanPortField => 'Port';
+
+  @override
+  String get syncLanSessionCodeField => 'Session code';
+
+  @override
+  String get syncLanConnectAndSync => 'Connect and sync';
+
+  @override
+  String get syncLanInvalidInput =>
+      'Enter a host, valid port, and session code.';
+
+  @override
+  String get syncLanInvalidSessionCode => 'The session code was rejected.';
+
+  @override
+  String get syncLanRequestTooLarge => 'The LAN sync request is too large.';
+
+  @override
+  String get syncLanTimeout => 'The LAN sync session timed out.';
+
+  @override
+  String get syncLanFailed => 'The LAN sync session could not be completed.';
+
+  @override
+  String get syncLanStopped => 'LAN sync session stopped.';
+
+  @override
+  String syncLanResultPeer(Object name) {
+    return 'Peer: $name';
+  }
+
+  @override
+  String syncLanResultSent(Object count) {
+    return 'Changes sent: $count';
+  }
+
+  @override
+  String syncLanResultReceived(Object count) {
+    return 'Changes received: $count';
+  }
+
+  @override
+  String syncLanResultApplied(Object count) {
+    return 'Applied locally: $count';
+  }
+
+  @override
+  String syncLanResultAlreadyApplied(Object count) {
+    return 'Already applied locally: $count';
+  }
+
+  @override
+  String syncLanResultConflicts(Object count) {
+    return 'Local conflicts skipped: $count';
+  }
+
+  @override
+  String syncLanResultPendingMedia(Object count) {
+    return 'Local pending cover files: $count';
+  }
+
+  @override
+  String syncLanPeerApplied(Object count) {
+    return 'Peer applied: $count';
+  }
+
+  @override
+  String syncLanPeerConflicts(Object count) {
+    return 'Peer conflicts skipped: $count';
+  }
+
+  @override
+  String syncLanPeerPendingMedia(Object count) {
+    return 'Peer pending cover files: $count';
+  }
 }

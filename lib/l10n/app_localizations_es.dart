@@ -1992,7 +1992,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get syncSectionDescription =>
-      'Intercambio cifrado de cambios entre dispositivos, sin cuenta, cloud ni conexión de red.';
+      'Intercambio cifrado de cambios entre dispositivos, sin cuenta ni cloud. Están disponibles paquetes manuales y sync por red local.';
 
   @override
   String get syncFoundationReady => 'Base técnica preparada';
@@ -2130,7 +2130,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get syncPairingDescription =>
-      'El emparejamiento permite usar paquetes de sincronización sin escribir una contraseña cada vez. La sincronización por red local llegará en una etapa posterior.';
+      'El emparejamiento permite usar paquetes de sincronización sin escribir una contraseña cada vez y habilita sync manual por red local.';
 
   @override
   String get syncNoGroup => 'No hay un grupo de sincronización configurado';
@@ -2248,5 +2248,139 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get syncNoAutomaticSync =>
-      'El emparejamiento no sincroniza automáticamente ni habilita sync por LAN todavía.';
+      'El emparejamiento no sincroniza automáticamente ni habilita sync en segundo plano.';
+
+  @override
+  String get syncLanTitle => 'Sync por red local';
+
+  @override
+  String get syncLanDescription =>
+      'Iniciá una sesión LAN temporal en un dispositivo emparejado y conectate desde el otro con la IP, puerto y código de sesión mostrados.';
+
+  @override
+  String get syncLanPairFirst =>
+      'Primero emparejá los dispositivos. El sync LAN requiere un grupo de sincronización y su clave en secure storage.';
+
+  @override
+  String get syncLanMediaNotice =>
+      'Los archivos de portada todavía no se transfieren por sync LAN.';
+
+  @override
+  String get syncLanStartSession => 'Iniciar sesión LAN';
+
+  @override
+  String get syncLanStopSession => 'Detener sesión';
+
+  @override
+  String get syncLanConnectSession => 'Conectarse a sesión LAN';
+
+  @override
+  String get syncLanWaiting => 'Esperando un dispositivo emparejado.';
+
+  @override
+  String syncLanHostAddress(Object host) {
+    return 'Host/IP: $host';
+  }
+
+  @override
+  String syncLanPort(Object port) {
+    return 'Puerto: $port';
+  }
+
+  @override
+  String syncLanSessionCode(Object code) {
+    return 'Código de sesión: $code';
+  }
+
+  @override
+  String syncLanHostDevice(Object name) {
+    return 'Dispositivo host: $name';
+  }
+
+  @override
+  String get syncLanClientHelp =>
+      'Ingresá la IP/host, puerto y código de sesión que muestra el otro dispositivo emparejado.';
+
+  @override
+  String get syncLanHostField => 'IP o host';
+
+  @override
+  String get syncLanPortField => 'Puerto';
+
+  @override
+  String get syncLanSessionCodeField => 'Código de sesión';
+
+  @override
+  String get syncLanConnectAndSync => 'Conectar y sincronizar';
+
+  @override
+  String get syncLanInvalidInput =>
+      'Ingresá un host, puerto válido y código de sesión.';
+
+  @override
+  String get syncLanInvalidSessionCode => 'El código de sesión fue rechazado.';
+
+  @override
+  String get syncLanRequestTooLarge =>
+      'La solicitud de sync LAN es demasiado grande.';
+
+  @override
+  String get syncLanTimeout =>
+      'La sesión de sync LAN agotó el tiempo de espera.';
+
+  @override
+  String get syncLanFailed => 'No se pudo completar la sesión de sync LAN.';
+
+  @override
+  String get syncLanStopped => 'Sesión de sync LAN detenida.';
+
+  @override
+  String syncLanResultPeer(Object name) {
+    return 'Par: $name';
+  }
+
+  @override
+  String syncLanResultSent(Object count) {
+    return 'Cambios enviados: $count';
+  }
+
+  @override
+  String syncLanResultReceived(Object count) {
+    return 'Cambios recibidos: $count';
+  }
+
+  @override
+  String syncLanResultApplied(Object count) {
+    return 'Aplicados localmente: $count';
+  }
+
+  @override
+  String syncLanResultAlreadyApplied(Object count) {
+    return 'Ya aplicados localmente: $count';
+  }
+
+  @override
+  String syncLanResultConflicts(Object count) {
+    return 'Conflictos locales omitidos: $count';
+  }
+
+  @override
+  String syncLanResultPendingMedia(Object count) {
+    return 'Portadas locales pendientes: $count';
+  }
+
+  @override
+  String syncLanPeerApplied(Object count) {
+    return 'El otro dispositivo aplicó: $count';
+  }
+
+  @override
+  String syncLanPeerConflicts(Object count) {
+    return 'Conflictos omitidos en el otro dispositivo: $count';
+  }
+
+  @override
+  String syncLanPeerPendingMedia(Object count) {
+    return 'Portadas pendientes en el otro dispositivo: $count';
+  }
 }

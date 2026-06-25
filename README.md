@@ -17,6 +17,7 @@ Backlog Vault is an offline-first videogame backlog manager for Windows and Andr
 - Regular `.vaultbackup` and encrypted `.vaultbackup.enc` backups.
 - Password-encrypted `.vaultsync` change packages with preview, deduplication, and conservative conflict handling.
 - Password-encrypted `.vaultpair` invitations for manual device pairing and reusable group-key `.vaultsync` packages.
+- Manual local-network sync for paired devices using a temporary host/client session.
 - Conservative backup restore with an automatic pre-restore backup.
 - Home dashboard and library statistics.
 - System, light, dark, and OLED-friendly UI behavior.
@@ -30,8 +31,8 @@ Backlog Vault is an offline-first videogame backlog manager for Windows and Andr
 - Encrypted backups are available and should be used when a backup leaves the device.
 - Provider credentials are stored with the operating system's secure storage.
 - RAWG keys, IGDB/Twitch credentials and tokens, and SteamGridDB keys are excluded from backups and exports.
-- Manual encrypted change packages are available. Pairing, automatic sync, LAN, cloud, and media-file transfer are not available yet.
-- Manual device pairing is available; it does not enable automatic, LAN, cloud, or background synchronization.
+- Manual encrypted change packages and local-network sync for paired devices are available.
+- Manual device pairing enables reusable group-key packages and manual LAN sessions; it does not enable automatic, background, cloud, QR, discovery, or media-file transfer.
 - The random 256-bit sync group key is stored only in each paired device's operating-system secure storage and never enters library backups.
 
 See [install and portability](docs/install_and_portability.md) for the current data-transfer workflow.
@@ -99,7 +100,7 @@ Never commit real keys, client secrets, bearer tokens, access tokens, `.secure` 
 - Restore is complete and conservative: current records absent from the backup are soft-deleted, not physically erased.
 - Provider credentials and secure-storage values never travel in backups.
 
-Use `.vaultbackup.enc` for full migration, disaster recovery, or copying the complete library with media. Use `.vaultpair` to establish a shared group key, then `.vaultsync` to exchange library changes without typing a password each time. Password-mode `.vaultsync` remains available. Pairing invitations expire after 24 hours; share the file and temporary password through separate trusted channels. Conflicts are reported and skipped, and cover files are not transferred. Configure provider credentials separately on each device.
+Use `.vaultbackup.enc` for full migration, disaster recovery, or copying the complete library with media. Use `.vaultpair` to establish a shared group key, then `.vaultsync` files or **Settings → Sync → Local network sync** to exchange library changes without typing a password each time. Password-mode `.vaultsync` remains available. Pairing invitations expire after 24 hours; share the file and temporary password through separate trusted channels. LAN sync requires both devices on the same local network and a host IP, port, and session code. Conflicts are reported and skipped, and cover files are not transferred. Configure provider credentials separately on each device.
 
 ## Language
 
@@ -113,14 +114,15 @@ The preference is stored per device and is not part of the library database or b
 
 ## Sync roadmap
 
-Manual password and paired-group sync packages are implemented. They require no account, backend, or network connection.
+Manual password packages, paired-group packages, and paired LAN sync sessions are implemented. They require no account, backend, or cloud. Manual LAN sync requires both devices on the same local network and uses a temporary host/client session.
 
 - v0.1.x: stabilization, bilingual UI, backup/restore hardening.
 - v0.2 foundation: deterministic change tracking and manual encrypted PC ↔ Android sync packages.
 - Manual `.vaultpair` pairing with the sync key in secure storage; QR remains future work.
+- Manual LAN transport for paired devices using IP, port, and a short session code.
 - Media addressed by hash and transferred without creating broken cover references.
 - Visible, conservative conflict resolution with no silent destructive merge.
-- LAN transport after the manual package workflow is stable.
+- QR, automatic discovery, background sync, and media-byte transfer remain future work.
 - No cloud dependency in the first sync stage.
 - Optional cloud transport with end-to-end encryption only as a later possibility.
 

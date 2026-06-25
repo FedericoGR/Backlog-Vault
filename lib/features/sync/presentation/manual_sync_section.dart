@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,6 +10,8 @@ import '../../../core/design_system/bv_spacing.dart';
 import '../../../core/design_system/bv_status_banner.dart';
 import '../../../l10n/l10n.dart';
 import '../application/sync_providers.dart';
+import '../data/lan_sync_service.dart';
+import '../domain/lan_sync_models.dart';
 import '../domain/sync_package_models.dart';
 import '../domain/sync_pairing_models.dart';
 
@@ -21,6 +25,14 @@ class ManualSyncSection extends ConsumerStatefulWidget {
 class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
   bool _busy = false;
   String? _result;
+  LanSyncHostSession? _hostSession;
+
+  @override
+  void dispose() {
+    final session = _hostSession;
+    if (session != null) unawaited(session.stop());
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +78,8 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
             ),
             const SizedBox(height: BvSpacing.md),
             _buildPairingState(pairing),
+            const SizedBox(height: BvSpacing.md),
+            _buildLanSyncState(pairing),
             const SizedBox(height: BvSpacing.md),
             BvStatusBanner(
               title: context.l10n.syncEncryptedNotice,
@@ -200,6 +214,75 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
                     icon: const Icon(Icons.link_off_outlined),
                     label: Text(context.l10n.syncLeaveGroup),
                   ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildLanSyncState(AsyncValue<SyncPairingState> pairing) {
+    return pairing.when(
+      loading:
+          () => BvProgressPanel(
+            title: context.l10n.syncLanTitle,
+            subtitle: context.l10n.syncLanDescription,
+          ),
+      error:
+          (_, _) => BvStatusBanner(
+            title: context.l10n.syncLanTitle,
+            tone: BvBannerTone.warning,
+            message: context.l10n.syncLanFailed,
+          ),
+      data: (state) {
+        final group = state.group;
+        final session = _hostSession;
+        final canUseLan = group != null && state.hasGroupKey;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            BvStatusBanner(
+              title: context.l10n.syncLanTitle,
+              tone: canUseLan ? BvBannerTone.info : BvBannerTone.warning,
+              message:
+                  canUseLan
+                      ? '${context.l10n.syncLanDescription}\n'
+                          '${context.l10n.syncLanMediaNotice}'
+                      : context.l10n.syncLanPairFirst,
+            ),
+            if (session != null) ...[
+              const SizedBox(height: BvSpacing.sm),
+              Text(context.l10n.syncLanWaiting),
+              Text(context.l10n.syncLanHostAddress(session.host)),
+              Text(context.l10n.syncLanPort(session.port)),
+              Text(context.l10n.syncLanSessionCode(session.sessionCode)),
+              Text(
+                context.l10n.syncLanHostDevice(session.localDevice.displayName),
+              ),
+            ],
+            const SizedBox(height: BvSpacing.sm),
+            Wrap(
+              spacing: BvSpacing.sm,
+              runSpacing: BvSpacing.sm,
+              children: [
+                if (session == null)
+                  FilledButton.icon(
+                    onPressed: _busy || !canUseLan ? null : _startLanSession,
+                    icon: const Icon(Icons.wifi_tethering_outlined),
+                    label: Text(context.l10n.syncLanStartSession),
+                  ),
+                if (session != null)
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : _stopLanSession,
+                    icon: const Icon(Icons.stop_circle_outlined),
+                    label: Text(context.l10n.syncLanStopSession),
+                  ),
+                OutlinedButton.icon(
+                  onPressed: _busy || !canUseLan ? null : _connectLanSession,
+                  icon: const Icon(Icons.lan_outlined),
+                  label: Text(context.l10n.syncLanConnectSession),
+                ),
               ],
             ),
           ],
@@ -358,6 +441,79 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
       );
     } on Object catch (error) {
       _handlePairingFailure(error);
+    }
+  }
+
+  Future<void> _startLanSession() async {
+    setState(() => _busy = true);
+    try {
+      final session = await ref.read(lanSyncServiceProvider).startHost();
+      if (!mounted) {
+        await session.stop();
+        return;
+      }
+      setState(() {
+        _busy = false;
+        _hostSession = session;
+        _result = context.l10n.syncLanWaiting;
+      });
+      unawaited(
+        session.completed
+            .then((result) {
+              if (!mounted || _hostSession != session) return;
+              setState(() => _hostSession = null);
+              ref.invalidate(syncPairingStateProvider);
+              _finishWithMessage(_formatLanResult(result));
+            })
+            .catchError((Object error) {
+              if (!mounted || _hostSession != session) return;
+              setState(() {
+                _busy = false;
+                _hostSession = null;
+              });
+              if (error is LanSyncException &&
+                  error.failure == LanSyncFailure.stopped) {
+                _finishWithMessage(context.l10n.syncLanStopped);
+              } else {
+                _handleLanFailure(error);
+              }
+            }),
+      );
+    } on Object catch (error) {
+      _handleLanFailure(error);
+    }
+  }
+
+  Future<void> _stopLanSession() async {
+    final session = _hostSession;
+    if (session == null) return;
+    setState(() => _busy = true);
+    await session.stop();
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _hostSession = null;
+      _result = context.l10n.syncLanStopped;
+    });
+  }
+
+  Future<void> _connectLanSession() async {
+    final input = await _askLanConnection();
+    if (input == null || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      final result = await ref
+          .read(lanSyncServiceProvider)
+          .connectAndSync(
+            host: input.host,
+            port: input.port,
+            sessionCode: input.sessionCode,
+          );
+      if (!mounted) return;
+      ref.invalidate(syncPairingStateProvider);
+      _finishWithMessage(_formatLanResult(result));
+    } on Object catch (error) {
+      _handleLanFailure(error);
     }
   }
 
@@ -626,6 +782,90 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
     ).whenComplete(controller.dispose);
   }
 
+  Future<_LanConnectionInput?> _askLanConnection() {
+    final host = TextEditingController();
+    final port = TextEditingController();
+    final code = TextEditingController();
+    String? error;
+    return showDialog<_LanConnectionInput>(
+      context: context,
+      builder:
+          (context) => StatefulBuilder(
+            builder:
+                (context, setDialogState) => AlertDialog(
+                  title: Text(context.l10n.syncLanConnectSession),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(context.l10n.syncLanClientHelp),
+                        const SizedBox(height: BvSpacing.md),
+                        TextField(
+                          controller: host,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            labelText: context.l10n.syncLanHostField,
+                            errorText: error,
+                          ),
+                        ),
+                        const SizedBox(height: BvSpacing.sm),
+                        TextField(
+                          controller: port,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: context.l10n.syncLanPortField,
+                          ),
+                        ),
+                        const SizedBox(height: BvSpacing.sm),
+                        TextField(
+                          controller: code,
+                          decoration: InputDecoration(
+                            labelText: context.l10n.syncLanSessionCodeField,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(context.l10n.cancel),
+                    ),
+                    FilledButton(
+                      onPressed: () {
+                        final parsedPort = int.tryParse(port.text.trim());
+                        if (host.text.trim().isEmpty ||
+                            parsedPort == null ||
+                            parsedPort <= 0 ||
+                            parsedPort > 65535 ||
+                            code.text.trim().isEmpty) {
+                          setDialogState(
+                            () => error = context.l10n.syncLanInvalidInput,
+                          );
+                          return;
+                        }
+                        Navigator.pop(
+                          context,
+                          _LanConnectionInput(
+                            host: host.text.trim(),
+                            port: parsedPort,
+                            sessionCode: code.text.trim(),
+                          ),
+                        );
+                      },
+                      child: Text(context.l10n.syncLanConnectAndSync),
+                    ),
+                  ],
+                ),
+          ),
+    ).whenComplete(() {
+      host.dispose();
+      port.dispose();
+      code.dispose();
+    });
+  }
+
   String _shortId(String id) => id.length <= 8 ? id : '${id.substring(0, 8)}…';
 
   void _handleFailure() {
@@ -660,6 +900,53 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
     _showMessage(message);
   }
 
+  void _handleLanFailure(Object error) {
+    if (!mounted) return;
+    final message = switch (error) {
+      LanSyncException(failure: LanSyncFailure.notPaired) =>
+        context.l10n.syncLanPairFirst,
+      LanSyncException(failure: LanSyncFailure.keyMissing) =>
+        context.l10n.syncGroupKeyMissing,
+      LanSyncException(failure: LanSyncFailure.invalidSessionCode) =>
+        context.l10n.syncLanInvalidSessionCode,
+      LanSyncException(failure: LanSyncFailure.groupMismatch) =>
+        context.l10n.syncGroupPackageMismatch,
+      LanSyncException(failure: LanSyncFailure.keyIdMismatch) =>
+        context.l10n.syncGroupKeyMismatch,
+      LanSyncException(failure: LanSyncFailure.requestTooLarge) =>
+        context.l10n.syncLanRequestTooLarge,
+      LanSyncException(failure: LanSyncFailure.timeout) =>
+        context.l10n.syncLanTimeout,
+      _ => context.l10n.syncLanFailed,
+    };
+    setState(() {
+      _busy = false;
+      _result = null;
+    });
+    _showMessage(message);
+  }
+
+  String _formatLanResult(LanSyncResult result) {
+    final l10n = context.l10n;
+    final local = result.local;
+    final lines = [
+      l10n.syncLanResultPeer(result.peerDevice.displayName),
+      l10n.syncLanResultSent(local.changesSent),
+      l10n.syncLanResultReceived(local.changesReceived),
+      l10n.syncLanResultApplied(local.applied),
+      l10n.syncLanResultAlreadyApplied(local.alreadyApplied),
+      l10n.syncLanResultConflicts(local.conflicts),
+      l10n.syncLanResultPendingMedia(local.pendingMedia),
+    ];
+    final peer = result.peer;
+    if (peer != null) {
+      lines.add(l10n.syncLanPeerApplied(peer.applied));
+      lines.add(l10n.syncLanPeerConflicts(peer.conflicts));
+      lines.add(l10n.syncLanPeerPendingMedia(peer.pendingMedia));
+    }
+    return lines.join('\n');
+  }
+
   void _finishWithMessage(String message) {
     if (!mounted) return;
     setState(() {
@@ -675,4 +962,16 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
   }
+}
+
+class _LanConnectionInput {
+  const _LanConnectionInput({
+    required this.host,
+    required this.port,
+    required this.sessionCode,
+  });
+
+  final String host;
+  final int port;
+  final String sessionCode;
 }

@@ -17,6 +17,7 @@ Backlog Vault es un gestor offline-first de backlog de videojuegos para Windows 
 - Backups normales `.vaultbackup` y cifrados `.vaultbackup.enc`.
 - Paquetes de cambios `.vaultsync` cifrados con password, preview, deduplicación y manejo conservador de conflictos.
 - Invitaciones `.vaultpair` cifradas con password para pairing manual y paquetes `.vaultsync` con clave de grupo reutilizable.
+- Sync manual por red local para dispositivos emparejados con sesión temporal host/cliente.
 - Restore conservador con backup previo automático.
 - Home y estadísticas de biblioteca.
 - Tema claro/oscuro con diseño OLED-friendly.
@@ -30,7 +31,8 @@ Backlog Vault es un gestor offline-first de backlog de videojuegos para Windows 
 - Los backups cifrados están disponibles cuando el archivo sale del dispositivo.
 - Las credenciales de providers se guardan en el secure storage del sistema.
 - Claves RAWG, credenciales y tokens IGDB/Twitch, y claves SteamGridDB no se incluyen en backups ni exports.
-- Ya existen paquetes manuales cifrados y pairing manual. El pairing no habilita sync automático, LAN, cloud, background sync ni transferencia de media.
+- Ya existen paquetes manuales cifrados y sync por red local para dispositivos emparejados.
+- El pairing manual habilita paquetes con clave de grupo y sesiones LAN manuales; no habilita sync automático, background, cloud, QR, discovery ni transferencia de media.
 - La clave aleatoria de grupo de 256 bits vive únicamente en el secure storage del sistema de cada dispositivo emparejado y no entra en backups.
 
 ## Instalación
@@ -84,7 +86,7 @@ Nunca commitees claves, client secrets, bearer/access tokens, archivos `.secure`
 - El restore es completo y conservador: lo ausente se marca con borrado lógico, sin hard delete.
 - Las credenciales externas y el secure storage no viajan en backups.
 
-Usá `.vaultbackup.enc` para migración completa, recuperación o copia con media. Usá `.vaultpair` para establecer una clave de grupo compartida y después `.vaultsync` para intercambiar cambios sin escribir una password cada vez. El modo `.vaultsync` con password sigue disponible. Las invitaciones vencen después de 24 horas; compartí el archivo y la password temporal por canales confiables separados. Los conflictos se omiten de forma segura y las portadas no se transfieren. Las credenciales se configuran por separado.
+Usá `.vaultbackup.enc` para migración completa, recuperación o copia con media. Usá `.vaultpair` para establecer una clave de grupo compartida y después archivos `.vaultsync` o **Ajustes → Sync → Sync por red local** para intercambiar cambios sin escribir una password cada vez. El modo `.vaultsync` con password sigue disponible. Las invitaciones vencen después de 24 horas; compartí el archivo y la password temporal por canales confiables separados. El sync LAN requiere que ambos dispositivos estén en la misma red local y usar IP, puerto y código de sesión del host. Los conflictos se omiten de forma segura y las portadas no se transfieren. Las credenciales se configuran por separado.
 
 ## Idioma
 
@@ -92,13 +94,14 @@ La app detecta el idioma del sistema por default. En **Ajustes → Idioma** pod�
 
 ## Roadmap de sync
 
-Los paquetes manuales con password o clave de grupo emparejado están implementados y no requieren cuenta, backend ni red:
+Los paquetes manuales con password, los paquetes con clave de grupo emparejado y las sesiones LAN emparejadas están implementados. No requieren cuenta, backend ni cloud. El sync LAN manual requiere que ambos dispositivos estén en la misma red local:
 
 - v0.1.x: estabilización, UI bilingüe y hardening de backup/restore.
 - Foundation v0.2: change tracking determinista y paquetes manuales cifrados PC ↔ Android.
 - Pairing manual `.vaultpair` con clave en secure storage; QR queda para una etapa posterior.
+- Transporte LAN manual para dispositivos emparejados usando IP, puerto y código corto de sesión.
 - Media por hash sin referencias rotas y resolución visible de conflictos.
-- Transporte LAN después del flujo manual.
+- QR, discovery automático, background sync y transferencia real de bytes de media quedan para etapas posteriores.
 - Sin dependencia cloud al principio; cloud E2EE opcional mucho más adelante.
 
 Ver [docs/sync_roadmap.md](docs/sync_roadmap.md).

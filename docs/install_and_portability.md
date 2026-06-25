@@ -3,7 +3,7 @@
 Version: `0.1.0+3`
 Release candidate: `v0.1.0-rc3`
 
-Backlog Vault is local-first. App data, media, provider credentials, and language preferences live on each device unless library data is explicitly moved through a backup or encrypted sync package.
+Backlog Vault is local-first. App data, media, provider credentials, and language preferences live on each device unless library data is explicitly moved through a backup, encrypted sync package, or paired local-network sync session.
 
 ## Windows
 
@@ -47,7 +47,7 @@ The selected UI language is stored through platform preferences. It is device-lo
 
 ## PC ↔ Android transfer
 
-Automatic, LAN, and cloud sync do not exist yet. Manual pairing and manual file transfer provide three distinct workflows.
+Automatic/background sync, cloud sync, QR scanning, and automatic discovery do not exist yet. Manual file transfer, manual pairing, and paired LAN sync provide distinct workflows.
 
 For full migration or disaster recovery, including media:
 
@@ -72,9 +72,19 @@ To pair installations and avoid entering a password for every later package:
 1. Create a sync group on the first device under **Settings → Sync**.
 2. Export a `.vaultpair` invitation protected with a temporary password. It expires after 24 hours.
 3. Move the invitation to the second device and import it with that password.
-4. Exchange group-encrypted `.vaultsync` files manually. Preview and conflict rules remain unchanged.
+4. Exchange group-encrypted `.vaultsync` files manually or use paired LAN sync. Preview and conflict rules remain unchanged.
 
-The random group key is inside the encrypted invitation and is then stored only in OS secure storage. SQLite stores its public key ID, never the key. Share the invitation file and temporary password through separate trusted channels. Pairing does not start LAN or automatic sync. If secure storage is erased or a device leaves the group, it must be paired again. API keys and media files never travel in `.vaultpair`.
+The random group key is inside the encrypted invitation and is then stored only in OS secure storage. SQLite stores its public key ID, never the key. Share the invitation file and temporary password through separate trusted channels. Pairing enables group-encrypted sync packages and manual LAN sessions, but it does not start automatic/background sync. If secure storage is erased or a device leaves the group, it must be paired again. API keys and media files never travel in `.vaultpair`.
+
+For manual LAN sync after pairing:
+
+1. Put both devices on the same local network.
+2. On the host device, open **Settings → Sync → Local network sync** and start a LAN session.
+3. Note the displayed IP address, port, and short session code.
+4. On the client device, connect with those values and run the sync.
+5. Review the result summary. Safe changes are applied, duplicate changes are skipped, and conflicts or media-only changes are reported without overwriting local data.
+
+LAN sync moves group-encrypted `.vaultsync` payloads over the local network. It does not use cloud, does not run in the background, does not auto-discover devices yet, and does not transfer cover/media file bytes yet.
 
 ## Restore guarantees and limits
 
