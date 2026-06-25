@@ -2318,21 +2318,44 @@ class AppLocalizationsEs extends AppLocalizations {
       'Ingresá un host, puerto válido y código de sesión.';
 
   @override
-  String get syncLanInvalidSessionCode => 'El código de sesión fue rechazado.';
+  String get syncLanInvalidSessionCode => 'Código incorrecto o sesión vencida.';
+
+  @override
+  String get syncLanGroupMismatch =>
+      'El dispositivo pertenece a otro grupo de sincronización.';
+
+  @override
+  String get syncLanKeyMismatch =>
+      'La clave de sincronización no coincide. Volvé a emparejar este dispositivo.';
+
+  @override
+  String get syncLanProtocolMismatch =>
+      'La versión del protocolo de sync es incompatible.';
 
   @override
   String get syncLanRequestTooLarge =>
-      'La solicitud de sync LAN es demasiado grande.';
+      'El paquete de sincronización excede el tamaño máximo permitido.';
 
   @override
-  String get syncLanTimeout =>
-      'La sesión de sync LAN agotó el tiempo de espera.';
+  String get syncLanPackageRejected =>
+      'El paquete de sincronización está dañado o no se pudo verificar.';
+
+  @override
+  String get syncLanNetworkUnavailable =>
+      'No se pudo conectar con el dispositivo.';
+
+  @override
+  String get syncLanConnectionInterrupted =>
+      'La conexión se interrumpió antes de completar la sincronización.';
+
+  @override
+  String get syncLanTimeout => 'Tiempo de espera agotado.';
 
   @override
   String get syncLanFailed => 'No se pudo completar la sesión de sync LAN.';
 
   @override
-  String get syncLanStopped => 'Sesión de sync LAN detenida.';
+  String get syncLanStopped => 'La sincronización fue cancelada.';
 
   @override
   String syncLanResultPeer(Object name) {

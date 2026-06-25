@@ -4147,14 +4147,50 @@ abstract class AppLocalizations {
   /// No description provided for @syncLanInvalidSessionCode.
   ///
   /// In en, this message translates to:
-  /// **'The session code was rejected.'**
+  /// **'Incorrect code or expired session.'**
   String get syncLanInvalidSessionCode;
+
+  /// No description provided for @syncLanGroupMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'The device belongs to another sync group.'**
+  String get syncLanGroupMismatch;
+
+  /// No description provided for @syncLanKeyMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'The sync key does not match. Pair this device again.'**
+  String get syncLanKeyMismatch;
+
+  /// No description provided for @syncLanProtocolMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'The sync protocol version is incompatible.'**
+  String get syncLanProtocolMismatch;
 
   /// No description provided for @syncLanRequestTooLarge.
   ///
   /// In en, this message translates to:
-  /// **'The LAN sync request is too large.'**
+  /// **'The sync package exceeds the maximum allowed size.'**
   String get syncLanRequestTooLarge;
+
+  /// No description provided for @syncLanPackageRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'The sync package is damaged or could not be verified.'**
+  String get syncLanPackageRejected;
+
+  /// No description provided for @syncLanNetworkUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect to the device.'**
+  String get syncLanNetworkUnavailable;
+
+  /// No description provided for @syncLanConnectionInterrupted.
+  ///
+  /// In en, this message translates to:
+  /// **'The connection was interrupted before sync completed.'**
+  String get syncLanConnectionInterrupted;
 
   /// No description provided for @syncLanTimeout.
   ///
@@ -4171,7 +4207,7 @@ abstract class AppLocalizations {
   /// No description provided for @syncLanStopped.
   ///
   /// In en, this message translates to:
-  /// **'LAN sync session stopped.'**
+  /// **'The sync was cancelled.'**
   String get syncLanStopped;
 
   /// No description provided for @syncLanResultPeer.

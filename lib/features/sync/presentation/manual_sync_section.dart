@@ -910,13 +910,23 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
       LanSyncException(failure: LanSyncFailure.invalidSessionCode) =>
         context.l10n.syncLanInvalidSessionCode,
       LanSyncException(failure: LanSyncFailure.groupMismatch) =>
-        context.l10n.syncGroupPackageMismatch,
+        context.l10n.syncLanGroupMismatch,
       LanSyncException(failure: LanSyncFailure.keyIdMismatch) =>
-        context.l10n.syncGroupKeyMismatch,
+        context.l10n.syncLanKeyMismatch,
+      LanSyncException(failure: LanSyncFailure.protocolMismatch) =>
+        context.l10n.syncLanProtocolMismatch,
       LanSyncException(failure: LanSyncFailure.requestTooLarge) =>
         context.l10n.syncLanRequestTooLarge,
+      LanSyncException(failure: LanSyncFailure.packageRejected) =>
+        context.l10n.syncLanPackageRejected,
+      LanSyncException(failure: LanSyncFailure.networkUnavailable) =>
+        context.l10n.syncLanNetworkUnavailable,
+      LanSyncException(failure: LanSyncFailure.connectionInterrupted) =>
+        context.l10n.syncLanConnectionInterrupted,
       LanSyncException(failure: LanSyncFailure.timeout) =>
         context.l10n.syncLanTimeout,
+      LanSyncException(failure: LanSyncFailure.stopped) =>
+        context.l10n.syncLanStopped,
       _ => context.l10n.syncLanFailed,
     };
     setState(() {

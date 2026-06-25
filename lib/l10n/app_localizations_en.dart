@@ -2306,10 +2306,34 @@ class AppLocalizationsEn extends AppLocalizations {
       'Enter a host, valid port, and session code.';
 
   @override
-  String get syncLanInvalidSessionCode => 'The session code was rejected.';
+  String get syncLanInvalidSessionCode => 'Incorrect code or expired session.';
 
   @override
-  String get syncLanRequestTooLarge => 'The LAN sync request is too large.';
+  String get syncLanGroupMismatch =>
+      'The device belongs to another sync group.';
+
+  @override
+  String get syncLanKeyMismatch =>
+      'The sync key does not match. Pair this device again.';
+
+  @override
+  String get syncLanProtocolMismatch =>
+      'The sync protocol version is incompatible.';
+
+  @override
+  String get syncLanRequestTooLarge =>
+      'The sync package exceeds the maximum allowed size.';
+
+  @override
+  String get syncLanPackageRejected =>
+      'The sync package is damaged or could not be verified.';
+
+  @override
+  String get syncLanNetworkUnavailable => 'Could not connect to the device.';
+
+  @override
+  String get syncLanConnectionInterrupted =>
+      'The connection was interrupted before sync completed.';
 
   @override
   String get syncLanTimeout => 'The LAN sync session timed out.';
@@ -2318,7 +2342,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncLanFailed => 'The LAN sync session could not be completed.';
 
   @override
-  String get syncLanStopped => 'LAN sync session stopped.';
+  String get syncLanStopped => 'The sync was cancelled.';
 
   @override
   String syncLanResultPeer(Object name) {

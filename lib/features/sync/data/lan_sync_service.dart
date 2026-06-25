@@ -25,6 +25,7 @@ class LanSyncService {
     IdGenerator? ids,
     Random? random,
     Duration timeout = const Duration(seconds: 20),
+    Duration sessionTimeout = const Duration(minutes: 5),
     int maxRequestBytes = defaultMaxRequestBytes,
   }) : _packageService = packageService,
        _groupKeys = groupKeys,
@@ -32,6 +33,7 @@ class LanSyncService {
        _ids = ids ?? defaultIdGenerator,
        _random = random ?? Random.secure(),
        _timeout = timeout,
+       _sessionTimeout = sessionTimeout,
        _maxRequestBytes = maxRequestBytes;
 
   static const defaultMaxRequestBytes = 24 * 1024 * 1024;
@@ -42,6 +44,7 @@ class LanSyncService {
   final IdGenerator _ids;
   final Random _random;
   final Duration _timeout;
+  final Duration _sessionTimeout;
   final int _maxRequestBytes;
 
   Future<LanSyncHostSession> startHost({
@@ -64,8 +67,15 @@ class LanSyncService {
       localDevice: state.localDevice,
       server: server,
     );
+    session._attachTimeoutTimer(
+      Timer(_sessionTimeout, () {
+        session._completeError(const LanSyncException(LanSyncFailure.timeout));
+        unawaited(session.stop());
+      }),
+    );
     String? acceptedClientNonce;
     SyncPackageDevice? acceptedClientDevice;
+    var exchangeStarted = false;
 
     server.listen((request) {
       unawaited(
@@ -80,6 +90,8 @@ class LanSyncService {
             acceptedClientNonce = nonce;
             acceptedClientDevice = device;
           },
+          exchangeStarted: () => exchangeStarted,
+          markExchangeStarted: () => exchangeStarted = true,
         ),
       );
     });
@@ -87,6 +99,24 @@ class LanSyncService {
   }
 
   Future<LanSyncResult> connectAndSync({
+    required String host,
+    required int port,
+    required String sessionCode,
+  }) async {
+    try {
+      return await _connectAndSync(
+        host: host,
+        port: port,
+        sessionCode: sessionCode,
+      );
+    } on FormatException {
+      throw const LanSyncException(LanSyncFailure.packageRejected);
+    } on HttpException {
+      throw const LanSyncException(LanSyncFailure.connectionInterrupted);
+    }
+  }
+
+  Future<LanSyncResult> _connectAndSync({
     required String host,
     required int port,
     required String sessionCode,
@@ -163,7 +193,7 @@ class LanSyncService {
         'proof': exchangeProof,
       },
     );
-    final incomingBytes = base64Decode(_string(exchange, 'package'));
+    final incomingBytes = _decodePackageBytes(_string(exchange, 'package'));
     final peer = LanSyncSummary.fromJson(_map(exchange['result']));
     _expectProof(key.bytes, _string(exchange, 'proof'), {
       'type': 'exchangeResponse',
@@ -198,6 +228,8 @@ class LanSyncService {
     required String? Function() acceptedClientNonce,
     required SyncPackageDevice? Function() acceptedClientDevice,
     required void Function(String nonce, SyncPackageDevice device) acceptClient,
+    required bool Function() exchangeStarted,
+    required void Function() markExchangeStarted,
   }) async {
     try {
       if (request.method != 'POST') {
@@ -206,6 +238,9 @@ class LanSyncService {
       if (request.uri.path == '/sync/hello') {
         final body = await _readJson(request);
         _validateEnvelope(body, key);
+        if (acceptedClientNonce() != null) {
+          throw const LanSyncException(LanSyncFailure.invalidRequest);
+        }
         final device = SyncPackageDevice.fromJson(_map(body['device']));
         final clientNonce = _string(body, 'clientNonce');
         _expectProof(
@@ -246,6 +281,10 @@ class LanSyncService {
       if (request.uri.path == '/sync/exchange') {
         final body = await _readJson(request);
         _validateEnvelope(body, key);
+        if (exchangeStarted()) {
+          throw const LanSyncException(LanSyncFailure.invalidRequest);
+        }
+        markExchangeStarted();
         if (_string(body, 'sessionId') != session.sessionId) {
           throw const LanSyncException(LanSyncFailure.invalidRequest);
         }
@@ -255,7 +294,7 @@ class LanSyncService {
             device.deviceId != acceptedClientDevice()?.deviceId) {
           throw const LanSyncException(LanSyncFailure.invalidRequest);
         }
-        final incomingBytes = base64Decode(_string(body, 'package'));
+        final incomingBytes = _decodePackageBytes(_string(body, 'package'));
         _expectProof(key.bytes, _string(body, 'proof'), {
           'type': 'exchange',
           'sessionId': session.sessionId,
@@ -304,15 +343,43 @@ class LanSyncService {
       }
       throw const LanSyncException(LanSyncFailure.invalidRequest);
     } on LanSyncException catch (error) {
-      await _writeError(request.response, error.failure);
+      await _finishFailedHostRequest(request.response, session, error.failure);
     } on SyncPairingException catch (error) {
-      await _writeError(request.response, _pairingFailure(error));
+      await _finishFailedHostRequest(
+        request.response,
+        session,
+        _pairingFailure(error),
+      );
     } on SyncPackageException {
-      await _writeError(request.response, LanSyncFailure.packageRejected);
+      await _finishFailedHostRequest(
+        request.response,
+        session,
+        LanSyncFailure.packageRejected,
+      );
+    } on FormatException {
+      await _finishFailedHostRequest(
+        request.response,
+        session,
+        LanSyncFailure.packageRejected,
+      );
     } on TimeoutException {
-      await _writeError(request.response, LanSyncFailure.timeout);
+      await _finishFailedHostRequest(
+        request.response,
+        session,
+        LanSyncFailure.timeout,
+      );
+    } on HttpException {
+      await _finishFailedHostRequest(
+        request.response,
+        session,
+        LanSyncFailure.connectionInterrupted,
+      );
     } on Object {
-      await _writeError(request.response, LanSyncFailure.invalidRequest);
+      await _finishFailedHostRequest(
+        request.response,
+        session,
+        LanSyncFailure.invalidRequest,
+      );
     }
   }
 
@@ -353,6 +420,8 @@ class LanSyncService {
       rethrow;
     } on TimeoutException {
       throw const LanSyncException(LanSyncFailure.timeout);
+    } on HttpException {
+      throw const LanSyncException(LanSyncFailure.connectionInterrupted);
     } on SocketException {
       throw const LanSyncException(LanSyncFailure.networkUnavailable);
     } finally {
@@ -450,6 +519,20 @@ class LanSyncService {
     return _writeJson(response, {'error': failure.name}, statusCode: status);
   }
 
+  Future<void> _finishFailedHostRequest(
+    HttpResponse response,
+    LanSyncHostSession session,
+    LanSyncFailure failure,
+  ) async {
+    try {
+      await _writeError(response, failure);
+    } on Object {
+      // The peer may have disconnected before receiving the failure response.
+    }
+    session._completeError(LanSyncException(failure));
+    unawaited(session.stop());
+  }
+
   void _expectProof(
     List<int> groupKey,
     String received,
@@ -470,6 +553,14 @@ class LanSyncService {
 
   String _sha256Base64(List<int> bytes) =>
       base64UrlEncode(sha256.convert(bytes).bytes);
+
+  List<int> _decodePackageBytes(String encoded) {
+    try {
+      return base64Decode(encoded);
+    } on FormatException {
+      throw const LanSyncException(LanSyncFailure.packageRejected);
+    }
+  }
 
   String _nonce() => base64UrlEncode(_randomBytes(16));
 
@@ -528,6 +619,7 @@ class LanSyncHostSession {
   final SyncPackageDevice localDevice;
   final HttpServer _server;
   final _completed = Completer<LanSyncResult>();
+  Timer? _timeoutTimer;
   var _stopped = false;
 
   Future<LanSyncResult> get completed => _completed.future;
@@ -535,6 +627,7 @@ class LanSyncHostSession {
   Future<void> stop() async {
     if (_stopped) return;
     _stopped = true;
+    _timeoutTimer?.cancel();
     await _server.close(force: true);
     if (!_completed.isCompleted) {
       _completed.completeError(const LanSyncException(LanSyncFailure.stopped));
@@ -542,7 +635,22 @@ class LanSyncHostSession {
   }
 
   void _complete(LanSyncResult result) {
-    if (!_completed.isCompleted) _completed.complete(result);
+    if (!_completed.isCompleted) {
+      _timeoutTimer?.cancel();
+      _completed.complete(result);
+    }
+  }
+
+  void _completeError(Object error) {
+    if (!_completed.isCompleted) {
+      _timeoutTimer?.cancel();
+      _completed.completeError(error);
+    }
+  }
+
+  void _attachTimeoutTimer(Timer timer) {
+    _timeoutTimer?.cancel();
+    _timeoutTimer = timer;
   }
 }
 

@@ -19,6 +19,12 @@ void main() {
     expect(english.syncLanTitle, 'Local network sync');
     expect(english.syncLanStartSession, 'Start LAN sync session');
     expect(english.syncLanMediaNotice, contains('not transferred'));
+    expect(english.syncLanInvalidSessionCode, contains('Incorrect code'));
+    expect(english.syncLanGroupMismatch, contains('another sync group'));
+    expect(english.syncLanKeyMismatch, contains('sync key'));
+    expect(english.syncLanProtocolMismatch, contains('incompatible'));
+    expect(english.syncLanPackageRejected, contains('damaged'));
+    expect(english.syncLanConnectionInterrupted, contains('interrupted'));
 
     expect(spanish.navigationLibrary, 'Biblioteca');
     expect(spanish.settingsTitle, 'Ajustes');
@@ -35,5 +41,11 @@ void main() {
     expect(spanish.syncLanTitle, 'Sync por red local');
     expect(spanish.syncLanStartSession, 'Iniciar sesión LAN');
     expect(spanish.syncLanMediaNotice, contains('todavía no se transfieren'));
+    expect(spanish.syncLanInvalidSessionCode, contains('Código incorrecto'));
+    expect(spanish.syncLanGroupMismatch, contains('otro grupo'));
+    expect(spanish.syncLanKeyMismatch, contains('clave de sincronización'));
+    expect(spanish.syncLanProtocolMismatch, contains('incompatible'));
+    expect(spanish.syncLanPackageRejected, contains('dañado'));
+    expect(spanish.syncLanConnectionInterrupted, contains('interrumpió'));
   });
 }

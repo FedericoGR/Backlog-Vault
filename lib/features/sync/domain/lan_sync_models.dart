@@ -11,6 +11,7 @@ enum LanSyncFailure {
   requestTooLarge,
   packageRejected,
   networkUnavailable,
+  connectionInterrupted,
   timeout,
   stopped,
 }

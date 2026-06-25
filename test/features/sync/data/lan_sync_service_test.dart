@@ -18,6 +18,7 @@ import 'package:backlog_vault/features/sync/data/sync_package_builder.dart';
 import 'package:backlog_vault/features/sync/data/sync_package_service.dart';
 import 'package:backlog_vault/features/sync/domain/lan_sync_models.dart';
 import 'package:backlog_vault/features/sync/domain/sync_models.dart';
+import 'package:backlog_vault/features/sync/domain/sync_package_models.dart';
 import 'package:backlog_vault/features/sync/domain/sync_pairing_models.dart';
 import 'package:crypto/crypto.dart';
 import 'package:drift/drift.dart' hide isNotNull, isNull;
@@ -64,6 +65,8 @@ void main() {
     await _pair(a, b);
     await _insertGame(a, 'game-a', 'Game from A');
     await _insertGame(b, 'game-b', 'Game from B');
+    final aLocalChangesBefore = await _localChangeCount(a);
+    final bLocalChangesBefore = await _localChangeCount(b);
 
     final session = await a.lan.startHost(
       bindAddress: InternetAddress.loopbackIPv4,
@@ -80,6 +83,8 @@ void main() {
     expect(hostResult.local.applied, greaterThan(0));
     expect(await _gameTitles(a), containsAll(['Game from A', 'Game from B']));
     expect(await _gameTitles(b), containsAll(['Game from A', 'Game from B']));
+    expect(await _localChangeCount(a), aLocalChangesBefore);
+    expect(await _localChangeCount(b), bLocalChangesBefore);
 
     final repeat = await a.lan.startHost(
       bindAddress: InternetAddress.loopbackIPv4,
@@ -151,6 +156,10 @@ void main() {
       bindAddress: InternetAddress.loopbackIPv4,
       displayAddress: InternetAddress.loopbackIPv4.address,
     );
+    final wrongCodeFailure = _expectSessionFailure(
+      wrongCode,
+      LanSyncFailure.invalidSessionCode,
+    );
     await expectLater(
       b.lan.connectAndSync(
         host: wrongCode.host,
@@ -165,12 +174,15 @@ void main() {
         ),
       ),
     );
-    unawaited(wrongCode.completed.then<void>((_) {}, onError: (_) {}));
-    await wrongCode.stop();
+    await wrongCodeFailure;
 
     final wrongGroup = await a.lan.startHost(
       bindAddress: InternetAddress.loopbackIPv4,
       displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    final wrongGroupFailure = _expectSessionFailure(
+      wrongGroup,
+      LanSyncFailure.groupMismatch,
     );
     await expectLater(
       c.lan.connectAndSync(
@@ -186,16 +198,171 @@ void main() {
         ),
       ),
     );
-    unawaited(wrongGroup.completed.then<void>((_) {}, onError: (_) {}));
-    await wrongGroup.stop();
+    await wrongGroupFailure;
   });
 
+  test('host rejects key id, protocol mismatch and invalid proof', () async {
+    final a = await _LanHarness.create(_deviceA, seed: 12);
+    final b = await _LanHarness.create(_deviceB, seed: 13);
+    addTearDown(a.close);
+    addTearDown(b.close);
+    await _pair(a, b);
+    await _insertGame(b, 'game-b', 'Should not apply');
+    final key = await b.manager.requireActiveGroupKey();
+    final state = await b.manager.state();
+
+    final wrongKeyId = await a.lan.startHost(
+      bindAddress: InternetAddress.loopbackIPv4,
+      displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    final wrongKeyIdFailure = _expectSessionFailure(
+      wrongKeyId,
+      LanSyncFailure.keyIdMismatch,
+    );
+    final wrongKeyIdResponse = await _rawPost(
+      port: wrongKeyId.port,
+      path: '/sync/hello',
+      body: _helloBody(
+        key: key,
+        device: state.localDevice,
+        sessionCode: wrongKeyId.sessionCode,
+        keyId: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+      ),
+    );
+    expect(wrongKeyIdResponse.statusCode, HttpStatus.forbidden);
+    expect(wrongKeyIdResponse.json['error'], LanSyncFailure.keyIdMismatch.name);
+    await wrongKeyIdFailure;
+
+    final wrongProtocol = await a.lan.startHost(
+      bindAddress: InternetAddress.loopbackIPv4,
+      displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    final wrongProtocolFailure = _expectSessionFailure(
+      wrongProtocol,
+      LanSyncFailure.protocolMismatch,
+    );
+    final wrongProtocolResponse = await _rawPost(
+      port: wrongProtocol.port,
+      path: '/sync/hello',
+      body: _helloBody(
+        key: key,
+        device: state.localDevice,
+        sessionCode: wrongProtocol.sessionCode,
+        syncProtocolVersion: 999,
+      ),
+    );
+    expect(wrongProtocolResponse.statusCode, HttpStatus.preconditionFailed);
+    expect(
+      wrongProtocolResponse.json['error'],
+      LanSyncFailure.protocolMismatch.name,
+    );
+    await wrongProtocolFailure;
+
+    final invalidProof = await a.lan.startHost(
+      bindAddress: InternetAddress.loopbackIPv4,
+      displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    final invalidProofFailure = _expectSessionFailure(
+      invalidProof,
+      LanSyncFailure.invalidSessionCode,
+    );
+    final invalidProofResponse = await _rawPost(
+      port: invalidProof.port,
+      path: '/sync/hello',
+      body: _helloBody(
+        key: key,
+        device: state.localDevice,
+        sessionCode: invalidProof.sessionCode,
+        proof: 'not-a-valid-proof',
+      ),
+    );
+    expect(invalidProofResponse.statusCode, HttpStatus.forbidden);
+    expect(
+      invalidProofResponse.json['error'],
+      LanSyncFailure.invalidSessionCode.name,
+    );
+    await invalidProofFailure;
+
+    expect(await _gameTitles(a), isNot(contains('Should not apply')));
+  });
+
+  test(
+    'replayed hello and invalid exchange proof do not apply changes',
+    () async {
+      final a = await _LanHarness.create(_deviceA, seed: 14);
+      final b = await _LanHarness.create(_deviceB, seed: 15);
+      addTearDown(a.close);
+      addTearDown(b.close);
+      await _pair(a, b);
+      await _insertGame(b, 'game-b', 'Replay must not apply');
+      final key = await b.manager.requireActiveGroupKey();
+      final state = await b.manager.state();
+
+      final replay = await a.lan.startHost(
+        bindAddress: InternetAddress.loopbackIPv4,
+        displayAddress: InternetAddress.loopbackIPv4.address,
+      );
+      final replayFailure = _expectSessionFailure(
+        replay,
+        LanSyncFailure.invalidRequest,
+      );
+      final helloBody = _helloBody(
+        key: key,
+        device: state.localDevice,
+        sessionCode: replay.sessionCode,
+      );
+      final firstHello = await _rawPost(
+        port: replay.port,
+        path: '/sync/hello',
+        body: helloBody,
+      );
+      expect(firstHello.statusCode, HttpStatus.ok);
+      final secondHello = await _rawPost(
+        port: replay.port,
+        path: '/sync/hello',
+        body: helloBody,
+      );
+      expect(secondHello.statusCode, HttpStatus.badRequest);
+      expect(secondHello.json['error'], LanSyncFailure.invalidRequest.name);
+      await replayFailure;
+      expect(await _gameTitles(a), isNot(contains('Replay must not apply')));
+
+      final invalidExchange = await a.lan.startHost(
+        bindAddress: InternetAddress.loopbackIPv4,
+        displayAddress: InternetAddress.loopbackIPv4.address,
+      );
+      final invalidExchangeFailure = _expectSessionFailure(
+        invalidExchange,
+        LanSyncFailure.invalidRequest,
+      );
+      final hello = await _openRawHello(client: b, session: invalidExchange);
+      final package = await b.service.exportWithGroupKey();
+      final exchange = await _rawPost(
+        port: invalidExchange.port,
+        path: '/sync/exchange',
+        body: _exchangeBody(
+          key: hello.key,
+          device: hello.device,
+          session: invalidExchange,
+          clientNonce: hello.clientNonce,
+          hostNonce: hello.hostNonce,
+          packageBytes: package.bytes,
+          proof: 'invalid-exchange-proof',
+        ),
+      );
+      expect(exchange.statusCode, HttpStatus.badRequest);
+      expect(exchange.json['error'], LanSyncFailure.invalidRequest.name);
+      await invalidExchangeFailure;
+      expect(await _gameTitles(a), isNot(contains('Replay must not apply')));
+    },
+  );
+
   test('host rejects oversized requests and corrupt packages', () async {
-    final a = await _LanHarness.create(_deviceA, seed: 9);
-    final b = await _LanHarness.create(_deviceB, seed: 10);
+    final a = await _LanHarness.create(_deviceA, seed: 16);
+    final b = await _LanHarness.create(_deviceB, seed: 17);
     final small = await _LanHarness.create(
       _deviceC,
-      seed: 11,
+      seed: 18,
       maxRequestBytes: 128,
     );
     addTearDown(a.close);
@@ -209,75 +376,291 @@ void main() {
       bindAddress: InternetAddress.loopbackIPv4,
       displayAddress: InternetAddress.loopbackIPv4.address,
     );
+    final tooLargeFailure = _expectSessionFailure(
+      tooLarge,
+      LanSyncFailure.requestTooLarge,
+    );
     final largeResponse = await _rawPost(
       port: tooLarge.port,
       path: '/sync/hello',
       body: {'padding': List.filled(256, 'x').join()},
     );
     expect(largeResponse.statusCode, HttpStatus.requestEntityTooLarge);
-    unawaited(tooLarge.completed.then<void>((_) {}, onError: (_) {}));
-    await tooLarge.stop();
+    await tooLargeFailure;
 
     final corrupt = await a.lan.startHost(
       bindAddress: InternetAddress.loopbackIPv4,
       displayAddress: InternetAddress.loopbackIPv4.address,
     );
-    final key = await b.manager.requireActiveGroupKey();
-    final state = await b.manager.state();
-    final clientNonce = 'test-client-nonce';
-    final hello = await _rawPost(
-      port: corrupt.port,
-      path: '/sync/hello',
-      body: {
-        'formatVersion': 1,
-        'syncProtocolVersion': 1,
-        'groupId': key.groupId,
-        'keyId': key.keyId,
-        'device': state.localDevice.toJson(),
-        'clientNonce': clientNonce,
-        'proof': _proof(key.bytes, {
-          'type': 'hello',
-          'groupId': key.groupId,
-          'keyId': key.keyId,
-          'deviceId': state.localDevice.deviceId,
-          'clientNonce': clientNonce,
-          'sessionCode': corrupt.sessionCode,
-        }),
-      },
+    final corruptFailure = _expectSessionFailure(
+      corrupt,
+      LanSyncFailure.packageRejected,
     );
-    expect(hello.statusCode, HttpStatus.ok);
-    final helloJson = hello.json;
+    final hello = await _openRawHello(client: b, session: corrupt);
     final package = await b.service.exportWithGroupKey();
     final tampered = [...package.bytes]..[package.bytes.length - 1] ^= 0x20;
     final exchange = await _rawPost(
       port: corrupt.port,
       path: '/sync/exchange',
-      body: {
-        'formatVersion': 1,
-        'syncProtocolVersion': 1,
-        'sessionId': helloJson['sessionId'],
-        'groupId': key.groupId,
-        'keyId': key.keyId,
-        'device': state.localDevice.toJson(),
-        'clientNonce': clientNonce,
-        'package': base64Encode(tampered),
-        'proof': _proof(key.bytes, {
-          'type': 'exchange',
-          'sessionId': helloJson['sessionId'],
-          'groupId': key.groupId,
-          'keyId': key.keyId,
-          'clientNonce': clientNonce,
-          'hostNonce': helloJson['hostNonce'],
-          'deviceId': state.localDevice.deviceId,
-          'packageHash': _sha256Base64(tampered),
-          'sessionCode': corrupt.sessionCode,
-        }),
-      },
+      body: _exchangeBody(
+        key: hello.key,
+        device: hello.device,
+        session: corrupt,
+        clientNonce: hello.clientNonce,
+        hostNonce: hello.hostNonce,
+        packageBytes: tampered,
+      ),
     );
     expect(exchange.statusCode, HttpStatus.badRequest);
     expect(exchange.json['error'], LanSyncFailure.packageRejected.name);
-    unawaited(corrupt.completed.then<void>((_) {}, onError: (_) {}));
-    await corrupt.stop();
+    await corruptFailure;
+    expect(await _gameTitles(a), isNot(contains('Corrupt me not')));
+  });
+
+  test('truncated payload does not apply changes', () async {
+    final a = await _LanHarness.create(_deviceA, seed: 19);
+    final b = await _LanHarness.create(_deviceB, seed: 20);
+    addTearDown(a.close);
+    addTearDown(b.close);
+    await _pair(a, b);
+    await _insertGame(b, 'game-b', 'Truncated must not apply');
+
+    final session = await a.lan.startHost(
+      bindAddress: InternetAddress.loopbackIPv4,
+      displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    final sessionFailure = _expectSessionFailure(
+      session,
+      LanSyncFailure.packageRejected,
+    );
+    final hello = await _openRawHello(client: b, session: session);
+    final package = await b.service.exportWithGroupKey();
+    final truncated = package.bytes.sublist(0, package.bytes.length ~/ 2);
+    final exchange = await _rawPost(
+      port: session.port,
+      path: '/sync/exchange',
+      body: _exchangeBody(
+        key: hello.key,
+        device: hello.device,
+        session: session,
+        clientNonce: hello.clientNonce,
+        hostNonce: hello.hostNonce,
+        packageBytes: truncated,
+      ),
+    );
+    expect(exchange.statusCode, HttpStatus.badRequest);
+    expect(exchange.json['error'], LanSyncFailure.packageRejected.name);
+    await sessionFailure;
+    expect(await _gameTitles(a), isNot(contains('Truncated must not apply')));
+  });
+
+  test('host and client timeouts are reported safely', () async {
+    final a = await _LanHarness.create(
+      _deviceA,
+      seed: 21,
+      sessionTimeout: const Duration(milliseconds: 30),
+    );
+    final b = await _LanHarness.create(
+      _deviceB,
+      seed: 22,
+      timeout: const Duration(milliseconds: 30),
+    );
+    addTearDown(a.close);
+    addTearDown(b.close);
+    await _pair(a, b);
+
+    final idle = await a.lan.startHost(
+      bindAddress: InternetAddress.loopbackIPv4,
+      displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    await _expectSessionFailure(idle, LanSyncFailure.timeout);
+    await expectLater(
+      b.lan.connectAndSync(
+        host: idle.host,
+        port: idle.port,
+        sessionCode: idle.sessionCode,
+      ),
+      throwsA(isA<LanSyncException>()),
+    );
+
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    addTearDown(() => server.close(force: true));
+    server.listen((request) {
+      unawaited(Future<void>.delayed(const Duration(seconds: 5)));
+    });
+    await expectLater(
+      b.lan.connectAndSync(
+        host: InternetAddress.loopbackIPv4.address,
+        port: server.port,
+        sessionCode: '123456',
+      ),
+      throwsA(
+        isA<LanSyncException>().having(
+          (error) => error.failure,
+          'failure',
+          LanSyncFailure.timeout,
+        ),
+      ),
+    );
+  });
+
+  test('client reports interrupted connection without applying', () async {
+    final client = await _LanHarness.create(_deviceB, seed: 23);
+    addTearDown(client.close);
+    await client.manager.createGroup('Interrupted group');
+    await _insertGame(client, 'game-b', 'Interrupted outbound');
+    final key = await client.manager.requireActiveGroupKey();
+    const sessionCode = '123456';
+    const sessionId = '99999999-0000-4000-8000-000000000999';
+    const hostNonce = 'host-nonce';
+    final hostDevice = SyncPackageDevice(
+      deviceId: _deviceA,
+      displayName: 'Host',
+      platform: 'windows',
+    );
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    addTearDown(() => server.close(force: true));
+    server.listen((request) async {
+      if (request.uri.path == '/sync/hello') {
+        final body = Map<String, Object?>.from(
+          jsonDecode(await utf8.decodeStream(request)) as Map,
+        );
+        final clientNonce = body['clientNonce']! as String;
+        request.response.headers.contentType = ContentType.json;
+        request.response.write(
+          jsonEncode({
+            'formatVersion': 1,
+            'syncProtocolVersion': 1,
+            'sessionId': sessionId,
+            'groupId': key.groupId,
+            'keyId': key.keyId,
+            'hostDevice': hostDevice.toJson(),
+            'hostNonce': hostNonce,
+            'proof': _proof(key.bytes, {
+              'type': 'helloResponse',
+              'sessionId': sessionId,
+              'groupId': key.groupId,
+              'keyId': key.keyId,
+              'clientNonce': clientNonce,
+              'hostNonce': hostNonce,
+              'deviceId': hostDevice.deviceId,
+              'sessionCode': sessionCode,
+            }),
+          }),
+        );
+        await request.response.close();
+        return;
+      }
+      final socket = await request.response.detachSocket();
+      socket.destroy();
+    });
+
+    await expectLater(
+      client.lan.connectAndSync(
+        host: InternetAddress.loopbackIPv4.address,
+        port: server.port,
+        sessionCode: sessionCode,
+      ),
+      throwsA(
+        isA<LanSyncException>().having(
+          (error) => error.failure,
+          'failure',
+          anyOf(
+            LanSyncFailure.connectionInterrupted,
+            LanSyncFailure.networkUnavailable,
+          ),
+        ),
+      ),
+    );
+    expect(await _gameTitles(client), contains('Interrupted outbound'));
+  });
+
+  test('LAN media changes remain pending without broken cover files', () async {
+    final a = await _LanHarness.create(_deviceA, seed: 24);
+    final b = await _LanHarness.create(_deviceB, seed: 25);
+    addTearDown(a.close);
+    addTearDown(b.close);
+    await _pair(a, b);
+    await b.runner.run(
+      source: SyncChangeSource.manual,
+      action: (_) async {
+        await b.db
+            .into(b.db.games)
+            .insert(
+              GamesCompanion.insert(
+                id: 'local-game',
+                title: 'Local media game',
+                createdAt: _now,
+                updatedAt: _now,
+              ),
+            );
+        await b.db
+            .into(b.db.mediaAssets)
+            .insert(
+              MediaAssetsCompanion.insert(
+                id: 'local-media',
+                gameId: 'local-game',
+                kind: 'cover',
+                source: 'local',
+                localPath: 'covers/local-cover.png',
+                fileName: 'local-cover.png',
+                hash: const Value('sha256-local'),
+                isSelected: const Value(true),
+                createdAt: _now,
+                updatedAt: _now,
+              ),
+            );
+      },
+    );
+    await a.runner.run(
+      source: SyncChangeSource.manual,
+      action: (_) async {
+        await a.db
+            .into(a.db.games)
+            .insert(
+              GamesCompanion.insert(
+                id: 'game-media',
+                title: 'Media game',
+                createdAt: _now,
+                updatedAt: _now,
+              ),
+            );
+        await a.db
+            .into(a.db.mediaAssets)
+            .insert(
+              MediaAssetsCompanion.insert(
+                id: 'media-1',
+                gameId: 'game-media',
+                kind: 'cover',
+                source: 'local',
+                localPath: 'covers/device-a-cover.png',
+                fileName: 'cover.png',
+                hash: const Value('sha256-test'),
+                isSelected: const Value(true),
+                createdAt: _now,
+                updatedAt: _now,
+              ),
+            );
+      },
+    );
+
+    final session = await a.lan.startHost(
+      bindAddress: InternetAddress.loopbackIPv4,
+      displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    final clientResult = await b.lan.connectAndSync(
+      host: session.host,
+      port: session.port,
+      sessionCode: session.sessionCode,
+    );
+    await session.completed;
+
+    expect(clientResult.local.pendingMedia, 1);
+    final media = await b.db.select(b.db.mediaAssets).get();
+    expect(media, hasLength(1));
+    expect(media.single.id, 'local-media');
+    expect(media.single.localPath, 'covers/local-cover.png');
+    expect(media.single.isSelected, isTrue);
   });
 }
 
@@ -344,6 +727,124 @@ Future<List<String>> _gameTitles(_LanHarness harness) async =>
         .map((game) => game.title)
         .toList();
 
+Future<int> _localChangeCount(_LanHarness harness) async {
+  final device = await harness.identity.ensureIdentity();
+  final rows =
+      await (harness.db.select(harness.db.syncChanges)
+        ..where((row) => row.originDeviceId.equals(device.id))).get();
+  return rows.length;
+}
+
+Future<void> _expectSessionFailure(
+  LanSyncHostSession session,
+  LanSyncFailure failure,
+) {
+  return expectLater(
+    session.completed,
+    throwsA(
+      isA<LanSyncException>().having(
+        (error) => error.failure,
+        'failure',
+        failure,
+      ),
+    ),
+  );
+}
+
+Map<String, Object?> _helloBody({
+  required SyncGroupKeyMaterial key,
+  required SyncPackageDevice device,
+  required String sessionCode,
+  String clientNonce = 'test-client-nonce',
+  String? groupId,
+  String? keyId,
+  int formatVersion = 1,
+  int syncProtocolVersion = 1,
+  String? proof,
+}) {
+  final effectiveGroupId = groupId ?? key.groupId;
+  final effectiveKeyId = keyId ?? key.keyId;
+  return {
+    'formatVersion': formatVersion,
+    'syncProtocolVersion': syncProtocolVersion,
+    'groupId': effectiveGroupId,
+    'keyId': effectiveKeyId,
+    'device': device.toJson(),
+    'clientNonce': clientNonce,
+    'proof':
+        proof ??
+        _proof(key.bytes, {
+          'type': 'hello',
+          'groupId': effectiveGroupId,
+          'keyId': effectiveKeyId,
+          'deviceId': device.deviceId,
+          'clientNonce': clientNonce,
+          'sessionCode': sessionCode,
+        }),
+  };
+}
+
+Map<String, Object?> _exchangeBody({
+  required SyncGroupKeyMaterial key,
+  required SyncPackageDevice device,
+  required LanSyncHostSession session,
+  required String clientNonce,
+  required String hostNonce,
+  required List<int> packageBytes,
+  String? proof,
+}) {
+  return {
+    'formatVersion': 1,
+    'syncProtocolVersion': 1,
+    'sessionId': session.sessionId,
+    'groupId': key.groupId,
+    'keyId': key.keyId,
+    'device': device.toJson(),
+    'clientNonce': clientNonce,
+    'package': base64Encode(packageBytes),
+    'proof':
+        proof ??
+        _proof(key.bytes, {
+          'type': 'exchange',
+          'sessionId': session.sessionId,
+          'groupId': key.groupId,
+          'keyId': key.keyId,
+          'clientNonce': clientNonce,
+          'hostNonce': hostNonce,
+          'deviceId': device.deviceId,
+          'packageHash': _sha256Base64(packageBytes),
+          'sessionCode': session.sessionCode,
+        }),
+  };
+}
+
+Future<_RawHello> _openRawHello({
+  required _LanHarness client,
+  required LanSyncHostSession session,
+}) async {
+  final key = await client.manager.requireActiveGroupKey();
+  final state = await client.manager.state();
+  const clientNonce = 'test-client-nonce';
+  final response = await _rawPost(
+    port: session.port,
+    path: '/sync/hello',
+    body: _helloBody(
+      key: key,
+      device: state.localDevice,
+      sessionCode: session.sessionCode,
+      clientNonce: clientNonce,
+    ),
+  );
+  expect(response.statusCode, HttpStatus.ok);
+  expect(response.json['sessionId'], session.sessionId);
+  return _RawHello(
+    key: key,
+    device: state.localDevice,
+    clientNonce: clientNonce,
+    hostNonce: response.json['hostNonce']! as String,
+  );
+}
+
 Future<_RawResponse> _rawPost({
   required int port,
   required String path,
@@ -392,6 +893,20 @@ class _RawResponse {
   final Map<String, Object?> json;
 }
 
+class _RawHello {
+  const _RawHello({
+    required this.key,
+    required this.device,
+    required this.clientNonce,
+    required this.hostNonce,
+  });
+
+  final SyncGroupKeyMaterial key;
+  final SyncPackageDevice device;
+  final String clientNonce;
+  final String hostNonce;
+}
+
 class _LanHarness {
   _LanHarness({
     required this.db,
@@ -414,6 +929,8 @@ class _LanHarness {
   static Future<_LanHarness> create(
     String deviceId, {
     required int seed,
+    Duration timeout = const Duration(seconds: 5),
+    Duration sessionTimeout = const Duration(minutes: 5),
     int maxRequestBytes = LanSyncService.defaultMaxRequestBytes,
   }) async {
     final db = AppDatabase(NativeDatabase.memory());
@@ -481,7 +998,8 @@ class _LanHarness {
       pairingStateLoader: manager.state,
       ids: _UuidSequence(seed, start: 90),
       random: Random(seed + 1000),
-      timeout: const Duration(seconds: 5),
+      timeout: timeout,
+      sessionTimeout: sessionTimeout,
       maxRequestBytes: maxRequestBytes,
     );
     return _LanHarness(
