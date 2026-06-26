@@ -2263,7 +2263,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get syncLanMediaNotice =>
-      'Los archivos de portada todavía no se transfieren por sync LAN.';
+      'El sync LAN transfiere portadas gestionadas por la app usando hash cuando ambos dispositivos emparejados pueden verificarlas.';
 
   @override
   String get syncLanStartSession => 'Iniciar sesión LAN';
@@ -2393,6 +2393,31 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String syncLanResultMediaRequested(Object count) {
+    return 'Portadas solicitadas: $count';
+  }
+
+  @override
+  String syncLanResultMediaReceived(Object count) {
+    return 'Portadas recibidas: $count';
+  }
+
+  @override
+  String syncLanResultMediaSkipped(Object count) {
+    return 'Portadas omitidas: $count';
+  }
+
+  @override
+  String syncLanResultMediaFailed(Object count) {
+    return 'Portadas fallidas: $count';
+  }
+
+  @override
+  String syncLanResultMediaBytes(Object count) {
+    return 'Bytes de portada transferidos: $count';
+  }
+
+  @override
   String syncLanPeerApplied(Object count) {
     return 'El otro dispositivo aplicó: $count';
   }
@@ -2405,5 +2430,15 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String syncLanPeerPendingMedia(Object count) {
     return 'Portadas pendientes en el otro dispositivo: $count';
+  }
+
+  @override
+  String syncLanPeerMediaReceived(Object count) {
+    return 'El otro dispositivo recibió portadas: $count';
+  }
+
+  @override
+  String syncLanPeerMediaFailed(Object count) {
+    return 'Portadas fallidas en el otro dispositivo: $count';
   }
 }

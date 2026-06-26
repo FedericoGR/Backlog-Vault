@@ -656,7 +656,7 @@
   "syncLanTitle": "Local network sync",
   "syncLanDescription": "Start a temporary LAN session on one paired device, then connect from the other device with the shown IP, port, and session code.",
   "syncLanPairFirst": "Pair devices first. LAN sync requires a sync group and its group key in secure storage.",
-  "syncLanMediaNotice": "Cover files are not transferred by LAN sync yet.",
+  "syncLanMediaNotice": "LAN sync transfers managed cover files by hash when both paired devices can verify them.",
   "syncLanStartSession": "Start LAN sync session",
   "syncLanStopSession": "Stop session",
   "syncLanConnectSession": "Connect to LAN sync session",
@@ -689,7 +689,14 @@
   "syncLanResultAlreadyApplied": "Already applied locally: {count}",
   "syncLanResultConflicts": "Local conflicts skipped: {count}",
   "syncLanResultPendingMedia": "Local pending cover files: {count}",
+  "syncLanResultMediaRequested": "Cover files requested: {count}",
+  "syncLanResultMediaReceived": "Cover files received: {count}",
+  "syncLanResultMediaSkipped": "Cover files skipped: {count}",
+  "syncLanResultMediaFailed": "Cover files failed: {count}",
+  "syncLanResultMediaBytes": "Cover bytes transferred: {count}",
   "syncLanPeerApplied": "Peer applied: {count}",
   "syncLanPeerConflicts": "Peer conflicts skipped: {count}",
-  "syncLanPeerPendingMedia": "Peer pending cover files: {count}"
+  "syncLanPeerPendingMedia": "Peer pending cover files: {count}",
+  "syncLanPeerMediaReceived": "Peer cover files received: {count}",
+  "syncLanPeerMediaFailed": "Peer cover files failed: {count}"
 }

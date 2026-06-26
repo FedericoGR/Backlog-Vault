@@ -210,36 +210,51 @@ class SyncMediaManifestEntry {
     required this.gameId,
     required this.hash,
     required this.kind,
+    required this.source,
     required this.provider,
     required this.externalId,
     required this.fileName,
     required this.mimeType,
     required this.width,
     required this.height,
+    this.fileSizeBytes,
+    this.isSelected = false,
+    this.createdAt,
+    this.updatedAt,
   });
 
   final String mediaAssetId;
   final String gameId;
   final String? hash;
   final String kind;
+  final String source;
   final String? provider;
   final String? externalId;
   final String fileName;
   final String? mimeType;
   final int? width;
   final int? height;
+  final int? fileSizeBytes;
+  final bool isSelected;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   Map<String, Object?> toJson() => {
     'mediaAssetId': mediaAssetId,
     'gameId': gameId,
     'hash': hash,
     'kind': kind,
+    'source': source,
     'provider': provider,
     'externalId': externalId,
     'fileName': fileName,
     'mimeType': mimeType,
     'width': width,
     'height': height,
+    'fileSizeBytes': fileSizeBytes,
+    'isSelected': isSelected,
+    'createdAt': createdAt?.toUtc().toIso8601String(),
+    'updatedAt': updatedAt?.toUtc().toIso8601String(),
   };
 
   factory SyncMediaManifestEntry.fromJson(Map<String, Object?> json) {
@@ -248,12 +263,17 @@ class SyncMediaManifestEntry {
       gameId: _string(json, 'gameId'),
       hash: _nullableString(json['hash']),
       kind: _string(json, 'kind'),
+      source: _nullableString(json['source']) ?? 'local',
       provider: _nullableString(json['provider']),
       externalId: _nullableString(json['externalId']),
       fileName: _string(json, 'fileName'),
       mimeType: _nullableString(json['mimeType']),
       width: _nullableInt(json['width']),
       height: _nullableInt(json['height']),
+      fileSizeBytes: _nullableInt(json['fileSizeBytes']),
+      isSelected: json['isSelected'] == true,
+      createdAt: _nullableDate(json['createdAt']),
+      updatedAt: _nullableDate(json['updatedAt']),
     );
   }
 }
@@ -379,11 +399,13 @@ class SyncPackageExportResult {
     required this.fileName,
     required this.bytes,
     required this.changeCount,
+    required this.document,
   });
 
   final String fileName;
   final List<int> bytes;
   final int changeCount;
+  final SyncPackageDocument document;
 }
 
 String _string(Map<String, Object?> json, String key) {

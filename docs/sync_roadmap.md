@@ -1,6 +1,6 @@
 # Secure PC ↔ Android sync roadmap
 
-Status: deterministic sync foundation, encrypted `.vaultsync` packages, manual `.vaultpair` device pairing with secure-storage group keys, and manual paired LAN sync are implemented. QR scanning, automatic discovery, background sync, conflict-resolution UI, cloud transport, and media-byte transfer remain future work.
+Status: deterministic sync foundation, encrypted `.vaultsync` packages, manual `.vaultpair` device pairing with secure-storage group keys, manual paired LAN sync, and LAN media transfer by hash are implemented. QR scanning, automatic discovery, background sync, advanced conflict-resolution UI, and cloud transport remain future work.
 
 ## Principles
 
@@ -44,18 +44,22 @@ Implemented in E21:
 
 ### Stage 3 — LAN transport
 
-Implemented in E22:
+Implemented in E22/E23:
 
 - Address a paired device manually on the local network with host IP, port, and a short session code.
 - Run a temporary HTTP host/client session; the server shuts down when the session completes or is stopped.
 - Authenticate session messages with HMAC-SHA256 proofs derived from the stored sync group key; the group key itself never travels.
 - Exchange the same group-encrypted `.vaultsync` packages used by manual file sync.
-- Keep the same package validation, preview/apply, idempotency, conflict, and pending-media behavior as manual sync.
+- Keep the same package validation, preview/apply, idempotency, conflict, and safe pending-media behavior as manual sync.
 - Treat LAN as untrusted: library payloads are still encrypted and authenticated before they leave the device.
+- Transfer app-managed cover files by SHA-256 hash after the encrypted change-package exchange.
+- Never trust remote file paths or file names; the receiver chooses the local media path and validates bytes before registering a cover asset.
+- Accept only supported image bytes (JPEG, PNG, WebP), with per-file, per-session, and request-size limits.
+- Keep media pending when the sender lacks the file, the hash does not match, bytes are truncated, the type is invalid, or the asset is not part of the expected manifest.
 
 Current limitations:
 
-- No QR scanner, mDNS, automatic discovery, background sync, cloud relay, or media-byte transfer.
+- No QR scanner, mDNS, automatic discovery, background sync, cloud relay, arbitrary-file transfer, or media cleanup/compaction.
 - The user must start a host session and manually enter IP, port, and session code on the client.
 
 ### Stage 4 — Optional cloud transport
@@ -100,8 +104,8 @@ Current limitations:
 2. Completed: versioned encrypted manual packages, preview, conservative apply, and cross-device fixtures.
 3. Completed E21: manual pairing, group-key lifecycle in secure storage, group package authentication, and local leave/revocation.
 4. Completed E22: authenticated manual LAN transport reusing the same package and apply engine.
-5. E22.5: LAN hardening, endpoint UX polish, timeout/error coverage, and optional fingerprint verification.
-6. E23: hash-addressed media-byte transfer and visible conflict-resolution workflows.
-7. E24: performance, recovery, security, Windows/Android, and v0.2 stabilization.
+5. Completed E22.5: LAN hardening, endpoint UX polish, timeout/error coverage, and adversarial socket tests.
+6. Completed E23: hash-addressed LAN media-byte transfer for app-managed covers.
+7. E23.5/E24: media hardening, conflict-resolution UX, performance, recovery, security, Windows/Android, and v0.2 stabilization.
 
 Each stage should preserve Windows, Android, metadata, covers, backup/restore, bulk import, gallery, statistics, and the current RC behavior before advancing.

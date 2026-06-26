@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:backlog_vault/core/database/app_database.dart';
 import 'package:backlog_vault/core/ids/id_generator.dart';
 import 'package:backlog_vault/core/time/clock.dart';
+import 'package:backlog_vault/features/media/data/media_file_storage.dart';
 import 'package:backlog_vault/features/sync/data/canonical_json.dart';
 import 'package:backlog_vault/features/sync/data/encrypted_sync_package_codec.dart';
+import 'package:backlog_vault/features/sync/data/lan_media_transfer_service.dart';
 import 'package:backlog_vault/features/sync/data/lan_sync_service.dart';
 import 'package:backlog_vault/features/sync/data/sync_change_applier.dart';
 import 'package:backlog_vault/features/sync/data/sync_change_tracking.dart';
@@ -21,7 +24,7 @@ import 'package:backlog_vault/features/sync/domain/sync_models.dart';
 import 'package:backlog_vault/features/sync/domain/sync_package_models.dart';
 import 'package:backlog_vault/features/sync/domain/sync_pairing_models.dart';
 import 'package:crypto/crypto.dart';
-import 'package:drift/drift.dart' hide isNotNull, isNull;
+import 'package:drift/drift.dart' hide Uint8List, isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
@@ -29,6 +32,20 @@ const _deviceA = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const _deviceB = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 const _deviceC = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
 final _now = DateTime.utc(2026, 6, 23, 12);
+final _pngBytes = Uint8List.fromList([
+  0x89,
+  0x50,
+  0x4E,
+  0x47,
+  0x0D,
+  0x0A,
+  0x1A,
+  0x0A,
+  0,
+  1,
+  2,
+  3,
+]);
 
 void main() {
   test('host session starts with short code and stops cleanly', () async {
@@ -662,6 +679,236 @@ void main() {
     expect(media.single.localPath, 'covers/local-cover.png');
     expect(media.single.isSelected, isTrue);
   });
+
+  test('media manifest is hash-based and never exposes local paths', () async {
+    final a = await _LanHarness.create(_deviceA, seed: 26);
+    addTearDown(a.close);
+    await a.manager.createGroup('Manifest group');
+    final stored = await _insertGameWithCover(
+      a,
+      gameId: 'game-media',
+      title: 'Media game',
+      mediaId: 'media-1',
+      bytes: _pngBytes,
+    );
+
+    final package = await a.service.exportWithGroupKey();
+    expect(package.document.mediaManifest, hasLength(1));
+    final entry = package.document.mediaManifest.single;
+    expect(entry.mediaAssetId, 'media-1');
+    expect(entry.gameId, 'game-media');
+    expect(entry.hash, stored.hash);
+    expect(entry.source, 'local');
+    expect(entry.isSelected, isTrue);
+    final manifestJson = jsonEncode(entry.toJson());
+    expect(manifestJson, isNot(contains('localPath')));
+    expect(manifestJson, isNot(contains(a.mediaDir.path)));
+    expect(manifestJson, isNot(contains(r'C:\')));
+  });
+
+  test('LAN sync transfers missing cover files by hash', () async {
+    final a = await _LanHarness.create(_deviceA, seed: 27);
+    final b = await _LanHarness.create(_deviceB, seed: 28);
+    addTearDown(a.close);
+    addTearDown(b.close);
+    await _pair(a, b);
+    final stored = await _insertGameWithCover(
+      a,
+      gameId: 'game-media',
+      title: 'Media game',
+      mediaId: 'media-1',
+      bytes: _pngBytes,
+    );
+
+    final session = await a.lan.startHost(
+      bindAddress: InternetAddress.loopbackIPv4,
+      displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    final clientResult = await b.lan.connectAndSync(
+      host: session.host,
+      port: session.port,
+      sessionCode: session.sessionCode,
+    );
+    final hostResult = await session.completed;
+
+    expect(clientResult.local.mediaRequested, 1);
+    expect(clientResult.local.mediaReceived, 1);
+    expect(clientResult.local.pendingMedia, 0);
+    expect(hostResult.local.mediaSent, 1);
+    expect(hostResult.local.mediaBytesTransferred, greaterThan(0));
+    final media =
+        await (b.db.select(b.db.mediaAssets)
+          ..where((table) => table.id.equals('media-1'))).getSingle();
+    expect(media.hash, stored.hash);
+    expect(media.isSelected, isTrue);
+    expect(media.localPath, startsWith('media/games/game-media/'));
+    final file = await b.storage.resolveFile(media.localPath);
+    expect(await file.exists(), isTrue);
+    expect(sha256.convert(await file.readAsBytes()).toString(), stored.hash);
+
+    final repeat = await a.lan.startHost(
+      bindAddress: InternetAddress.loopbackIPv4,
+      displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    final repeatClient = await b.lan.connectAndSync(
+      host: repeat.host,
+      port: repeat.port,
+      sessionCode: repeat.sessionCode,
+    );
+    await repeat.completed;
+    expect(repeatClient.local.mediaReceived, 0);
+    expect(await b.db.select(b.db.mediaAssets).get(), hasLength(1));
+  });
+
+  test('receiver reuses an existing local file with the same hash', () async {
+    final a = await _LanHarness.create(_deviceA, seed: 29);
+    final b = await _LanHarness.create(_deviceB, seed: 30);
+    addTearDown(a.close);
+    addTearDown(b.close);
+    await _pair(a, b);
+    final source = await _insertGameWithCover(
+      a,
+      gameId: 'game-media',
+      title: 'Media game',
+      mediaId: 'media-1',
+      bytes: _pngBytes,
+    );
+    final local = await _insertGameWithCover(
+      b,
+      gameId: 'local-game',
+      title: 'Local game',
+      mediaId: 'local-media',
+      bytes: _pngBytes,
+    );
+    expect(local.hash, source.hash);
+
+    final session = await a.lan.startHost(
+      bindAddress: InternetAddress.loopbackIPv4,
+      displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    final clientResult = await b.lan.connectAndSync(
+      host: session.host,
+      port: session.port,
+      sessionCode: session.sessionCode,
+    );
+    await session.completed;
+
+    expect(clientResult.local.mediaRequested, 0);
+    expect(clientResult.local.mediaReceived, 0);
+    expect(clientResult.local.mediaSkipped, greaterThanOrEqualTo(1));
+    final imported =
+        await (b.db.select(b.db.mediaAssets)
+          ..where((table) => table.id.equals('media-1'))).getSingle();
+    expect(imported.hash, source.hash);
+    expect(imported.localPath, local.localPath);
+    expect(await b.db.select(b.db.mediaAssets).get(), hasLength(2));
+  });
+
+  test(
+    'media with mismatched hash stays pending and is not inserted',
+    () async {
+      final a = await _LanHarness.create(_deviceA, seed: 31);
+      final b = await _LanHarness.create(_deviceB, seed: 32);
+      addTearDown(a.close);
+      addTearDown(b.close);
+      await _pair(a, b);
+      await _insertGameWithCover(
+        b,
+        gameId: 'game-media',
+        title: 'Media game',
+        mediaId: 'media-1',
+        bytes: _pngBytes,
+        hashOverride: '0' * 64,
+      );
+
+      final session = await a.lan.startHost(
+        bindAddress: InternetAddress.loopbackIPv4,
+        displayAddress: InternetAddress.loopbackIPv4.address,
+      );
+      final clientResult = await b.lan.connectAndSync(
+        host: session.host,
+        port: session.port,
+        sessionCode: session.sessionCode,
+      );
+      final hostResult = await session.completed;
+
+      expect(clientResult.local.mediaSent, 0);
+      expect(clientResult.local.mediaFailed, greaterThanOrEqualTo(1));
+      expect(hostResult.local.mediaRequested, 1);
+      expect(hostResult.local.mediaReceived, 0);
+      expect(hostResult.local.pendingMedia, 1);
+      final media = await a.db.select(a.db.mediaAssets).get();
+      expect(media, isEmpty);
+    },
+  );
+
+  test('invalid magic bytes and oversized media are rejected safely', () async {
+    final invalidHost = await _LanHarness.create(_deviceA, seed: 33);
+    final invalidClient = await _LanHarness.create(_deviceB, seed: 34);
+    addTearDown(invalidHost.close);
+    addTearDown(invalidClient.close);
+    await _pair(invalidHost, invalidClient);
+    await _insertGameWithCover(
+      invalidClient,
+      gameId: 'game-invalid',
+      title: 'Invalid media',
+      mediaId: 'media-invalid',
+      bytes: Uint8List.fromList([1, 2, 3, 4, 5, 6]),
+      bypassStorageValidation: true,
+    );
+
+    final invalidSession = await invalidHost.lan.startHost(
+      bindAddress: InternetAddress.loopbackIPv4,
+      displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    final invalidResult = await invalidClient.lan.connectAndSync(
+      host: invalidSession.host,
+      port: invalidSession.port,
+      sessionCode: invalidSession.sessionCode,
+    );
+    final invalidHostResult = await invalidSession.completed;
+    expect(invalidResult.local.mediaFailed, greaterThanOrEqualTo(1));
+    expect(invalidHostResult.local.mediaReceived, 0);
+    expect(
+      await invalidHost.db.select(invalidHost.db.mediaAssets).get(),
+      isEmpty,
+    );
+
+    final smallHost = await _LanHarness.create(
+      _deviceA,
+      seed: 35,
+      maxMediaFileBytes: 12,
+    );
+    final smallClient = await _LanHarness.create(
+      _deviceB,
+      seed: 36,
+      maxMediaFileBytes: 12,
+    );
+    addTearDown(smallHost.close);
+    addTearDown(smallClient.close);
+    await _pair(smallHost, smallClient);
+    await _insertGameWithCover(
+      smallClient,
+      gameId: 'game-large',
+      title: 'Large media',
+      mediaId: 'media-large',
+      bytes: Uint8List.fromList([..._pngBytes, ...List<int>.filled(32, 0)]),
+    );
+
+    final smallSession = await smallHost.lan.startHost(
+      bindAddress: InternetAddress.loopbackIPv4,
+      displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    final smallResult = await smallClient.lan.connectAndSync(
+      host: smallSession.host,
+      port: smallSession.port,
+      sessionCode: smallSession.sessionCode,
+    );
+    final smallHostResult = await smallSession.completed;
+    expect(smallResult.local.mediaFailed, greaterThanOrEqualTo(1));
+    expect(smallHostResult.local.mediaReceived, 0);
+    expect(await smallHost.db.select(smallHost.db.mediaAssets).get(), isEmpty);
+  });
 }
 
 Future<void> _pair(_LanHarness a, _LanHarness b) async {
@@ -719,6 +966,86 @@ Future<void> _renameGame(
                 updatedAt: Value(_now.add(Duration(minutes: minutes))),
               ),
             ),
+  );
+}
+
+Future<StoredMediaFile> _insertGameWithCover(
+  _LanHarness harness, {
+  required String gameId,
+  required String title,
+  required String mediaId,
+  required Uint8List bytes,
+  String? hashOverride,
+  bool bypassStorageValidation = false,
+}) async {
+  final stored =
+      bypassStorageValidation
+          ? await _writeRawMedia(
+            harness,
+            gameId: gameId,
+            mediaId: mediaId,
+            bytes: bytes,
+          )
+          : await harness.storage.saveBytes(
+            gameId: gameId,
+            assetId: mediaId,
+            bytes: bytes,
+          );
+  await harness.runner.run(
+    source: SyncChangeSource.manual,
+    action: (_) async {
+      await harness.db
+          .into(harness.db.games)
+          .insert(
+            GamesCompanion.insert(
+              id: gameId,
+              title: title,
+              createdAt: _now,
+              updatedAt: _now,
+            ),
+          );
+      await harness.db
+          .into(harness.db.mediaAssets)
+          .insert(
+            MediaAssetsCompanion.insert(
+              id: mediaId,
+              gameId: gameId,
+              kind: 'cover',
+              source: 'local',
+              localPath: stored.localPath,
+              fileName: stored.fileName,
+              mimeType: Value(stored.mimeType),
+              hash: Value(hashOverride ?? stored.hash),
+              isSelected: const Value(true),
+              createdAt: _now,
+              updatedAt: _now,
+            ),
+          );
+    },
+  );
+  return StoredMediaFile(
+    localPath: stored.localPath,
+    fileName: stored.fileName,
+    mimeType: stored.mimeType,
+    hash: hashOverride ?? stored.hash,
+  );
+}
+
+Future<StoredMediaFile> _writeRawMedia(
+  _LanHarness harness, {
+  required String gameId,
+  required String mediaId,
+  required Uint8List bytes,
+}) async {
+  final localPath = 'media/games/$gameId/$mediaId.png';
+  final file = await harness.storage.resolveFile(localPath);
+  await file.parent.create(recursive: true);
+  await file.writeAsBytes(bytes, flush: true);
+  return StoredMediaFile(
+    localPath: localPath,
+    fileName: '$mediaId.png',
+    mimeType: 'image/png',
+    hash: sha256.convert(bytes).toString(),
   );
 }
 
@@ -915,6 +1242,8 @@ class _LanHarness {
     required this.manager,
     required this.runner,
     required this.service,
+    required this.storage,
+    required this.mediaDir,
     required this.lan,
   });
 
@@ -924,6 +1253,8 @@ class _LanHarness {
   final SyncGroupManager manager;
   final SyncAwareTransaction runner;
   final SyncPackageService service;
+  final MediaFileStorage storage;
+  final Directory mediaDir;
   final LanSyncService lan;
 
   static Future<_LanHarness> create(
@@ -932,8 +1263,14 @@ class _LanHarness {
     Duration timeout = const Duration(seconds: 5),
     Duration sessionTimeout = const Duration(minutes: 5),
     int maxRequestBytes = LanSyncService.defaultMaxRequestBytes,
+    int maxMediaFileBytes = LanMediaTransferService.defaultMaxFileBytes,
+    int maxMediaSessionBytes = LanMediaTransferService.defaultMaxSessionBytes,
   }) async {
     final db = AppDatabase(NativeDatabase.memory());
+    final mediaDir = await Directory.systemTemp.createTemp(
+      'backlog-vault-lan-media-$seed-',
+    );
+    final storage = MediaFileStorage(baseDirectoryLoader: () async => mediaDir);
     final identity = SyncDeviceIdentityService(
       store: _MemoryIdentityStore(deviceId),
       repository: SyncDeviceRepository(db),
@@ -992,8 +1329,17 @@ class _LanHarness {
       groupKeys: manager,
       clock: _FixedClock(_now),
     );
+    final mediaTransfer = LanMediaTransferService(
+      database: db,
+      storage: storage,
+      conflictDetector: detector,
+      clock: _FixedClock(_now),
+      maxFileBytes: maxMediaFileBytes,
+      maxSessionBytes: maxMediaSessionBytes,
+    );
     final lan = LanSyncService(
       packageService: service,
+      mediaTransfer: mediaTransfer,
       groupKeys: manager,
       pairingStateLoader: manager.state,
       ids: _UuidSequence(seed, start: 90),
@@ -1009,11 +1355,18 @@ class _LanHarness {
       manager: manager,
       runner: runner,
       service: service,
+      storage: storage,
+      mediaDir: mediaDir,
       lan: lan,
     );
   }
 
-  Future<void> close() => db.close();
+  Future<void> close() async {
+    await db.close();
+    if (await mediaDir.exists()) {
+      await mediaDir.delete(recursive: true);
+    }
+  }
 }
 
 class _MemoryIdentityStore implements SyncIdentityStore {

@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_providers.dart';
+import '../../media/data/media_repository.dart';
 import '../data/encrypted_sync_package_codec.dart';
 import '../data/encrypted_pairing_codec.dart';
+import '../data/lan_media_transfer_service.dart';
 import '../data/lan_sync_service.dart';
 import '../data/sync_change_applier.dart';
 import '../data/sync_change_tracking.dart';
@@ -153,9 +155,20 @@ final syncPackageFileServiceProvider = Provider<SyncPackageFileService>((ref) {
   return const SyncPackageFileService();
 });
 
+final lanMediaTransferServiceProvider = Provider<LanMediaTransferService>((
+  ref,
+) {
+  return LanMediaTransferService(
+    database: ref.watch(appDatabaseProvider),
+    storage: ref.watch(mediaFileStorageProvider),
+    conflictDetector: ref.watch(syncConflictDetectorProvider),
+  );
+});
+
 final lanSyncServiceProvider = Provider<LanSyncService>((ref) {
   return LanSyncService(
     packageService: ref.watch(syncPackageServiceProvider),
+    mediaTransfer: ref.watch(lanMediaTransferServiceProvider),
     groupKeys: ref.watch(syncGroupManagerProvider),
     pairingStateLoader: () => ref.read(syncGroupManagerProvider).state(),
   );

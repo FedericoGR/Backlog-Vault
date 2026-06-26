@@ -80,13 +80,13 @@ Nunca commitees claves, client secrets, bearer/access tokens, archivos `.secure`
 
 - `.vaultbackup` incluye biblioteca lógica y media, pero no está cifrado.
 - `.vaultbackup.enc` cifra el backup completo con una password elegida por el usuario.
-- `.vaultsync` es un paquete cifrado separado que transporta cambios; no es un backup completo ni incluye los bytes de la media.
+- `.vaultsync` es un paquete cifrado separado que transporta cambios; no es un backup completo ni incluye por sí mismo los bytes de la media.
 - `.vaultpair` es una invitación temporal cifrada con password que transporta la clave de grupo para emparejar otro dispositivo; no contiene biblioteca, media ni credenciales de providers.
 - Las passwords no se guardan; si se pierde una, su backup cifrado o paquete `.vaultsync` no se puede recuperar.
 - El restore es completo y conservador: lo ausente se marca con borrado lógico, sin hard delete.
 - Las credenciales externas y el secure storage no viajan en backups.
 
-Usá `.vaultbackup.enc` para migración completa, recuperación o copia con media. Usá `.vaultpair` para establecer una clave de grupo compartida y después archivos `.vaultsync` o **Ajustes → Sync → Sync por red local** para intercambiar cambios sin escribir una password cada vez. El modo `.vaultsync` con password sigue disponible. Las invitaciones vencen después de 24 horas; compartí el archivo y la password temporal por canales confiables separados. El sync LAN requiere que ambos dispositivos estén en la misma red local y usar IP, puerto y código de sesión del host. Los conflictos se omiten de forma segura y las portadas no se transfieren. Las credenciales se configuran por separado.
+Usá `.vaultbackup.enc` para migración completa, recuperación o copia con media. Usá `.vaultpair` para establecer una clave de grupo compartida y después archivos `.vaultsync` o **Ajustes → Sync → Sync por red local** para intercambiar cambios sin escribir una password cada vez. El modo `.vaultsync` con password sigue disponible. Las invitaciones vencen después de 24 horas; compartí el archivo y la password temporal por canales confiables separados. El sync LAN requiere que ambos dispositivos estén en la misma red local y usar IP, puerto y código de sesión del host. Los conflictos se omiten de forma segura. El sync LAN también transfiere portadas gestionadas por la app usando SHA-256 cuando el emisor tiene el archivo y el receptor puede verificar sus bytes. Las credenciales se configuran por separado.
 
 ## Idioma
 
@@ -94,14 +94,14 @@ La app detecta el idioma del sistema por default. En **Ajustes → Idioma** pod�
 
 ## Roadmap de sync
 
-Los paquetes manuales con password, los paquetes con clave de grupo emparejado y las sesiones LAN emparejadas están implementados. No requieren cuenta, backend ni cloud. El sync LAN manual requiere que ambos dispositivos estén en la misma red local:
+Los paquetes manuales con password, los paquetes con clave de grupo emparejado, las sesiones LAN emparejadas y la transferencia LAN de portadas por hash están implementados. No requieren cuenta, backend ni cloud. El sync LAN manual requiere que ambos dispositivos estén en la misma red local:
 
 - v0.1.x: estabilización, UI bilingüe y hardening de backup/restore.
 - Foundation v0.2: change tracking determinista y paquetes manuales cifrados PC ↔ Android.
 - Pairing manual `.vaultpair` con clave en secure storage; QR queda para una etapa posterior.
 - Transporte LAN manual para dispositivos emparejados usando IP, puerto y código corto de sesión.
-- Media por hash sin referencias rotas y resolución visible de conflictos.
-- QR, discovery automático, background sync y transferencia real de bytes de media quedan para etapas posteriores.
+- Media por hash sobre LAN sin referencias rotas.
+- QR, discovery automático, background sync y UI avanzada de resolución de conflictos quedan para etapas posteriores.
 - Sin dependencia cloud al principio; cloud E2EE opcional mucho más adelante.
 
 Ver [docs/sync_roadmap.md](docs/sync_roadmap.md).

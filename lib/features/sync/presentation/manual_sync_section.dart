@@ -947,12 +947,19 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
       l10n.syncLanResultAlreadyApplied(local.alreadyApplied),
       l10n.syncLanResultConflicts(local.conflicts),
       l10n.syncLanResultPendingMedia(local.pendingMedia),
+      l10n.syncLanResultMediaRequested(local.mediaRequested),
+      l10n.syncLanResultMediaReceived(local.mediaReceived),
+      l10n.syncLanResultMediaSkipped(local.mediaSkipped),
+      l10n.syncLanResultMediaFailed(local.mediaFailed),
+      l10n.syncLanResultMediaBytes(local.mediaBytesTransferred),
     ];
     final peer = result.peer;
     if (peer != null) {
       lines.add(l10n.syncLanPeerApplied(peer.applied));
       lines.add(l10n.syncLanPeerConflicts(peer.conflicts));
       lines.add(l10n.syncLanPeerPendingMedia(peer.pendingMedia));
+      lines.add(l10n.syncLanPeerMediaReceived(peer.mediaReceived));
+      lines.add(l10n.syncLanPeerMediaFailed(peer.mediaFailed));
     }
     return lines.join('\n');
   }

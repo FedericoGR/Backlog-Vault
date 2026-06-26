@@ -82,9 +82,9 @@ For manual LAN sync after pairing:
 2. On the host device, open **Settings → Sync → Local network sync** and start a LAN session.
 3. Note the displayed IP address, port, and short session code.
 4. On the client device, connect with those values and run the sync.
-5. Review the result summary. Safe changes are applied, duplicate changes are skipped, and conflicts or media-only changes are reported without overwriting local data.
+5. Review the result summary. Safe changes are applied, duplicate changes are skipped, conflicts are reported without overwriting local data, and managed cover files are transferred when hash verification succeeds.
 
-LAN sync moves group-encrypted `.vaultsync` payloads over the local network. It does not use cloud, does not run in the background, does not auto-discover devices yet, and does not transfer cover/media file bytes yet.
+LAN sync moves group-encrypted `.vaultsync` payloads over the local network, then transfers missing app-managed cover files by SHA-256 hash. The receiver never trusts remote paths, validates JPEG/PNG/WebP bytes before registering a cover, and leaves media pending for the next sync if validation fails or the sender no longer has the file. It does not use cloud, does not run in the background, does not auto-discover devices yet, and does not transfer arbitrary files.
 
 ## Restore guarantees and limits
 

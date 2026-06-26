@@ -18,7 +18,8 @@ void main() {
     expect(english.syncNoAutomaticSync, contains('does not synchronize'));
     expect(english.syncLanTitle, 'Local network sync');
     expect(english.syncLanStartSession, 'Start LAN sync session');
-    expect(english.syncLanMediaNotice, contains('not transferred'));
+    expect(english.syncLanMediaNotice, contains('by hash'));
+    expect(english.syncLanResultMediaReceived(2), contains('2'));
     expect(english.syncLanInvalidSessionCode, contains('Incorrect code'));
     expect(english.syncLanGroupMismatch, contains('another sync group'));
     expect(english.syncLanKeyMismatch, contains('sync key'));
@@ -40,7 +41,8 @@ void main() {
     expect(spanish.syncNoAutomaticSync, contains('no sincroniza'));
     expect(spanish.syncLanTitle, 'Sync por red local');
     expect(spanish.syncLanStartSession, 'Iniciar sesión LAN');
-    expect(spanish.syncLanMediaNotice, contains('todavía no se transfieren'));
+    expect(spanish.syncLanMediaNotice, contains('usando hash'));
+    expect(spanish.syncLanResultMediaReceived(2), contains('2'));
     expect(spanish.syncLanInvalidSessionCode, contains('Código incorrecto'));
     expect(spanish.syncLanGroupMismatch, contains('otro grupo'));
     expect(spanish.syncLanKeyMismatch, contains('clave de sincronización'));

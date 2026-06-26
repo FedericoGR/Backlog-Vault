@@ -4057,7 +4057,7 @@ abstract class AppLocalizations {
   /// No description provided for @syncLanMediaNotice.
   ///
   /// In en, this message translates to:
-  /// **'Cover files are not transferred by LAN sync yet.'**
+  /// **'LAN sync transfers managed cover files by hash when both paired devices can verify them.'**
   String get syncLanMediaNotice;
 
   /// No description provided for @syncLanStartSession.
@@ -4252,6 +4252,36 @@ abstract class AppLocalizations {
   /// **'Local pending cover files: {count}'**
   String syncLanResultPendingMedia(Object count);
 
+  /// No description provided for @syncLanResultMediaRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover files requested: {count}'**
+  String syncLanResultMediaRequested(Object count);
+
+  /// No description provided for @syncLanResultMediaReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover files received: {count}'**
+  String syncLanResultMediaReceived(Object count);
+
+  /// No description provided for @syncLanResultMediaSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover files skipped: {count}'**
+  String syncLanResultMediaSkipped(Object count);
+
+  /// No description provided for @syncLanResultMediaFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover files failed: {count}'**
+  String syncLanResultMediaFailed(Object count);
+
+  /// No description provided for @syncLanResultMediaBytes.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover bytes transferred: {count}'**
+  String syncLanResultMediaBytes(Object count);
+
   /// No description provided for @syncLanPeerApplied.
   ///
   /// In en, this message translates to:
@@ -4269,6 +4299,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Peer pending cover files: {count}'**
   String syncLanPeerPendingMedia(Object count);
+
+  /// No description provided for @syncLanPeerMediaReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Peer cover files received: {count}'**
+  String syncLanPeerMediaReceived(Object count);
+
+  /// No description provided for @syncLanPeerMediaFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Peer cover files failed: {count}'**
+  String syncLanPeerMediaFailed(Object count);
 }
 
 class _AppLocalizationsDelegate

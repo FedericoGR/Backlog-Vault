@@ -42,7 +42,7 @@ RC3 consolidates the repository on `main`, keeps `release/v1` as the RC line, an
 
 ## Known limitations
 
-- No automatic sync, LAN sync, or cloud transport.
+- No automatic/background sync, QR discovery, or cloud transport. Manual paired LAN sync is available for local-network use.
 - Restore is not a field-level merge.
 - Provider/API error details can originate from provider or validation layers; generic user-facing failures are localized and secrets are redacted.
 - Android packages are locally signed for personal testing, not store publication.

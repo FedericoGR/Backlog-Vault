@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
-
 import 'package:crypto/crypto.dart';
 
 import '../../../core/ids/id_generator.dart';
@@ -12,6 +11,7 @@ import '../domain/lan_sync_models.dart';
 import '../domain/sync_package_models.dart';
 import '../domain/sync_pairing_models.dart';
 import 'canonical_json.dart';
+import 'lan_media_transfer_service.dart';
 import 'sync_group_management.dart';
 import 'sync_package_service.dart';
 
@@ -20,6 +20,7 @@ typedef SyncPairingStateLoader = Future<SyncPairingState> Function();
 class LanSyncService {
   LanSyncService({
     required SyncPackageService packageService,
+    required LanMediaTransferService mediaTransfer,
     required SyncGroupKeyResolver groupKeys,
     required SyncPairingStateLoader pairingStateLoader,
     IdGenerator? ids,
@@ -28,6 +29,7 @@ class LanSyncService {
     Duration sessionTimeout = const Duration(minutes: 5),
     int maxRequestBytes = defaultMaxRequestBytes,
   }) : _packageService = packageService,
+       _mediaTransfer = mediaTransfer,
        _groupKeys = groupKeys,
        _pairingStateLoader = pairingStateLoader,
        _ids = ids ?? defaultIdGenerator,
@@ -39,6 +41,7 @@ class LanSyncService {
   static const defaultMaxRequestBytes = 24 * 1024 * 1024;
 
   final SyncPackageService _packageService;
+  final LanMediaTransferService _mediaTransfer;
   final SyncGroupKeyResolver _groupKeys;
   final SyncPairingStateLoader _pairingStateLoader;
   final IdGenerator _ids;
@@ -76,6 +79,8 @@ class LanSyncService {
     String? acceptedClientNonce;
     SyncPackageDevice? acceptedClientDevice;
     var exchangeStarted = false;
+    var mediaStarted = false;
+    _HostExchangeState? exchangeState;
 
     server.listen((request) {
       unawaited(
@@ -86,12 +91,16 @@ class LanSyncService {
           hostNonce: hostNonce,
           acceptedClientNonce: () => acceptedClientNonce,
           acceptedClientDevice: () => acceptedClientDevice,
+          exchangeState: () => exchangeState,
           acceptClient: (nonce, device) {
             acceptedClientNonce = nonce;
             acceptedClientDevice = device;
           },
+          storeExchangeState: (state) => exchangeState = state,
           exchangeStarted: () => exchangeStarted,
           markExchangeStarted: () => exchangeStarted = true,
+          mediaStarted: () => mediaStarted,
+          markMediaStarted: () => mediaStarted = true,
         ),
       );
     });
@@ -194,7 +203,8 @@ class LanSyncService {
       },
     );
     final incomingBytes = _decodePackageBytes(_string(exchange, 'package'));
-    final peer = LanSyncSummary.fromJson(_map(exchange['result']));
+    final peerExchange = LanSyncSummary.fromJson(_map(exchange['result']));
+    final hostRequests = _mediaRequests(exchange['mediaRequests']);
     _expectProof(key.bytes, _string(exchange, 'proof'), {
       'type': 'exchangeResponse',
       'sessionId': sessionId,
@@ -204,18 +214,83 @@ class LanSyncService {
       'hostNonce': hostNonce,
       'deviceId': hostDevice.deviceId,
       'packageHash': _sha256Base64(incomingBytes),
-      'result': peer.toJson(),
+      'result': peerExchange.toJson(),
+      'mediaRequests': _mediaRequestsJson(hostRequests),
       'sessionCode': normalizedCode,
     });
     final localApply = await _packageService.applySafeChangesWithGroupKey(
       incomingBytes,
     );
+    final localPrepare = await _mediaTransfer.prepareIncomingMedia(
+      localApply.preview.document,
+    );
+    final uploads = await _mediaTransfer.buildPayloads(
+      document: outgoing.document,
+      requests: hostRequests,
+    );
+    final mediaProofBody = {
+      'type': 'media',
+      'sessionId': sessionId,
+      'groupId': key.groupId,
+      'keyId': key.keyId,
+      'clientNonce': clientNonce,
+      'hostNonce': hostNonce,
+      'deviceId': state.localDevice.deviceId,
+      'requests': _mediaRequestsJson(localPrepare.requests),
+      'payloads': _mediaPayloadsJson(uploads.payloads),
+      'sessionCode': normalizedCode,
+    };
+    final media = await _postJson(
+      host: host,
+      port: port,
+      path: '/sync/media',
+      body: {
+        'formatVersion': 1,
+        'syncProtocolVersion': syncProtocolVersion,
+        'sessionId': sessionId,
+        'groupId': key.groupId,
+        'keyId': key.keyId,
+        'device': state.localDevice.toJson(),
+        'clientNonce': clientNonce,
+        'requests': _mediaRequestsJson(localPrepare.requests),
+        'payloads': _mediaPayloadsJson(uploads.payloads),
+        'proof': _proof(key.bytes, mediaProofBody),
+      },
+    );
+    final hostPayloads = _mediaPayloads(media['payloads']);
+    final peer = LanSyncSummary.fromJson(_map(media['result']));
+    _expectProof(key.bytes, _string(media, 'proof'), {
+      'type': 'mediaResponse',
+      'sessionId': sessionId,
+      'groupId': key.groupId,
+      'keyId': key.keyId,
+      'clientNonce': clientNonce,
+      'hostNonce': hostNonce,
+      'deviceId': hostDevice.deviceId,
+      'payloads': _mediaPayloadsJson(hostPayloads),
+      'result': peer.toJson(),
+      'sessionCode': normalizedCode,
+    });
+    final received = await _mediaTransfer.receivePayloads(
+      document: localApply.preview.document,
+      payloads: hostPayloads,
+    );
+    final localSummary = LanSyncSummary.fromImportResult(
+      changesSent: outgoing.changeCount,
+      result: localApply,
+    ).withMedia(
+      mediaRequested: localPrepare.requests.length,
+      mediaSent: uploads.sent,
+      mediaReceived: received.received,
+      mediaSkipped: localPrepare.skipped + uploads.skipped + received.skipped,
+      mediaFailed: localPrepare.failed + uploads.failed + received.failed,
+      mediaBytesTransferred:
+          uploads.bytesTransferred + received.bytesTransferred,
+      pendingMedia: received.pendingAfterReceive,
+    );
     return LanSyncResult(
       peerDevice: hostDevice,
-      local: LanSyncSummary.fromImportResult(
-        changesSent: outgoing.changeCount,
-        result: localApply,
-      ),
+      local: localSummary,
       peer: peer,
     );
   }
@@ -227,9 +302,13 @@ class LanSyncService {
     required String hostNonce,
     required String? Function() acceptedClientNonce,
     required SyncPackageDevice? Function() acceptedClientDevice,
+    required _HostExchangeState? Function() exchangeState,
     required void Function(String nonce, SyncPackageDevice device) acceptClient,
+    required void Function(_HostExchangeState state) storeExchangeState,
     required bool Function() exchangeStarted,
     required void Function() markExchangeStarted,
+    required bool Function() mediaStarted,
+    required void Function() markMediaStarted,
   }) async {
     try {
       if (request.method != 'POST') {
@@ -309,9 +388,27 @@ class LanSyncService {
         final incomingApply = await _packageService
             .applySafeChangesWithGroupKey(incomingBytes);
         final outgoing = await _packageService.exportWithGroupKey();
+        final mediaPrepare = await _mediaTransfer.prepareIncomingMedia(
+          incomingApply.preview.document,
+        );
         final localSummary = LanSyncSummary.fromImportResult(
           changesSent: outgoing.changeCount,
           result: incomingApply,
+        ).withMedia(
+          mediaRequested: mediaPrepare.requests.length,
+          mediaSkipped: mediaPrepare.skipped,
+          mediaFailed: mediaPrepare.failed,
+          pendingMedia: mediaPrepare.pendingAfterLocalResolution,
+        );
+        storeExchangeState(
+          _HostExchangeState(
+            clientDevice: device,
+            clientNonce: clientNonce,
+            incomingDocument: incomingApply.preview.document,
+            outgoingDocument: outgoing.document,
+            localSummary: localSummary,
+            mediaRequests: mediaPrepare.requests,
+          ),
         );
         final response = {
           'formatVersion': 1,
@@ -321,6 +418,7 @@ class LanSyncService {
           'keyId': key.keyId,
           'package': base64Encode(outgoing.bytes),
           'result': localSummary.toJson(),
+          'mediaRequests': _mediaRequestsJson(mediaPrepare.requests),
         };
         response['proof'] = _proof(key.bytes, {
           'type': 'exchangeResponse',
@@ -332,11 +430,92 @@ class LanSyncService {
           'deviceId': session.localDevice.deviceId,
           'packageHash': _sha256Base64(outgoing.bytes),
           'result': localSummary.toJson(),
+          'mediaRequests': _mediaRequestsJson(mediaPrepare.requests),
+          'sessionCode': session.sessionCode,
+        });
+        await _writeJson(request.response, response);
+        return;
+      }
+      if (request.uri.path == '/sync/media') {
+        final body = await _readJson(request);
+        _validateEnvelope(body, key);
+        if (mediaStarted()) {
+          throw const LanSyncException(LanSyncFailure.invalidRequest);
+        }
+        markMediaStarted();
+        final state = exchangeState();
+        if (state == null || _string(body, 'sessionId') != session.sessionId) {
+          throw const LanSyncException(LanSyncFailure.invalidRequest);
+        }
+        final device = SyncPackageDevice.fromJson(_map(body['device']));
+        final clientNonce = _string(body, 'clientNonce');
+        if (clientNonce != acceptedClientNonce() ||
+            clientNonce != state.clientNonce ||
+            device.deviceId != acceptedClientDevice()?.deviceId ||
+            device.deviceId != state.clientDevice.deviceId) {
+          throw const LanSyncException(LanSyncFailure.invalidRequest);
+        }
+        final requests = _mediaRequests(body['requests']);
+        final payloads = _mediaPayloads(body['payloads']);
+        _expectProof(key.bytes, _string(body, 'proof'), {
+          'type': 'media',
+          'sessionId': session.sessionId,
+          'groupId': key.groupId,
+          'keyId': key.keyId,
+          'clientNonce': clientNonce,
+          'hostNonce': hostNonce,
+          'deviceId': device.deviceId,
+          'requests': _mediaRequestsJson(requests),
+          'payloads': _mediaPayloadsJson(payloads),
+          'sessionCode': session.sessionCode,
+        });
+        final outgoingMedia = await _mediaTransfer.buildPayloads(
+          document: state.outgoingDocument,
+          requests: requests,
+        );
+        final incomingMedia = await _mediaTransfer.receivePayloads(
+          document: state.incomingDocument,
+          payloads: payloads,
+        );
+        final finalSummary = state.localSummary.withMedia(
+          mediaSent: outgoingMedia.sent,
+          mediaReceived: incomingMedia.received,
+          mediaSkipped:
+              state.localSummary.mediaSkipped +
+              outgoingMedia.skipped +
+              incomingMedia.skipped,
+          mediaFailed:
+              state.localSummary.mediaFailed +
+              outgoingMedia.failed +
+              incomingMedia.failed,
+          mediaBytesTransferred:
+              outgoingMedia.bytesTransferred + incomingMedia.bytesTransferred,
+          pendingMedia: incomingMedia.pendingAfterReceive,
+        );
+        final response = {
+          'formatVersion': 1,
+          'syncProtocolVersion': syncProtocolVersion,
+          'sessionId': session.sessionId,
+          'groupId': key.groupId,
+          'keyId': key.keyId,
+          'payloads': _mediaPayloadsJson(outgoingMedia.payloads),
+          'result': finalSummary.toJson(),
+        };
+        response['proof'] = _proof(key.bytes, {
+          'type': 'mediaResponse',
+          'sessionId': session.sessionId,
+          'groupId': key.groupId,
+          'keyId': key.keyId,
+          'clientNonce': clientNonce,
+          'hostNonce': hostNonce,
+          'deviceId': session.localDevice.deviceId,
+          'payloads': _mediaPayloadsJson(outgoingMedia.payloads),
+          'result': finalSummary.toJson(),
           'sessionCode': session.sessionCode,
         });
         await _writeJson(request.response, response);
         session._complete(
-          LanSyncResult(peerDevice: device, local: localSummary),
+          LanSyncResult(peerDevice: device, local: finalSummary),
         );
         unawaited(session.stop());
         return;
@@ -602,6 +781,24 @@ class LanSyncService {
   }
 }
 
+class _HostExchangeState {
+  const _HostExchangeState({
+    required this.clientDevice,
+    required this.clientNonce,
+    required this.incomingDocument,
+    required this.outgoingDocument,
+    required this.localSummary,
+    required this.mediaRequests,
+  });
+
+  final SyncPackageDevice clientDevice;
+  final String clientNonce;
+  final SyncPackageDocument incomingDocument;
+  final SyncPackageDocument outgoingDocument;
+  final LanSyncSummary localSummary;
+  final List<LanMediaRequest> mediaRequests;
+}
+
 class LanSyncHostSession {
   LanSyncHostSession._({
     required this.sessionId,
@@ -692,6 +889,28 @@ Map<String, Object?> _map(Object? value) {
   if (value is Map) return Map<String, Object?>.from(value);
   throw const LanSyncException(LanSyncFailure.invalidRequest);
 }
+
+List<LanMediaRequest> _mediaRequests(Object? value) {
+  if (value == null) return const [];
+  if (value is! List) {
+    throw const LanSyncException(LanSyncFailure.invalidRequest);
+  }
+  return value.map((item) => LanMediaRequest.fromJson(_map(item))).toList();
+}
+
+List<LanMediaPayload> _mediaPayloads(Object? value) {
+  if (value == null) return const [];
+  if (value is! List) {
+    throw const LanSyncException(LanSyncFailure.invalidRequest);
+  }
+  return value.map((item) => LanMediaPayload.fromJson(_map(item))).toList();
+}
+
+List<Map<String, Object?>> _mediaRequestsJson(List<LanMediaRequest> requests) =>
+    requests.map((request) => request.toJson()).toList(growable: false);
+
+List<Map<String, Object?>> _mediaPayloadsJson(List<LanMediaPayload> payloads) =>
+    payloads.map((payload) => payload.toJson()).toList(growable: false);
 
 bool _constantTimeEquals(List<int> left, List<int> right) {
   if (left.length != right.length) return false;

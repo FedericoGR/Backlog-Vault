@@ -2251,7 +2251,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syncLanMediaNotice =>
-      'Cover files are not transferred by LAN sync yet.';
+      'LAN sync transfers managed cover files by hash when both paired devices can verify them.';
 
   @override
   String get syncLanStartSession => 'Start LAN sync session';
@@ -2380,6 +2380,31 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String syncLanResultMediaRequested(Object count) {
+    return 'Cover files requested: $count';
+  }
+
+  @override
+  String syncLanResultMediaReceived(Object count) {
+    return 'Cover files received: $count';
+  }
+
+  @override
+  String syncLanResultMediaSkipped(Object count) {
+    return 'Cover files skipped: $count';
+  }
+
+  @override
+  String syncLanResultMediaFailed(Object count) {
+    return 'Cover files failed: $count';
+  }
+
+  @override
+  String syncLanResultMediaBytes(Object count) {
+    return 'Cover bytes transferred: $count';
+  }
+
+  @override
   String syncLanPeerApplied(Object count) {
     return 'Peer applied: $count';
   }
@@ -2392,5 +2417,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String syncLanPeerPendingMedia(Object count) {
     return 'Peer pending cover files: $count';
+  }
+
+  @override
+  String syncLanPeerMediaReceived(Object count) {
+    return 'Peer cover files received: $count';
+  }
+
+  @override
+  String syncLanPeerMediaFailed(Object count) {
+    return 'Peer cover files failed: $count';
   }
 }

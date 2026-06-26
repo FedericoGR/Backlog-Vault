@@ -48,6 +48,7 @@ class SyncPackageService {
       fileName: _fileName(_clock.now().toUtc()),
       bytes: encrypted,
       changeCount: document.changes.length,
+      document: document,
     );
   }
 
@@ -83,6 +84,7 @@ class SyncPackageService {
       fileName: _fileName(_clock.now().toUtc()),
       bytes: encrypted,
       changeCount: document.changes.length,
+      document: document,
     );
   }
 

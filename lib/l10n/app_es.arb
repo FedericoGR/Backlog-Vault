@@ -656,7 +656,7 @@
   "syncLanTitle": "Sync por red local",
   "syncLanDescription": "Iniciá una sesión LAN temporal en un dispositivo emparejado y conectate desde el otro con la IP, puerto y código de sesión mostrados.",
   "syncLanPairFirst": "Primero emparejá los dispositivos. El sync LAN requiere un grupo de sincronización y su clave en secure storage.",
-  "syncLanMediaNotice": "Los archivos de portada todavía no se transfieren por sync LAN.",
+  "syncLanMediaNotice": "El sync LAN transfiere portadas gestionadas por la app usando hash cuando ambos dispositivos emparejados pueden verificarlas.",
   "syncLanStartSession": "Iniciar sesión LAN",
   "syncLanStopSession": "Detener sesión",
   "syncLanConnectSession": "Conectarse a sesión LAN",
@@ -689,7 +689,14 @@
   "syncLanResultAlreadyApplied": "Ya aplicados localmente: {count}",
   "syncLanResultConflicts": "Conflictos locales omitidos: {count}",
   "syncLanResultPendingMedia": "Portadas locales pendientes: {count}",
+  "syncLanResultMediaRequested": "Portadas solicitadas: {count}",
+  "syncLanResultMediaReceived": "Portadas recibidas: {count}",
+  "syncLanResultMediaSkipped": "Portadas omitidas: {count}",
+  "syncLanResultMediaFailed": "Portadas fallidas: {count}",
+  "syncLanResultMediaBytes": "Bytes de portada transferidos: {count}",
   "syncLanPeerApplied": "El otro dispositivo aplicó: {count}",
   "syncLanPeerConflicts": "Conflictos omitidos en el otro dispositivo: {count}",
-  "syncLanPeerPendingMedia": "Portadas pendientes en el otro dispositivo: {count}"
+  "syncLanPeerPendingMedia": "Portadas pendientes en el otro dispositivo: {count}",
+  "syncLanPeerMediaReceived": "El otro dispositivo recibió portadas: {count}",
+  "syncLanPeerMediaFailed": "Portadas fallidas en el otro dispositivo: {count}"
 }
