@@ -4,6 +4,8 @@ Backlog Vault is an offline-first videogame backlog manager for Windows and Andr
 
 > Spanish documentation: [README.es.md](README.es.md)
 
+Current release candidate: `v0.2.0-rc1` (`0.2.0+4`).
+
 ## What it does
 
 - Library views: responsive table, gallery, and list.
@@ -32,7 +34,7 @@ Backlog Vault is an offline-first videogame backlog manager for Windows and Andr
 - Provider credentials are stored with the operating system's secure storage.
 - RAWG keys, IGDB/Twitch credentials and tokens, and SteamGridDB keys are excluded from backups and exports.
 - Manual encrypted change packages and local-network sync for paired devices are available.
-- Manual device pairing enables reusable group-key packages and manual LAN sessions; it does not enable automatic, background, cloud, QR, discovery, or media-file transfer.
+- Manual device pairing enables reusable group-key packages and manual LAN sessions with hash-verified managed cover transfer; it does not enable automatic, background, cloud, QR, or discovery.
 - The random 256-bit sync group key is stored only in each paired device's operating-system secure storage and never enters library backups.
 
 See [install and portability](docs/install_and_portability.md) for the current data-transfer workflow.
@@ -75,7 +77,7 @@ flutter build apk
 Create a local Windows portable archive with:
 
 ```powershell
-.\tool\package_windows.ps1 -SkipBuild
+.\tool\package_windows.ps1 -SkipBuild -ReleaseLabel v0.2.0-rc1
 ```
 
 Generated `build/`, `dist/`, APK, ZIP, and cache artifacts are intentionally excluded from Git.
@@ -94,7 +96,7 @@ Never commit real keys, client secrets, bearer tokens, access tokens, `.secure` 
 
 - `.vaultbackup` contains the logical library and media but is not encrypted.
 - `.vaultbackup.enc` encrypts the complete backup with a user-provided password.
-- `.vaultsync` is a separate encrypted change package. It is not a complete backup and does not contain media file bytes by itself.
+- `.vaultsync` is a separate encrypted change package. It is not a complete backup and does not contain media file bytes by itself; paired LAN sync can transfer managed cover files separately by hash.
 - `.vaultpair` is a temporary password-encrypted invitation that carries the group key needed to pair another device. It contains no library, media, or provider credentials.
 - Passwords are never stored. Losing one makes its encrypted backup or `.vaultsync` package unrecoverable.
 - Restore is complete and conservative: current records absent from the backup are soft-deleted, not physically erased.
@@ -135,8 +137,8 @@ Screenshots will be added after the bilingual Windows and Android UI pass is cap
 ## Project documentation
 
 - [Install and portability](docs/install_and_portability.md)
-- [v1 QA checklist](docs/qa_v1_checklist.md)
-- [RC3 release notes](docs/release_notes_v1.md)
+- [v0.2 QA checklist](docs/qa_v0_2_checklist.md)
+- [v0.2 release notes](docs/release_notes_v0_2.md)
 - [Secure sync roadmap](docs/sync_roadmap.md)
 
 ## License

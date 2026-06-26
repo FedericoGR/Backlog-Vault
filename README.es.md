@@ -4,6 +4,8 @@ Backlog Vault es un gestor offline-first de backlog de videojuegos para Windows 
 
 > Documentación principal en inglés: [README.md](README.md)
 
+Release candidate actual: `v0.2.0-rc1` (`0.2.0+4`).
+
 ## Funcionalidades
 
 - Biblioteca responsive en tabla, galería y lista.
@@ -32,7 +34,7 @@ Backlog Vault es un gestor offline-first de backlog de videojuegos para Windows 
 - Las credenciales de providers se guardan en el secure storage del sistema.
 - Claves RAWG, credenciales y tokens IGDB/Twitch, y claves SteamGridDB no se incluyen en backups ni exports.
 - Ya existen paquetes manuales cifrados y sync por red local para dispositivos emparejados.
-- El pairing manual habilita paquetes con clave de grupo y sesiones LAN manuales; no habilita sync automático, background, cloud, QR, discovery ni transferencia de media.
+- El pairing manual habilita paquetes con clave de grupo y sesiones LAN manuales con transferencia de portadas gestionadas por hash; no habilita sync automático, background, cloud, QR ni discovery.
 - La clave aleatoria de grupo de 256 bits vive únicamente en el secure storage del sistema de cada dispositivo emparejado y no entra en backups.
 
 ## Instalación
@@ -61,7 +63,7 @@ flutter build apk
 Para generar el ZIP portable local:
 
 ```powershell
-.\tool\package_windows.ps1 -SkipBuild
+.\tool\package_windows.ps1 -SkipBuild -ReleaseLabel v0.2.0-rc1
 ```
 
 `build/`, `dist/`, APKs, ZIPs y cachés no se versionan.
@@ -80,7 +82,7 @@ Nunca commitees claves, client secrets, bearer/access tokens, archivos `.secure`
 
 - `.vaultbackup` incluye biblioteca lógica y media, pero no está cifrado.
 - `.vaultbackup.enc` cifra el backup completo con una password elegida por el usuario.
-- `.vaultsync` es un paquete cifrado separado que transporta cambios; no es un backup completo ni incluye por sí mismo los bytes de la media.
+- `.vaultsync` es un paquete cifrado separado que transporta cambios; no es un backup completo ni incluye por sí mismo los bytes de la media. El sync LAN emparejado puede transferir portadas gestionadas por la app por hash.
 - `.vaultpair` es una invitación temporal cifrada con password que transporta la clave de grupo para emparejar otro dispositivo; no contiene biblioteca, media ni credenciales de providers.
 - Las passwords no se guardan; si se pierde una, su backup cifrado o paquete `.vaultsync` no se puede recuperar.
 - El restore es completo y conservador: lo ausente se marca con borrado lógico, sin hard delete.
@@ -113,8 +115,8 @@ La sección queda preparada. Se agregarán capturas reales de Windows y Android 
 ## Documentación
 
 - [Instalación y portabilidad](docs/install_and_portability.md)
-- [Checklist QA v1](docs/qa_v1_checklist.md)
-- [Notas de RC3](docs/release_notes_v1.md)
+- [Checklist QA v0.2](docs/qa_v0_2_checklist.md)
+- [Notas v0.2](docs/release_notes_v0_2.md)
 - [Roadmap técnico de sync](docs/sync_roadmap.md)
 
 ## Licencia

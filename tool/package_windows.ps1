@@ -1,6 +1,7 @@
 param(
     [switch]$SkipBuild,
-    [string]$Configuration = "Release"
+    [string]$Configuration = "Release",
+    [string]$ReleaseLabel = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -44,7 +45,8 @@ try {
 
     $versionLine = Get-Content $pubspecPath | Where-Object { $_ -match "^version:\s*(.+)$" } | Select-Object -First 1
     $version = if ($versionLine -match "^version:\s*([^\+]+)") { $Matches[1].Trim() } else { "0.1.0" }
-    $zipName = "BacklogVault-windows-x64-v$version.zip"
+    $artifactVersion = if ([string]::IsNullOrWhiteSpace($ReleaseLabel)) { $version } else { $ReleaseLabel.Trim().TrimStart("v") }
+    $zipName = "BacklogVault-windows-x64-v$artifactVersion.zip"
     $zipPath = Join-Path $distDir $zipName
 
     New-Item -ItemType Directory -Force -Path $distDir | Out-Null

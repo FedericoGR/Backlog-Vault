@@ -1,7 +1,7 @@
 # Backlog Vault install and portability
 
-Version: `0.1.0+3`
-Release candidate: `v0.1.0-rc3`
+Version: `0.2.0+4`
+Release candidate: `v0.2.0-rc1`
 
 Backlog Vault is local-first. App data, media, provider credentials, and language preferences live on each device unless library data is explicitly moved through a backup, encrypted sync package, or paired local-network sync session.
 
@@ -17,6 +17,12 @@ Create a portable ZIP without rebuilding:
 
 ```powershell
 .\tool\package_windows.ps1 -SkipBuild
+```
+
+For the v0.2.0 release candidate artifact name:
+
+```powershell
+.\tool\package_windows.ps1 -SkipBuild -ReleaseLabel v0.2.0-rc1
 ```
 
 Extract the complete ZIP and launch `backlog_vault.exe`. The executable, DLLs, native assets, and `data` folder must remain together.
@@ -65,7 +71,7 @@ For exchanging library changes between existing installations:
 3. Import it with the same password and inspect the preview.
 4. Apply safe changes. Duplicate changes are skipped and conflicts are reported without overwriting local values.
 
-`.vaultsync` is encrypted and contains no provider credentials or secure-storage data. It is not a backup, and this stage does not carry media file bytes. Cover-related changes remain pending so the destination never selects a missing image. A forgotten package password cannot be recovered.
+`.vaultsync` is encrypted and contains no provider credentials or secure-storage data. It is not a backup, and standalone `.vaultsync` files do not carry media file bytes. Cover-related changes remain pending so the destination never selects a missing image. Paired LAN sync can transfer missing app-managed cover files separately by SHA-256 hash. A forgotten package password cannot be recovered.
 
 To pair installations and avoid entering a password for every later package:
 
@@ -98,4 +104,4 @@ LAN sync moves group-encrypted `.vaultsync` payloads over the local network, the
 
 ## Security reminder
 
-The local SQLite database and media folder are not encrypted at rest in RC3. Use OS device protection and encrypted backups. Never include real API credentials, `.secure` files, tokens, or keystores in an app package, backup example, test, log, or repository commit.
+The local SQLite database and media folder are not encrypted at rest in v0.2.0-rc1. Use OS device protection and encrypted backups. Never include real API credentials, `.secure` files, tokens, or keystores in an app package, backup example, test, log, or repository commit.
