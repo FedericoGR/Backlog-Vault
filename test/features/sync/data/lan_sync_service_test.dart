@@ -909,6 +909,209 @@ void main() {
     expect(smallHostResult.local.mediaReceived, 0);
     expect(await smallHost.db.select(smallHost.db.mediaAssets).get(), isEmpty);
   });
+
+  test('unsafe media paths are rejected without activating covers', () async {
+    final host = await _LanHarness.create(_deviceA, seed: 37);
+    final client = await _LanHarness.create(_deviceB, seed: 38);
+    addTearDown(host.close);
+    addTearDown(client.close);
+    await _pair(host, client);
+    await _insertGameWithCover(
+      client,
+      gameId: 'game-unsafe-path',
+      title: 'Unsafe path',
+      mediaId: 'media-unsafe-path',
+      bytes: _pngBytes,
+      localPathOverride: r'media/games/game-unsafe-path\..\secret.png',
+    );
+
+    final session = await host.lan.startHost(
+      bindAddress: InternetAddress.loopbackIPv4,
+      displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    final clientResult = await client.lan.connectAndSync(
+      host: session.host,
+      port: session.port,
+      sessionCode: session.sessionCode,
+    );
+    final hostResult = await session.completed;
+
+    expect(clientResult.local.mediaSent, 0);
+    expect(clientResult.local.mediaFailed, greaterThanOrEqualTo(1));
+    expect(hostResult.local.mediaRequested, 1);
+    expect(hostResult.local.mediaReceived, 0);
+    expect(hostResult.local.pendingMedia, 1);
+    expect(await host.db.select(host.db.mediaAssets).get(), isEmpty);
+  });
+
+  test('suspicious remote filenames keep media pending', () async {
+    final host = await _LanHarness.create(_deviceA, seed: 39);
+    final client = await _LanHarness.create(_deviceB, seed: 40);
+    addTearDown(host.close);
+    addTearDown(client.close);
+    await _pair(host, client);
+    await _insertGameWithCover(
+      client,
+      gameId: 'game-unsafe-name',
+      title: 'Unsafe name',
+      mediaId: 'media-unsafe-name',
+      bytes: _pngBytes,
+      fileNameOverride: r'..\evil.png',
+    );
+
+    final session = await host.lan.startHost(
+      bindAddress: InternetAddress.loopbackIPv4,
+      displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    final clientResult = await client.lan.connectAndSync(
+      host: session.host,
+      port: session.port,
+      sessionCode: session.sessionCode,
+    );
+    final hostResult = await session.completed;
+
+    expect(clientResult.local.mediaSent, 0);
+    expect(hostResult.local.mediaRequested, 0);
+    expect(hostResult.local.mediaReceived, 0);
+    expect(hostResult.local.pendingMedia, 1);
+    expect(await host.db.select(host.db.mediaAssets).get(), isEmpty);
+  });
+
+  test('remote filename extension is ignored after byte validation', () async {
+    final host = await _LanHarness.create(_deviceA, seed: 41);
+    final client = await _LanHarness.create(_deviceB, seed: 42);
+    addTearDown(host.close);
+    addTearDown(client.close);
+    await _pair(host, client);
+    await _insertGameWithCover(
+      client,
+      gameId: 'game-extension',
+      title: 'Extension mismatch',
+      mediaId: 'media-extension',
+      bytes: _pngBytes,
+      fileNameOverride: 'media-extension.jpg',
+    );
+
+    final session = await host.lan.startHost(
+      bindAddress: InternetAddress.loopbackIPv4,
+      displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    final hostResultFuture = session.completed;
+    await client.lan.connectAndSync(
+      host: session.host,
+      port: session.port,
+      sessionCode: session.sessionCode,
+    );
+    await hostResultFuture;
+
+    final media =
+        await (host.db.select(host.db.mediaAssets)
+          ..where((table) => table.id.equals('media-extension'))).getSingle();
+    expect(media.mimeType, 'image/png');
+    expect(media.fileName, 'media-extension.png');
+    expect(media.localPath, endsWith('/media-extension.png'));
+  });
+
+  test('unknown and soft-deleted media requests are rejected', () async {
+    final harness = await _LanHarness.create(_deviceA, seed: 43);
+    addTearDown(harness.close);
+    await harness.manager.createGroup('Direct media group');
+    final stored = await _insertGameWithCover(
+      harness,
+      gameId: 'game-direct',
+      title: 'Direct media',
+      mediaId: 'media-direct',
+      bytes: _pngBytes,
+    );
+    final package = await harness.service.exportWithGroupKey();
+
+    final unknown = await harness.mediaTransfer.buildPayloads(
+      document: package.document,
+      requests: [
+        LanMediaRequest(
+          mediaAssetId: 'media-missing',
+          gameId: 'game-direct',
+          hash: stored.hash,
+        ),
+      ],
+    );
+    expect(unknown.sent, 0);
+    expect(unknown.failed, 1);
+
+    await (harness.db.update(harness.db.mediaAssets)
+      ..where((row) => row.id.equals('media-direct'))).write(
+      MediaAssetsCompanion(
+        isSelected: const Value(false),
+        deletedAt: Value(_now.add(const Duration(minutes: 1))),
+      ),
+    );
+    final deleted = await harness.mediaTransfer.buildPayloads(
+      document: package.document,
+      requests: [
+        LanMediaRequest(
+          mediaAssetId: 'media-direct',
+          gameId: 'game-direct',
+          hash: stored.hash,
+        ),
+      ],
+    );
+    expect(deleted.sent, 0);
+    expect(deleted.failed, 1);
+  });
+
+  test('media transfer enforces total session byte limit', () async {
+    final host = await _LanHarness.create(
+      _deviceA,
+      seed: 44,
+      maxMediaSessionBytes: 20,
+    );
+    final client = await _LanHarness.create(
+      _deviceB,
+      seed: 45,
+      maxMediaSessionBytes: 20,
+    );
+    addTearDown(host.close);
+    addTearDown(client.close);
+    await _pair(host, client);
+    final largerPng = Uint8List.fromList([
+      ..._pngBytes,
+      0x01,
+      0x02,
+      0x03,
+      0x04,
+    ]);
+    await _insertGameWithCover(
+      client,
+      gameId: 'game-total-a',
+      title: 'Total media A',
+      mediaId: 'media-total-a',
+      bytes: largerPng,
+    );
+    await _insertGameWithCover(
+      client,
+      gameId: 'game-total-b',
+      title: 'Total media B',
+      mediaId: 'media-total-b',
+      bytes: Uint8List.fromList([...largerPng, 0x05]),
+    );
+
+    final session = await host.lan.startHost(
+      bindAddress: InternetAddress.loopbackIPv4,
+      displayAddress: InternetAddress.loopbackIPv4.address,
+    );
+    final clientResult = await client.lan.connectAndSync(
+      host: session.host,
+      port: session.port,
+      sessionCode: session.sessionCode,
+    );
+    final hostResult = await session.completed;
+
+    expect(clientResult.local.mediaSent, 1);
+    expect(clientResult.local.mediaFailed, greaterThanOrEqualTo(1));
+    expect(hostResult.local.mediaReceived, 1);
+    expect(hostResult.local.pendingMedia, 1);
+    expect(await host.db.select(host.db.mediaAssets).get(), hasLength(1));
+  });
 }
 
 Future<void> _pair(_LanHarness a, _LanHarness b) async {
@@ -976,6 +1179,8 @@ Future<StoredMediaFile> _insertGameWithCover(
   required String mediaId,
   required Uint8List bytes,
   String? hashOverride,
+  String? localPathOverride,
+  String? fileNameOverride,
   bool bypassStorageValidation = false,
 }) async {
   final stored =
@@ -1012,8 +1217,8 @@ Future<StoredMediaFile> _insertGameWithCover(
               gameId: gameId,
               kind: 'cover',
               source: 'local',
-              localPath: stored.localPath,
-              fileName: stored.fileName,
+              localPath: localPathOverride ?? stored.localPath,
+              fileName: fileNameOverride ?? stored.fileName,
               mimeType: Value(stored.mimeType),
               hash: Value(hashOverride ?? stored.hash),
               isSelected: const Value(true),
@@ -1024,8 +1229,8 @@ Future<StoredMediaFile> _insertGameWithCover(
     },
   );
   return StoredMediaFile(
-    localPath: stored.localPath,
-    fileName: stored.fileName,
+    localPath: localPathOverride ?? stored.localPath,
+    fileName: fileNameOverride ?? stored.fileName,
     mimeType: stored.mimeType,
     hash: hashOverride ?? stored.hash,
   );
@@ -1244,6 +1449,7 @@ class _LanHarness {
     required this.service,
     required this.storage,
     required this.mediaDir,
+    required this.mediaTransfer,
     required this.lan,
   });
 
@@ -1255,6 +1461,7 @@ class _LanHarness {
   final SyncPackageService service;
   final MediaFileStorage storage;
   final Directory mediaDir;
+  final LanMediaTransferService mediaTransfer;
   final LanSyncService lan;
 
   static Future<_LanHarness> create(
@@ -1357,6 +1564,7 @@ class _LanHarness {
       service: service,
       storage: storage,
       mediaDir: mediaDir,
+      mediaTransfer: mediaTransfer,
       lan: lan,
     );
   }

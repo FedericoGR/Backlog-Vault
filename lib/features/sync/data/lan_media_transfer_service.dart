@@ -680,6 +680,7 @@ class LanMediaTransferService {
         change.snapshot['gameId'] == entry.gameId &&
         change.snapshot['hash'] == entry.hash &&
         _isValidHash(entry.hash) &&
+        _isSafeRemoteFileName(entry.fileName) &&
         _isSupportedKind(entry.kind) &&
         _isSupportedMimeType(entry.mimeType);
   }
@@ -694,7 +695,10 @@ class LanMediaTransferService {
       'createdAt',
       'updatedAt',
     };
-    return required.every(row.containsKey);
+    final fileName = row['fileName'];
+    return required.every(row.containsKey) &&
+        fileName is String &&
+        _isSafeRemoteFileName(fileName);
   }
 
   bool _sameMediaState(
@@ -740,7 +744,18 @@ class LanMediaTransferService {
     if (!trimmed.startsWith('media/')) return false;
     if (trimmed.startsWith('/') || trimmed.startsWith(r'\')) return false;
     if (trimmed.contains(':')) return false;
+    if (trimmed.contains(r'\')) return false;
     return !trimmed.split('/').any((part) => part == '..');
+  }
+
+  bool _isSafeRemoteFileName(String fileName) {
+    final trimmed = fileName.trim();
+    if (trimmed.isEmpty) return false;
+    if (trimmed.startsWith('/') || trimmed.startsWith(r'\')) return false;
+    if (trimmed.contains('/') || trimmed.contains(r'\')) return false;
+    if (trimmed.contains(':')) return false;
+    if (trimmed == '.' || trimmed == '..') return false;
+    return !trimmed.runes.any((rune) => rune < 0x20 || rune == 0x7F);
   }
 
   bool _isSupportedMimeType(String? mimeType) =>

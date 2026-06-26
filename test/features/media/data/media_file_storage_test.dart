@@ -110,6 +110,14 @@ void main() {
       storage.resolveFile('C:/Users/Feder/secret.png'),
       throwsA(isA<MediaException>()),
     );
+    await expectLater(
+      storage.resolveFile(r'media\games\game-1\asset.png'),
+      throwsA(isA<MediaException>()),
+    );
+    await expectLater(
+      storage.resolveFile(r'media/games/game-1\..\secret.png'),
+      throwsA(isA<MediaException>()),
+    );
   });
 }
 

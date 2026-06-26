@@ -119,6 +119,7 @@ bool _isUnsafeRelativePath(String localPath) {
   if (trimmed.isEmpty) return true;
   if (trimmed.startsWith('/') || trimmed.startsWith(r'\')) return true;
   if (trimmed.contains(':')) return true;
+  if (trimmed.contains(r'\')) return true;
   return trimmed.split('/').any((part) => part == '..');
 }
 
