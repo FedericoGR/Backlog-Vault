@@ -107,7 +107,7 @@ Current limitations:
 5. Completed E22.5: LAN hardening, endpoint UX polish, timeout/error coverage, and adversarial socket tests.
 6. Completed E23: hash-addressed LAN media-byte transfer for app-managed covers.
 7. Completed E23.5: LAN media transfer hardening, path/content validation, and adversarial DB/temp-dir tests.
-8. E24: v0.2.0 release candidate packaging and QA.
-9. Future: conflict-resolution UX, performance profiling, recovery UX, QR/discovery, and v0.2 stabilization.
+8. Completed E24/E25/E27: v0.2.0 release candidate packaging, GitHub publication, and stable promotion.
+9. Future: conflict-resolution UX, performance profiling, recovery UX, QR/discovery, and post-v0.2 stabilization.
 
 Each stage should preserve Windows, Android, metadata, covers, backup/restore, bulk import, gallery, statistics, and the current RC behavior before advancing.

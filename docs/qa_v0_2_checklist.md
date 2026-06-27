@@ -2,9 +2,9 @@
 
 Use a disposable library or temporary test database. Never use real provider credentials in screenshots, fixtures, logs, or commits.
 
-## v0.2.0-rc1 automated validation
+## v0.2.0 stable automated validation
 
-Target: `v0.2.0-rc1`, version `0.2.0+4`.
+Target: `v0.2.0`, version `0.2.0+4`.
 
 Update these boxes only from the final validation run.
 

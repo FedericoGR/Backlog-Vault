@@ -4,7 +4,7 @@ Backlog Vault es un gestor offline-first de backlog de videojuegos para Windows 
 
 > Documentación principal en inglés: [README.md](README.md)
 
-Release candidate actual: `v0.2.0-rc1` (`0.2.0+4`).
+Release estable actual: `v0.2.0` (`0.2.0+4`).
 
 ## Funcionalidades
 
@@ -63,7 +63,7 @@ flutter build apk
 Para generar el ZIP portable local:
 
 ```powershell
-.\tool\package_windows.ps1 -SkipBuild -ReleaseLabel v0.2.0-rc1
+.\tool\package_windows.ps1 -SkipBuild -ReleaseLabel v0.2.0
 ```
 
 `build/`, `dist/`, APKs, ZIPs y cachés no se versionan.

@@ -1,10 +1,12 @@
-# Backlog Vault v0.2.0 RC1
+# Backlog Vault v0.2.0
 
-Version: `0.2.0+4`  
-Tag: `v0.2.0-rc1`  
-Release line: `release/v0.2`
+- Version: `0.2.0+4`
+- Tag: `v0.2.0`
+- Release line: `release/v0.2`
 
-v0.2.0-rc1 is the first sync-focused release candidate for Backlog Vault. It keeps the local-first Windows + Android app model from v0.1 and adds secure manual PC ↔ Android sync workflows without requiring an account, backend, cloud service, QR scanner, automatic discovery, or background sync.
+v0.2.0 is the first stable sync-focused release for Backlog Vault. It keeps the local-first Windows + Android app model from v0.1 and adds secure manual PC ↔ Android sync workflows without requiring an account, backend, cloud service, QR scanner, automatic discovery, or background sync.
+
+This stable release promotes the validated `v0.2.0-rc1` line without adding new features.
 
 The build number is `+4` so Android can update installations from the previous `0.1.0+3` RC in place without uninstalling or deleting local data.
 
@@ -65,15 +67,15 @@ The build number is `+4` so Android can update installations from the previous `
 
 ## Artifacts
 
-Expected local artifact names:
+Stable artifact names:
 
-- `dist/BacklogVault-windows-x64-v0.2.0-rc1.zip`
-- `dist/BacklogVault-android-v0.2.0-rc1.apk`
+- `dist/BacklogVault-windows-x64-v0.2.0.zip`
+- `dist/BacklogVault-android-v0.2.0.apk`
 
 SHA-256:
 
-- `BacklogVault-windows-x64-v0.2.0-rc1.zip`: `dd23f56452498a20fd271526d89c90ad46f0ed901d6431fe131d3530e5da1e53`
-- `BacklogVault-android-v0.2.0-rc1.apk`: `8330feb7964128f4a7fa982012d203c2099242e571b5c0bf244e2682fd8d2b54`
+- `BacklogVault-windows-x64-v0.2.0.zip`: `a7a3c340e97bb23b5c7db21effa46ccd02087a2050b3e6298b357c05bd974b00`
+- `BacklogVault-android-v0.2.0.apk`: `8330feb7964128f4a7fa982012d203c2099242e571b5c0bf244e2682fd8d2b54`
 
 Generated `build/`, `dist/`, APK, ZIP, logs, caches, `.secure` files, keystores, and secrets must stay out of Git.
 

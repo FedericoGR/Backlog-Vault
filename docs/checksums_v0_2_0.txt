@@ -1,0 +1,4 @@
+Backlog Vault v0.2.0 SHA-256 checksums
+
+a7a3c340e97bb23b5c7db21effa46ccd02087a2050b3e6298b357c05bd974b00  BacklogVault-windows-x64-v0.2.0.zip
+8330feb7964128f4a7fa982012d203c2099242e571b5c0bf244e2682fd8d2b54  BacklogVault-android-v0.2.0.apk

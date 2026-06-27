@@ -1,7 +1,7 @@
 # Backlog Vault install and portability
 
 Version: `0.2.0+4`
-Release candidate: `v0.2.0-rc1`
+Stable release: `v0.2.0`
 
 Backlog Vault is local-first. App data, media, provider credentials, and language preferences live on each device unless library data is explicitly moved through a backup, encrypted sync package, or paired local-network sync session.
 
@@ -19,10 +19,10 @@ Create a portable ZIP without rebuilding:
 .\tool\package_windows.ps1 -SkipBuild
 ```
 
-For the v0.2.0 release candidate artifact name:
+For the v0.2.0 stable artifact name:
 
 ```powershell
-.\tool\package_windows.ps1 -SkipBuild -ReleaseLabel v0.2.0-rc1
+.\tool\package_windows.ps1 -SkipBuild -ReleaseLabel v0.2.0
 ```
 
 Extract the complete ZIP and launch `backlog_vault.exe`. The executable, DLLs, native assets, and `data` folder must remain together.
@@ -104,4 +104,4 @@ LAN sync moves group-encrypted `.vaultsync` payloads over the local network, the
 
 ## Security reminder
 
-The local SQLite database and media folder are not encrypted at rest in v0.2.0-rc1. Use OS device protection and encrypted backups. Never include real API credentials, `.secure` files, tokens, or keystores in an app package, backup example, test, log, or repository commit.
+The local SQLite database and media folder are not encrypted at rest in v0.2.0. Use OS device protection and encrypted backups. Never include real API credentials, `.secure` files, tokens, or keystores in an app package, backup example, test, log, or repository commit.
