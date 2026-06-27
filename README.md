@@ -20,6 +20,7 @@ Current stable release: `v0.2.0` (`0.2.0+4`).
 - Password-encrypted `.vaultsync` change packages with preview, deduplication, and conservative conflict handling.
 - Password-encrypted `.vaultpair` invitations for manual device pairing and reusable group-key `.vaultsync` packages.
 - Manual local-network sync for paired devices using a temporary host/client session.
+- QR helpers for pairing invitations and LAN connection details, with manual file/text/IP fallback.
 - Conservative backup restore with an automatic pre-restore backup.
 - Home dashboard and library statistics.
 - System, light, dark, and OLED-friendly UI behavior.
@@ -34,7 +35,7 @@ Current stable release: `v0.2.0` (`0.2.0+4`).
 - Provider credentials are stored with the operating system's secure storage.
 - RAWG keys, IGDB/Twitch credentials and tokens, and SteamGridDB keys are excluded from backups and exports.
 - Manual encrypted change packages and local-network sync for paired devices are available.
-- Manual device pairing enables reusable group-key packages and manual LAN sessions with hash-verified managed cover transfer; it does not enable automatic, background, cloud, QR, or discovery.
+- Manual device pairing enables reusable group-key packages and manual LAN sessions with hash-verified managed cover transfer. QR can simplify invitation import and LAN connection entry, but it does not enable automatic, background, cloud, or discovery.
 - The random 256-bit sync group key is stored only in each paired device's operating-system secure storage and never enters library backups.
 
 See [install and portability](docs/install_and_portability.md) for the current data-transfer workflow.
@@ -102,7 +103,7 @@ Never commit real keys, client secrets, bearer tokens, access tokens, `.secure` 
 - Restore is complete and conservative: current records absent from the backup are soft-deleted, not physically erased.
 - Provider credentials and secure-storage values never travel in backups.
 
-Use `.vaultbackup.enc` for full migration, disaster recovery, or copying the complete library with media. Use `.vaultpair` to establish a shared group key, then `.vaultsync` files or **Settings → Sync → Local network sync** to exchange library changes without typing a password each time. Password-mode `.vaultsync` remains available. Pairing invitations expire after 24 hours; share the file and temporary password through separate trusted channels. LAN sync requires both devices on the same local network and a host IP, port, and session code. Conflicts are reported and skipped. LAN sync also transfers app-managed cover files by SHA-256 hash when the sender has the file and the receiver can verify its bytes. Configure provider credentials separately on each device.
+Use `.vaultbackup.enc` for full migration, disaster recovery, or copying the complete library with media. Use `.vaultpair` to establish a shared group key, then `.vaultsync` files or **Settings → Sync → Local network sync** to exchange library changes without typing a password each time. Password-mode `.vaultsync` remains available. Pairing invitations expire after 24 hours; share the file and temporary password through separate trusted channels. Pairing QR carries the encrypted invitation payload, never the group key in clear text. LAN sync requires both devices on the same local network and a host IP, port, and session code; the LAN QR carries only those connection details plus public group/key identifiers, not the group key or library data. Conflicts are reported and skipped. LAN sync also transfers app-managed cover files by SHA-256 hash when the sender has the file and the receiver can verify its bytes. Configure provider credentials separately on each device.
 
 ## Language
 
@@ -116,15 +117,15 @@ The preference is stored per device and is not part of the library database or b
 
 ## Sync roadmap
 
-Manual password packages, paired-group packages, paired LAN sync sessions, and LAN cover transfer by hash are implemented. They require no account, backend, or cloud. Manual LAN sync requires both devices on the same local network and uses a temporary host/client session.
+Manual password packages, paired-group packages, paired LAN sync sessions, LAN cover transfer by hash, and QR helpers for pairing/LAN connection UX are implemented. They require no account, backend, or cloud. Manual LAN sync requires both devices on the same local network and uses a temporary host/client session.
 
 - v0.1.x: stabilization, bilingual UI, backup/restore hardening.
 - v0.2 foundation: deterministic change tracking and manual encrypted PC ↔ Android sync packages.
-- Manual `.vaultpair` pairing with the sync key in secure storage; QR remains future work.
-- Manual LAN transport for paired devices using IP, port, and a short session code.
+- Manual `.vaultpair` pairing with the sync key in secure storage, plus QR display/scan/paste helpers for encrypted pairing invitations.
+- Manual LAN transport for paired devices using IP, port, and a short session code, plus QR display/scan/paste helpers for connection details.
 - Media addressed by hash and transferred over paired LAN sync without creating broken cover references.
 - Visible, conservative conflict resolution with no silent destructive merge.
-- QR, automatic discovery, background sync, and advanced visual conflict-resolution UI remain future work.
+- Automatic discovery, background sync, and advanced visual conflict-resolution UI remain future work.
 - No cloud dependency in the first sync stage.
 - Optional cloud transport with end-to-end encryption only as a later possibility.
 
@@ -140,6 +141,7 @@ Screenshots will be added after the bilingual Windows and Android UI pass is cap
 - [v0.2 QA checklist](docs/qa_v0_2_checklist.md)
 - [v0.2 release notes](docs/release_notes_v0_2.md)
 - [Secure sync roadmap](docs/sync_roadmap.md)
+- [QR sync notes](docs/qr_sync_notes.md)
 
 ## License
 

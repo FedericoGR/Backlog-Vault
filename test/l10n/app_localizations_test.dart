@@ -19,6 +19,16 @@ void main() {
     expect(english.syncLanTitle, 'Local network sync');
     expect(english.syncLanStartSession, 'Start LAN sync session');
     expect(english.syncLanMediaNotice, contains('by hash'));
+    expect(english.syncShowPairingQr, 'Show pairing QR');
+    expect(english.syncScanPairingQr, 'Scan pairing QR');
+    expect(english.syncShowLanQr, 'Show LAN connection QR');
+    expect(english.syncScanLanQr, 'Scan LAN connection QR');
+    expect(
+      english.syncQrDoesNotReplaceEncryption,
+      contains('does not replace'),
+    );
+    expect(english.syncPairingManualFallback, contains('.vaultpair'));
+    expect(english.syncNoAutomaticDiscovery, contains('not available yet'));
     expect(english.syncLanResultMediaReceived(2), contains('2'));
     expect(english.syncLanInvalidSessionCode, contains('Incorrect code'));
     expect(english.syncLanGroupMismatch, contains('another sync group'));
@@ -42,6 +52,13 @@ void main() {
     expect(spanish.syncLanTitle, 'Sync por red local');
     expect(spanish.syncLanStartSession, 'Iniciar sesión LAN');
     expect(spanish.syncLanMediaNotice, contains('usando hash'));
+    expect(spanish.syncShowPairingQr, 'Mostrar QR de invitación');
+    expect(spanish.syncScanPairingQr, 'Escanear QR de pairing');
+    expect(spanish.syncShowLanQr, 'Mostrar QR de conexión LAN');
+    expect(spanish.syncScanLanQr, 'Escanear QR de conexión LAN');
+    expect(spanish.syncQrDoesNotReplaceEncryption, contains('no reemplaza'));
+    expect(spanish.syncPairingManualFallback, contains('.vaultpair'));
+    expect(spanish.syncNoAutomaticDiscovery, contains('todavía no'));
     expect(spanish.syncLanResultMediaReceived(2), contains('2'));
     expect(spanish.syncLanInvalidSessionCode, contains('Código incorrecto'));
     expect(spanish.syncLanGroupMismatch, contains('otro grupo'));

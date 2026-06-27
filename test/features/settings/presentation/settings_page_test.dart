@@ -111,9 +111,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(
-      find.widgetWithText(FilledButton, 'Exportar paquete de sincronización'),
+    final exportButton = find.widgetWithText(
+      FilledButton,
+      'Exportar paquete de sincronización',
     );
+    await tester.ensureVisible(exportButton);
+    await tester.pumpAndSettle();
+    await tester.tap(exportButton);
     await tester.pumpAndSettle();
     expect(find.byType(TextField), findsNWidgets(2));
     await tester.enterText(find.byType(TextField).first, 'test password one');
@@ -176,14 +180,18 @@ void main() {
         find.text('Exportar invitación de emparejamiento'),
         findsOneWidget,
       );
+      expect(find.text('Mostrar QR de invitación'), findsOneWidget);
+      expect(find.text('Escanear QR de pairing'), findsOneWidget);
+      expect(find.text('Pegar código de pairing'), findsOneWidget);
       expect(find.text('Exportar con clave de grupo'), findsOneWidget);
       expect(find.text('Importar desde grupo emparejado'), findsOneWidget);
       expect(find.text('Salir del grupo de sincronización'), findsOneWidget);
       expect(find.text('Sync por red local'), findsOneWidget);
       expect(find.text('Iniciar sesión LAN'), findsOneWidget);
       expect(find.text('Conectarse a sesión LAN'), findsOneWidget);
+      expect(find.text('Escanear QR de conexión LAN'), findsOneWidget);
       expect(find.text('Sincronizar ahora'), findsNothing);
-      expect(find.text('Escanear QR'), findsNothing);
+      expect(find.text('Discovery automático'), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );

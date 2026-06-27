@@ -2023,7 +2023,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get syncMediaNotice =>
-      'La sincronización de archivos de portada llegará en una etapa posterior.';
+      'Los .vaultsync sueltos no incluyen bytes de portadas; el sync LAN emparejado puede transferir portadas gestionadas por hash.';
 
   @override
   String get syncPackageVsBackup =>
@@ -2251,6 +2251,63 @@ class AppLocalizationsEs extends AppLocalizations {
       'El emparejamiento no sincroniza automáticamente ni habilita sync en segundo plano.';
 
   @override
+  String get syncShowPairingQr => 'Mostrar QR de invitación';
+
+  @override
+  String get syncScanPairingQr => 'Escanear QR de pairing';
+
+  @override
+  String get syncPastePairingCode => 'Pegar código de pairing';
+
+  @override
+  String get syncPairingQrTitle => 'QR de invitación de pairing';
+
+  @override
+  String get syncPairingQrHelp =>
+      'El QR transporta la invitación de pairing cifrada. Seguí usando la contraseña temporal y compartila por un canal confiable separado.';
+
+  @override
+  String get syncPairingManualFallback =>
+      'También podés exportar un archivo .vaultpair o pegar el código de pairing manualmente.';
+
+  @override
+  String get syncQrDoesNotReplaceEncryption =>
+      'El QR no reemplaza el cifrado; sólo simplifica la conexión.';
+
+  @override
+  String get syncManualConnectionFallback =>
+      'También podés ingresar IP, puerto y código manualmente.';
+
+  @override
+  String get syncNoAutomaticDiscovery =>
+      'La sincronización automática y el discovery todavía no están disponibles.';
+
+  @override
+  String get syncQrPayloadField => 'Payload QR';
+
+  @override
+  String get syncQrPayloadInvalid =>
+      'El payload QR es inválido o está incompleto.';
+
+  @override
+  String get syncQrPayloadTooLarge =>
+      'Este payload QR es demasiado grande. Usá el fallback con archivo .vaultpair.';
+
+  @override
+  String get syncQrScannerUnavailable =>
+      'El escaneo QR está disponible en Android. En esta plataforma, pegá el código manualmente.';
+
+  @override
+  String get syncQrCopyPayload => 'Copiar código';
+
+  @override
+  String get syncQrCopied => 'Código QR copiado.';
+
+  @override
+  String get syncQrCopyHelp =>
+      'Si el escaneo no está disponible, copiá o pegá este código de texto en el otro dispositivo.';
+
+  @override
   String get syncLanTitle => 'Sync por red local';
 
   @override
@@ -2273,6 +2330,22 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get syncLanConnectSession => 'Conectarse a sesión LAN';
+
+  @override
+  String get syncShowLanQr => 'Mostrar QR de conexión LAN';
+
+  @override
+  String get syncScanLanQr => 'Escanear QR de conexión LAN';
+
+  @override
+  String get syncPasteLanQr => 'Pegar código QR LAN';
+
+  @override
+  String get syncLanQrTitle => 'QR de conexión LAN';
+
+  @override
+  String get syncLanQrHelp =>
+      'Este QR transporta sólo host, puerto, código de sesión, group id y key id. No contiene la clave del grupo ni datos de biblioteca.';
 
   @override
   String get syncLanWaiting => 'Esperando un dispositivo emparejado.';

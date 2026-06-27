@@ -1,6 +1,6 @@
 # Secure PC ↔ Android sync roadmap
 
-Status: deterministic sync foundation, encrypted `.vaultsync` packages, manual `.vaultpair` device pairing with secure-storage group keys, manual paired LAN sync, and LAN media transfer by hash are implemented. QR scanning, automatic discovery, background sync, advanced conflict-resolution UI, and cloud transport remain future work.
+Status: deterministic sync foundation, encrypted `.vaultsync` packages, manual `.vaultpair` device pairing with secure-storage group keys, manual paired LAN sync, LAN media transfer by hash, and QR helpers for pairing/LAN connection UX are implemented. Automatic discovery, background sync, advanced conflict-resolution UI, and cloud transport remain future work.
 
 ## Principles
 
@@ -40,7 +40,7 @@ Implemented in E21:
 - Export/import a dedicated `BVP1` `.vaultpair` invitation encrypted with a temporary password and expiring after 24 hours.
 - Keep legacy password-mode `.vaultsync` while allowing authenticated group-key packages without repeated password entry.
 - Leave/revoke locally by deleting the group key without deleting the library or changelog.
-- QR rendering/scanning remains explicitly unavailable; LAN transport is a separate manual stage implemented in E22.
+- QR rendering/scanning is now available as a UX layer over the same encrypted invitation flow. The QR payload carries the encrypted invitation, not the group key in clear text. File import and paste/manual fallback remain available.
 
 ### Stage 3 — LAN transport
 
@@ -57,10 +57,21 @@ Implemented in E22/E23:
 - Accept only supported image bytes (JPEG, PNG, WebP), with per-file, per-session, and request-size limits.
 - Keep media pending when the sender lacks the file, the hash does not match, bytes are truncated, the type is invalid, or the asset is not part of the expected manifest.
 
+### Stage 3.5 — QR pairing and LAN connection UX
+
+Implemented in E28:
+
+- Render a QR for encrypted `.vaultpair` invitations and accept scan/paste import on the receiving device.
+- Render a QR for LAN host sessions containing host/IP, port, temporary session code, sync group ID, key ID, protocol version, and timestamps.
+- Keep the security model unchanged: LAN QR does not contain the sync group key, password, provider credentials, library data, backups, or media.
+- Validate QR type, format version, sync protocol version, group ID, key ID, host, port, and session code before filling the LAN connection form.
+- Keep manual fallbacks: `.vaultpair` files, text paste, and manual IP/port/code entry.
+- Android can scan with the camera permission; Windows can display QR and use copy/paste/manual entry.
+
 Current limitations:
 
-- No QR scanner, mDNS, automatic discovery, background sync, cloud relay, arbitrary-file transfer, or media cleanup/compaction.
-- The user must start a host session and manually enter IP, port, and session code on the client.
+- No mDNS, automatic discovery, background sync, cloud relay, arbitrary-file transfer, or media cleanup/compaction.
+- The user must still start a host session manually. QR only avoids typing IP, port, and session code.
 
 ### Stage 4 — Optional cloud transport
 
@@ -108,6 +119,7 @@ Current limitations:
 6. Completed E23: hash-addressed LAN media-byte transfer for app-managed covers.
 7. Completed E23.5: LAN media transfer hardening, path/content validation, and adversarial DB/temp-dir tests.
 8. Completed E24/E25/E27: v0.2.0 release candidate packaging, GitHub publication, and stable promotion.
-9. Future: conflict-resolution UX, performance profiling, recovery UX, QR/discovery, and post-v0.2 stabilization.
+9. Completed E28: QR pairing and LAN connection UX with manual fallback and unchanged sync cryptography.
+10. Future: conflict-resolution UX, performance profiling, recovery UX, automatic discovery, and post-v0.2 stabilization.
 
 Each stage should preserve Windows, Android, metadata, covers, backup/restore, bulk import, gallery, statistics, and the current RC behavior before advancing.

@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../core/design_system/bv_panel.dart';
 import '../../../core/design_system/bv_progress_panel.dart';
@@ -11,9 +13,11 @@ import '../../../core/design_system/bv_status_banner.dart';
 import '../../../l10n/l10n.dart';
 import '../application/sync_providers.dart';
 import '../data/lan_sync_service.dart';
+import '../data/sync_qr_payload_codec.dart';
 import '../domain/lan_sync_models.dart';
 import '../domain/sync_package_models.dart';
 import '../domain/sync_pairing_models.dart';
+import 'sync_qr_scanner_page.dart';
 
 class ManualSyncSection extends ConsumerStatefulWidget {
   const ManualSyncSection({super.key});
@@ -160,7 +164,8 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
                       : BvBannerTone.warning,
               message:
                   '${context.l10n.syncPairingDescription}\n'
-                  '${context.l10n.syncNoAutomaticSync}',
+                  '${context.l10n.syncNoAutomaticSync}\n'
+                  '${context.l10n.syncQrDoesNotReplaceEncryption}',
             ),
             if (group != null) ...[
               const SizedBox(height: BvSpacing.sm),
@@ -174,6 +179,8 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
             ],
             const SizedBox(height: BvSpacing.sm),
             Text(context.l10n.syncInvitationNotice),
+            const SizedBox(height: BvSpacing.xs),
+            Text(context.l10n.syncPairingManualFallback),
             const SizedBox(height: BvSpacing.sm),
             Wrap(
               spacing: BvSpacing.sm,
@@ -191,6 +198,22 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
                     icon: const Icon(Icons.ios_share_outlined),
                     label: Text(context.l10n.syncExportInvitation),
                   ),
+                if (group != null)
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : _showPairingQr,
+                    icon: const Icon(Icons.qr_code_2_outlined),
+                    label: Text(context.l10n.syncShowPairingQr),
+                  ),
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : _scanPairingQr,
+                  icon: const Icon(Icons.qr_code_scanner_outlined),
+                  label: Text(context.l10n.syncScanPairingQr),
+                ),
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : _pastePairingQr,
+                  icon: const Icon(Icons.content_paste_outlined),
+                  label: Text(context.l10n.syncPastePairingCode),
+                ),
                 OutlinedButton.icon(
                   onPressed: _busy ? null : _importPairingInvitation,
                   icon: const Icon(Icons.file_open_outlined),
@@ -248,7 +271,8 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
               message:
                   canUseLan
                       ? '${context.l10n.syncLanDescription}\n'
-                          '${context.l10n.syncLanMediaNotice}'
+                          '${context.l10n.syncLanMediaNotice}\n'
+                          '${context.l10n.syncNoAutomaticDiscovery}'
                       : context.l10n.syncLanPairFirst,
             ),
             if (session != null) ...[
@@ -278,10 +302,27 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
                     icon: const Icon(Icons.stop_circle_outlined),
                     label: Text(context.l10n.syncLanStopSession),
                   ),
+                if (session != null && group != null)
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : () => _showLanSessionQr(state),
+                    icon: const Icon(Icons.qr_code_2_outlined),
+                    label: Text(context.l10n.syncShowLanQr),
+                  ),
                 OutlinedButton.icon(
-                  onPressed: _busy || !canUseLan ? null : _connectLanSession,
+                  onPressed:
+                      _busy || !canUseLan
+                          ? null
+                          : () => _connectLanSession(state),
                   icon: const Icon(Icons.lan_outlined),
                   label: Text(context.l10n.syncLanConnectSession),
+                ),
+                OutlinedButton.icon(
+                  onPressed:
+                      _busy || !canUseLan
+                          ? null
+                          : () => _connectLanSession(state, scanFirst: true),
+                  icon: const Icon(Icons.qr_code_scanner_outlined),
+                  label: Text(context.l10n.syncScanLanQr),
                 ),
               ],
             ),
@@ -333,6 +374,88 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
       _finishWithMessage(context.l10n.syncInvitationCreated);
     } on Object catch (error) {
       _handlePairingFailure(error);
+    }
+  }
+
+  Future<void> _showPairingQr() async {
+    final passphrase = await _askPassword(
+      confirm: true,
+      title: context.l10n.syncPairingPasswordTitle,
+      helper:
+          '${context.l10n.syncInvitationNotice}\n'
+          '${context.l10n.syncPairingQrHelp}',
+      submitLabel: context.l10n.syncShowPairingQr,
+    );
+    if (passphrase == null || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      final exported = await ref
+          .read(syncPairingServiceProvider)
+          .exportInvitation(passphrase: passphrase);
+      final payload = ref
+          .read(syncQrPayloadCodecProvider)
+          .encodePairingInvitation(
+            invitationBytes: exported.bytes,
+            createdAt: DateTime.now().toUtc(),
+          );
+      if (!mounted) return;
+      setState(() => _busy = false);
+      await _showQrPayloadDialog(
+        title: context.l10n.syncPairingQrTitle,
+        message:
+            '${context.l10n.syncPairingQrHelp}\n\n'
+            '${context.l10n.syncQrDoesNotReplaceEncryption}',
+        payload: payload,
+      );
+    } on Object catch (error) {
+      if (error is SyncQrException) {
+        _handleQrFailure(error);
+      } else {
+        _handlePairingFailure(error);
+      }
+    }
+  }
+
+  Future<void> _scanPairingQr() async {
+    final payload = await _scanQrPayload(context.l10n.syncScanPairingQr);
+    if (payload == null || !mounted) return;
+    await _importPairingQrPayload(payload);
+  }
+
+  Future<void> _pastePairingQr() async {
+    final payload = await _askQrPayload(
+      title: context.l10n.syncPastePairingCode,
+      helper: context.l10n.syncPairingQrHelp,
+    );
+    if (payload == null || !mounted) return;
+    await _importPairingQrPayload(payload);
+  }
+
+  Future<void> _importPairingQrPayload(String payload) async {
+    try {
+      final decoded = ref
+          .read(syncQrPayloadCodecProvider)
+          .decodePairingInvitation(payload);
+      final passphrase = await _askPassword(
+        confirm: false,
+        title: context.l10n.syncPairingPasswordOpenTitle,
+        helper: context.l10n.syncInvitationNotice,
+        submitLabel: context.l10n.openAction,
+      );
+      if (passphrase == null || !mounted) return;
+      setState(() => _busy = true);
+      await ref
+          .read(syncPairingServiceProvider)
+          .importInvitation(decoded.invitationBytes, passphrase: passphrase);
+      if (!mounted) return;
+      ref.invalidate(syncPairingStateProvider);
+      _finishWithMessage(context.l10n.syncInvitationImported);
+    } on Object catch (error) {
+      if (error is SyncQrException) {
+        _handleQrFailure(error);
+      } else {
+        _handlePairingFailure(error);
+      }
     }
   }
 
@@ -497,8 +620,49 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
     });
   }
 
-  Future<void> _connectLanSession() async {
-    final input = await _askLanConnection();
+  Future<void> _showLanSessionQr(SyncPairingState state) async {
+    final group = state.group;
+    final session = _hostSession;
+    if (group == null || session == null) return;
+    try {
+      final now = DateTime.now().toUtc();
+      final payload = ref
+          .read(syncQrPayloadCodecProvider)
+          .encodeLanSession(
+            host: session.host,
+            port: session.port,
+            sessionCode: session.sessionCode,
+            syncGroupId: group.id,
+            keyId: group.keyId,
+            createdAt: now,
+            expiresAt: now.add(const Duration(minutes: 5)),
+          );
+      await _showQrPayloadDialog(
+        title: context.l10n.syncLanQrTitle,
+        message:
+            '${context.l10n.syncLanQrHelp}\n\n'
+            '${context.l10n.syncQrDoesNotReplaceEncryption}',
+        payload: payload,
+      );
+    } on Object catch (error) {
+      if (error is SyncQrException) {
+        _handleQrFailure(error);
+      } else {
+        _handleLanFailure(error);
+      }
+    }
+  }
+
+  Future<void> _connectLanSession(
+    SyncPairingState state, {
+    bool scanFirst = false,
+  }) async {
+    LanSessionQrPayload? initial;
+    if (scanFirst) {
+      initial = await _scanLanSessionQr(state);
+      if (initial == null || !mounted) return;
+    }
+    final input = await _askLanConnection(state, initial: initial);
     if (input == null || !mounted) return;
     setState(() => _busy = true);
     try {
@@ -514,6 +678,46 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
       _finishWithMessage(_formatLanResult(result));
     } on Object catch (error) {
       _handleLanFailure(error);
+    }
+  }
+
+  Future<LanSessionQrPayload?> _scanLanSessionQr(SyncPairingState state) async {
+    final payload = await _scanQrPayload(context.l10n.syncScanLanQr);
+    if (payload == null || !mounted) return null;
+    return _decodeLanSessionQr(state, payload);
+  }
+
+  Future<LanSessionQrPayload?> _pasteLanSessionQr(
+    SyncPairingState state,
+  ) async {
+    final payload = await _askQrPayload(
+      title: context.l10n.syncPasteLanQr,
+      helper: context.l10n.syncLanQrHelp,
+    );
+    if (payload == null || !mounted) return null;
+    return _decodeLanSessionQr(state, payload);
+  }
+
+  LanSessionQrPayload? _decodeLanSessionQr(
+    SyncPairingState state,
+    String payload,
+  ) {
+    final group = state.group;
+    if (group == null) {
+      _handleLanFailure(const LanSyncException(LanSyncFailure.notPaired));
+      return null;
+    }
+    try {
+      return ref
+          .read(syncQrPayloadCodecProvider)
+          .decodeLanSession(
+            payload,
+            expectedGroupId: group.id,
+            expectedKeyId: group.keyId,
+          );
+    } on SyncQrException catch (error) {
+      _handleQrFailure(error);
+      return null;
     }
   }
 
@@ -782,10 +986,13 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
     ).whenComplete(controller.dispose);
   }
 
-  Future<_LanConnectionInput?> _askLanConnection() {
-    final host = TextEditingController();
-    final port = TextEditingController();
-    final code = TextEditingController();
+  Future<_LanConnectionInput?> _askLanConnection(
+    SyncPairingState state, {
+    LanSessionQrPayload? initial,
+  }) {
+    final host = TextEditingController(text: initial?.host);
+    final port = TextEditingController(text: initial?.port.toString());
+    final code = TextEditingController(text: initial?.sessionCode);
     String? error;
     return showDialog<_LanConnectionInput>(
       context: context,
@@ -800,6 +1007,22 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(context.l10n.syncLanClientHelp),
+                        const SizedBox(height: BvSpacing.xs),
+                        Text(context.l10n.syncManualConnectionFallback),
+                        Text(context.l10n.syncQrDoesNotReplaceEncryption),
+                        const SizedBox(height: BvSpacing.sm),
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            final parsed = await _pasteLanSessionQr(state);
+                            if (parsed == null) return;
+                            host.text = parsed.host;
+                            port.text = parsed.port.toString();
+                            code.text = parsed.sessionCode;
+                            setDialogState(() => error = null);
+                          },
+                          icon: const Icon(Icons.content_paste_outlined),
+                          label: Text(context.l10n.syncPasteLanQr),
+                        ),
                         const SizedBox(height: BvSpacing.md),
                         TextField(
                           controller: host,
@@ -866,11 +1089,150 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
     });
   }
 
+  Future<String?> _scanQrPayload(String title) {
+    return Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder:
+            (context) => SyncQrScannerPage(
+              title: title,
+              unavailableMessage: context.l10n.syncQrScannerUnavailable,
+            ),
+      ),
+    );
+  }
+
+  Future<String?> _askQrPayload({
+    required String title,
+    required String helper,
+  }) {
+    final controller = TextEditingController();
+    String? error;
+    return showDialog<String>(
+      context: context,
+      builder:
+          (context) => StatefulBuilder(
+            builder:
+                (context, setDialogState) => AlertDialog(
+                  title: Text(title),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(helper),
+                        const SizedBox(height: BvSpacing.md),
+                        TextField(
+                          controller: controller,
+                          autofocus: true,
+                          minLines: 3,
+                          maxLines: 6,
+                          decoration: InputDecoration(
+                            labelText: context.l10n.syncQrPayloadField,
+                            errorText: error,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(context.l10n.cancel),
+                    ),
+                    FilledButton(
+                      onPressed: () {
+                        final value = controller.text.trim();
+                        if (value.isEmpty) {
+                          setDialogState(
+                            () => error = context.l10n.syncQrPayloadInvalid,
+                          );
+                          return;
+                        }
+                        Navigator.pop(context, value);
+                      },
+                      child: Text(context.l10n.continueAction),
+                    ),
+                  ],
+                ),
+          ),
+    ).whenComplete(controller.dispose);
+  }
+
+  Future<void> _showQrPayloadDialog({
+    required String title,
+    required String message,
+    required String payload,
+  }) {
+    return showDialog<void>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text(title),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(message),
+                  const SizedBox(height: BvSpacing.md),
+                  Center(
+                    child: QrImageView(
+                      data: payload,
+                      version: QrVersions.auto,
+                      errorCorrectionLevel: QrErrorCorrectLevel.M,
+                      size: 240,
+                      backgroundColor: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: BvSpacing.md),
+                  Text(context.l10n.syncQrCopyHelp),
+                  const SizedBox(height: BvSpacing.xs),
+                  SelectableText(payload),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: payload));
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(context.l10n.syncQrCopied)),
+                  );
+                },
+                child: Text(context.l10n.syncQrCopyPayload),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(context.l10n.close),
+              ),
+            ],
+          ),
+    );
+  }
+
   String _shortId(String id) => id.length <= 8 ? id : '${id.substring(0, 8)}…';
 
   void _handleFailure() {
     if (!mounted) return;
     final message = context.l10n.syncOperationFailed;
+    setState(() {
+      _busy = false;
+      _result = null;
+    });
+    _showMessage(message);
+  }
+
+  void _handleQrFailure(SyncQrException error) {
+    if (!mounted) return;
+    final message = switch (error.failure) {
+      SyncQrFailure.payloadTooLarge => context.l10n.syncQrPayloadTooLarge,
+      SyncQrFailure.groupMismatch => context.l10n.syncLanGroupMismatch,
+      SyncQrFailure.keyIdMismatch => context.l10n.syncLanKeyMismatch,
+      SyncQrFailure.incompatibleVersion => context.l10n.syncLanProtocolMismatch,
+      SyncQrFailure.invalidLanSession => context.l10n.syncLanInvalidInput,
+      _ => context.l10n.syncQrPayloadInvalid,
+    };
     setState(() {
       _busy = false;
       _result = null;

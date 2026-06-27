@@ -16,6 +16,7 @@ import '../data/sync_pairing_service.dart';
 import '../data/sync_package_builder.dart';
 import '../data/sync_package_file_service.dart';
 import '../data/sync_package_service.dart';
+import '../data/sync_qr_payload_codec.dart';
 import '../domain/sync_models.dart';
 import '../domain/sync_pairing_models.dart';
 
@@ -110,6 +111,10 @@ final syncPairingServiceProvider = Provider<SyncPairingService>((ref) {
 
 final syncPairingFileServiceProvider = Provider<SyncPairingFileService>((ref) {
   return const SyncPairingFileService();
+});
+
+final syncQrPayloadCodecProvider = Provider<SyncQrPayloadCodec>((ref) {
+  return const SyncQrPayloadCodec();
 });
 
 final encryptedSyncPackageCodecProvider = Provider<EncryptedSyncPackageCodec>((

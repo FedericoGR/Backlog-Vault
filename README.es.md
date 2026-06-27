@@ -20,6 +20,7 @@ Release estable actual: `v0.2.0` (`0.2.0+4`).
 - Paquetes de cambios `.vaultsync` cifrados con password, preview, deduplicación y manejo conservador de conflictos.
 - Invitaciones `.vaultpair` cifradas con password para pairing manual y paquetes `.vaultsync` con clave de grupo reutilizable.
 - Sync manual por red local para dispositivos emparejados con sesión temporal host/cliente.
+- Ayudas QR para invitaciones de pairing y datos de conexión LAN, con fallback manual por archivo/texto/IP.
 - Restore conservador con backup previo automático.
 - Home y estadísticas de biblioteca.
 - Tema claro/oscuro con diseño OLED-friendly.
@@ -34,7 +35,7 @@ Release estable actual: `v0.2.0` (`0.2.0+4`).
 - Las credenciales de providers se guardan en el secure storage del sistema.
 - Claves RAWG, credenciales y tokens IGDB/Twitch, y claves SteamGridDB no se incluyen en backups ni exports.
 - Ya existen paquetes manuales cifrados y sync por red local para dispositivos emparejados.
-- El pairing manual habilita paquetes con clave de grupo y sesiones LAN manuales con transferencia de portadas gestionadas por hash; no habilita sync automático, background, cloud, QR ni discovery.
+- El pairing manual habilita paquetes con clave de grupo y sesiones LAN manuales con transferencia de portadas gestionadas por hash. QR simplifica importar invitaciones y cargar datos de conexión LAN, pero no habilita sync automático, background, cloud ni discovery.
 - La clave aleatoria de grupo de 256 bits vive únicamente en el secure storage del sistema de cada dispositivo emparejado y no entra en backups.
 
 ## Instalación
@@ -88,7 +89,7 @@ Nunca commitees claves, client secrets, bearer/access tokens, archivos `.secure`
 - El restore es completo y conservador: lo ausente se marca con borrado lógico, sin hard delete.
 - Las credenciales externas y el secure storage no viajan en backups.
 
-Usá `.vaultbackup.enc` para migración completa, recuperación o copia con media. Usá `.vaultpair` para establecer una clave de grupo compartida y después archivos `.vaultsync` o **Ajustes → Sync → Sync por red local** para intercambiar cambios sin escribir una password cada vez. El modo `.vaultsync` con password sigue disponible. Las invitaciones vencen después de 24 horas; compartí el archivo y la password temporal por canales confiables separados. El sync LAN requiere que ambos dispositivos estén en la misma red local y usar IP, puerto y código de sesión del host. Los conflictos se omiten de forma segura. El sync LAN también transfiere portadas gestionadas por la app usando SHA-256 cuando el emisor tiene el archivo y el receptor puede verificar sus bytes. Las credenciales se configuran por separado.
+Usá `.vaultbackup.enc` para migración completa, recuperación o copia con media. Usá `.vaultpair` para establecer una clave de grupo compartida y después archivos `.vaultsync` o **Ajustes → Sync → Sync por red local** para intercambiar cambios sin escribir una password cada vez. El modo `.vaultsync` con password sigue disponible. Las invitaciones vencen después de 24 horas; compartí el archivo y la password temporal por canales confiables separados. El QR de pairing transporta la invitación cifrada, nunca la clave de grupo en claro. El sync LAN requiere que ambos dispositivos estén en la misma red local y usar IP, puerto y código de sesión del host; el QR LAN transporta sólo esos datos de conexión y los identificadores públicos de grupo/clave, no la clave de grupo ni datos de biblioteca. Los conflictos se omiten de forma segura. El sync LAN también transfiere portadas gestionadas por la app usando SHA-256 cuando el emisor tiene el archivo y el receptor puede verificar sus bytes. Las credenciales se configuran por separado.
 
 ## Idioma
 
@@ -96,14 +97,14 @@ La app detecta el idioma del sistema por default. En **Ajustes → Idioma** pod�
 
 ## Roadmap de sync
 
-Los paquetes manuales con password, los paquetes con clave de grupo emparejado, las sesiones LAN emparejadas y la transferencia LAN de portadas por hash están implementados. No requieren cuenta, backend ni cloud. El sync LAN manual requiere que ambos dispositivos estén en la misma red local:
+Los paquetes manuales con password, los paquetes con clave de grupo emparejado, las sesiones LAN emparejadas, la transferencia LAN de portadas por hash y las ayudas QR para pairing/conexión LAN están implementados. No requieren cuenta, backend ni cloud. El sync LAN manual requiere que ambos dispositivos estén en la misma red local:
 
 - v0.1.x: estabilización, UI bilingüe y hardening de backup/restore.
 - Foundation v0.2: change tracking determinista y paquetes manuales cifrados PC ↔ Android.
-- Pairing manual `.vaultpair` con clave en secure storage; QR queda para una etapa posterior.
-- Transporte LAN manual para dispositivos emparejados usando IP, puerto y código corto de sesión.
+- Pairing manual `.vaultpair` con clave en secure storage, más QR para mostrar/escánear/pegar invitaciones cifradas.
+- Transporte LAN manual para dispositivos emparejados usando IP, puerto y código corto de sesión, más QR para mostrar/escánear/pegar datos de conexión.
 - Media por hash sobre LAN sin referencias rotas.
-- QR, discovery automático, background sync y UI avanzada de resolución de conflictos quedan para etapas posteriores.
+- Discovery automático, background sync y UI avanzada de resolución de conflictos quedan para etapas posteriores.
 - Sin dependencia cloud al principio; cloud E2EE opcional mucho más adelante.
 
 Ver [docs/sync_roadmap.md](docs/sync_roadmap.md).
@@ -118,6 +119,7 @@ La sección queda preparada. Se agregarán capturas reales de Windows y Android 
 - [Checklist QA v0.2](docs/qa_v0_2_checklist.md)
 - [Notas v0.2](docs/release_notes_v0_2.md)
 - [Roadmap técnico de sync](docs/sync_roadmap.md)
+- [Notas de QR sync](docs/qr_sync_notes.md)
 
 ## Licencia
 

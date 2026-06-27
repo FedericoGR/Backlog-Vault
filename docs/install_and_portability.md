@@ -53,7 +53,7 @@ The selected UI language is stored through platform preferences. It is device-lo
 
 ## PC ↔ Android transfer
 
-Automatic/background sync, cloud sync, QR scanning, and automatic discovery do not exist yet. Manual file transfer, manual pairing, and paired LAN sync provide distinct workflows.
+Automatic/background sync, cloud sync, and automatic discovery do not exist yet. Manual file transfer, manual pairing, paired LAN sync, and QR helpers for pairing/LAN connection entry provide distinct workflows.
 
 For full migration or disaster recovery, including media:
 
@@ -76,21 +76,23 @@ For exchanging library changes between existing installations:
 To pair installations and avoid entering a password for every later package:
 
 1. Create a sync group on the first device under **Settings → Sync**.
-2. Export a `.vaultpair` invitation protected with a temporary password. It expires after 24 hours.
-3. Move the invitation to the second device and import it with that password.
+2. Export a `.vaultpair` invitation protected with a temporary password, or show its pairing QR. It expires after 24 hours.
+3. Move/import the invitation file, scan the QR, or paste the QR text code on the second device, then enter the same temporary password.
 4. Exchange group-encrypted `.vaultsync` files manually or use paired LAN sync. Preview and conflict rules remain unchanged.
 
-The random group key is inside the encrypted invitation and is then stored only in OS secure storage. SQLite stores its public key ID, never the key. Share the invitation file and temporary password through separate trusted channels. Pairing enables group-encrypted sync packages and manual LAN sessions, but it does not start automatic/background sync. If secure storage is erased or a device leaves the group, it must be paired again. API keys and media files never travel in `.vaultpair`.
+The random group key is inside the encrypted invitation and is then stored only in OS secure storage. SQLite stores its public key ID, never the key. Pairing QR carries the encrypted invitation payload; it does not expose the group key in clear text. Share the invitation file/QR and temporary password through separate trusted channels. Pairing enables group-encrypted sync packages and manual LAN sessions, but it does not start automatic/background sync. If secure storage is erased or a device leaves the group, it must be paired again. API keys and media files never travel in `.vaultpair`.
 
 For manual LAN sync after pairing:
 
 1. Put both devices on the same local network.
 2. On the host device, open **Settings → Sync → Local network sync** and start a LAN session.
-3. Note the displayed IP address, port, and short session code.
-4. On the client device, connect with those values and run the sync.
+3. Note the displayed IP address, port, and short session code, or show the LAN connection QR.
+4. On the client device, connect with those values manually, scan the LAN QR, or paste the LAN QR text code, then run the sync.
 5. Review the result summary. Safe changes are applied, duplicate changes are skipped, conflicts are reported without overwriting local data, and managed cover files are transferred when hash verification succeeds.
 
-LAN sync moves group-encrypted `.vaultsync` payloads over the local network, then transfers missing app-managed cover files by SHA-256 hash. The receiver never trusts remote paths, validates JPEG/PNG/WebP bytes before registering a cover, and leaves media pending for the next sync if validation fails or the sender no longer has the file. It does not use cloud, does not run in the background, does not auto-discover devices yet, and does not transfer arbitrary files.
+LAN sync moves group-encrypted `.vaultsync` payloads over the local network, then transfers missing app-managed cover files by SHA-256 hash. LAN QR carries connection metadata only: host/IP, port, session code, protocol version, and public group/key identifiers. It never carries the group key, passwords, library data, provider credentials, backups, or media. The receiver never trusts remote paths, validates JPEG/PNG/WebP bytes before registering a cover, and leaves media pending for the next sync if validation fails or the sender no longer has the file. It does not use cloud, does not run in the background, does not auto-discover devices yet, and does not transfer arbitrary files.
+
+Android may request camera permission when scanning QR codes. Windows can display QR codes and use copy/paste or manual entry; camera scanning is not required for Windows.
 
 ## Restore guarantees and limits
 

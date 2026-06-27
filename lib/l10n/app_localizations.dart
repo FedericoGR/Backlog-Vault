@@ -3679,7 +3679,7 @@ abstract class AppLocalizations {
   /// No description provided for @syncMediaNotice.
   ///
   /// In en, this message translates to:
-  /// **'Cover file synchronization will arrive in a later stage.'**
+  /// **'Standalone .vaultsync files do not include cover bytes; paired LAN sync can transfer managed covers by hash.'**
   String get syncMediaNotice;
 
   /// No description provided for @syncPackageVsBackup.
@@ -4036,6 +4036,102 @@ abstract class AppLocalizations {
   /// **'Pairing does not synchronize automatically and does not enable background sync.'**
   String get syncNoAutomaticSync;
 
+  /// No description provided for @syncShowPairingQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Show pairing QR'**
+  String get syncShowPairingQr;
+
+  /// No description provided for @syncScanPairingQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan pairing QR'**
+  String get syncScanPairingQr;
+
+  /// No description provided for @syncPastePairingCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste pairing code'**
+  String get syncPastePairingCode;
+
+  /// No description provided for @syncPairingQrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing invitation QR'**
+  String get syncPairingQrTitle;
+
+  /// No description provided for @syncPairingQrHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'The QR carries the encrypted pairing invitation. Keep using the temporary password and share it through a separate trusted channel.'**
+  String get syncPairingQrHelp;
+
+  /// No description provided for @syncPairingManualFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'You can also export a .vaultpair file or paste the pairing code manually.'**
+  String get syncPairingManualFallback;
+
+  /// No description provided for @syncQrDoesNotReplaceEncryption.
+  ///
+  /// In en, this message translates to:
+  /// **'The QR code does not replace encryption; it only simplifies connection.'**
+  String get syncQrDoesNotReplaceEncryption;
+
+  /// No description provided for @syncManualConnectionFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'You can also enter IP, port and code manually.'**
+  String get syncManualConnectionFallback;
+
+  /// No description provided for @syncNoAutomaticDiscovery.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic sync and discovery are not available yet.'**
+  String get syncNoAutomaticDiscovery;
+
+  /// No description provided for @syncQrPayloadField.
+  ///
+  /// In en, this message translates to:
+  /// **'QR payload'**
+  String get syncQrPayloadField;
+
+  /// No description provided for @syncQrPayloadInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The QR payload is invalid or incomplete.'**
+  String get syncQrPayloadInvalid;
+
+  /// No description provided for @syncQrPayloadTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'This QR payload is too large. Use the .vaultpair file fallback.'**
+  String get syncQrPayloadTooLarge;
+
+  /// No description provided for @syncQrScannerUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'QR scanning is available on Android. On this platform, paste the code manually instead.'**
+  String get syncQrScannerUnavailable;
+
+  /// No description provided for @syncQrCopyPayload.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy code'**
+  String get syncQrCopyPayload;
+
+  /// No description provided for @syncQrCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'QR code copied.'**
+  String get syncQrCopied;
+
+  /// No description provided for @syncQrCopyHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'If scanning is not available, copy or paste this text code on the other device.'**
+  String get syncQrCopyHelp;
+
   /// No description provided for @syncLanTitle.
   ///
   /// In en, this message translates to:
@@ -4077,6 +4173,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Connect to LAN sync session'**
   String get syncLanConnectSession;
+
+  /// No description provided for @syncShowLanQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Show LAN connection QR'**
+  String get syncShowLanQr;
+
+  /// No description provided for @syncScanLanQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan LAN connection QR'**
+  String get syncScanLanQr;
+
+  /// No description provided for @syncPasteLanQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste LAN QR code'**
+  String get syncPasteLanQr;
+
+  /// No description provided for @syncLanQrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'LAN connection QR'**
+  String get syncLanQrTitle;
+
+  /// No description provided for @syncLanQrHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'This QR carries only the host, port, session code, group id and key id. It does not contain the group key or library data.'**
+  String get syncLanQrHelp;
 
   /// No description provided for @syncLanWaiting.
   ///
