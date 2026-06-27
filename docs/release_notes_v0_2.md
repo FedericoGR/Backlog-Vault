@@ -70,6 +70,11 @@ Expected local artifact names:
 - `dist/BacklogVault-windows-x64-v0.2.0-rc1.zip`
 - `dist/BacklogVault-android-v0.2.0-rc1.apk`
 
+SHA-256:
+
+- `BacklogVault-windows-x64-v0.2.0-rc1.zip`: `dd23f56452498a20fd271526d89c90ad46f0ed901d6431fe131d3530e5da1e53`
+- `BacklogVault-android-v0.2.0-rc1.apk`: `8330feb7964128f4a7fa982012d203c2099242e571b5c0bf244e2682fd8d2b54`
+
 Generated `build/`, `dist/`, APK, ZIP, logs, caches, `.secure` files, keystores, and secrets must stay out of Git.
 
 Validation status is tracked in [qa_v0_2_checklist.md](qa_v0_2_checklist.md).
