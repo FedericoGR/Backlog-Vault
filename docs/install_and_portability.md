@@ -92,7 +92,7 @@ For manual LAN sync after pairing:
 
 LAN sync moves group-encrypted `.vaultsync` payloads over the local network, then transfers missing app-managed cover files by SHA-256 hash. LAN QR carries connection metadata only: host/IP, port, session code, protocol version, and public group/key identifiers. It never carries the group key, passwords, library data, provider credentials, backups, or media. The receiver never trusts remote paths, validates JPEG/PNG/WebP bytes before registering a cover, and leaves media pending for the next sync if validation fails or the sender no longer has the file. It does not use cloud, does not run in the background, does not auto-discover devices yet, and does not transfer arbitrary files.
 
-Android may request camera permission when scanning QR codes. Windows can display QR codes and use copy/paste or manual entry; camera scanning is not required for Windows.
+Android may request camera permission when scanning QR codes. Windows can display QR codes and use copy/paste or manual entry; camera scanning is not required for Windows. The `v0.3.0-rc1` line keeps the same sync formats and security model as v0.2 while adding QR UX helpers over the existing pairing and LAN flows.
 
 ## Restore guarantees and limits
 

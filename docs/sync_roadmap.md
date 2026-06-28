@@ -120,6 +120,7 @@ Current limitations:
 7. Completed E23.5: LAN media transfer hardening, path/content validation, and adversarial DB/temp-dir tests.
 8. Completed E24/E25/E27: v0.2.0 release candidate packaging, GitHub publication, and stable promotion.
 9. Completed E28: QR pairing and LAN connection UX with manual fallback and unchanged sync cryptography.
-10. Future: conflict-resolution UX, performance profiling, recovery UX, automatic discovery, and post-v0.2 stabilization.
+10. E30: `v0.3.0-rc1` packages the QR UX as a release candidate without changing `.vaultsync`, `.vaultpair`, LAN sync, media transfer, or Drift schema.
+11. Future: real RC QA, conflict-resolution UX, performance profiling, recovery UX, automatic discovery, and post-v0.3 stabilization.
 
 Each stage should preserve Windows, Android, metadata, covers, backup/restore, bulk import, gallery, statistics, and the current RC behavior before advancing.

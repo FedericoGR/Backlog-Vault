@@ -1,0 +1,11 @@
+Backlog Vault v0.3.0-rc1 checksums
+
+Windows ZIP:
+  File: BacklogVault-windows-x64-v0.3.0-rc1.zip
+  SHA-256: C6C6F57B4F6B3F5DF40D0B82C569D3928995CEE80DBF19FDD8F0D83FE745DE6B
+
+Android APK:
+  File: BacklogVault-android-v0.3.0-rc1.apk
+  SHA-256: 8C68A1CE4A4CDCC3A2DDB24634F65EE60E7E4B5FAAEE955B275B431869957953
+
+Generated artifacts stay out of Git. Verify downloaded files before installing or extracting.

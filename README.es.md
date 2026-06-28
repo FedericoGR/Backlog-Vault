@@ -5,6 +5,7 @@ Backlog Vault es un gestor offline-first de backlog de videojuegos para Windows 
 > Documentación principal en inglés: [README.md](README.md)
 
 Release estable actual: `v0.2.0` (`0.2.0+4`).
+Release candidate actual: `v0.3.0-rc1` (`0.3.0+5`) agrega ayudas QR para invitaciones de pairing y conexión LAN.
 
 ## Funcionalidades
 
@@ -67,6 +68,8 @@ Para generar el ZIP portable local:
 .\tool\package_windows.ps1 -SkipBuild -ReleaseLabel v0.2.0
 ```
 
+Para el release candidate v0.3 con QR, usá `-ReleaseLabel v0.3.0-rc1`.
+
 `build/`, `dist/`, APKs, ZIPs y cachés no se versionan.
 
 ## Configurar metadata y covers
@@ -118,6 +121,8 @@ La sección queda preparada. Se agregarán capturas reales de Windows y Android 
 - [Instalación y portabilidad](docs/install_and_portability.md)
 - [Checklist QA v0.2](docs/qa_v0_2_checklist.md)
 - [Notas v0.2](docs/release_notes_v0_2.md)
+- [Checklist QA v0.3](docs/qa_v0_3_checklist.md)
+- [Notas v0.3](docs/release_notes_v0_3.md)
 - [Roadmap técnico de sync](docs/sync_roadmap.md)
 - [Notas de QR sync](docs/qr_sync_notes.md)
 
