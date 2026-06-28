@@ -20,6 +20,7 @@ void main() {
     expect(encoded, contains('backlogVault.pairingInvitation'));
     expect(encoded, contains('"formatVersion":1'));
     expect(encoded, isNot(contains('sync_group_key_plaintext')));
+    _expectNoSensitiveMarkers(encoded);
 
     final decoded = codec.decodePairingInvitation(encoded);
     expect(decoded.formatVersion, syncQrFormatVersion);
@@ -71,6 +72,32 @@ void main() {
         ),
         throwsA(isA<SyncQrException>()),
       );
+
+      final unexpectedField = valid.replaceFirst(
+        '"payloadBase64"',
+        '"unexpected":"value","payloadBase64"',
+      );
+      expect(
+        () => codec.decodePairingInvitation(unexpectedField),
+        throwsA(
+          isA<SyncQrException>().having(
+            (error) => error.failure,
+            'failure',
+            SyncQrFailure.invalidPayload,
+          ),
+        ),
+      );
+
+      expect(
+        () => codec.decodePairingInvitation('{not-json'),
+        throwsA(
+          isA<SyncQrException>().having(
+            (error) => error.toString(),
+            'message',
+            isNot(contains('{not-json')),
+          ),
+        ),
+      );
     },
   );
 
@@ -110,6 +137,7 @@ void main() {
     expect(encoded, contains('123456'));
     expect(encoded, isNot(contains('group_key_plaintext')));
     expect(encoded, isNot(contains('Game from A')));
+    _expectNoSensitiveMarkers(encoded);
 
     final decoded = codec.decodeLanSession(
       encoded,
@@ -141,10 +169,58 @@ void main() {
     expect(
       () => codec.encodeLanSession(
         host: '192.168.1.20',
+        port: 0,
+        sessionCode: '123456',
+        syncGroupId: _groupId,
+        keyId: _keyId,
+        createdAt: _now,
+      ),
+      throwsA(isA<SyncQrException>()),
+    );
+
+    expect(
+      () => codec.encodeLanSession(
+        host: '192.168.1.20',
         port: 70000,
         sessionCode: '123456',
         syncGroupId: _groupId,
         keyId: _keyId,
+        createdAt: _now,
+      ),
+      throwsA(isA<SyncQrException>()),
+    );
+
+    expect(
+      () => codec.encodeLanSession(
+        host: '192.168.1.20',
+        port: 47777,
+        sessionCode: '',
+        syncGroupId: _groupId,
+        keyId: _keyId,
+        createdAt: _now,
+      ),
+      throwsA(isA<SyncQrException>()),
+    );
+
+    expect(
+      () => codec.encodeLanSession(
+        host: '192.168.1.20',
+        port: 47777,
+        sessionCode: '123456',
+        syncGroupId: '',
+        keyId: _keyId,
+        createdAt: _now,
+      ),
+      throwsA(isA<SyncQrException>()),
+    );
+
+    expect(
+      () => codec.encodeLanSession(
+        host: '192.168.1.20',
+        port: 47777,
+        sessionCode: '123456',
+        syncGroupId: _groupId,
+        keyId: '',
         createdAt: _now,
       ),
       throwsA(isA<SyncQrException>()),
@@ -203,5 +279,106 @@ void main() {
         ),
       ),
     );
+
+    final wrongType = encoded.replaceFirst(
+      'backlogVault.lanSession',
+      'backlogVault.pairingInvitation',
+    );
+    expect(
+      () => codec.decodeLanSession(wrongType),
+      throwsA(
+        isA<SyncQrException>().having(
+          (error) => error.failure,
+          'failure',
+          SyncQrFailure.unsupportedType,
+        ),
+      ),
+    );
+
+    final portAsString = encoded.replaceFirst('"port":47777', '"port":"47777"');
+    expect(
+      () => codec.decodeLanSession(portAsString),
+      throwsA(
+        isA<SyncQrException>().having(
+          (error) => error.failure,
+          'failure',
+          SyncQrFailure.invalidPayload,
+        ),
+      ),
+    );
+
+    final unexpectedField = encoded.replaceFirst(
+      '"host"',
+      '"unexpected":"value","host"',
+    );
+    expect(
+      () => codec.decodeLanSession(unexpectedField),
+      throwsA(
+        isA<SyncQrException>().having(
+          (error) => error.failure,
+          'failure',
+          SyncQrFailure.invalidPayload,
+        ),
+      ),
+    );
+
+    expect(
+      () => codec.decodeLanSession(encoded.substring(0, encoded.length ~/ 2)),
+      throwsA(isA<SyncQrException>()),
+    );
+
+    expect(
+      () => codec.decodeLanSession('{not-json'),
+      throwsA(
+        isA<SyncQrException>().having(
+          (error) => error.toString(),
+          'message',
+          isNot(contains('{not-json')),
+        ),
+      ),
+    );
   });
+
+  test('QR payload size limits are enforced while decoding', () {
+    const codec = SyncQrPayloadCodec(maxPayloadChars: 16);
+    final oversized = List.filled(32, 'x').join();
+
+    expect(
+      () => codec.decodePairingInvitation(oversized),
+      throwsA(
+        isA<SyncQrException>().having(
+          (error) => error.failure,
+          'failure',
+          SyncQrFailure.payloadTooLarge,
+        ),
+      ),
+    );
+
+    expect(
+      () => codec.decodeLanSession(oversized),
+      throwsA(
+        isA<SyncQrException>().having(
+          (error) => error.failure,
+          'failure',
+          SyncQrFailure.payloadTooLarge,
+        ),
+      ),
+    );
+  });
+}
+
+void _expectNoSensitiveMarkers(String encoded) {
+  for (final marker in [
+    'syncGroupKey',
+    'group_key',
+    'private_key',
+    'access_token',
+    'client_secret',
+    'Bearer',
+    r'C:\',
+    '/Users/',
+    '.vaultsync',
+  ]) {
+    expect(encoded, isNot(contains(marker)));
+  }
 }
