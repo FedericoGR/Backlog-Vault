@@ -11,22 +11,28 @@ void main() {
     expect(english.settingsTitle, 'Settings');
     expect(english.backupTitle, 'Data and backups');
     expect(english.bulkTitle, 'Import metadata');
-    expect(english.syncExportPackage, 'Export sync package');
-    expect(english.syncImportPackage, 'Import sync package');
-    expect(english.syncCreateGroup, 'Create sync group');
-    expect(english.syncExportInvitation, 'Export pairing invitation');
+    expect(english.syncExportPackage, 'Export change package');
+    expect(english.syncImportPackage, 'Import change package');
+    expect(english.syncCreateGroup, 'Connect another device');
+    expect(english.syncExportInvitation, 'Create invitation file');
+    expect(english.syncImportInvitation, 'Import invitation file');
+    expect(english.syncGroupConfigured, 'Device ready to sync');
+    expect(english.syncUxAdvancedTitle, 'Advanced options');
     expect(english.syncNoAutomaticSync, contains('does not synchronize'));
-    expect(english.syncLanTitle, 'Local network sync');
-    expect(english.syncLanStartSession, 'Start LAN sync session');
-    expect(english.syncLanMediaNotice, contains('by hash'));
-    expect(english.syncShowPairingQr, 'Show pairing QR');
-    expect(english.syncScanPairingQr, 'Scan pairing QR');
-    expect(english.syncShowLanQr, 'Show LAN connection QR');
-    expect(english.syncScanLanQr, 'Scan LAN connection QR');
+    expect(english.syncLanTitle, 'Sync over Wi-Fi');
+    expect(english.syncLanStartSession, 'Start sync');
+    expect(english.syncLanConnectSession, 'Join sync');
+    expect(english.syncLanMediaNotice, contains('covers'));
+    expect(english.syncShowPairingQr, 'Show invitation QR');
+    expect(english.syncScanPairingQr, 'Scan invitation QR');
+    expect(english.syncPastePairingCode, 'Paste invitation code');
+    expect(english.syncShowLanQr, 'Show connection QR');
+    expect(english.syncScanLanQr, 'Scan connection QR');
     expect(
       english.syncQrDoesNotReplaceEncryption,
       contains('does not replace'),
     );
+    expect(english.syncQrNoPlaintextSecrets, contains('plaintext keys'));
     expect(english.syncPairingManualFallback, contains('.vaultpair'));
     expect(english.syncNoAutomaticDiscovery, contains('not available yet'));
     expect(english.syncLanResultMediaReceived(2), contains('2'));
@@ -41,22 +47,25 @@ void main() {
     expect(spanish.settingsTitle, 'Ajustes');
     expect(spanish.backupTitle, 'Datos y backups');
     expect(spanish.bulkTitle, 'Importar metadata');
-    expect(spanish.syncExportPackage, 'Exportar paquete de sincronización');
-    expect(spanish.syncImportPackage, 'Importar paquete de sincronización');
-    expect(spanish.syncCreateGroup, 'Crear grupo de sincronización');
-    expect(
-      spanish.syncExportInvitation,
-      'Exportar invitación de emparejamiento',
-    );
+    expect(spanish.syncExportPackage, 'Exportar paquete de cambios');
+    expect(spanish.syncImportPackage, 'Importar paquete de cambios');
+    expect(spanish.syncCreateGroup, 'Conectar otro dispositivo');
+    expect(spanish.syncExportInvitation, 'Crear invitación como archivo');
+    expect(spanish.syncImportInvitation, 'Importar archivo de invitación');
+    expect(spanish.syncGroupConfigured, 'Dispositivo listo para sincronizar');
+    expect(spanish.syncUxAdvancedTitle, 'Opciones avanzadas');
     expect(spanish.syncNoAutomaticSync, contains('no sincroniza'));
-    expect(spanish.syncLanTitle, 'Sync por red local');
-    expect(spanish.syncLanStartSession, 'Iniciar sesión LAN');
-    expect(spanish.syncLanMediaNotice, contains('usando hash'));
+    expect(spanish.syncLanTitle, 'Sincronizar por Wi-Fi');
+    expect(spanish.syncLanStartSession, 'Iniciar sincronización');
+    expect(spanish.syncLanConnectSession, 'Unirse a sincronización');
+    expect(spanish.syncLanMediaNotice, contains('portadas'));
     expect(spanish.syncShowPairingQr, 'Mostrar QR de invitación');
-    expect(spanish.syncScanPairingQr, 'Escanear QR de pairing');
-    expect(spanish.syncShowLanQr, 'Mostrar QR de conexión LAN');
-    expect(spanish.syncScanLanQr, 'Escanear QR de conexión LAN');
+    expect(spanish.syncScanPairingQr, 'Escanear QR de invitación');
+    expect(spanish.syncPastePairingCode, 'Pegar código de invitación');
+    expect(spanish.syncShowLanQr, 'Mostrar QR de conexión');
+    expect(spanish.syncScanLanQr, 'Escanear QR de conexión');
     expect(spanish.syncQrDoesNotReplaceEncryption, contains('no reemplaza'));
+    expect(spanish.syncQrNoPlaintextSecrets, contains('claves en claro'));
     expect(spanish.syncPairingManualFallback, contains('.vaultpair'));
     expect(spanish.syncNoAutomaticDiscovery, contains('todavía no'));
     expect(spanish.syncLanResultMediaReceived(2), contains('2'));
