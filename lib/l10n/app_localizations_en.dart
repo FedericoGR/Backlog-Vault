@@ -1982,11 +1982,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get syncSectionTitle => 'Manual synchronization';
+  String get syncSectionTitle => 'Sync';
 
   @override
   String get syncSectionDescription =>
-      'Encrypted device-to-device change exchange without accounts or cloud. Manual file packages and local network sync are available.';
+      'Keep two Backlog Vault devices aligned without an account or cloud.';
 
   @override
   String get syncFoundationReady => 'Technical foundation ready';
@@ -2002,10 +2002,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncLocalDevice => 'Local device';
 
   @override
-  String get syncExportPackage => 'Export sync package';
+  String get syncExportPackage => 'Export change package';
 
   @override
-  String get syncImportPackage => 'Import sync package';
+  String get syncImportPackage => 'Import change package';
 
   @override
   String get syncEncryptedNotice =>
@@ -2017,17 +2017,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syncMediaNotice =>
-      'Cover file synchronization will arrive in a later stage.';
+      'Managed cover files are transferred when possible.';
 
   @override
   String get syncPackageVsBackup =>
       '.vaultsync carries encrypted changes; it is not a complete backup. Use .vaultbackup.enc for full migration or recovery.';
 
   @override
-  String get syncPasswordExportTitle => 'Encrypt sync package';
+  String get syncPasswordExportTitle => 'Protect change package';
 
   @override
-  String get syncPasswordImportTitle => 'Open sync package';
+  String get syncPasswordImportTitle => 'Open change package';
 
   @override
   String get syncPassword => 'Password';
@@ -2127,10 +2127,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Pairing lets you use sync packages without typing a password every time and enables manual local network sync.';
 
   @override
-  String get syncNoGroup => 'No sync group configured';
+  String get syncNoGroup => 'This device is not connected to a sync group yet.';
 
   @override
-  String get syncGroupConfigured => 'Sync group configured';
+  String get syncGroupConfigured => 'Device ready to sync';
 
   @override
   String syncGroupName(Object name) {
@@ -2144,17 +2144,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syncGroupKeyAvailable =>
-      'The group key is protected by this device\'s secure storage.';
+      'This device has the local sync information it needs.';
 
   @override
   String get syncGroupKeyMissing =>
-      'The group key is missing on this device. Pair it again before using group packages.';
+      'This device needs to be connected again before syncing.';
 
   @override
-  String get syncCreateGroup => 'Create sync group';
+  String get syncCreateGroup => 'Connect another device';
 
   @override
-  String get syncCreateGroupTitle => 'Create sync group';
+  String get syncCreateGroupTitle => 'Name this sync group';
 
   @override
   String get syncGroupNameLabel => 'Group name';
@@ -2163,14 +2163,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncGroupNameRequired => 'Enter a group name.';
 
   @override
-  String get syncExportInvitation => 'Export pairing invitation';
+  String get syncExportInvitation => 'Create invitation';
 
   @override
-  String get syncImportInvitation => 'Import pairing invitation';
+  String get syncImportInvitation => 'Import invitation';
 
   @override
   String get syncInvitationNotice =>
-      'The .vaultpair invitation contains the group key inside a password-encrypted payload. Share the file and its temporary password through separate trusted channels.';
+      'Share the invitation and its temporary password through separate channels.';
 
   @override
   String get syncPairingPasswordTitle => 'Protect pairing invitation';
@@ -2217,13 +2217,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncLeaveGroupDone => 'This device left the sync group.';
 
   @override
-  String get syncGroupPackagesTitle => 'Paired group packages';
+  String get syncGroupPackagesTitle => 'Manual change packages';
 
   @override
-  String get syncExportGroupPackage => 'Export with group key';
+  String get syncExportGroupPackage => 'Export change package';
 
   @override
-  String get syncImportGroupPackage => 'Import from paired group';
+  String get syncImportGroupPackage => 'Import change package';
 
   @override
   String syncGroupPackageCreated(Object count) {
@@ -2239,28 +2239,76 @@ class AppLocalizationsEn extends AppLocalizations {
       'Pairing does not synchronize automatically and does not enable background sync.';
 
   @override
-  String get syncLanTitle => 'Local network sync';
+  String get syncUxNoGroupMessage =>
+      'This device is not connected to any sync group yet.';
+
+  @override
+  String get syncUxReadyMessage => 'This device is ready to sync.';
+
+  @override
+  String get syncUxNoCloud => 'Sync uses local encryption. There is no cloud.';
+
+  @override
+  String get syncUxReconnectNeeded =>
+      'This device was connected before, but its local sync information is missing. Import a new invitation to connect it again.';
+
+  @override
+  String get syncUxConnectDeviceCta => 'Connect another device';
+
+  @override
+  String syncUxLocalDevice(Object id, Object name, Object platform) {
+    return 'This device: $name · $platform · $id';
+  }
+
+  @override
+  String get syncUxWifiDescription =>
+      'Use this option to sync two paired devices connected to the same network.';
+
+  @override
+  String get syncUxWifiDisabledHint => 'Connect another device first.';
+
+  @override
+  String get syncUxPairDeviceTitle => 'Connect a phone or PC';
+
+  @override
+  String get syncUxPairDeviceDescription =>
+      'Connect your devices first. After that, you can sync them without typing a password every time.';
+
+  @override
+  String get syncUxAdvancedTitle => 'Advanced options';
+
+  @override
+  String get syncUxAdvancedDescription =>
+      'Use manual packages if you cannot sync over Wi-Fi.';
+
+  @override
+  String get syncUxExportPasswordPackage => 'Export with password';
+
+  @override
+  String get syncUxImportPasswordPackage => 'Import with password';
+
+  @override
+  String get syncLanTitle => 'Sync over Wi-Fi';
 
   @override
   String get syncLanDescription =>
-      'Start a temporary LAN session on one paired device, then connect from the other device with the shown IP, port, and session code.';
+      'Start a temporary Wi-Fi sync session on one paired device, then connect from the other device with the shown IP, port, and session code.';
 
   @override
-  String get syncLanPairFirst =>
-      'Pair devices first. LAN sync requires a sync group and its group key in secure storage.';
+  String get syncLanPairFirst => 'Connect another device first.';
 
   @override
   String get syncLanMediaNotice =>
-      'LAN sync transfers managed cover files by hash when both paired devices can verify them.';
+      'App-managed covers are also transferred when possible.';
 
   @override
-  String get syncLanStartSession => 'Start LAN sync session';
+  String get syncLanStartSession => 'Start sync';
 
   @override
   String get syncLanStopSession => 'Stop session';
 
   @override
-  String get syncLanConnectSession => 'Connect to LAN sync session';
+  String get syncLanConnectSession => 'Join sync';
 
   @override
   String get syncLanWaiting => 'Waiting for a paired device.';

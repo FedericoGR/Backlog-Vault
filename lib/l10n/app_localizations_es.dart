@@ -1988,11 +1988,11 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get syncSectionTitle => 'Sincronización manual';
+  String get syncSectionTitle => 'Sincronización';
 
   @override
   String get syncSectionDescription =>
-      'Intercambio cifrado de cambios entre dispositivos, sin cuenta ni cloud. Están disponibles paquetes manuales y sync por red local.';
+      'Mantené alineados dos dispositivos de Backlog Vault sin cuenta ni cloud.';
 
   @override
   String get syncFoundationReady => 'Base técnica preparada';
@@ -2009,10 +2009,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get syncLocalDevice => 'Dispositivo local';
 
   @override
-  String get syncExportPackage => 'Exportar paquete de sincronización';
+  String get syncExportPackage => 'Exportar paquete de cambios';
 
   @override
-  String get syncImportPackage => 'Importar paquete de sincronización';
+  String get syncImportPackage => 'Importar paquete de cambios';
 
   @override
   String get syncEncryptedNotice => 'Este paquete está cifrado con contraseña.';
@@ -2023,17 +2023,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get syncMediaNotice =>
-      'La sincronización de archivos de portada llegará en una etapa posterior.';
+      'También se transfieren portadas gestionadas por la app cuando sea posible.';
 
   @override
   String get syncPackageVsBackup =>
       '.vaultsync transporta cambios cifrados; no es un backup completo. Usá .vaultbackup.enc para migración o recuperación completa.';
 
   @override
-  String get syncPasswordExportTitle => 'Cifrar paquete de sincronización';
+  String get syncPasswordExportTitle => 'Proteger paquete de cambios';
 
   @override
-  String get syncPasswordImportTitle => 'Abrir paquete de sincronización';
+  String get syncPasswordImportTitle => 'Abrir paquete de cambios';
 
   @override
   String get syncPassword => 'Contraseña';
@@ -2133,10 +2133,11 @@ class AppLocalizationsEs extends AppLocalizations {
       'El emparejamiento permite usar paquetes de sincronización sin escribir una contraseña cada vez y habilita sync manual por red local.';
 
   @override
-  String get syncNoGroup => 'No hay un grupo de sincronización configurado';
+  String get syncNoGroup =>
+      'Este dispositivo todavía no está conectado a ningún grupo de sincronización.';
 
   @override
-  String get syncGroupConfigured => 'Grupo de sincronización configurado';
+  String get syncGroupConfigured => 'Dispositivo listo para sincronizar';
 
   @override
   String syncGroupName(Object name) {
@@ -2150,17 +2151,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get syncGroupKeyAvailable =>
-      'La clave del grupo está protegida por el secure storage de este dispositivo.';
+      'Este dispositivo tiene la información local necesaria para sincronizar.';
 
   @override
   String get syncGroupKeyMissing =>
-      'Falta la clave del grupo en este dispositivo. Volvé a emparejarlo antes de usar paquetes de grupo.';
+      'Este dispositivo necesita conectarse de nuevo antes de sincronizar.';
 
   @override
-  String get syncCreateGroup => 'Crear grupo de sincronización';
+  String get syncCreateGroup => 'Conectar otro dispositivo';
 
   @override
-  String get syncCreateGroupTitle => 'Crear grupo de sincronización';
+  String get syncCreateGroupTitle => 'Nombrar grupo de sincronización';
 
   @override
   String get syncGroupNameLabel => 'Nombre del grupo';
@@ -2169,14 +2170,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get syncGroupNameRequired => 'Ingresá un nombre para el grupo.';
 
   @override
-  String get syncExportInvitation => 'Exportar invitación de emparejamiento';
+  String get syncExportInvitation => 'Crear invitación';
 
   @override
-  String get syncImportInvitation => 'Importar invitación de emparejamiento';
+  String get syncImportInvitation => 'Importar invitación';
 
   @override
   String get syncInvitationNotice =>
-      'La invitación .vaultpair contiene la clave del grupo dentro de un payload cifrado con contraseña. Compartí el archivo y su contraseña temporal por canales confiables separados.';
+      'Compartí la invitación y su contraseña temporal por canales separados.';
 
   @override
   String get syncPairingPasswordTitle =>
@@ -2229,13 +2230,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'Este dispositivo salió del grupo de sincronización.';
 
   @override
-  String get syncGroupPackagesTitle => 'Paquetes del grupo emparejado';
+  String get syncGroupPackagesTitle => 'Paquetes manuales de cambios';
 
   @override
-  String get syncExportGroupPackage => 'Exportar con clave de grupo';
+  String get syncExportGroupPackage => 'Exportar paquete de cambios';
 
   @override
-  String get syncImportGroupPackage => 'Importar desde grupo emparejado';
+  String get syncImportGroupPackage => 'Importar paquete de cambios';
 
   @override
   String syncGroupPackageCreated(Object count) {
@@ -2251,28 +2252,78 @@ class AppLocalizationsEs extends AppLocalizations {
       'El emparejamiento no sincroniza automáticamente ni habilita sync en segundo plano.';
 
   @override
-  String get syncLanTitle => 'Sync por red local';
+  String get syncUxNoGroupMessage =>
+      'Este dispositivo todavía no está conectado a ningún grupo de sincronización.';
+
+  @override
+  String get syncUxReadyMessage =>
+      'Este dispositivo está listo para sincronizar.';
+
+  @override
+  String get syncUxNoCloud =>
+      'La sincronización usa cifrado local. No hay cloud.';
+
+  @override
+  String get syncUxReconnectNeeded =>
+      'Este dispositivo estuvo conectado antes, pero le falta información local de sincronización. Importá una nueva invitación para conectarlo otra vez.';
+
+  @override
+  String get syncUxConnectDeviceCta => 'Conectar otro dispositivo';
+
+  @override
+  String syncUxLocalDevice(Object id, Object name, Object platform) {
+    return 'Este dispositivo: $name · $platform · $id';
+  }
+
+  @override
+  String get syncUxWifiDescription =>
+      'Usá esta opción para sincronizar dos dispositivos emparejados y conectados a la misma red.';
+
+  @override
+  String get syncUxWifiDisabledHint => 'Primero conectá otro dispositivo.';
+
+  @override
+  String get syncUxPairDeviceTitle => 'Conectar un teléfono o PC';
+
+  @override
+  String get syncUxPairDeviceDescription =>
+      'Primero conectá tus dispositivos. Después vas a poder sincronizarlos sin escribir una contraseña cada vez.';
+
+  @override
+  String get syncUxAdvancedTitle => 'Opciones avanzadas';
+
+  @override
+  String get syncUxAdvancedDescription =>
+      'Usá paquetes manuales si no podés sincronizar por Wi-Fi.';
+
+  @override
+  String get syncUxExportPasswordPackage => 'Exportar con contraseña';
+
+  @override
+  String get syncUxImportPasswordPackage => 'Importar con contraseña';
+
+  @override
+  String get syncLanTitle => 'Sincronizar por Wi-Fi';
 
   @override
   String get syncLanDescription =>
-      'Iniciá una sesión LAN temporal en un dispositivo emparejado y conectate desde el otro con la IP, puerto y código de sesión mostrados.';
+      'Iniciá una sesión temporal de sync por Wi-Fi en un dispositivo emparejado y conectate desde el otro con la IP, puerto y código de sesión mostrados.';
 
   @override
-  String get syncLanPairFirst =>
-      'Primero emparejá los dispositivos. El sync LAN requiere un grupo de sincronización y su clave en secure storage.';
+  String get syncLanPairFirst => 'Primero conectá otro dispositivo.';
 
   @override
   String get syncLanMediaNotice =>
-      'El sync LAN transfiere portadas gestionadas por la app usando hash cuando ambos dispositivos emparejados pueden verificarlas.';
+      'También se transfieren portadas gestionadas por la app cuando sea posible.';
 
   @override
-  String get syncLanStartSession => 'Iniciar sesión LAN';
+  String get syncLanStartSession => 'Iniciar sincronización';
 
   @override
   String get syncLanStopSession => 'Detener sesión';
 
   @override
-  String get syncLanConnectSession => 'Conectarse a sesión LAN';
+  String get syncLanConnectSession => 'Unirse a sincronización';
 
   @override
   String get syncLanWaiting => 'Esperando un dispositivo emparejado.';

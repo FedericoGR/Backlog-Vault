@@ -49,12 +49,27 @@ void main() {
       expect(find.text('Ajustes'), findsOneWidget);
       expect(find.text('Datos y backups'), findsOneWidget);
       await tester.scrollUntilVisible(
-        find.text('Sincronización manual'),
+        find.text('Sincronización'),
         500,
         scrollable: find.byType(Scrollable).first,
       );
-      expect(find.text('Exportar paquete de sincronización'), findsOneWidget);
-      expect(find.text('Importar paquete de sincronización'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Conectar un teléfono o PC'),
+        500,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(
+        find.textContaining(
+          'Este dispositivo todavía no está conectado a ningún grupo de sincronización.',
+        ),
+        findsWidgets,
+      );
+      expect(find.text('Conectar otro dispositivo'), findsWidgets);
+      expect(find.text('Conectar un teléfono o PC'), findsOneWidget);
+      expect(find.text('Opciones avanzadas'), findsOneWidget);
+      expect(find.text('base técnica preparada'), findsNothing);
+      expect(find.text('clave de grupo'), findsNothing);
+      expect(find.text('secure storage'), findsNothing);
       await tester.scrollUntilVisible(
         find.text('RAWG'),
         500,
@@ -111,17 +126,17 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await tester.tap(find.text('Opciones avanzadas'));
+    await tester.pumpAndSettle();
     await tester.tap(
-      find.widgetWithText(FilledButton, 'Exportar paquete de sincronización'),
+      find.widgetWithText(FilledButton, 'Exportar paquete de cambios'),
     );
     await tester.pumpAndSettle();
     expect(find.byType(TextField), findsNWidgets(2));
     await tester.enterText(find.byType(TextField).first, 'test password one');
     await tester.enterText(find.byType(TextField).last, 'test password two');
     await tester.tap(
-      find
-          .widgetWithText(FilledButton, 'Exportar paquete de sincronización')
-          .last,
+      find.widgetWithText(FilledButton, 'Exportar paquete de cambios').last,
     );
     await tester.pumpAndSettle();
 
@@ -166,24 +181,52 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Grupo de sincronización configurado'), findsOneWidget);
-      expect(find.text('Grupo: Test group'), findsOneWidget);
+      expect(find.text('Dispositivo listo para sincronizar'), findsOneWidget);
       expect(
-        find.text('Dispositivos emparejados conocidos: 1'),
+        find.textContaining('Dispositivos emparejados conocidos: 1'),
         findsOneWidget,
       );
       expect(
-        find.text('Exportar invitación de emparejamiento'),
+        find.textContaining(
+          'La sincronización usa cifrado local. No hay cloud.',
+        ),
         findsOneWidget,
       );
-      expect(find.text('Exportar con clave de grupo'), findsOneWidget);
-      expect(find.text('Importar desde grupo emparejado'), findsOneWidget);
-      expect(find.text('Salir del grupo de sincronización'), findsOneWidget);
-      expect(find.text('Sync por red local'), findsOneWidget);
-      expect(find.text('Iniciar sesión LAN'), findsOneWidget);
-      expect(find.text('Conectarse a sesión LAN'), findsOneWidget);
+      expect(find.text('Sincronizar por Wi-Fi'), findsOneWidget);
+      expect(find.text('Iniciar sincronización'), findsOneWidget);
+      expect(find.text('Unirse a sincronización'), findsOneWidget);
+      expect(find.text('Conectar un teléfono o PC'), findsOneWidget);
+      expect(find.text('Crear invitación'), findsOneWidget);
+      expect(find.text('Importar invitación'), findsOneWidget);
+      expect(find.text('Opciones avanzadas'), findsOneWidget);
+      expect(
+        find.textContaining(
+          'También se transfieren portadas gestionadas por la app cuando sea posible.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Grupo de sincronización configurado'), findsNothing);
+      expect(find.text('Exportar con clave de grupo'), findsNothing);
+      expect(find.text('Importar desde grupo emparejado'), findsNothing);
+      expect(find.text('Sync por red local'), findsNothing);
+      expect(find.textContaining('base técnica'), findsNothing);
+      expect(find.textContaining('secure storage'), findsNothing);
       expect(find.text('Sincronizar ahora'), findsNothing);
       expect(find.text('Escanear QR'), findsNothing);
+
+      await tester.scrollUntilVisible(
+        find.text('Opciones avanzadas'),
+        500,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text('Opciones avanzadas'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Exportar paquete de cambios'), findsOneWidget);
+      expect(find.text('Importar paquete de cambios'), findsOneWidget);
+      expect(find.text('Exportar con contraseña'), findsOneWidget);
+      expect(find.text('Importar con contraseña'), findsOneWidget);
+      expect(find.text('Salir del grupo de sincronización'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

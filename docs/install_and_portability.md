@@ -85,7 +85,7 @@ The random group key is inside the encrypted invitation and is then stored only 
 For manual LAN sync after pairing:
 
 1. Put both devices on the same local network.
-2. On the host device, open **Settings → Sync → Local network sync** and start a LAN session.
+2. On the host device, open **Settings → Sync → Sync over Wi-Fi** and start a session.
 3. Note the displayed IP address, port, and short session code.
 4. On the client device, connect with those values and run the sync.
 5. Review the result summary. Safe changes are applied, duplicate changes are skipped, conflicts are reported without overwriting local data, and managed cover files are transferred when hash verification succeeds.

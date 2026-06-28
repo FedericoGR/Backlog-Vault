@@ -3619,13 +3619,13 @@ abstract class AppLocalizations {
   /// No description provided for @syncSectionTitle.
   ///
   /// In en, this message translates to:
-  /// **'Manual synchronization'**
+  /// **'Sync'**
   String get syncSectionTitle;
 
   /// No description provided for @syncSectionDescription.
   ///
   /// In en, this message translates to:
-  /// **'Encrypted device-to-device change exchange without accounts or cloud. Manual file packages and local network sync are available.'**
+  /// **'Keep two Backlog Vault devices aligned without an account or cloud.'**
   String get syncSectionDescription;
 
   /// No description provided for @syncFoundationReady.
@@ -3655,13 +3655,13 @@ abstract class AppLocalizations {
   /// No description provided for @syncExportPackage.
   ///
   /// In en, this message translates to:
-  /// **'Export sync package'**
+  /// **'Export change package'**
   String get syncExportPackage;
 
   /// No description provided for @syncImportPackage.
   ///
   /// In en, this message translates to:
-  /// **'Import sync package'**
+  /// **'Import change package'**
   String get syncImportPackage;
 
   /// No description provided for @syncEncryptedNotice.
@@ -3679,7 +3679,7 @@ abstract class AppLocalizations {
   /// No description provided for @syncMediaNotice.
   ///
   /// In en, this message translates to:
-  /// **'Cover file synchronization will arrive in a later stage.'**
+  /// **'Managed cover files are transferred when possible.'**
   String get syncMediaNotice;
 
   /// No description provided for @syncPackageVsBackup.
@@ -3691,13 +3691,13 @@ abstract class AppLocalizations {
   /// No description provided for @syncPasswordExportTitle.
   ///
   /// In en, this message translates to:
-  /// **'Encrypt sync package'**
+  /// **'Protect change package'**
   String get syncPasswordExportTitle;
 
   /// No description provided for @syncPasswordImportTitle.
   ///
   /// In en, this message translates to:
-  /// **'Open sync package'**
+  /// **'Open change package'**
   String get syncPasswordImportTitle;
 
   /// No description provided for @syncPassword.
@@ -3847,13 +3847,13 @@ abstract class AppLocalizations {
   /// No description provided for @syncNoGroup.
   ///
   /// In en, this message translates to:
-  /// **'No sync group configured'**
+  /// **'This device is not connected to a sync group yet.'**
   String get syncNoGroup;
 
   /// No description provided for @syncGroupConfigured.
   ///
   /// In en, this message translates to:
-  /// **'Sync group configured'**
+  /// **'Device ready to sync'**
   String get syncGroupConfigured;
 
   /// No description provided for @syncGroupName.
@@ -3871,25 +3871,25 @@ abstract class AppLocalizations {
   /// No description provided for @syncGroupKeyAvailable.
   ///
   /// In en, this message translates to:
-  /// **'The group key is protected by this device\'s secure storage.'**
+  /// **'This device has the local sync information it needs.'**
   String get syncGroupKeyAvailable;
 
   /// No description provided for @syncGroupKeyMissing.
   ///
   /// In en, this message translates to:
-  /// **'The group key is missing on this device. Pair it again before using group packages.'**
+  /// **'This device needs to be connected again before syncing.'**
   String get syncGroupKeyMissing;
 
   /// No description provided for @syncCreateGroup.
   ///
   /// In en, this message translates to:
-  /// **'Create sync group'**
+  /// **'Connect another device'**
   String get syncCreateGroup;
 
   /// No description provided for @syncCreateGroupTitle.
   ///
   /// In en, this message translates to:
-  /// **'Create sync group'**
+  /// **'Name this sync group'**
   String get syncCreateGroupTitle;
 
   /// No description provided for @syncGroupNameLabel.
@@ -3907,19 +3907,19 @@ abstract class AppLocalizations {
   /// No description provided for @syncExportInvitation.
   ///
   /// In en, this message translates to:
-  /// **'Export pairing invitation'**
+  /// **'Create invitation'**
   String get syncExportInvitation;
 
   /// No description provided for @syncImportInvitation.
   ///
   /// In en, this message translates to:
-  /// **'Import pairing invitation'**
+  /// **'Import invitation'**
   String get syncImportInvitation;
 
   /// No description provided for @syncInvitationNotice.
   ///
   /// In en, this message translates to:
-  /// **'The .vaultpair invitation contains the group key inside a password-encrypted payload. Share the file and its temporary password through separate trusted channels.'**
+  /// **'Share the invitation and its temporary password through separate channels.'**
   String get syncInvitationNotice;
 
   /// No description provided for @syncPairingPasswordTitle.
@@ -4003,19 +4003,19 @@ abstract class AppLocalizations {
   /// No description provided for @syncGroupPackagesTitle.
   ///
   /// In en, this message translates to:
-  /// **'Paired group packages'**
+  /// **'Manual change packages'**
   String get syncGroupPackagesTitle;
 
   /// No description provided for @syncExportGroupPackage.
   ///
   /// In en, this message translates to:
-  /// **'Export with group key'**
+  /// **'Export change package'**
   String get syncExportGroupPackage;
 
   /// No description provided for @syncImportGroupPackage.
   ///
   /// In en, this message translates to:
-  /// **'Import from paired group'**
+  /// **'Import change package'**
   String get syncImportGroupPackage;
 
   /// No description provided for @syncGroupPackageCreated.
@@ -4036,34 +4036,118 @@ abstract class AppLocalizations {
   /// **'Pairing does not synchronize automatically and does not enable background sync.'**
   String get syncNoAutomaticSync;
 
+  /// No description provided for @syncUxNoGroupMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This device is not connected to any sync group yet.'**
+  String get syncUxNoGroupMessage;
+
+  /// No description provided for @syncUxReadyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This device is ready to sync.'**
+  String get syncUxReadyMessage;
+
+  /// No description provided for @syncUxNoCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync uses local encryption. There is no cloud.'**
+  String get syncUxNoCloud;
+
+  /// No description provided for @syncUxReconnectNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'This device was connected before, but its local sync information is missing. Import a new invitation to connect it again.'**
+  String get syncUxReconnectNeeded;
+
+  /// No description provided for @syncUxConnectDeviceCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect another device'**
+  String get syncUxConnectDeviceCta;
+
+  /// No description provided for @syncUxLocalDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'This device: {name} · {platform} · {id}'**
+  String syncUxLocalDevice(Object id, Object name, Object platform);
+
+  /// No description provided for @syncUxWifiDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this option to sync two paired devices connected to the same network.'**
+  String get syncUxWifiDescription;
+
+  /// No description provided for @syncUxWifiDisabledHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect another device first.'**
+  String get syncUxWifiDisabledHint;
+
+  /// No description provided for @syncUxPairDeviceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect a phone or PC'**
+  String get syncUxPairDeviceTitle;
+
+  /// No description provided for @syncUxPairDeviceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your devices first. After that, you can sync them without typing a password every time.'**
+  String get syncUxPairDeviceDescription;
+
+  /// No description provided for @syncUxAdvancedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced options'**
+  String get syncUxAdvancedTitle;
+
+  /// No description provided for @syncUxAdvancedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use manual packages if you cannot sync over Wi-Fi.'**
+  String get syncUxAdvancedDescription;
+
+  /// No description provided for @syncUxExportPasswordPackage.
+  ///
+  /// In en, this message translates to:
+  /// **'Export with password'**
+  String get syncUxExportPasswordPackage;
+
+  /// No description provided for @syncUxImportPasswordPackage.
+  ///
+  /// In en, this message translates to:
+  /// **'Import with password'**
+  String get syncUxImportPasswordPackage;
+
   /// No description provided for @syncLanTitle.
   ///
   /// In en, this message translates to:
-  /// **'Local network sync'**
+  /// **'Sync over Wi-Fi'**
   String get syncLanTitle;
 
   /// No description provided for @syncLanDescription.
   ///
   /// In en, this message translates to:
-  /// **'Start a temporary LAN session on one paired device, then connect from the other device with the shown IP, port, and session code.'**
+  /// **'Start a temporary Wi-Fi sync session on one paired device, then connect from the other device with the shown IP, port, and session code.'**
   String get syncLanDescription;
 
   /// No description provided for @syncLanPairFirst.
   ///
   /// In en, this message translates to:
-  /// **'Pair devices first. LAN sync requires a sync group and its group key in secure storage.'**
+  /// **'Connect another device first.'**
   String get syncLanPairFirst;
 
   /// No description provided for @syncLanMediaNotice.
   ///
   /// In en, this message translates to:
-  /// **'LAN sync transfers managed cover files by hash when both paired devices can verify them.'**
+  /// **'App-managed covers are also transferred when possible.'**
   String get syncLanMediaNotice;
 
   /// No description provided for @syncLanStartSession.
   ///
   /// In en, this message translates to:
-  /// **'Start LAN sync session'**
+  /// **'Start sync'**
   String get syncLanStartSession;
 
   /// No description provided for @syncLanStopSession.
@@ -4075,7 +4159,7 @@ abstract class AppLocalizations {
   /// No description provided for @syncLanConnectSession.
   ///
   /// In en, this message translates to:
-  /// **'Connect to LAN sync session'**
+  /// **'Join sync'**
   String get syncLanConnectSession;
 
   /// No description provided for @syncLanWaiting.

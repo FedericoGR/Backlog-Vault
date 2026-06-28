@@ -47,23 +47,7 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             foundation.when(
-              data:
-                  (device) => Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      BvStatusBanner(
-                        title: context.l10n.syncFoundationReady,
-                        tone: BvBannerTone.success,
-                        message: context.l10n.syncManualAvailable,
-                      ),
-                      const SizedBox(height: BvSpacing.sm),
-                      Text(
-                        '${context.l10n.syncLocalDevice}: '
-                        '${device.displayName} · ${device.platform} · '
-                        '${_shortId(device.id)}',
-                      ),
-                    ],
-                  ),
+              data: (_) => _buildSyncContent(pairing),
               loading:
                   () => BvProgressPanel(
                     title: context.l10n.loading,
@@ -75,38 +59,6 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
                     tone: BvBannerTone.warning,
                     message: context.l10n.syncOperationFailed,
                   ),
-            ),
-            const SizedBox(height: BvSpacing.md),
-            _buildPairingState(pairing),
-            const SizedBox(height: BvSpacing.md),
-            _buildLanSyncState(pairing),
-            const SizedBox(height: BvSpacing.md),
-            BvStatusBanner(
-              title: context.l10n.syncEncryptedNotice,
-              tone: BvBannerTone.warning,
-              message:
-                  '${context.l10n.syncConflictNotice}\n'
-                  '${context.l10n.syncMediaNotice}\n'
-                  '${context.l10n.syncPackageVsBackup}',
-            ),
-            const SizedBox(height: BvSpacing.md),
-            Wrap(
-              spacing: BvSpacing.sm,
-              runSpacing: BvSpacing.sm,
-              children: [
-                FilledButton.icon(
-                  onPressed:
-                      _busy || !foundation.hasValue ? null : _exportPackage,
-                  icon: const Icon(Icons.lock_outline),
-                  label: Text(context.l10n.syncExportPackage),
-                ),
-                OutlinedButton.icon(
-                  onPressed:
-                      _busy || !foundation.hasValue ? null : _importPackage,
-                  icon: const Icon(Icons.lock_open_outlined),
-                  label: Text(context.l10n.syncImportPackage),
-                ),
-              ],
             ),
             if (_busy) ...[
               const SizedBox(height: BvSpacing.md),
@@ -129,165 +81,221 @@ class _ManualSyncSectionState extends ConsumerState<ManualSyncSection> {
     );
   }
 
-  Widget _buildPairingState(AsyncValue<SyncPairingState> pairing) {
+  Widget _buildSyncContent(AsyncValue<SyncPairingState> pairing) {
     return pairing.when(
       loading:
           () => BvProgressPanel(
-            title: context.l10n.syncPairingTitle,
-            subtitle: context.l10n.syncPairingDescription,
+            title: context.l10n.loading,
+            subtitle: context.l10n.syncSectionDescription,
           ),
       error:
           (_, _) => BvStatusBanner(
-            title: context.l10n.syncPairingTitle,
+            title: context.l10n.syncNotReady,
             tone: BvBannerTone.warning,
             message: context.l10n.syncPairingOperationFailed,
           ),
-      data: (state) {
-        final group = state.group;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            BvStatusBanner(
-              title:
-                  group == null
-                      ? context.l10n.syncNoGroup
-                      : context.l10n.syncGroupConfigured,
-              tone:
-                  group == null
-                      ? BvBannerTone.info
-                      : state.hasGroupKey
-                      ? BvBannerTone.success
-                      : BvBannerTone.warning,
-              message:
-                  '${context.l10n.syncPairingDescription}\n'
-                  '${context.l10n.syncNoAutomaticSync}',
-            ),
-            if (group != null) ...[
-              const SizedBox(height: BvSpacing.sm),
-              Text(context.l10n.syncGroupName(group.displayName)),
-              Text(context.l10n.syncPairedDevices(state.pairedDeviceCount)),
-              Text(
-                state.hasGroupKey
-                    ? context.l10n.syncGroupKeyAvailable
-                    : context.l10n.syncGroupKeyMissing,
-              ),
+      data:
+          (state) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildStatusCard(state),
+              const SizedBox(height: BvSpacing.md),
+              _buildWifiSyncCard(state),
+              const SizedBox(height: BvSpacing.md),
+              _buildPairingCard(state),
+              const SizedBox(height: BvSpacing.md),
+              _buildAdvancedOptions(state),
             ],
-            const SizedBox(height: BvSpacing.sm),
-            Text(context.l10n.syncInvitationNotice),
-            const SizedBox(height: BvSpacing.sm),
-            Wrap(
-              spacing: BvSpacing.sm,
-              runSpacing: BvSpacing.sm,
-              children: [
-                if (group == null)
-                  FilledButton.icon(
-                    onPressed: _busy ? null : _createGroup,
-                    icon: const Icon(Icons.group_add_outlined),
-                    label: Text(context.l10n.syncCreateGroup),
-                  ),
-                if (group != null)
-                  OutlinedButton.icon(
-                    onPressed: _busy ? null : _exportPairingInvitation,
-                    icon: const Icon(Icons.ios_share_outlined),
-                    label: Text(context.l10n.syncExportInvitation),
-                  ),
-                OutlinedButton.icon(
-                  onPressed: _busy ? null : _importPairingInvitation,
-                  icon: const Icon(Icons.file_open_outlined),
-                  label: Text(context.l10n.syncImportInvitation),
-                ),
-                if (group != null && state.hasGroupKey) ...[
-                  FilledButton.icon(
-                    onPressed: _busy ? null : _exportGroupPackage,
-                    icon: const Icon(Icons.lock_outline),
-                    label: Text(context.l10n.syncExportGroupPackage),
-                  ),
-                  OutlinedButton.icon(
-                    onPressed: _busy ? null : _importGroupPackage,
-                    icon: const Icon(Icons.lock_open_outlined),
-                    label: Text(context.l10n.syncImportGroupPackage),
-                  ),
-                ],
-                if (group != null)
-                  TextButton.icon(
-                    onPressed: _busy ? null : _leaveGroup,
-                    icon: const Icon(Icons.link_off_outlined),
-                    label: Text(context.l10n.syncLeaveGroup),
-                  ),
-              ],
-            ),
-          ],
-        );
-      },
+          ),
     );
   }
 
-  Widget _buildLanSyncState(AsyncValue<SyncPairingState> pairing) {
-    return pairing.when(
-      loading:
-          () => BvProgressPanel(
-            title: context.l10n.syncLanTitle,
-            subtitle: context.l10n.syncLanDescription,
-          ),
-      error:
-          (_, _) => BvStatusBanner(
-            title: context.l10n.syncLanTitle,
-            tone: BvBannerTone.warning,
-            message: context.l10n.syncLanFailed,
-          ),
-      data: (state) {
-        final group = state.group;
-        final session = _hostSession;
-        final canUseLan = group != null && state.hasGroupKey;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            BvStatusBanner(
-              title: context.l10n.syncLanTitle,
-              tone: canUseLan ? BvBannerTone.info : BvBannerTone.warning,
-              message:
-                  canUseLan
-                      ? '${context.l10n.syncLanDescription}\n'
-                          '${context.l10n.syncLanMediaNotice}'
-                      : context.l10n.syncLanPairFirst,
+  Widget _buildStatusCard(SyncPairingState state) {
+    final group = state.group;
+    final hasReadyGroup = group != null && state.hasGroupKey;
+    return BvStatusBanner(
+      title:
+          hasReadyGroup
+              ? context.l10n.syncGroupConfigured
+              : context.l10n.syncNoGroup,
+      tone:
+          group == null
+              ? BvBannerTone.info
+              : hasReadyGroup
+              ? BvBannerTone.success
+              : BvBannerTone.warning,
+      message:
+          group == null
+              ? context.l10n.syncUxNoGroupMessage
+              : hasReadyGroup
+              ? [
+                context.l10n.syncUxReadyMessage,
+                context.l10n.syncPairedDevices(state.pairedDeviceCount),
+                context.l10n.syncUxNoCloud,
+                context.l10n.syncUxLocalDevice(
+                  state.localDevice.displayName,
+                  state.localDevice.platform,
+                  _shortId(state.localDevice.deviceId),
+                ),
+              ].join('\n')
+              : context.l10n.syncUxReconnectNeeded,
+    );
+  }
+
+  Widget _buildWifiSyncCard(SyncPairingState state) {
+    final session = _hostSession;
+    final canUseLan = state.group != null && state.hasGroupKey;
+    return _SyncUxCard(
+      icon: Icons.wifi_outlined,
+      title: context.l10n.syncLanTitle,
+      description:
+          '${context.l10n.syncUxWifiDescription}\n'
+          '${context.l10n.syncLanMediaNotice}',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!canUseLan)
+            Text(
+              context.l10n.syncUxWifiDisabledHint,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
-            if (session != null) ...[
-              const SizedBox(height: BvSpacing.sm),
-              Text(context.l10n.syncLanWaiting),
-              Text(context.l10n.syncLanHostAddress(session.host)),
-              Text(context.l10n.syncLanPort(session.port)),
-              Text(context.l10n.syncLanSessionCode(session.sessionCode)),
-              Text(
-                context.l10n.syncLanHostDevice(session.localDevice.displayName),
+          if (session != null) ...[
+            Text(context.l10n.syncLanWaiting),
+            Text(context.l10n.syncLanHostAddress(session.host)),
+            Text(context.l10n.syncLanPort(session.port)),
+            Text(context.l10n.syncLanSessionCode(session.sessionCode)),
+            Text(
+              context.l10n.syncLanHostDevice(session.localDevice.displayName),
+            ),
+            const SizedBox(height: BvSpacing.sm),
+          ],
+          Wrap(
+            spacing: BvSpacing.sm,
+            runSpacing: BvSpacing.sm,
+            children: [
+              if (session == null)
+                FilledButton.icon(
+                  onPressed: _busy || !canUseLan ? null : _startLanSession,
+                  icon: const Icon(Icons.wifi_tethering_outlined),
+                  label: Text(context.l10n.syncLanStartSession),
+                ),
+              if (session != null)
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : _stopLanSession,
+                  icon: const Icon(Icons.stop_circle_outlined),
+                  label: Text(context.l10n.syncLanStopSession),
+                ),
+              OutlinedButton.icon(
+                onPressed: _busy || !canUseLan ? null : _connectLanSession,
+                icon: const Icon(Icons.lan_outlined),
+                label: Text(context.l10n.syncLanConnectSession),
               ),
             ],
-            const SizedBox(height: BvSpacing.sm),
-            Wrap(
-              spacing: BvSpacing.sm,
-              runSpacing: BvSpacing.sm,
-              children: [
-                if (session == null)
-                  FilledButton.icon(
-                    onPressed: _busy || !canUseLan ? null : _startLanSession,
-                    icon: const Icon(Icons.wifi_tethering_outlined),
-                    label: Text(context.l10n.syncLanStartSession),
-                  ),
-                if (session != null)
-                  OutlinedButton.icon(
-                    onPressed: _busy ? null : _stopLanSession,
-                    icon: const Icon(Icons.stop_circle_outlined),
-                    label: Text(context.l10n.syncLanStopSession),
-                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPairingCard(SyncPairingState state) {
+    final group = state.group;
+    return _SyncUxCard(
+      icon: Icons.devices_other_outlined,
+      title: context.l10n.syncUxPairDeviceTitle,
+      description:
+          '${context.l10n.syncUxPairDeviceDescription}\n'
+          '${context.l10n.syncInvitationNotice}',
+      child: Wrap(
+        spacing: BvSpacing.sm,
+        runSpacing: BvSpacing.sm,
+        children: [
+          if (group == null)
+            FilledButton.icon(
+              onPressed: _busy ? null : _createGroup,
+              icon: const Icon(Icons.group_add_outlined),
+              label: Text(context.l10n.syncUxConnectDeviceCta),
+            ),
+          if (group != null)
+            FilledButton.icon(
+              onPressed: _busy ? null : _exportPairingInvitation,
+              icon: const Icon(Icons.ios_share_outlined),
+              label: Text(context.l10n.syncExportInvitation),
+            ),
+          OutlinedButton.icon(
+            onPressed: _busy ? null : _importPairingInvitation,
+            icon: const Icon(Icons.file_open_outlined),
+            label: Text(context.l10n.syncImportInvitation),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdvancedOptions(SyncPairingState state) {
+    final canUseGroupPackage = state.group != null && state.hasGroupKey;
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: ExpansionTile(
+        title: Text(context.l10n.syncUxAdvancedTitle),
+        subtitle: Text(context.l10n.syncUxAdvancedDescription),
+        childrenPadding: const EdgeInsets.fromLTRB(
+          BvSpacing.md,
+          0,
+          BvSpacing.md,
+          BvSpacing.md,
+        ),
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(context.l10n.syncPackageVsBackup),
+          ),
+          const SizedBox(height: BvSpacing.sm),
+          Wrap(
+            spacing: BvSpacing.sm,
+            runSpacing: BvSpacing.sm,
+            children: [
+              FilledButton.icon(
+                onPressed:
+                    _busy
+                        ? null
+                        : canUseGroupPackage
+                        ? _exportGroupPackage
+                        : _exportPackage,
+                icon: const Icon(Icons.lock_outline),
+                label: Text(context.l10n.syncExportPackage),
+              ),
+              OutlinedButton.icon(
+                onPressed:
+                    _busy
+                        ? null
+                        : canUseGroupPackage
+                        ? _importGroupPackage
+                        : _importPackage,
+                icon: const Icon(Icons.lock_open_outlined),
+                label: Text(context.l10n.syncImportPackage),
+              ),
+              if (canUseGroupPackage) ...[
                 OutlinedButton.icon(
-                  onPressed: _busy || !canUseLan ? null : _connectLanSession,
-                  icon: const Icon(Icons.lan_outlined),
-                  label: Text(context.l10n.syncLanConnectSession),
+                  onPressed: _busy ? null : _exportPackage,
+                  icon: const Icon(Icons.password_outlined),
+                  label: Text(context.l10n.syncUxExportPasswordPackage),
+                ),
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : _importPackage,
+                  icon: const Icon(Icons.password_outlined),
+                  label: Text(context.l10n.syncUxImportPasswordPackage),
                 ),
               ],
-            ),
-          ],
-        );
-      },
+              if (state.group != null)
+                TextButton.icon(
+                  onPressed: _busy ? null : _leaveGroup,
+                  icon: const Icon(Icons.link_off_outlined),
+                  label: Text(context.l10n.syncLeaveGroup),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -991,4 +999,52 @@ class _LanConnectionInput {
   final String host;
   final int port;
   final String sessionCode;
+}
+
+class _SyncUxCard extends StatelessWidget {
+  const _SyncUxCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.child,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(BvSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(icon),
+                const SizedBox(width: BvSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: theme.textTheme.titleMedium),
+                      const SizedBox(height: BvSpacing.xs),
+                      Text(description),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: BvSpacing.md),
+            child,
+          ],
+        ),
+      ),
+    );
+  }
 }
