@@ -1,15 +1,14 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/backlog_vault_app.dart';
-import 'features/sync/application/sync_providers.dart';
+import 'core/database/database_providers.dart';
+import 'core/storage/offline_secure_storage_cleanup.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final container = ProviderContainer();
-  unawaited(_initializeSyncFoundation(container));
+  await _completeOfflineMigration(container);
   runApp(
     UncontrolledProviderScope(
       container: container,
@@ -18,11 +17,18 @@ void main() {
   );
 }
 
-Future<void> _initializeSyncFoundation(ProviderContainer container) async {
+Future<void> _completeOfflineMigration(ProviderContainer container) async {
+  final database = container.read(appDatabaseProvider);
+  await database.customSelect('SELECT 1').getSingle();
   try {
-    await container.read(syncFoundationReadyProvider.future);
-  } on Object {
-    // The library remains usable if platform secure storage is temporarily
-    // unavailable. A later mutation retries through SyncAwareTransaction.
+    await container.read(offlineSecureStorageCleanupProvider).run();
+  } on OfflineSecureStorageCleanupException catch (error, stackTrace) {
+    FlutterError.reportError(
+      FlutterErrorDetails(
+        exception: error,
+        stack: stackTrace,
+        library: 'offline migration cleanup',
+      ),
+    );
   }
 }

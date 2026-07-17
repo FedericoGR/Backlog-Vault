@@ -18,12 +18,6 @@ part 'app_database.g.dart';
     SavedViews,
     ExternalGameIds,
     MediaAssets,
-    SyncGroups,
-    SyncDevices,
-    SyncChanges,
-    SyncTombstones,
-    SyncStates,
-    SyncEntityStates,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -36,7 +30,6 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (migrator) async {
       await migrator.createAll();
-      await _createSyncIndexes();
     },
     onUpgrade: (migrator, from, to) async {
       if (from < 2) {
@@ -48,51 +41,82 @@ class AppDatabase extends _$AppDatabase {
       if (from < 4) {
         await migrator.createTable(mediaAssets);
       }
-      if (from < 5) {
-        await migrator.createTable(syncGroups);
-        await migrator.createTable(syncDevices);
-        await migrator.createTable(syncChanges);
-        await migrator.createTable(syncTombstones);
-        await migrator.createTable(syncStates);
-        await migrator.createTable(syncEntityStates);
-        await _createSyncIndexes();
+      if (from == 5) {
+        await _migrateSchema5ToOffline6();
       }
+    },
+    beforeOpen: (_) async {
+      await customStatement('PRAGMA foreign_keys = ON');
     },
   );
 
-  Future<void> _createSyncIndexes() async {
+  Future<void> _migrateSchema5ToOffline6() async {
+    await _requireFunctionalSchema();
+    await _requireForeignKeyIntegrity();
+
+    await customStatement('DROP INDEX IF EXISTS idx_sync_devices_group_status');
+    await customStatement('DROP INDEX IF EXISTS idx_sync_devices_single_local');
+    await customStatement('DROP INDEX IF EXISTS idx_sync_changes_entity');
+    await customStatement('DROP INDEX IF EXISTS idx_sync_changes_mutation');
+    await customStatement('DROP INDEX IF EXISTS idx_sync_changes_origin');
+    await customStatement('DROP INDEX IF EXISTS idx_sync_tombstones_entity');
+    await customStatement('DROP INDEX IF EXISTS idx_sync_state_peer');
+    await customStatement('DROP INDEX IF EXISTS idx_sync_entity_state_entity');
+
+    await customStatement('DROP TABLE IF EXISTS sync_entity_states');
+    await customStatement('DROP TABLE IF EXISTS sync_states');
+    await customStatement('DROP TABLE IF EXISTS sync_tombstones');
+    await customStatement('DROP TABLE IF EXISTS sync_changes');
+    await customStatement('DROP TABLE IF EXISTS sync_devices');
+    await customStatement('DROP TABLE IF EXISTS sync_groups');
+
+    await _requireFunctionalSchema();
+    await _requireForeignKeyIntegrity();
+  }
+
+  Future<void> _requireFunctionalSchema() async {
+    const requiredTables = <String>{
+      'games',
+      'library_entries',
+      'platforms',
+      'library_entry_platforms',
+      'genres',
+      'game_genres',
+      'playthroughs',
+      'saved_views',
+      'external_game_ids',
+      'media_assets',
+    };
     await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_sync_devices_group_status '
-      'ON sync_devices(sync_group_id, status)',
+      'CREATE TEMP TABLE IF NOT EXISTS _offline_migration_guard '
+      '(name TEXT NOT NULL PRIMARY KEY)',
     );
-    await customStatement(
-      'CREATE UNIQUE INDEX IF NOT EXISTS idx_sync_devices_single_local '
-      'ON sync_devices(is_local) WHERE is_local = 1',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_sync_changes_entity '
-      'ON sync_changes(entity_type, entity_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_sync_changes_mutation '
-      'ON sync_changes(mutation_id, mutation_sequence)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_sync_changes_origin '
-      'ON sync_changes(sync_group_id, origin_device_id, origin_counter)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_sync_tombstones_entity '
-      'ON sync_tombstones(entity_type, entity_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_sync_state_peer '
-      'ON sync_states(sync_group_id, local_device_id, peer_device_id)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_sync_entity_state_entity '
-      'ON sync_entity_states(entity_type, entity_id)',
-    );
+    await customStatement('DELETE FROM _offline_migration_guard');
+    for (final name in requiredTables) {
+      await customStatement(
+        'INSERT INTO _offline_migration_guard(name) '
+        'SELECT name FROM sqlite_master WHERE type = ? AND name = ?',
+        ['table', name],
+      );
+    }
+    final rows =
+        await customSelect('SELECT name FROM _offline_migration_guard').get();
+    final found = rows.map((row) => row.read<String>('name')).toSet();
+    final missing = requiredTables.difference(found);
+    if (missing.isNotEmpty) {
+      throw StateError(
+        'Schema 5 is incomplete; offline migration was not applied.',
+      );
+    }
+  }
+
+  Future<void> _requireForeignKeyIntegrity() async {
+    final violations = await customSelect('PRAGMA foreign_key_check').get();
+    if (violations.isNotEmpty) {
+      throw StateError(
+        'Foreign key validation failed; offline migration was rolled back.',
+      );
+    }
   }
 }
 

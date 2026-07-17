@@ -10,9 +10,6 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/database_providers.dart';
 import '../../../core/ids/id_generator.dart';
 import '../../../core/time/clock.dart';
-import '../../sync/application/sync_providers.dart';
-import '../../sync/data/sync_change_tracking.dart';
-import '../../sync/domain/sync_models.dart';
 import '../domain/media_asset_models.dart';
 import '../domain/media_exception.dart';
 import 'media_file_storage.dart';
@@ -22,7 +19,6 @@ final mediaRepositoryProvider = Provider<MediaRepository>((ref) {
     ref.watch(appDatabaseProvider),
     storage: ref.watch(mediaFileStorageProvider),
     httpClient: ref.watch(mediaDownloadHttpClientProvider),
-    sync: ref.watch(syncAwareTransactionProvider),
   );
 });
 
@@ -44,13 +40,11 @@ class MediaRepository {
     IdGenerator? ids,
     Clock clock = systemClock,
     Duration downloadTimeout = const Duration(seconds: 20),
-    SyncAwareTransaction? sync,
   }) : _storage = storage,
        _httpClient = httpClient ?? http.Client(),
        _ids = ids ?? defaultIdGenerator,
        _clock = clock,
-       _downloadTimeout = downloadTimeout,
-       _sync = sync ?? SyncAwareTransaction.disabled(_db);
+       _downloadTimeout = downloadTimeout;
 
   final AppDatabase _db;
   final MediaFileStorage _storage;
@@ -58,7 +52,6 @@ class MediaRepository {
   final IdGenerator _ids;
   final Clock _clock;
   final Duration _downloadTimeout;
-  final SyncAwareTransaction _sync;
 
   Future<MediaAsset?> selectedCoverForGame(String gameId) {
     return ((_db.select(_db.mediaAssets)
@@ -191,27 +184,24 @@ class MediaRepository {
   }
 
   Future<void> softDelete(String mediaAssetId) {
-    return _sync.run(
-      source: SyncChangeSource.manual,
-      action: (_) async {
-        final now = _clock.now();
-        final asset =
-            await ((_db.select(_db.mediaAssets)
-                  ..where((table) => table.id.equals(mediaAssetId))
-                  ..where((table) => table.deletedAt.isNull()))
-                .getSingleOrNull());
-        if (asset == null) return;
-        await (_db.update(_db.mediaAssets)
-          ..where((table) => table.id.equals(mediaAssetId))).write(
-          MediaAssetsCompanion(
-            isSelected: const Value(false),
-            updatedAt: Value(now),
-            deletedAt: Value(now),
-          ),
-        );
-        await _touchGame(asset.gameId, now);
-      },
-    );
+    return _db.transaction(() async {
+      final now = _clock.now();
+      final asset =
+          await ((_db.select(_db.mediaAssets)
+                ..where((table) => table.id.equals(mediaAssetId))
+                ..where((table) => table.deletedAt.isNull()))
+              .getSingleOrNull());
+      if (asset == null) return;
+      await (_db.update(_db.mediaAssets)
+        ..where((table) => table.id.equals(mediaAssetId))).write(
+        MediaAssetsCompanion(
+          isSelected: const Value(false),
+          updatedAt: Value(now),
+          deletedAt: Value(now),
+        ),
+      );
+      await _touchGame(asset.gameId, now);
+    });
   }
 
   Future<File> resolveLocalFile(String localPath) {
@@ -256,93 +246,83 @@ class MediaRepository {
   }
 
   Future<MediaAsset> _insertAndSelect(MediaAssetsCompanion companion) {
-    return _sync.run(
-      source: SyncChangeSource.manual,
-      action: (_) async {
-        final now = _clock.now();
-        final existingWithHash = await _activeByHash(
-          gameId: companion.gameId.value,
-          hash: companion.hash.value,
-        );
-        if (existingWithHash != null) {
-          if (!await _isStoredFileUsable(existingWithHash)) {
-            await (_db.update(_db.mediaAssets)
-              ..where((table) => table.id.equals(existingWithHash.id))).write(
-              MediaAssetsCompanion(
-                isSelected: const Value(false),
-                updatedAt: Value(now),
-                deletedAt: Value(now),
-              ),
-            );
-          } else {
-            await (_db.update(_db.mediaAssets)
-                  ..where(
-                    (table) => table.gameId.equals(companion.gameId.value),
-                  )
-                  ..where(
-                    (table) => table.kind.equals(MediaAssetKind.cover.name),
-                  )
-                  ..where((table) => table.deletedAt.isNull()))
-                .write(
-                  MediaAssetsCompanion(
-                    isSelected: const Value(false),
-                    updatedAt: Value(now),
-                  ),
-                );
-            await (_db.update(_db.mediaAssets)
-              ..where((table) => table.id.equals(existingWithHash.id))).write(
-              MediaAssetsCompanion(
-                isSelected: const Value(true),
-                updatedAt: Value(now),
-              ),
-            );
-            await _touchGame(companion.gameId.value, now);
-            return _requireSelectedUsableCover(companion.gameId.value);
-          }
+    return _db.transaction(() async {
+      final now = _clock.now();
+      final existingWithHash = await _activeByHash(
+        gameId: companion.gameId.value,
+        hash: companion.hash.value,
+      );
+      if (existingWithHash != null) {
+        if (!await _isStoredFileUsable(existingWithHash)) {
+          await (_db.update(_db.mediaAssets)
+            ..where((table) => table.id.equals(existingWithHash.id))).write(
+            MediaAssetsCompanion(
+              isSelected: const Value(false),
+              updatedAt: Value(now),
+              deletedAt: Value(now),
+            ),
+          );
+        } else {
+          await (_db.update(_db.mediaAssets)
+                ..where((table) => table.gameId.equals(companion.gameId.value))
+                ..where((table) => table.kind.equals(MediaAssetKind.cover.name))
+                ..where((table) => table.deletedAt.isNull()))
+              .write(
+                MediaAssetsCompanion(
+                  isSelected: const Value(false),
+                  updatedAt: Value(now),
+                ),
+              );
+          await (_db.update(_db.mediaAssets)
+            ..where((table) => table.id.equals(existingWithHash.id))).write(
+            MediaAssetsCompanion(
+              isSelected: const Value(true),
+              updatedAt: Value(now),
+            ),
+          );
+          await _touchGame(companion.gameId.value, now);
+          return _requireSelectedUsableCover(companion.gameId.value);
         }
+      }
 
-        await (_db.update(_db.mediaAssets)
-              ..where((table) => table.gameId.equals(companion.gameId.value))
-              ..where((table) => table.kind.equals(MediaAssetKind.cover.name))
-              ..where((table) => table.deletedAt.isNull()))
-            .write(
-              MediaAssetsCompanion(
-                isSelected: const Value(false),
-                updatedAt: Value(now),
-              ),
-            );
-        await _db.into(_db.mediaAssets).insert(companion);
-        await _touchGame(companion.gameId.value, now);
-        return _requireSelectedUsableCover(companion.gameId.value);
-      },
-    );
+      await (_db.update(_db.mediaAssets)
+            ..where((table) => table.gameId.equals(companion.gameId.value))
+            ..where((table) => table.kind.equals(MediaAssetKind.cover.name))
+            ..where((table) => table.deletedAt.isNull()))
+          .write(
+            MediaAssetsCompanion(
+              isSelected: const Value(false),
+              updatedAt: Value(now),
+            ),
+          );
+      await _db.into(_db.mediaAssets).insert(companion);
+      await _touchGame(companion.gameId.value, now);
+      return _requireSelectedUsableCover(companion.gameId.value);
+    });
   }
 
   Future<void> _selectAsset(String mediaAssetId, String gameId) {
-    return _sync.run(
-      source: SyncChangeSource.manual,
-      action: (_) async {
-        final now = _clock.now();
-        await (_db.update(_db.mediaAssets)
-              ..where((table) => table.gameId.equals(gameId))
-              ..where((table) => table.kind.equals(MediaAssetKind.cover.name))
-              ..where((table) => table.deletedAt.isNull()))
-            .write(
-              MediaAssetsCompanion(
-                isSelected: const Value(false),
-                updatedAt: Value(now),
-              ),
-            );
-        await (_db.update(_db.mediaAssets)
-          ..where((table) => table.id.equals(mediaAssetId))).write(
-          MediaAssetsCompanion(
-            isSelected: const Value(true),
-            updatedAt: Value(now),
-          ),
-        );
-        await _touchGame(gameId, now);
-      },
-    );
+    return _db.transaction(() async {
+      final now = _clock.now();
+      await (_db.update(_db.mediaAssets)
+            ..where((table) => table.gameId.equals(gameId))
+            ..where((table) => table.kind.equals(MediaAssetKind.cover.name))
+            ..where((table) => table.deletedAt.isNull()))
+          .write(
+            MediaAssetsCompanion(
+              isSelected: const Value(false),
+              updatedAt: Value(now),
+            ),
+          );
+      await (_db.update(_db.mediaAssets)
+        ..where((table) => table.id.equals(mediaAssetId))).write(
+        MediaAssetsCompanion(
+          isSelected: const Value(true),
+          updatedAt: Value(now),
+        ),
+      );
+      await _touchGame(gameId, now);
+    });
   }
 
   Future<MediaAsset> _requireSelectedUsableCover(String gameId) async {
@@ -368,21 +348,18 @@ class MediaRepository {
   }
 
   Future<void> _softDeleteBrokenAsset(MediaAsset asset) {
-    return _sync.run(
-      source: SyncChangeSource.manual,
-      action: (_) async {
-        final now = _clock.now();
-        await (_db.update(_db.mediaAssets)
-          ..where((table) => table.id.equals(asset.id))).write(
-          MediaAssetsCompanion(
-            isSelected: const Value(false),
-            updatedAt: Value(now),
-            deletedAt: Value(now),
-          ),
-        );
-        await _touchGame(asset.gameId, now);
-      },
-    );
+    return _db.transaction(() async {
+      final now = _clock.now();
+      await (_db.update(_db.mediaAssets)
+        ..where((table) => table.id.equals(asset.id))).write(
+        MediaAssetsCompanion(
+          isSelected: const Value(false),
+          updatedAt: Value(now),
+          deletedAt: Value(now),
+        ),
+      );
+      await _touchGame(asset.gameId, now);
+    });
   }
 
   Future<Game> _requireGame(String gameId) async {

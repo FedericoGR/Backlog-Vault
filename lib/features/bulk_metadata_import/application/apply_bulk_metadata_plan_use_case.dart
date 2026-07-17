@@ -1,10 +1,7 @@
 import '../../../core/privacy/privacy_redactor.dart';
-import '../../../core/ids/id_generator.dart';
 import '../../media/domain/media_asset_models.dart';
 import '../../metadata/domain/apply_metadata_request.dart';
 import '../../metadata/domain/metadata_field.dart';
-import '../../sync/data/sync_change_tracking.dart';
-import '../../sync/domain/sync_models.dart';
 import '../domain/bulk_metadata_import_models.dart';
 
 typedef BulkMetadataApplier =
@@ -16,27 +13,18 @@ typedef BulkCoverSaver =
       required ExternalMediaAsset asset,
     });
 
-typedef BulkMutationIdFactory = String Function();
-
 class ApplyBulkMetadataPlanUseCase {
   const ApplyBulkMetadataPlanUseCase({
     required BulkMetadataApplier applyMetadata,
     required BulkCoverSaver saveCover,
-    BulkMutationIdFactory? mutationIdFactory,
   }) : _applyMetadata = applyMetadata,
-       _saveCover = saveCover,
-       _mutationIdFactory = mutationIdFactory;
+       _saveCover = saveCover;
 
   final BulkMetadataApplier _applyMetadata;
   final BulkCoverSaver _saveCover;
-  final BulkMutationIdFactory? _mutationIdFactory;
 
   Future<BulkImportResult> call(BulkMetadataImportPlan plan) {
-    return SyncMutationScope.run(
-      mutationId: _mutationIdFactory?.call() ?? defaultIdGenerator.newId(),
-      source: SyncChangeSource.bulk,
-      action: () => _apply(plan),
-    );
+    return _apply(plan);
   }
 
   Future<BulkImportResult> _apply(BulkMetadataImportPlan plan) async {

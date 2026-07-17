@@ -1,11 +1,8 @@
 /// Physical Drift schema version.
-const databaseSchemaVersion = 5;
+const databaseSchemaVersion = 6;
 
 /// Version of the logical library document used by JSON and backups.
 ///
-/// Sync-only tables are intentionally excluded, so adding them must not make
-/// an otherwise compatible library backup unreadable by the v0.1 data model.
+/// The physical removal of legacy Sync tables does not alter this portable
+/// functional document.
 const logicalLibrarySchemaVersion = 4;
-
-/// Reserved for the future sync package/application protocol.
-const syncProtocolVersion = 1;

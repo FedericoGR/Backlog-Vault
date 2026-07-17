@@ -105,28 +105,6 @@ void main() {
     'encrypted backup roundtrips and does not expose clear ZIP entries',
     () async {
       await _insertCompleteLibrary(db, mediaBase: tempDir);
-      await db
-          .into(db.syncDevices)
-          .insert(
-            SyncDevicesCompanion.insert(
-              id: '11111111-1111-4111-8111-111111111111',
-              displayName: 'Private local identity',
-              platform: 'windows',
-              isLocal: const Value(true),
-              status: 'local',
-              createdAt: DateTime.utc(2026),
-            ),
-          );
-      await db
-          .into(db.syncStates)
-          .insert(
-            SyncStatesCompanion.insert(
-              id: 'local',
-              localDeviceId: '11111111-1111-4111-8111-111111111111',
-              nextLocalCounter: const Value(42),
-              updatedAt: DateTime.utc(2026),
-            ),
-          );
 
       final result = await backupService.createEncryptedBackup(
         password: 'correct horse battery staple',
@@ -147,11 +125,6 @@ void main() {
       expect(logical.schemaVersion, logicalLibrarySchemaVersion);
       expect(logical.schemaVersion, 4);
       expect(logicalJson, isNot(contains('sync_')));
-      expect(logicalJson, isNot(contains('Private local identity')));
-      expect(
-        logicalJson,
-        isNot(contains('11111111-1111-4111-8111-111111111111')),
-      );
 
       final preview = await backupService.previewEncryptedBackup(
         result.bytes,
