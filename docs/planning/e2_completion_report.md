@@ -246,7 +246,7 @@ ADR-001, scope offline, plan revisado, plan de peso y plan E2. Creados: guía de
 migración y este reporte. Eliminados como documentación activa exclusiva:
 `docs/qr_sync_notes.md` y `docs/sync_roadmap.md`.
 
-## Android real y gate E2.5
+## Android real y gates E2.5/E2.5B
 
 El 2026-07-17 se conectó y autorizó un Motorola edge 40 pro con Android 16
 (API 36), usuario Android 0. El package instalado es
@@ -288,14 +288,61 @@ Declara `dev.backlogvault.app`, `0.3.0+5`, minSdk 24 y targetSdk 36; su
 certificado SHA-256 coincide con el instalado y no contiene permiso CAMERA,
 `mobile_scanner`, Barhopper, barcode ni ML Kit.
 
-El gate de recuperación segura no se cumplió. En consecuencia, no se ejecutó
-`adb install -r`, no cambió el package instalado, no se abrió la build E2, no
-se ejercitó la migración real 5→6, no hay counts posteriores ni segunda
-apertura, y no se hizo merge ni push. E2 permanece técnicamente completo pero
-bloqueado por QA físico. Para reanudar hace falta una vía de recuperación
-verificable previa a la actualización o una decisión explícita que cambie ese
-gate; la biblioteca observada está vacía, pero no se asumió por ello permiso
-para omitir la restricción.
+E2.5 se detuvo correctamente antes de instalar. E2.5B continuó el mismo día
+con una excepción explícita y no reutilizable al backup previo, aprobada sólo
+para este dispositivo y fundamentada en el perfil vacío reconfirmado: 0
+juegos, 0 entradas, 0 playthroughs, 0 vistas personalizadas, sin covers,
+metadata enriquecida ni credenciales externas. No aparecieron datos reales
+nuevos y no se creó contenido artificial. El bug de `file_picker 11.0.2`
+permanece documentado y sin cambios; no se usó el backup roto.
+
+Antes de actualizar, el APK schema 5 se verificó idéntico a la captura de E2.5
+(86.280.143 bytes; SHA-256
+`8c68a1ce4a4cdcc3a2ddb24634f65ee60e7e4b5faaee955b275b431869957953`).
+La rama E2 y `origin` quedaron alineados en `d7eb06e`. Se regeneró el APK E2,
+con 256/256 tests y análisis limpio; tamaño, SHA-256, package, versión,
+certificado y exclusiones coincidieron con la medición anterior. No hay
+permisos o componentes de cámara, scanner, QR, pairing, Sync o LAN.
+
+La única instalación ejecutada fue:
+
+`adb install -r dist/BacklogVault-android-offline-e2-smoke.apk`
+
+ADB devolvió exactamente `Performing Streamed Install` y `Success`, con exit
+code 0. No se usaron flags extra, downgrade, desinstalación, limpieza ni
+reinstalación. El APK instalado quedó byte a byte igual al validado. Resultado
+del update in-place:
+
+- `firstInstallTime`: 2026-06-27 14:09:52, preservado;
+- `lastUpdateTime`: 2026-07-17 16:13:29, actualizado;
+- versionName `0.3.0` y versionCode `5`, preservados;
+- permiso CAMERA ausente tanto del manifest como de `dumpsys package`;
+- firma SHA-256 preservada:
+  `d67ff1c782dba5151ebe841205268dddff9606108364bed952878102654f2343`.
+
+La primera apertura controlada inició el proceso, obtuvo foco y cargó la
+biblioteca vacía sin crash, pantalla blanca, loop ni error de bootstrap. La UI
+conservó idioma de sistema y tema oscuro, backup/restore temporal, importación
+CSV, importación de metadata y configuración opcional de RAWG, IGDB/Twitch y
+SteamGridDB. Settings ya no contiene Sync, pairing, QR, LAN, `.vaultsync` ni
+`.vaultpair`. No hubo solicitud de cámara ni servicios activos del package.
+
+Después de `am force-stop`, la segunda apertura volvió a cargar la biblioteca
+en 0 y Settings continuó Offline. Los logs aislados por UID de ambas aperturas
+no mostraron Drift, fallo de migración, database/schema error, foreign keys,
+`no such table`, secure storage, Sync, sockets, cámara, fatal exceptions ni
+AndroidRuntime. Tampoco aparecieron operaciones sobre las seis tablas Sync.
+Los únicos warnings fueron mensajes conocidos del stack gráfico/SELinux del
+Motorola (`AHardwareBuffer`, `qdgralloc`, propiedades vendor y
+`max_map_count`), sin impacto funcional.
+
+El schema 6 queda confirmado indirectamente con evidencia suficiente para
+este perfil: origen schema 5 con Sync, ruta determinista y probada 5→6,
+primera apertura funcional y segunda apertura idempotente sobre la misma DB,
+sin errores de tablas ni recreación de infraestructura Sync. No se habilitó
+`debuggable`, no se extrajo ni modificó la DB y no se añadió diagnóstico. Con
+esta evidencia, el gate Android E2.5B queda aprobado y habilita el merge sólo
+si las validaciones finales permanecen verdes.
 
 ## Alcance confirmado y próximo paso
 
