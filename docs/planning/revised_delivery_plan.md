@@ -6,7 +6,14 @@ Estado: completado documentalmente en `codex/offline-e1-audit`. Incluye bundle e
 
 ## E2 — Retiro controlado de Sync
 
-Objetivo: desacoplar mutaciones, retirar UI/protocolos/QR/LAN, dependencias/permisos/l10n, migrar schema y limpiar secure storage selectivo. Sin gran reorganización. Gate: datos, tests y builds Windows/Android.
+Estado: implementado en `codex/offline-e2-remove-sync`. Los repositorios usan
+transacciones Drift locales, se retiraron UI/protocolos/QR/LAN y sus
+dependencias, el schema 5 migra a 6 y secure storage se limpia mediante una
+allowlist estricta. No se realizó la reorganización arquitectónica de E3.
+
+Gate: tests y builds reproducibles completos; el smoke/migración en un Android
+real permanece como validación manual previa al merge cuando exista un
+dispositivo con recuperación segura de datos.
 
 ## E3 — Refactor arquitectónico incremental
 
@@ -56,4 +63,5 @@ Cada slice mantiene comportamiento y tests; movimientos y cambios conductuales s
 - Antes de E4: canal Android/ABI y política de artefactos/GC.
 - Antes de E5: providers finales, versión y checklist de release.
 
-No iniciar E2 hasta recibir aprobación explícita de las decisiones abiertas de E1.
+E2 se inició después de la aprobación explícita de las decisiones de E1. No
+iniciar E3 hasta revisar el reporte de cierre de E2 y acordar el primer slice.

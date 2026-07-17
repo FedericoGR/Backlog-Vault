@@ -1,6 +1,8 @@
 # E2 — Plan de retiro de Sync
 
-Este documento es un plan; E1 no ejecutó ningún paso funcional.
+Estado: ejecutado en `codex/offline-e2-remove-sync`. Se conserva como trazabilidad
+del orden y los gates definidos en E1; el resultado medido está en
+`e2_completion_report.md`.
 
 ## Objetivo
 

@@ -1,7 +1,8 @@
 # ADR-001 — Arquitectura Offline
 
-- Estado: propuesto, pendiente de aprobación de Federico.
+- Estado: aceptado para el ciclo Offline; aprobado por Federico antes de E2.
 - Fecha: 2026-07-16.
+- Aprobación registrada: 2026-07-17.
 - Decisores: Federico + implementación revisada por entregable.
 
 ## Contexto
@@ -67,7 +68,7 @@ flowchart TD
 
 ## Secuencia
 
-E2 elimina Sync sin mover masivamente carpetas. E3 aplica este ADR slice por slice: library/games/playthroughs, import/export, metadata/media, statistics/settings. E4 optimiza dependencias/packaging.
+E2 eliminó Sync sin mover masivamente carpetas. E3 aplicará este ADR slice por slice: library/games/playthroughs, import/export, metadata/media, statistics/settings. E4 optimizará dependencias/packaging.
 
 ## Criterios de aceptación
 

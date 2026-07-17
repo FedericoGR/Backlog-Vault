@@ -1,16 +1,17 @@
 # Backlog Vault install and portability
 
-Version: `0.2.0+4`
-Stable release: `v0.2.0`
+App version: `0.3.0+5` (unchanged during E2)
 
-Backlog Vault is local-first. App data, media, provider credentials, and language preferences live on each device unless library data is explicitly moved through a backup, encrypted sync package, or paired local-network sync session.
+Backlog Vault is an offline, single-device application. SQLite, managed media,
+provider credentials, and language preferences stay on the device unless the
+user explicitly exports and moves a backup.
 
 ## Windows
 
 Build the release folder:
 
 ```powershell
-flutter build windows
+flutter build windows --release
 ```
 
 Create a portable ZIP without rebuilding:
@@ -19,80 +20,54 @@ Create a portable ZIP without rebuilding:
 .\tool\package_windows.ps1 -SkipBuild
 ```
 
-For the v0.2.0 stable artifact name:
-
-```powershell
-.\tool\package_windows.ps1 -SkipBuild -ReleaseLabel v0.2.0
-```
-
-Extract the complete ZIP and launch `backlog_vault.exe`. The executable, DLLs, native assets, and `data` folder must remain together.
-
-The portable application folder is not the user-data folder. Replacing the app binaries should not remove the library, but create a `.vaultbackup.enc` before every update.
+Extract the complete ZIP and launch `backlog_vault.exe`. The executable, DLLs,
+native assets, and `data` folder must remain together. The portable application
+folder is not the user-data folder; create a `.vaultbackup.enc` before replacing
+binaries or moving to another computer.
 
 ## Android
 
-Build the APK:
+Build the release APK:
 
 ```powershell
-flutter build apk
+flutter build apk --release
 ```
 
-Flutter writes the release APK under:
+The APK is written to `build\app\outputs\flutter-apk\app-release.apk`. It is a
+personal/QA package, not a Play Store artifact. An in-place update requires the
+same package identity and compatible signing key. Never uninstall or clear app
+data as part of an update: make an encrypted backup first if replacement cannot
+be proven safe.
 
-```text
-build\app\outputs\flutter-apk\app-release.apk
-```
+Backlog Vault does not request camera access. `INTERNET` remains present only
+for user-triggered optional metadata and cover providers.
 
-The current APK configuration is for local personal installation and QA, not Play Store publication. Android only accepts an in-place update when package identity and signing key are compatible. If a differently signed APK requires uninstalling the previous app, export an encrypted backup first because uninstalling may remove app-local data.
+## Local data
 
-## Data locations
+- SQLite and managed media live in the OS application-support directory.
+- Media paths in SQLite are relative; do not copy the database without its
+  matching managed-media tree.
+- The selected language is stored in platform preferences and is not part of
+  the library database or backup.
+- RAWG, IGDB/Twitch, and SteamGridDB credentials stay in OS secure storage and
+  are excluded from library exports and backups.
+- On first schema-6 startup, only the explicit legacy Sync secure-storage keys
+  are removed; external credentials and unknown keys are preserved.
 
-SQLite and media are stored in the OS-managed app support directory. Exact paths differ between Windows and Android. Media paths stored in SQLite are relative; do not move individual database or media files between devices.
+## Moving a library between devices
 
-The selected UI language is stored through platform preferences. It is device-local and is not included in the main SQLite database or backups.
-
-## PC ↔ Android transfer
-
-Automatic/background sync, cloud sync, and automatic discovery do not exist yet. Manual file transfer, manual pairing, paired LAN sync, and QR helpers for pairing/LAN connection entry provide distinct workflows.
-
-For full migration or disaster recovery, including media:
+There is no pairing, QR, LAN transport, background job, or cross-device Sync.
+Use an explicit backup:
 
 1. Create `.vaultbackup.enc` on the source device.
 2. Move the file through a channel you control.
-3. Restore it on the destination device with the password.
-4. Configure RAWG, IGDB/Twitch, and SteamGridDB credentials again on that device.
+3. Restore it on the destination with its password.
+4. Configure optional provider credentials again on the destination.
 
-Plain `.vaultbackup` also works but is not encrypted and may expose personal notes and library data.
-
-For exchanging library changes between existing installations:
-
-1. In **Settings → Sync**, export a `.vaultsync` package and choose a strong password.
-2. Move the file manually to the other device.
-3. Import it with the same password and inspect the preview.
-4. Apply safe changes. Duplicate changes are skipped and conflicts are reported without overwriting local values.
-
-`.vaultsync` is encrypted and contains no provider credentials or secure-storage data. It is not a backup, and standalone `.vaultsync` files do not carry media file bytes. Cover-related changes remain pending so the destination never selects a missing image. Paired LAN sync can transfer missing app-managed cover files separately by SHA-256 hash. A forgotten package password cannot be recovered.
-
-To pair installations and avoid entering a password for every later package:
-
-1. Create a sync group on the first device under **Settings → Sync**.
-2. Export a `.vaultpair` invitation protected with a temporary password, or show its pairing QR. It expires after 24 hours.
-3. Move/import the invitation file, scan the QR, or paste the QR text code on the second device, then enter the same temporary password.
-4. Exchange group-encrypted `.vaultsync` files manually or use paired LAN sync. Preview and conflict rules remain unchanged.
-
-The random group key is inside the encrypted invitation and is then stored only in OS secure storage. SQLite stores its public key ID, never the key. Pairing QR carries the encrypted invitation payload; it does not expose the group key in clear text. Share the invitation file/QR and temporary password through separate trusted channels. Pairing enables group-encrypted sync packages and manual LAN sessions, but it does not start automatic/background sync. If secure storage is erased or a device leaves the group, it must be paired again. API keys and media files never travel in `.vaultpair`.
-
-For manual LAN sync after pairing:
-
-1. Put both devices on the same local network.
-2. On the host device, open **Settings → Sync → Sync over Wi-Fi** and start a session.
-3. Note the displayed IP address, port, and short session code, or show the LAN connection QR.
-4. On the client device, connect with those values manually, scan the LAN QR, or paste the LAN QR text code, then run the sync.
-5. Review the result summary. Safe changes are applied, duplicate changes are skipped, conflicts are reported without overwriting local data, and managed cover files are transferred when hash verification succeeds.
-
-LAN sync moves group-encrypted `.vaultsync` payloads over the local network, then transfers missing app-managed cover files by SHA-256 hash. LAN QR carries connection metadata only: host/IP, port, session code, protocol version, and public group/key identifiers. It never carries the group key, passwords, library data, provider credentials, backups, or media. The receiver never trusts remote paths, validates JPEG/PNG/WebP bytes before registering a cover, and leaves media pending for the next sync if validation fails or the sender no longer has the file. It does not use cloud, does not run in the background, does not auto-discover devices yet, and does not transfer arbitrary files.
-
-Android may request camera permission when scanning QR codes. Windows can display QR codes and use copy/paste or manual entry; camera scanning is not required for Windows. The `v0.3.0-rc1` line keeps the same sync formats and security model as v0.2 while adding QR UX helpers over the existing pairing and LAN flows.
+Plain `.vaultbackup` also works but is not encrypted and may expose personal
+notes and library data. `.vaultbackup.enc` includes the ten functional entity
+families and managed media. Historical `.vaultsync` and `.vaultpair` formats
+are no longer accepted or produced by the active application.
 
 ## Restore guarantees and limits
 
@@ -100,10 +75,13 @@ Android may request camera permission when scanning QR codes. Windows can displa
 - Rows in the backup are inserted or updated.
 - Current rows absent from the backup are soft-deleted.
 - Existing media is not hard-deleted during restore.
-- Restore is complete/conservative, not a field-level merge or sync conflict resolver.
 - Provider credentials and secure-storage values are never restored.
-- Sync identities, counters, and change history are device-local and are not cloned by restore.
+- Restore is a complete/conservative snapshot operation, not a field-level
+  merge between devices.
 
 ## Security reminder
 
-The local SQLite database and media folder are not encrypted at rest in v0.2.0. Use OS device protection and encrypted backups. Never include real API credentials, `.secure` files, tokens, or keystores in an app package, backup example, test, log, or repository commit.
+The local SQLite database and media folder are not encrypted at rest. Use OS
+device protection and encrypted backups. Never include real API credentials,
+tokens, `.secure` files, databases, backups, or keystores in an app package,
+test, log, screenshot, or repository commit.

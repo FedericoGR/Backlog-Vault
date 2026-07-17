@@ -12,23 +12,23 @@ Principio: la aplicación debe poder instalarse, iniciar y ofrecer toda la bibli
 | Alta/edición | mantener | Game + LibraryEntry + playthroughs |
 | Soft delete | mantener | protege recuperación/scope; revisar purga aparte |
 | Importación CSV | mantener | Notion actual; naming puede generalizarse luego |
-| Exportación local | simplificar | decisión: JSON o JSON + CSV |
-| Backup | decisión pendiente | recomendado mantener cifrado completo mientras madura export simple |
-| Restore | decisión pendiente | recomendado mantener con preview/confirmación y migraciones |
+| Exportación local | mantener temporalmente | dirección aprobada: JSON completo; CSV import sigue separado; simplificación en E3 |
+| Backup | mantener temporalmente | revisar/simplificar en E3, sin retirar cifrado usado |
+| Restore | mantener temporalmente | conservar preview, confirmación y seguridad hasta revisión E3 |
 | Metadata RAWG | mantener opcional | nunca requerida al arranque; funciona sin key mostrando indisponible |
 | Metadata IGDB | mantener opcional | requiere client id/secret/token seguro |
 | Covers SteamGridDB | mantener opcional | key segura; media queda local |
 | Covers IGDB | mantener opcional | puede compartir auth core, no data internals metadata |
 | Media local | mantener | filesystem + MediaAssets + backup |
 | Estadísticas | mantener | consume biblioteca/playthroughs |
-| Playthroughs | decisión pendiente | recomendación mantener entidad; posible UI simplificada |
-| Sync | eliminar | código, datos auxiliares, docs activas |
-| Pairing | eliminar | `.vaultpair`, groups/devices/keys |
-| QR | eliminar | render/scanner, dependency y CAMERA |
-| LAN | eliminar | sockets, challenge/proof, media transfer |
+| Playthroughs | mantener | entidad separada de Game y LibraryEntry |
+| Sync | eliminado en E2 | preservado sólo en Git, bundle y auditoría histórica |
+| Pairing | eliminado en E2 | `.vaultpair`, groups/devices/keys retirados |
+| QR | eliminado en E2 | render/scanner, dependencias y CAMERA retirados |
+| LAN | eliminado en E2 | sockets, challenge/proof y media transfer retirados |
 | Background sync | eliminar/no implementar | no existe hoy; remover roadmap/promesas |
 | `.vaultsync` | eliminar | preservar sólo por Git/bundle |
-| Secure storage | simplificar | sólo credenciales externas; borrar keys Sync selectivamente |
+| Secure storage | mantener selectivo | sólo credenciales externas; E2 limpia allowlist heredada de Sync |
 | Español/inglés | mantener | regenerar l10n sin 153 keys Sync |
 | Tema claro/OLED | mantener | system theme actual |
 | Windows | mantener | release portable y datos fuera del binario |

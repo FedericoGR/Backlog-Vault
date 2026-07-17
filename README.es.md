@@ -1,11 +1,10 @@
 # Backlog Vault
 
-Backlog Vault es un gestor offline-first de backlog de videojuegos para Windows y Android. La biblioteca, notas personales, partidas, metadata y portadas quedan en tus dispositivos. No requiere cuenta, backend ni cloud.
+Backlog Vault es un gestor offline de backlog de videojuegos para Windows y Android. La biblioteca, notas personales, partidas, metadata y portadas quedan en el dispositivo. No requiere cuenta, backend, cloud, pairing ni sincronización entre dispositivos.
 
 > Documentación principal en inglés: [README.md](README.md)
 
-Release estable actual: `v0.2.0` (`0.2.0+4`).
-Release candidate actual: `v0.3.0-rc1` (`0.3.0+5`) agrega ayudas QR para invitaciones de pairing y conexión LAN.
+Release candidate histórico: `v0.3.0-rc1` (`0.3.0+5`). La rama activa retira su sincronización histórica sin cambiar todavía la versión.
 
 ## Funcionalidades
 
@@ -18,16 +17,12 @@ Release candidate actual: `v0.3.0-rc1` (`0.3.0+5`) agrega ayudas QR para invitac
 - Importación masiva de metadata y covers con preview y reemplazos explícitos.
 - Media local almacenada con paths relativos.
 - Backups normales `.vaultbackup` y cifrados `.vaultbackup.enc`.
-- Paquetes de cambios `.vaultsync` cifrados con password, preview, deduplicación y manejo conservador de conflictos.
-- Invitaciones `.vaultpair` cifradas con password para pairing manual y paquetes `.vaultsync` con clave de grupo reutilizable.
-- Sync manual por red local para dispositivos emparejados con sesión temporal host/cliente.
-- Ayudas QR para invitaciones de pairing y datos de conexión LAN, con fallback manual por archivo/texto/IP.
 - Restore conservador con backup previo automático.
 - Home y estadísticas de biblioteca.
 - Tema claro/oscuro con diseño OLED-friendly.
 - Español e inglés con selector por dispositivo.
 
-## Privacidad local-first
+## Privacidad offline
 
 - No hay login ni backend de Backlog Vault.
 - SQLite y la media quedan en cada dispositivo.
@@ -35,9 +30,8 @@ Release candidate actual: `v0.3.0-rc1` (`0.3.0+5`) agrega ayudas QR para invitac
 - Los backups cifrados están disponibles cuando el archivo sale del dispositivo.
 - Las credenciales de providers se guardan en el secure storage del sistema.
 - Claves RAWG, credenciales y tokens IGDB/Twitch, y claves SteamGridDB no se incluyen en backups ni exports.
-- Ya existen paquetes manuales cifrados y sync por red local para dispositivos emparejados.
-- El pairing manual habilita paquetes con clave de grupo y sesiones LAN manuales con transferencia de portadas gestionadas por hash. QR simplifica importar invitaciones y cargar datos de conexión LAN, pero no habilita sync automático, background, cloud ni discovery.
-- La clave aleatoria de grupo de 256 bits vive únicamente en el secure storage del sistema de cada dispositivo emparejado y no entra en backups.
+- La aplicación no abre sockets, empareja dispositivos, escanea QR ni intercambia datos con otra instalación de Backlog Vault.
+- Metadata y covers externos sólo consultan Internet cuando el usuario invoca explícitamente esas capacidades opcionales.
 
 ## Instalación
 
@@ -68,7 +62,7 @@ Para generar el ZIP portable local:
 .\tool\package_windows.ps1 -SkipBuild -ReleaseLabel v0.2.0
 ```
 
-Para el release candidate v0.3 con QR, usá `-ReleaseLabel v0.3.0-rc1`.
+Los artefactos históricos pueden usar `-ReleaseLabel v0.3.0-rc1`; E2 no crea un release ni cambia la versión.
 
 `build/`, `dist/`, APKs, ZIPs y cachés no se versionan.
 
@@ -86,31 +80,19 @@ Nunca commitees claves, client secrets, bearer/access tokens, archivos `.secure`
 
 - `.vaultbackup` incluye biblioteca lógica y media, pero no está cifrado.
 - `.vaultbackup.enc` cifra el backup completo con una password elegida por el usuario.
-- `.vaultsync` es un paquete cifrado separado que transporta cambios; no es un backup completo ni incluye por sí mismo los bytes de la media. El sync LAN emparejado puede transferir portadas gestionadas por la app por hash.
-- `.vaultpair` es una invitación temporal cifrada con password que transporta la clave de grupo para emparejar otro dispositivo; no contiene biblioteca, media ni credenciales de providers.
-- Las passwords no se guardan; si se pierde una, su backup cifrado o paquete `.vaultsync` no se puede recuperar.
+- Las passwords de backup no se guardan; si se pierde una, el backup cifrado no se puede recuperar.
 - El restore es completo y conservador: lo ausente se marca con borrado lógico, sin hard delete.
 - Las credenciales externas y el secure storage no viajan en backups.
 
-Usá `.vaultbackup.enc` para migración completa, recuperación o copia con media. Usá `.vaultpair` para establecer una clave de grupo compartida y después archivos `.vaultsync` o **Ajustes → Sync → Sincronizar por Wi-Fi** para intercambiar cambios sin escribir una password cada vez. El modo `.vaultsync` con password sigue disponible. Las invitaciones vencen después de 24 horas; compartí el archivo y la password temporal por canales confiables separados. El QR de pairing transporta la invitación cifrada, nunca la clave de grupo en claro. El sync LAN requiere que ambos dispositivos estén en la misma red local y usar IP, puerto y código de sesión del host; el QR LAN transporta sólo esos datos de conexión y los identificadores públicos de grupo/clave, no la clave de grupo ni datos de biblioteca. Los conflictos se omiten de forma segura. El sync LAN también transfiere portadas gestionadas por la app usando SHA-256 cuando el emisor tiene el archivo y el receptor puede verificar sus bytes. Las credenciales se configuran por separado.
+Usá `.vaultbackup.enc` para migración completa, recuperación o copia con media. Mové el backup mediante un canal bajo tu control y configurá por separado las credenciales opcionales en el dispositivo de destino.
 
 ## Idioma
 
 La app detecta el idioma del sistema por default. En **Ajustes → Idioma** podés elegir Sistema, Español o English. La preferencia se guarda por dispositivo y no entra en SQLite ni en backups.
 
-## Roadmap de sync
+## Dirección Offline
 
-Los paquetes manuales con password, los paquetes con clave de grupo emparejado, las sesiones LAN emparejadas, la transferencia LAN de portadas por hash y las ayudas QR para pairing/conexión LAN están implementados. No requieren cuenta, backend ni cloud. El sync LAN manual requiere que ambos dispositivos estén en la misma red local:
-
-- v0.1.x: estabilización, UI bilingüe y hardening de backup/restore.
-- Foundation v0.2: change tracking determinista y paquetes manuales cifrados PC ↔ Android.
-- Pairing manual `.vaultpair` con clave en secure storage, más QR para mostrar/escánear/pegar invitaciones cifradas.
-- Transporte LAN manual para dispositivos emparejados usando IP, puerto y código corto de sesión, más QR para mostrar/escánear/pegar datos de conexión.
-- Media por hash sobre LAN sin referencias rotas.
-- Discovery automático, background sync y UI avanzada de resolución de conflictos quedan para etapas posteriores.
-- Sin dependencia cloud al principio; cloud E2EE opcional mucho más adelante.
-
-Ver [docs/sync_roadmap.md](docs/sync_roadmap.md).
+Backlog Vault es intencionalmente offline y de un solo dispositivo. La portabilidad se resuelve mediante exportación/backup local explícito y restore conservador, no mediante protocolos de sincronización. La implementación histórica permanece preservada en Git y en el bundle externo previo al refactor.
 
 ## Screenshots
 
@@ -123,8 +105,8 @@ La sección queda preparada. Se agregarán capturas reales de Windows y Android 
 - [Notas v0.2](docs/release_notes_v0_2.md)
 - [Checklist QA v0.3](docs/qa_v0_3_checklist.md)
 - [Notas v0.3](docs/release_notes_v0_3.md)
-- [Roadmap técnico de sync](docs/sync_roadmap.md)
-- [Notas de QR sync](docs/qr_sync_notes.md)
+- [Migración Offline schema 5→6](docs/migrations/offline_schema_5_to_6.md)
+- [Reporte de finalización E2](docs/planning/e2_completion_report.md)
 
 ## Licencia
 

@@ -10,8 +10,8 @@ El source trackeado es 2,65 MiB. El directorio de 2,08 GiB proviene de outputs r
 |---|---|---|---|
 | `flutter clean`/borrar outputs regenerables con verificación | hasta ~1,8 GiB local según qué se preserve | bajo si dist respaldado | E4 |
 | política `dist/`: RC externos, staging temporal | ~228 MiB local | medio por artefactos | E4 |
-| retirar mobile_scanner/Barhopper/modelos | ~14+ MiB sin comprimir del APK universal, más Dart/dex | medio | E2 |
-| retirar qr_flutter/Sync code | pequeño binario; gran maintenance/LOC | bajo/medio | E2 |
+| retirar mobile_scanner/Barhopper/modelos | ejecutado en E2; medir resultado final contra el APK baseline | medio | E2 |
+| retirar qr_flutter/Sync code | ejecutado en E2 | bajo/medio | E2 |
 | split APK por ABI o App Bundle | descarga por dispositivo potencialmente ~mitad o menos | medio; cambia distribución | E4/E5 |
 | optimizar assets | bajo hoy; sólo iconos trackeados | bajo | E4 |
 | GC local normal | hasta ~55 MiB `.git` local | medio; esperar backup/aprobación | E4 |
@@ -31,8 +31,8 @@ Las cifras de scanner son observadas en APK: Barhopper suma ~13,45 MiB y modelos
 
 Android:
 
-1. E2 retirar scanner/CAMERA.
-2. Medir APK universal.
+1. E2 retiró scanner/CAMERA.
+2. E2 midió el APK universal antes/después; ver reporte de cierre.
 3. Evaluar `--split-per-abi`/App Bundle según canal.
 4. Revisar símbolos/mapping como artefactos separados, no paquete de usuario.
 

@@ -1,17 +1,27 @@
-# Arquitectura actual reconstruida
+# Arquitectura actual después de E2
+
+Fecha: 2026-07-17. Este documento describe el árbol activo posterior al retiro
+de Sync; la reconstrucción previa permanece en `docs/audit/e1/`.
 
 ## Entrada, app y routing
 
-`main.dart` crea `ProviderContainer`, dispara `syncFoundationReadyProvider` sin await y monta `UncontrolledProviderScope`. `BacklogVaultApp` observa idioma/router y configura MaterialApp con temas system/light/OLED. `appRouterProvider` define ShellRoute con home, library, statistics, bulk metadata, game create/detail/edit, Notion CSV, settings y backups. Sync no tiene ruta: vive dentro de settings y empuja scanner/dialogs imperativamente.
+`main.dart` crea el `ProviderContainer`, fuerza la apertura/migración de Drift,
+ejecuta la limpieza selectiva e idempotente de claves seguras heredadas y monta
+`BacklogVaultApp`. Un error de DB no se oculta; un error de secure storage se
+reporta sin valores y no elimina credenciales externas.
 
 ```mermaid
 flowchart LR
-  Main["main.dart"] --> SyncInit["syncFoundationReadyProvider"]
-  Main --> Scope["Riverpod ProviderContainer"]
+  Main["main.dart"] --> DBOpen["Abrir/migrar AppDatabase"]
+  DBOpen --> Cleanup["Allowlist de claves heredadas"]
+  Cleanup --> Scope["Riverpod ProviderContainer"]
   Scope --> App["BacklogVaultApp"]
   App --> Router["GoRouter / AppShell"]
   Router --> Screens["Home · Library · Games · Stats · Settings · Import/Backup"]
 ```
+
+No existe ruta, provider, listener, job ni inicializador de comunicación entre
+dispositivos. Settings contiene backups, credenciales opcionales e idioma.
 
 ## Flujo UI → estado → DB
 
@@ -21,111 +31,56 @@ flowchart LR
   View --> RepoDirect["ref.read(repositoryProvider)"]
   Provider --> Repo["Repository"]
   RepoDirect --> Repo
-  Repo --> SyncTx["SyncAwareTransaction"]
-  SyncTx --> Drift[("AppDatabase / Drift")]
+  Repo --> Tx["AppDatabase.transaction"]
+  Tx --> Drift[("Drift schema 6")]
   Drift --> Streams["watch() streams"]
   Streams --> Provider
 ```
 
-Hay buen uso de streams/providers para lecturas, pero las views disparan repositories y coordinan workflows. No existe una capa ViewModel consistente. `GameListPage`, `GameFormPage`, `GameDetailPage` y bulk import concentran estado, validación, dialogs y commands.
+Catalog, Game, Notion CSV import, Saved Views, Media, Metadata y Export/Restore
+usan transacciones Drift locales. Se preservaron atomicidad, timestamps, soft
+delete y comportamiento; no existe wrapper de tracking u oplog.
 
-## Persistencia
+## Persistencia local
 
-`AppDatabase` declara 16 tablas y migraciones 1→5. Repositories acceden directamente a tablas/companions. `LibraryGameDetails` y otros application models contienen filas Drift generadas, por lo que schema y UI no están totalmente aislados.
+`AppDatabase` declara diez tablas funcionales en schema físico 6: games,
+library entries, platforms, library-entry/platform links, genres, game/genre
+links, playthroughs, saved views, external game IDs y media assets. La migración
+5→6 elimina exclusivamente seis tablas y ocho índices históricos después de
+validar el schema funcional y `PRAGMA foreign_key_check`.
 
-Repositories principales: Game (incluye playthrough), Catalog, LibraryQuery, SavedViews, Metadata, Media, Statistics, Notion CSV y Export/Restore. Los siete mutadores listados en el audit Sync dependen del wrapper Sync.
+El logical export permanece en versión 4 porque su contrato ya contenía sólo
+las diez familias funcionales. Game, LibraryEntry y Playthrough continúan como
+conceptos separados.
 
-## Metadata
-
-```mermaid
-flowchart LR
-  Form["GameForm / MetadataDialog"] --> MP["metadata providers/use cases"]
-  MP --> RAWG["RawgApiClient"]
-  MP --> IGDB["IgdbAuth + IgdbApiClient"]
-  RAWG --> HTTP["http.Client"]
-  IGDB --> HTTP
-  IGDB --> Keys["SecureMetadataApiKeyStorage"]
-  RAWG --> Keys
-  MP --> Diff["BuildMetadataDiff"]
-  Diff --> Apply["MetadataRepository.apply"]
-  Apply --> SyncTx["SyncAwareTransaction"]
-  SyncTx --> DB[("Games · Catalogs · ExternalGameIds")]
-```
-
-Metadata es opcional por diseño, pero settings administra credenciales directamente. El app no debe disparar auth/network durante cold start Offline.
-
-## Media
+## Metadata y media
 
 ```mermaid
 flowchart LR
-  Dialog["MediaSearchDialog / Game views"] --> Providers["SteamGridDB + IGDB MediaProvider"]
-  Providers --> HTTP["HTTP clients"]
-  Providers --> Keys["metadata key storage"]
-  Dialog --> Local["file_picker / File"]
-  HTTP --> Repo["MediaRepository"]
-  Local --> Repo
-  Repo --> Storage["MediaFileStorage / path_provider"]
-  Repo --> DB[("MediaAssets")]
-  Repo --> SyncTx["Sync change tracking"]
-  Thumbnail["LibraryCoverThumbnail"] --> FileIO["dart:io File"]
+  UI["Acción explícita del usuario"] --> Optional["RAWG · IGDB · SteamGridDB"]
+  Optional --> HTTP["http.Client"]
+  Optional --> Keys["OS secure storage"]
+  Optional --> Repo["Metadata/Media repositories"]
+  Repo --> DB[("Functional Drift tables")]
+  Repo --> Files["MediaFileStorage"]
 ```
 
-`LibraryCoverThumbnail` accede directamente a File en presentation. Media reutiliza componentes internos de metadata, generando acoplamiento bidireccional.
+Estas son las únicas capacidades de red y nunca se ejecutan durante bootstrap
+ni al usar la biblioteca. Media local, hashing, backup y filesystem permanecen;
+no hay transporte de media entre instalaciones.
 
-## Importación/exportación/backup
+## Importación, exportación y backup
 
-```mermaid
-flowchart TD
-  CSVUI["ImportNotionCsvPage"] --> Picker["CsvFilePicker"]
-  Picker --> Parser["CsvParser / normalizers / preview"]
-  Parser --> Import["NotionCsvImportRepository"]
-  Import --> SyncTx["SyncAwareTransaction"]
-  SyncTx --> DB[("10 tablas funcionales")]
-  BackupUI["BackupRestorePage"] --> Backup["BackupService"]
-  Backup --> Export["ExportRepository"]
-  Export --> DB
-  Backup --> Zip["archive + media files"]
-  Backup --> Enc["cryptography password encryption"]
-  Backup --> Output["JSON / CSV / .vaultbackup(.enc)"]
-```
+- Importación CSV conserva mapping, preview, duplicados y transacción local.
+- Export JSON/CSV continúa operativo sin protocolo incremental.
+- Backup `.vaultbackup`/`.vaultbackup.enc` conserva datos y media.
+- Restore conserva backup previo, upserts y soft deletes conservadores.
+- No se producen ni consumen `.vaultsync` o `.vaultpair`.
 
-El logical export v4 cubre las diez entidades funcionales y media, no Sync. Esta separación es valiosa para migrar.
+## Deuda deliberadamente no abordada
 
-## Sync actual
-
-```mermaid
-flowchart TD
-  Settings["Settings / ManualSyncSection"] --> Pair["Pairing file/text/QR"]
-  Settings --> Manual[".vaultsync file"]
-  Settings --> LAN["LAN host/client + QR"]
-  Pair --> PairCodec["EncryptedPairingCodec"]
-  PairCodec --> Keys["OS secure group key"]
-  LAN --> Challenge["challenge/proof/session code"]
-  Manual --> Package["PackageBuilder/Codec/Service"]
-  LAN --> Package
-  Package --> Preview["ConflictDetector"]
-  Preview --> Apply["ChangeApplier"]
-  Apply --> Functional[("functional tables")]
-  Apply --> SyncDB[("oplog/vectors/tombstones/entity state")]
-  LAN --> Media["LAN Media Transfer"]
-  Media --> MediaStorage["MediaFileStorage + MediaAssets"]
-  Mutations["7 functional repositories"] --> Track["SyncAwareTransaction"]
-  Track --> SyncDB
-```
-
-No hay cloud, discovery automático ni background sync implementado; sí hay protocolos propios manuales y LAN activos.
-
-## Dependencias incorrectas/circulares
-
-- core→features: no detectado.
-- presentation→data: frecuente; pages importan repos/providers concretos.
-- presentation→filesystem: thumbnail y media/QR surfaces.
-- games↔library, games↔metadata/media, media↔metadata, media↔sync y l10n↔features.
-- Sync provider global compone demasiadas responsabilidades.
-- Repositories mutadores tienen dos responsabilidades: dominio/persistencia + tracking Sync.
-- `domain_localizations.dart` invierte dependencia desde l10n hacia features.
-- No hay barrels globales problemáticos; el problema es import directo y ownership.
-
-## Testabilidad
-
-Hay 332 tests fuertes en data/domain/widget y DB in-memory, pero no directorio `integration_test/`. Páginas con workflows extensos requieren pumps/mocks complejos. Drift migrations tienen tests actuales, incluido v4→v5 Sync, pero no snapshots generados para una migración destructiva futura.
+E2 no ejecutó el refactor general de ADR-001. Pages grandes todavía coordinan
+workflows; algunas presentation importan data/filesystem; existen ciclos de
+ownership games/library/metadata/media y modelos Drift alcanzan application.
+E3 debe aplicar MVVM pragmático por vertical slice, sin combinarlo con otra
+migración destructiva.
