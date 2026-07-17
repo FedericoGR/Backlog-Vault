@@ -246,14 +246,56 @@ ADR-001, scope offline, plan revisado, plan de peso y plan E2. Creados: guía de
 migración y este reporte. Eliminados como documentación activa exclusiva:
 `docs/qr_sync_notes.md` y `docs/sync_roadmap.md`.
 
-## Android real y pendiente
+## Android real y gate E2.5
 
-`flutter devices` detectó únicamente Windows, Chrome y Edge; `adb devices -l`
-no mostró dispositivos Android. El APK es `dev.backlogvault.app`, versionName
-`0.3.0`, versionCode `5`, minSdk 24 y targetSdk 36. No se instaló el APK, no se
-desinstaló nada, no se limpió data y no se ejecutó una migración sobre datos
-reales. Por tanto, el único gate manual antes del merge es un smoke/update
-in-place en un Android con recuperación segura, siguiendo la guía de migración.
+El 2026-07-17 se conectó y autorizó un Motorola edge 40 pro con Android 16
+(API 36), usuario Android 0. El package instalado es
+`dev.backlogvault.app`, versionName `0.3.0`, versionCode `5`:
+
+- `firstInstallTime`: 2026-06-27 14:09:52;
+- `lastUpdateTime`: 2026-06-28 13:51:31;
+- app release no `debuggable`; `run-as` fue rechazado sin cambiar permisos;
+- snapshot previo: 0 juegos, 0 entradas de biblioteca y 0 playthroughs;
+- sin vistas guardadas personalizadas, covers ni metadata enriquecida;
+- RAWG, IGDB/Twitch y SteamGridDB figuran pendientes, sin credenciales
+  externas configuradas;
+- idioma de la app en `Sistema`, dispositivo `es-AR`, tema oscuro del sistema;
+- Settings contiene Sync, un dispositivo conocido y las superficies LAN/QR.
+
+La creación de backup completo desde la propia UI falló antes de abrir el
+selector de destino y mostró el error genérico redactado. Dos intentos
+controlados dieron el mismo resultado. No había `.vaultbackup` ni
+`.vaultbackup.enc` existentes en almacenamiento compartido. La causa se
+verificó contra la dependencia resuelta: en Android, `file_picker 11.0.2`
+requiere el argumento `bytes` en `FilePicker.saveFile`; la implementación
+actual llama `saveFile` sin `bytes`, recibe `ArgumentError` y lo convierte en
+el mensaje genérico. DocumentsUI sí está instalado y resuelve
+`ACTION_CREATE_DOCUMENT`, por lo que el fallo ocurre antes de la interacción
+del sistema. El mismo código está presente en E1/E2 y no se modificó porque
+backup/restore está fuera del alcance autorizado de este gate.
+
+No se usó `adb backup`, no se copió la DB privada, no se hizo root, no se
+alteraron permisos y no se generó ningún archivo recuperable. Se preparó la
+ruta externa
+`C:\Users\Feder\Documents\Backlog Vault Backups\pre-schema6-android\`, pero
+permanece sin un backup válido.
+
+La baseline de E2 volvió a quedar verde: `flutter analyze` sin issues,
+`flutter test` 256/256 y APK release de 68.127.549 bytes. El APK copiado a
+`dist/BacklogVault-android-offline-e2-smoke.apk` tiene SHA-256
+`3c0c68fb53ef86e64305476c3d722e821414619300301c367ec35052235121ac`.
+Declara `dev.backlogvault.app`, `0.3.0+5`, minSdk 24 y targetSdk 36; su
+certificado SHA-256 coincide con el instalado y no contiene permiso CAMERA,
+`mobile_scanner`, Barhopper, barcode ni ML Kit.
+
+El gate de recuperación segura no se cumplió. En consecuencia, no se ejecutó
+`adb install -r`, no cambió el package instalado, no se abrió la build E2, no
+se ejercitó la migración real 5→6, no hay counts posteriores ni segunda
+apertura, y no se hizo merge ni push. E2 permanece técnicamente completo pero
+bloqueado por QA físico. Para reanudar hace falta una vía de recuperación
+verificable previa a la actualización o una decisión explícita que cambie ese
+gate; la biblioteca observada está vacía, pero no se asumió por ello permiso
+para omitir la restricción.
 
 ## Alcance confirmado y próximo paso
 
