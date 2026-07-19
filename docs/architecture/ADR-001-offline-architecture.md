@@ -68,7 +68,10 @@ flowchart TD
 
 ## Secuencia
 
-E2 eliminó Sync sin mover masivamente carpetas. E3 aplicará este ADR slice por slice: library/games/playthroughs, import/export, metadata/media, statistics/settings. E4 optimizará dependencias/packaging.
+E2 eliminó Sync sin mover masivamente carpetas. E3 simplifica exportación y
+retira backup/restore sin ejecutar el refactor general. E4 aplicará este ADR
+slice por slice; la optimización profunda de dependencias/packaging permanece
+separada del cambio funcional.
 
 ## Criterios de aceptación
 

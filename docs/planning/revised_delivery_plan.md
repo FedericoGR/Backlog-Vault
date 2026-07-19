@@ -15,30 +15,26 @@ Gate: tests y builds reproducibles completos; el smoke/migración en un Android
 real permanece como validación manual previa al merge cuando exista un
 dispositivo con recuperación segura de datos.
 
-## E3 — Refactor arquitectónico incremental
+## E3 — Simplificación funcional Offline
 
-1. Library ViewModel y división table/gallery/filters/views.
-2. Games + Playthrough repository/use cases y screens.
-3. Import/export/backup workflows.
-4. Metadata/media boundaries y credentials core.
-5. Statistics/settings.
-6. Romper ciclos l10n/features y eliminar leaks Drift/filesystem.
+1. Reemplazar backup/restore por un único export JSON versionado.
+2. Mantener importación CSV separada.
+3. Retirar ZIP, cifrado, passwords, restore y packaging de media.
+4. Documentar dominio y revisar providers sin eliminarlos.
 
-Cada slice mantiene comportamiento y tests; movimientos y cambios conductuales separados cuando sea práctico.
+No ejecutar todavía el refactor general hacia MVVM.
 
-## E4 — Dependencias, peso y repo hygiene
+## E4 — Refactor arquitectónico incremental
 
-- updates pequeños de Drift/Riverpod/path/file_picker/uuid;
-- resolver KGP;
-- split ABI/packaging;
-- limpiar outputs/dist con política externa;
-- GC local aprobado, sin rewrite;
-- medir APK/Windows/repo.
+- Library ViewModel y división table/gallery/filters/views.
+- Games + Playthrough repository/use cases y screens.
+- Import/export, metadata/media, statistics/settings por slices.
+- Romper ciclos y eliminar leaks Drift/filesystem antes de optimización profunda.
 
 ## E5 — QA y Offline Release
 
 - pruebas integration Windows/Android;
-- migración con datasets y backup/restore;
+- migración con datasets y validación del export JSON;
 - offline/no credentials/no Internet;
 - accesibilidad/l10n/theme/layout;
 - packaging/checksums/release notes;
@@ -58,9 +54,9 @@ Cada slice mantiene comportamiento y tests; movimientos y cambios conductuales s
 
 ## Decisiones antes de cada etapa
 
-- Antes de E2: baseline, ADR, export/backup y Playthrough no destructivo.
-- Antes de E3: naming/estructura y orden de slices.
-- Antes de E4: canal Android/ABI y política de artefactos/GC.
+- Antes de E2: baseline, ADR y Playthrough no destructivo.
+- Antes de E3: contrato JSON y retiro de backup/restore.
+- Antes de E4: naming/estructura y orden de slices.
 - Antes de E5: providers finales, versión y checklist de release.
 
 E2 se inició después de la aprobación explícita de las decisiones de E1. No

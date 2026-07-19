@@ -12,14 +12,14 @@ Principio: la aplicación debe poder instalarse, iniciar y ofrecer toda la bibli
 | Alta/edición | mantener | Game + LibraryEntry + playthroughs |
 | Soft delete | mantener | protege recuperación/scope; revisar purga aparte |
 | Importación CSV | mantener | Notion actual; naming puede generalizarse luego |
-| Exportación local | mantener temporalmente | dirección aprobada: JSON completo; CSV import sigue separado; simplificación en E3 |
-| Backup | mantener temporalmente | revisar/simplificar en E3, sin retirar cifrado usado |
-| Restore | mantener temporalmente | conservar preview, confirmación y seguridad hasta revisión E3 |
+| Exportación local | mantener | único JSON completo, legible y versionado; CSV import sigue separado |
+| Backup | retirado en E3 | no ZIP, cifrado, passwords ni packaging de media |
+| Restore | retirado en E3 | no restore/import JSON, merge o recuperación automática |
 | Metadata RAWG | mantener opcional | nunca requerida al arranque; funciona sin key mostrando indisponible |
 | Metadata IGDB | mantener opcional | requiere client id/secret/token seguro |
 | Covers SteamGridDB | mantener opcional | key segura; media queda local |
 | Covers IGDB | mantener opcional | puede compartir auth core, no data internals metadata |
-| Media local | mantener | filesystem + MediaAssets + backup |
+| Media local | mantener | filesystem + MediaAssets; exporta descripción, no bytes ni paths |
 | Estadísticas | mantener | consume biblioteca/playthroughs |
 | Playthroughs | mantener | entidad separada de Game y LibraryEntry |
 | Sync | eliminado en E2 | preservado sólo en Git, bundle y auditoría histórica |
@@ -41,21 +41,20 @@ Principio: la aplicación debe poder instalarse, iniciar y ofrecer toda la bibli
 - Ninguna operación de red automática durante bootstrap o uso de biblioteca.
 - Sin API keys: biblioteca/import/export/media local/stats/settings siguen completos.
 - Sin Internet: metadata/covers muestran estado opcional y no degradan datos existentes.
-- Exportación guarda un archivo local elegido por el usuario; no implica transferencia entre dispositivos.
+- Exportación guarda un JSON local elegido por el usuario; no implica restore,
+  packaging de imágenes ni transferencia entre dispositivos.
 
-## Exportación vs backup
+## Exportación e importación
 
 No confundir:
 
-- export simple: datos legibles/portables para uso del usuario;
-- backup/restore: snapshot completo, media, compatibilidad e integridad;
-- Sync: intercambio incremental/conflictos, eliminado.
+- export JSON: snapshot de información legible/portable para el usuario;
+- import CSV: alta de juegos mediante el flujo existente, no restore;
+- backup/restore: retirado del producto activo;
+- Sync: intercambio incremental/conflictos, eliminado en E2.
 
-Opciones abiertas:
-
-1. JSON: fiel a estructura completa y más fácil de restaurar.
-2. JSON + CSV: JSON completo y CSV humano/tabular de entradas activas.
-3. Backup cifrado: mantener como herramienta avanzada separada o simplificar después de estabilizar Offline.
+El JSON no incluye credenciales, paths locales, bytes de imágenes, DB, caches o
+datos de Sync. No existe importación ni restore del formato durante este ciclo.
 
 ## Fuera de alcance inmediato
 

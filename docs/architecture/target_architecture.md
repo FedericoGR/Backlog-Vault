@@ -75,10 +75,10 @@ Una feature simple puede omitir `domain` o `application`; no se crean carpetas v
 ## Filesystem, HTTP y credentials
 
 - Filesystem mediante interfaces/adapters pequeños (`MediaFileStore`, `ExportFileWriter`, picker boundary).
-- Paths internos se validan/normalizan; nunca se confían paths externos de backups.
+- Paths internos se validan/normalizan; el export JSON no expone paths locales.
 - HTTP clients inyectados, timeout y errores tipados; no llamadas al bootstrap.
 - Providers externos anuncian disponibilidad sin credenciales/red.
-- Secure storage sólo para API keys/client secret/token; passwords de backup no se guardan.
+- Secure storage sólo para API keys/client secret/token; el export nunca lo lee.
 
 ## Errores y estado async
 
@@ -105,7 +105,7 @@ flowchart LR
   Migration["schema snapshots/migration data integrity"] --> Integration
 ```
 
-Mirror de `lib/`; fakes pequeños y provider overrides. Flujos críticos: cold start offline, CRUD/soft delete, filters/views, CSV, export/backup/restore, metadata sin/con key/red, media, migración y packaging.
+Mirror de `lib/`; fakes pequeños y provider overrides. Flujos críticos: cold start offline, CRUD/soft delete, filters/views, import CSV, export JSON, metadata sin/con key/red, media, migración y packaging de la aplicación.
 
 ## Peso
 

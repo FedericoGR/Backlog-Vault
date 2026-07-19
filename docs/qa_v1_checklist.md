@@ -1,6 +1,6 @@
 # Backlog Vault v1 QA checklist
 
-Use a disposable library or test backup. Never use real provider credentials in screenshots, fixtures, logs, or commits.
+Use a disposable library. Never use real provider credentials or real exported JSON in screenshots, fixtures, logs, or commits.
 
 ## RC3 automated validation
 
@@ -25,7 +25,7 @@ Update these boxes only from the final validation run.
 - [ ] Selecting Spanish updates navigation and visible page content immediately.
 - [ ] Selecting System resumes OS locale behavior.
 - [ ] The selection survives app restart on the same device.
-- [ ] The selected language is not transferred through backup/restore.
+- [ ] The selected language is not included in the library JSON export.
 - [ ] Game names and canonical provider/platform names are not translated.
 - [ ] Long English labels do not overflow on phone or desktop widths.
 
@@ -39,9 +39,10 @@ Update these boxes only from the final validation run.
 - [ ] RAWG/IGDB metadata dialogs work with test credentials.
 - [ ] IGDB/SteamGridDB/local cover flows work with test data.
 - [ ] Bulk metadata/cover import preserves protected personal fields.
-- [ ] Plain and encrypted backup creation work.
-- [ ] Plain and encrypted restore create a safety backup.
-- [ ] Wrong encrypted-backup password fails without modifying data.
+- [ ] Library JSON export opens the destination picker and writes valid UTF-8.
+- [ ] Export counts match the disposable library.
+- [ ] Export excludes images, credentials, secure storage, and local paths.
+- [ ] Cancelling the destination picker is not reported as an error.
 
 ## Android manual smoke test
 
@@ -49,7 +50,7 @@ Update these boxes only from the final validation run.
 - [ ] App opens on a phone-size viewport.
 - [ ] Bottom navigation, dialogs, filters, and forms fit without overflow.
 - [ ] Create/edit/detail and gallery flows work.
-- [ ] CSV picker, backup export, and restore pickers work.
+- [ ] CSV import picker and JSON export destination picker work.
 - [ ] Metadata, covers, bulk import, Home, and Statistics work.
 - [ ] System dark mode uses the OLED-friendly theme.
 
@@ -57,7 +58,7 @@ Update these boxes only from the final validation run.
 
 - [x] No automatic sync is present in RC3.
 - [x] No account or backend is required.
-- [x] Provider credentials do not travel in backups.
-- [x] Plain backups remain unencrypted and clearly documented.
-- [x] Encrypted backups require their password.
-- [x] Restore keeps soft-delete semantics and does not hard-delete media.
+- [x] Provider credentials do not travel in library exports.
+- [x] Backup ZIP, encryption, passwords, and restore are absent.
+- [x] Local image bytes and paths are excluded from the JSON.
+- [x] Game, LibraryEntry, and Playthrough remain separate.

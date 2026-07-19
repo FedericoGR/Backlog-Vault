@@ -16,8 +16,7 @@ Current historical release candidate: `v0.3.0-rc1` (`0.3.0+5`). The active devel
 - Optional covers from IGDB and SteamGridDB, plus local image import.
 - Bulk metadata and cover matching with explicit preview and replacement controls.
 - Local media storage using relative paths.
-- Regular `.vaultbackup` and encrypted `.vaultbackup.enc` backups.
-- Conservative backup restore with an automatic pre-restore backup.
+- Portable, human-readable JSON export of the complete library data model.
 - Home dashboard and library statistics.
 - System, light, dark, and OLED-friendly UI behavior.
 - English and Spanish, with a per-device language selector.
@@ -26,10 +25,10 @@ Current historical release candidate: `v0.3.0-rc1` (`0.3.0+5`). The active devel
 
 - No login and no Backlog Vault backend.
 - The SQLite database and local media remain on each device.
-- The local database and media are **not encrypted at rest yet**.
-- Encrypted backups are available and should be used when a backup leaves the device.
+- The local database and media are **not encrypted at rest**.
 - Provider credentials are stored with the operating system's secure storage.
-- RAWG keys, IGDB/Twitch credentials and tokens, and SteamGridDB keys are excluded from backups and exports.
+- RAWG keys, IGDB/Twitch credentials and tokens, and SteamGridDB keys are excluded from library exports.
+- JSON exports contain library information but no image bytes, local paths, credentials, or automatic restore capability.
 - The application does not open sockets, pair devices, scan QR codes, or exchange data with another Backlog Vault installation.
 - External metadata and cover requests run only when the user explicitly invokes those optional capabilities.
 
@@ -43,7 +42,7 @@ See [install and portability](docs/install_and_portability.md) for the current d
 2. Extract the complete archive; do not run the executable from inside the ZIP.
 3. Launch `backlog_vault.exe`.
 
-The portable application folder is separate from the OS-managed app data folder. Create an encrypted backup before replacing binaries or moving to a new machine.
+The portable application folder is separate from the OS-managed app data folder. Do not delete the OS-managed data directory when replacing application binaries.
 
 ### Android APK
 
@@ -51,7 +50,7 @@ The portable application folder is separate from the OS-managed app data folder.
 2. Allow installation from the local source when Android prompts you.
 3. Install the APK and open Backlog Vault.
 
-Current APKs are locally signed for personal installation and testing. They are not Play Store packages. Updating with an APK signed by a different key may require uninstalling the old package, so create an encrypted backup first. Uninstalling can remove app-local data.
+Current APKs are locally signed for personal installation and testing. They are not Play Store packages. Only perform an in-place update with the same package identity and a compatible signing key. Do not uninstall an installation that contains important data: uninstalling can remove app-local data, and JSON export is not an automatic restore format.
 
 ## Build from source
 
@@ -90,15 +89,15 @@ External providers are optional. Backlog Vault remains usable offline without cr
 
 Never commit real keys, client secrets, bearer tokens, access tokens, `.secure` files, or keystores. Do not place them in tests, fixtures, logs, documentation, issues, or screenshots.
 
-## Backup and portability
+## Library export and portability
 
-- `.vaultbackup` contains the logical library and media but is not encrypted.
-- `.vaultbackup.enc` encrypts the complete backup with a user-provided password.
-- Backup passwords are never stored. Losing one makes its encrypted backup unrecoverable.
-- Restore is complete and conservative: current records absent from the backup are soft-deleted, not physically erased.
-- Provider credentials and secure-storage values never travel in backups.
+- **Settings → Library data → Export library** writes one pretty-printed UTF-8 JSON file.
+- The document includes games, personal library entries, playthroughs, catalogs, relationships, saved views, applied metadata references, and descriptive media records.
+- It excludes provider credentials, secure-storage values, local paths, image bytes, databases, caches, and historical Sync data.
+- Local images are not embedded in the file.
+- Backlog Vault does not import or restore this JSON during the current Offline cycle.
 
-Use `.vaultbackup.enc` for full migration, disaster recovery, or copying the complete library with media. Move the backup through a channel you control and configure optional provider credentials separately on the destination device.
+The export is intended for preservation, inspection, and user-controlled processing. It is not a complete device backup and does not promise recovery of local images or automatic migration to another installation. See the [format specification](docs/export/library_export_format_v1.md).
 
 ## Language
 
@@ -108,11 +107,11 @@ The app follows the device language by default. Go to **Settings → Language** 
 - Español
 - English
 
-The preference is stored per device and is not part of the library database or backups.
+The preference is stored per device and is not part of the library database or JSON export.
 
 ## Offline product direction
 
-Backlog Vault is intentionally single-device and offline. Portability is provided by explicit local JSON/backup export and conservative restore, not by synchronization protocols. Historical Sync implementation remains available through Git and the external pre-refactor bundle.
+Backlog Vault is intentionally single-device and offline. Portability means an explicit, readable JSON export—not synchronization, restore, media packaging, or device recovery. Historical Sync and backup/restore implementations remain available only through Git and the external pre-refactor bundle.
 
 ## Screenshots
 
@@ -121,6 +120,7 @@ Screenshots will be added after the bilingual Windows and Android UI pass is cap
 ## Project documentation
 
 - [Install and portability](docs/install_and_portability.md)
+- [Library export format v1](docs/export/library_export_format_v1.md)
 - [v0.2 QA checklist](docs/qa_v0_2_checklist.md)
 - [v0.2 release notes](docs/release_notes_v0_2.md)
 - [v0.3 QA checklist](docs/qa_v0_3_checklist.md)

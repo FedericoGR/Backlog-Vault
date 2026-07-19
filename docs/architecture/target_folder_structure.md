@@ -65,8 +65,7 @@ lib/
     media/
     import_export/
       csv_import/
-      local_export/
-      backup_restore/
+      library_export/
     statistics/
     settings/
 
@@ -93,7 +92,7 @@ integration_test/
 | `game_form_page.dart` | form screen/sections + ViewModel |
 | `game_detail_page.dart` | detail screen/panels + ViewModel |
 | `GameRepository` playthrough methods | `playthroughs/data/playthrough_repository.dart` + coordinator |
-| backup/export actuales | subfeatures bajo import_export o mantener feature separada si ownership queda más claro |
+| `import_export/library_export` | mantener como slice cohesivo; separar más sólo con evidencia |
 | metadata key storage reutilizado por media | `core/credentials` adapter + contracts específicos |
 | `l10n/domain_localizations.dart` | label mappers dentro de presentation de cada feature |
 | `features/sync/*` | eliminado en E2; no tiene target activo |
@@ -101,8 +100,9 @@ integration_test/
 ## Estrategia incremental
 
 1. E2 no aplica movimientos masivos; sólo seams indispensables para retirar Sync.
-2. E3 mueve una vertical slice con tests verdes y sin alias/barrels globales.
-3. Mantener imports explícitos; actualizar tests en el mismo slice.
+2. E3 simplifica el producto sin mover vertical slices completas.
+3. E4 mueve una vertical slice con tests verdes y sin alias/barrels globales.
+4. Mantener imports explícitos; actualizar tests en el mismo slice.
 4. No crear todas las carpetas anticipadamente.
 5. Un movimiento puro y una reescritura conductual deben ser commits separados cuando sea práctico.
 
