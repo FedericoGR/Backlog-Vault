@@ -50,18 +50,22 @@ occurred.
 | Android armeabi-v7a | 21,382,540 | measured pre-merge split gate |
 | Android x86_64 | 25,134,447 | measured pre-merge split gate |
 
-The Windows ZIP was produced twice from identical release input and both size
-and hash matched. It excludes PDB, LIB, EXP, object files, logs, sources,
-caches, databases, exports, symbols, and old packages.
+The post-merge Windows ZIP was produced twice from identical release input and
+both size and hash matched. It excludes PDB, LIB, EXP, object files, logs,
+sources, caches, databases, exports, symbols, and old packages. The clean smoke
+below used the pre-merge final-gate build: 15,186,576 bytes and SHA-256
+`AB19AD4EFF549E14D151E0DCEA3767C25F643FEAF7BC644578A658A00C067D77`.
+Both archives contain the same 14 runtime paths; the one-byte archive delta
+comes from separately regenerated compiled input, not the ZIP algorithm.
 
 ## Clean ZIP smoke
 
-The final ZIP was extracted into a fresh directory under the Windows temporary
-folder, outside the repository. The 14-file package launched and remained
-running during the observation window. Because the hidden window did not exit
-within the first `CloseMainWindow()` wait, a standard `WM_CLOSE` message was
-posted to its top-level windows; the application then exited normally without
-process termination. The temporary extraction was removed.
+The pre-merge final-gate ZIP was extracted into a fresh directory under the
+Windows temporary folder, outside the repository. The 14-file package launched
+and remained running during the observation window. Because the hidden window
+did not exit within the first `CloseMainWindow()` wait, a standard `WM_CLOSE`
+message was posted to its top-level windows; the application then exited
+normally without process termination. The temporary extraction was removed.
 
 The real Windows SQLite file retained its exact 2,084,864-byte length,
 `2026-07-19T02:57:01.6893086Z` write time, and SHA-256
