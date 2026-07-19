@@ -29,4 +29,47 @@ void main() {
     expect(spanish.settingsIgdbSubtitle, contains('renueva localmente'));
     expect(spanish.settingsSteamGridDbSubtitle, contains('portadas'));
   });
+
+  test(
+    'user-facing failures stay localized and omit technical exception data',
+    () {
+      final catalogs = [AppLocalizationsEn(), AppLocalizationsEs()];
+
+      for (final catalog in catalogs) {
+        final messages = [
+          catalog.unexpectedErrorMessage,
+          catalog.gameLoadError,
+          catalog.gameSaveFailed,
+          catalog.playthroughSaveFailed,
+          catalog.csvOperationFailed,
+          catalog.bulkOperationFailed,
+          catalog.metadataCoverSaveFailed,
+          catalog.bulkPreviewFailed,
+          catalog.bulkIssueNoCandidates,
+          catalog.bulkIssueProbableMatch,
+          catalog.bulkIssueAmbiguousMatch,
+          catalog.bulkIssueExternalReplacementAllowed,
+          catalog.bulkIssueExternalReplacementBlocked,
+          catalog.bulkIssueExistingCover,
+          catalog.bulkIssueReplacementAvailable,
+          catalog.bulkIssueNoCover,
+          catalog.bulkIssueReviewRequired,
+          catalog.bulkMatchReasonExistingExternalId,
+          catalog.bulkMatchReasonExactTitle,
+          catalog.bulkMatchReasonSimilarTitle,
+          catalog.bulkMatchReasonSameYear,
+          catalog.bulkMatchReasonNearbyYear,
+          catalog.bulkMatchReasonMatchingPlatform,
+          catalog.bulkMatchReasonFirstCandidate,
+          catalog.bulkMatchReasonOther,
+        ];
+
+        for (final message in messages) {
+          expect(message, isNotEmpty);
+          expect(message, isNot(contains('Exception')));
+          expect(message, isNot(contains('{error}')));
+        }
+      }
+    },
+  );
 }

@@ -45,6 +45,17 @@ void main() {
     expect(violations, isEmpty, reason: violations.join('\n'));
   });
 
+  test('presentation never renders raw exception strings', () {
+    final violations =
+        sources
+            .where((source) => source.isPresentation)
+            .where((source) => source.content.contains('error.toString()'))
+            .map((source) => source.path)
+            .toList();
+
+    expect(violations, isEmpty, reason: violations.join('\n'));
+  });
+
   test('data never depends on presentation', () {
     final violations = <String>[];
     for (final source in sources.where((item) => item.isData)) {
@@ -127,21 +138,27 @@ List<_SourceFile> _dartSources(Directory root) {
 }
 
 class _SourceFile {
-  const _SourceFile({required this.path, required this.imports});
+  const _SourceFile({
+    required this.path,
+    required this.imports,
+    required this.content,
+  });
 
   factory _SourceFile.read(File file) {
     final path = file.path.replaceAll('\\', '/');
     final relative = path.substring(path.indexOf('lib/'));
+    final content = file.readAsStringSync();
     final imports =
-        RegExp("^import ['\"]([^'\"]+)['\"]", multiLine: true)
-            .allMatches(file.readAsStringSync())
-            .map((match) => match.group(1)!)
-            .toList();
-    return _SourceFile(path: relative, imports: imports);
+        RegExp(
+          "^import ['\"]([^'\"]+)['\"]",
+          multiLine: true,
+        ).allMatches(content).map((match) => match.group(1)!).toList();
+    return _SourceFile(path: relative, imports: imports, content: content);
   }
 
   final String path;
   final List<String> imports;
+  final String content;
 
   bool get isPresentation => path.contains('/presentation/');
   bool get isData => path.contains('/data/');
