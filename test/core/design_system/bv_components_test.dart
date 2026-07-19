@@ -1,4 +1,4 @@
-import 'package:backlog_vault/app/theme.dart';
+import 'package:backlog_vault/app/theme/app_theme.dart';
 import 'package:backlog_vault/core/design_system/bv_chip.dart';
 import 'package:backlog_vault/core/design_system/bv_empty_state.dart';
 import 'package:backlog_vault/core/design_system/bv_error_state.dart';

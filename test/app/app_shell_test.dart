@@ -1,4 +1,4 @@
-import 'package:backlog_vault/app/app_shell.dart';
+import 'package:backlog_vault/app/routing/app_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';

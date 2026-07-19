@@ -1,4 +1,3 @@
-import '../../../core/database/app_database.dart';
 import '../data/media_repository.dart';
 import '../domain/media_asset_models.dart';
 import '../domain/media_provider.dart';
@@ -28,18 +27,22 @@ class SaveSelectedMediaAssetUseCase {
 
   final MediaRepository _repository;
 
-  Future<MediaAsset> fromRemoteCover({
+  Future<void> fromRemoteCover({
     required String gameId,
     required ExternalMediaAsset asset,
   }) {
-    return _repository.saveRemoteCover(gameId: gameId, asset: asset);
+    return _repository
+        .saveRemoteCover(gameId: gameId, asset: asset)
+        .then((_) {});
   }
 
-  Future<MediaAsset> fromLocalFile({
+  Future<void> fromLocalFile({
     required String gameId,
     required String sourcePath,
   }) {
-    return _repository.saveLocalCover(gameId: gameId, sourcePath: sourcePath);
+    return _repository
+        .saveLocalCover(gameId: gameId, sourcePath: sourcePath)
+        .then((_) {});
   }
 }
 

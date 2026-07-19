@@ -1,4 +1,4 @@
-import 'package:backlog_vault/app/theme.dart';
+import 'package:backlog_vault/app/theme/app_theme.dart';
 import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/library/domain/library_filter_state.dart';
 import 'package:backlog_vault/features/library/domain/library_game_row.dart';

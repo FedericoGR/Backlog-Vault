@@ -1,4 +1,3 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,7 +12,6 @@ import '../../../core/privacy/privacy_redactor.dart';
 import '../../../l10n/l10n.dart';
 import '../../games/application/library_game_details.dart';
 import '../application/media_providers.dart';
-import '../application/media_use_cases.dart';
 import '../domain/media_asset_models.dart';
 import '../domain/media_exception.dart';
 import '../domain/media_provider.dart';
@@ -234,9 +232,9 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
         ref.read(mediaProviderListProvider),
         _selectedProviderId,
       );
-      final result = await _searchMediaGamesUseCase(
-        provider,
-      ).call(_queryController.text);
+      final result = await ref
+          .read(mediaSearchViewModelProvider)
+          .searchGames(provider, _queryController.text);
       if (!mounted) return;
       setState(() {
         _candidates = result;
@@ -266,9 +264,9 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
         ref.read(mediaProviderListProvider),
         candidate.providerId,
       );
-      final result = await _searchCoverAssetsUseCase(
-        provider,
-      ).call(candidate.externalId);
+      final result = await ref
+          .read(mediaSearchViewModelProvider)
+          .searchCovers(provider, candidate.externalId);
       if (!mounted) return;
       setState(() {
         _assets = result;
@@ -294,8 +292,8 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
     });
     try {
       await ref
-          .read(saveSelectedMediaAssetUseCaseProvider)
-          .fromRemoteCover(gameId: widget.item.game.id, asset: asset);
+          .read(mediaSearchViewModelProvider)
+          .saveRemote(gameId: widget.item.game.id, asset: asset);
       if (!mounted) return;
       Navigator.pop(context, true);
     } catch (error) {
@@ -312,19 +310,13 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
       _error = null;
     });
     try {
-      final result = await FilePicker.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: const ['jpg', 'jpeg', 'png', 'webp'],
-        allowMultiple: false,
-      );
-      final path = result?.files.single.path;
-      if (path == null || path.trim().isEmpty) {
+      final saved = await ref
+          .read(mediaSearchViewModelProvider)
+          .pickAndSaveLocal(widget.item.game.id);
+      if (!saved) {
         if (mounted) setState(() => _saving = false);
         return;
       }
-      await ref
-          .read(saveSelectedMediaAssetUseCaseProvider)
-          .fromLocalFile(gameId: widget.item.game.id, sourcePath: path);
       if (!mounted) return;
       Navigator.pop(context, true);
     } catch (error) {
@@ -343,14 +335,6 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
   String _safeMessage(Object error) {
     if (error is MediaException) return privacyRedactor.redact(error.message);
     return privacyRedactor.redact(context.l10n.coverOperationFailed);
-  }
-
-  SearchMediaGamesUseCase _searchMediaGamesUseCase(MediaProvider provider) {
-    return SearchMediaGamesUseCase(provider);
-  }
-
-  SearchCoverAssetsUseCase _searchCoverAssetsUseCase(MediaProvider provider) {
-    return SearchCoverAssetsUseCase(provider);
   }
 
   MediaProvider _providerById(

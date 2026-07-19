@@ -12,8 +12,8 @@ import '../../../core/design_system/bv_status_banner.dart';
 import '../../../core/design_system/bv_theme_extension.dart';
 import '../../../l10n/l10n.dart';
 import '../../import_export/library_export/application/library_export_controller.dart';
-import '../../metadata/data/metadata_api_key_storage.dart';
 import '../application/app_language.dart';
+import '../application/external_credentials_view_model.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -27,17 +27,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   final _igdbClientIdController = TextEditingController();
   final _igdbClientSecretController = TextEditingController();
   final _steamGridDbApiKeyController = TextEditingController();
-  bool _loading = true;
-  bool _rawgConfigured = false;
-  bool _igdbConfigured = false;
-  bool _steamGridDbConfigured = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadApiKeyState();
-  }
-
   @override
   void dispose() {
     _rawgApiKeyController.dispose();
@@ -50,6 +39,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final credentials = ref.watch(externalCredentialsProvider);
+    final credentialState =
+        credentials.value ?? const ExternalCredentialsState();
+    final loading = credentials.isLoading;
     final language = ref
         .watch(appLanguageProvider)
         .when(
@@ -61,16 +54,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       title: l10n.settingsTitle,
       body: ListView(
         children: [
-          _OverviewSection(loading: _loading),
+          _OverviewSection(loading: loading),
           const SizedBox(height: BvSpacing.md),
-          _ActionShortcuts(loading: _loading),
+          _ActionShortcuts(loading: loading),
           const SizedBox(height: BvSpacing.md),
           _ConfigurationPanel(
             title: 'RAWG',
             subtitle: l10n.settingsRawgSubtitle,
             icon: Icons.vpn_key_outlined,
-            configured: _rawgConfigured,
-            loading: _loading,
+            configured: credentialState.rawgConfigured,
+            loading: loading,
             fields: [
               TextField(
                 controller: _rawgApiKeyController,
@@ -83,13 +76,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ],
             actions: [
               FilledButton.icon(
-                onPressed: _loading ? null : _saveRawgApiKey,
+                onPressed: loading ? null : _saveRawgApiKey,
                 icon: const Icon(Icons.save_outlined),
                 label: Text(l10n.save),
               ),
               OutlinedButton.icon(
                 onPressed:
-                    _loading || !_rawgConfigured ? null : _deleteRawgApiKey,
+                    loading || !credentialState.rawgConfigured
+                        ? null
+                        : _deleteRawgApiKey,
                 icon: const Icon(Icons.delete_outline),
                 label: Text(l10n.delete),
               ),
@@ -100,8 +95,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             title: 'IGDB / Twitch',
             subtitle: l10n.settingsIgdbSubtitle,
             icon: Icons.cloud_outlined,
-            configured: _igdbConfigured,
-            loading: _loading,
+            configured: credentialState.igdbConfigured,
+            loading: loading,
             fields: [
               TextField(
                 controller: _igdbClientIdController,
@@ -123,13 +118,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ],
             actions: [
               FilledButton.icon(
-                onPressed: _loading ? null : _saveIgdbCredentials,
+                onPressed: loading ? null : _saveIgdbCredentials,
                 icon: const Icon(Icons.save_outlined),
                 label: Text(l10n.save),
               ),
               OutlinedButton.icon(
                 onPressed:
-                    _loading || !_igdbConfigured
+                    loading || !credentialState.igdbConfigured
                         ? null
                         : _deleteIgdbCredentials,
                 icon: const Icon(Icons.delete_outline),
@@ -142,8 +137,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             title: 'SteamGridDB',
             subtitle: l10n.settingsSteamGridDbSubtitle,
             icon: Icons.image_search_outlined,
-            configured: _steamGridDbConfigured,
-            loading: _loading,
+            configured: credentialState.steamGridDbConfigured,
+            loading: loading,
             fields: [
               TextField(
                 controller: _steamGridDbApiKeyController,
@@ -156,13 +151,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ],
             actions: [
               FilledButton.icon(
-                onPressed: _loading ? null : _saveSteamGridDbApiKey,
+                onPressed: loading ? null : _saveSteamGridDbApiKey,
                 icon: const Icon(Icons.save_outlined),
                 label: Text(l10n.save),
               ),
               OutlinedButton.icon(
                 onPressed:
-                    _loading || !_steamGridDbConfigured
+                    loading || !credentialState.steamGridDbConfigured
                         ? null
                         : _deleteSteamGridDbApiKey,
                 icon: const Icon(Icons.delete_outline),
@@ -209,10 +204,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             actions: [
               OutlinedButton.icon(
                 onPressed:
-                    _loading ||
-                            (!_rawgConfigured &&
-                                !_igdbConfigured &&
-                                !_steamGridDbConfigured)
+                    loading ||
+                            (!credentialState.rawgConfigured &&
+                                !credentialState.igdbConfigured &&
+                                !credentialState.steamGridDbConfigured)
                         ? null
                         : _deleteAllExternalApiKeys,
                 icon: const Icon(Icons.key_off_outlined),
@@ -225,46 +220,21 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  Future<void> _loadApiKeyState() async {
-    final storage = ref.read(metadataApiKeyStorageProvider);
-    final rawgValue = await storage.readRawgApiKey();
-    final igdbClientId = await storage.readIgdbClientId();
-    final igdbClientSecret = await storage.readIgdbClientSecret();
-    final steamGridDbValue = await storage.readSteamGridDbApiKey();
-    if (!mounted) return;
-    setState(() {
-      _rawgConfigured = rawgValue != null;
-      _igdbConfigured = igdbClientId != null && igdbClientSecret != null;
-      _steamGridDbConfigured = steamGridDbValue != null;
-      _loading = false;
-    });
-  }
-
   Future<void> _saveRawgApiKey() async {
     final value = _rawgApiKeyController.text.trim();
     if (value.isEmpty) {
       _showMessage(context.l10n.settingsEnterApiKey);
       return;
     }
-    setState(() => _loading = true);
-    await ref.read(metadataApiKeyStorageProvider).saveRawgApiKey(value);
+    await ref.read(externalCredentialsProvider.notifier).saveRawg(value);
     _rawgApiKeyController.clear();
     if (!mounted) return;
-    setState(() {
-      _rawgConfigured = true;
-      _loading = false;
-    });
     _showMessage(context.l10n.settingsRawgSaved);
   }
 
   Future<void> _deleteRawgApiKey() async {
-    setState(() => _loading = true);
-    await ref.read(metadataApiKeyStorageProvider).deleteRawgApiKey();
+    await ref.read(externalCredentialsProvider.notifier).deleteRawg();
     if (!mounted) return;
-    setState(() {
-      _rawgConfigured = false;
-      _loading = false;
-    });
     _showMessage(context.l10n.settingsRawgDeleted);
   }
 
@@ -275,32 +245,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _showMessage(context.l10n.settingsEnterIgdbCredentials);
       return;
     }
-    setState(() => _loading = true);
-    final storage = ref.read(metadataApiKeyStorageProvider);
-    await storage.saveIgdbClientId(clientId);
-    await storage.saveIgdbClientSecret(clientSecret);
-    await storage.deleteIgdbAccessToken();
+    await ref
+        .read(externalCredentialsProvider.notifier)
+        .saveIgdb(clientId, clientSecret);
     _igdbClientIdController.clear();
     _igdbClientSecretController.clear();
     if (!mounted) return;
-    setState(() {
-      _igdbConfigured = true;
-      _loading = false;
-    });
     _showMessage(context.l10n.settingsIgdbSaved);
   }
 
   Future<void> _deleteIgdbCredentials() async {
-    setState(() => _loading = true);
-    final storage = ref.read(metadataApiKeyStorageProvider);
-    await storage.deleteIgdbClientId();
-    await storage.deleteIgdbClientSecret();
-    await storage.deleteIgdbAccessToken();
+    await ref.read(externalCredentialsProvider.notifier).deleteIgdb();
     if (!mounted) return;
-    setState(() {
-      _igdbConfigured = false;
-      _loading = false;
-    });
     _showMessage(context.l10n.settingsIgdbDeleted);
   }
 
@@ -310,25 +266,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _showMessage(context.l10n.settingsEnterApiKey);
       return;
     }
-    setState(() => _loading = true);
-    await ref.read(metadataApiKeyStorageProvider).saveSteamGridDbApiKey(value);
+    await ref.read(externalCredentialsProvider.notifier).saveSteamGridDb(value);
     _steamGridDbApiKeyController.clear();
     if (!mounted) return;
-    setState(() {
-      _steamGridDbConfigured = true;
-      _loading = false;
-    });
     _showMessage(context.l10n.settingsSteamGridDbSaved);
   }
 
   Future<void> _deleteSteamGridDbApiKey() async {
-    setState(() => _loading = true);
-    await ref.read(metadataApiKeyStorageProvider).deleteSteamGridDbApiKey();
+    await ref.read(externalCredentialsProvider.notifier).deleteSteamGridDb();
     if (!mounted) return;
-    setState(() {
-      _steamGridDbConfigured = false;
-      _loading = false;
-    });
     _showMessage(context.l10n.settingsSteamGridDbDeleted);
   }
 
@@ -353,19 +299,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
     );
     if (confirmed != true) return;
-    setState(() => _loading = true);
-    await ref.read(metadataApiKeyStorageProvider).deleteAllExternalApiKeys();
+    await ref.read(externalCredentialsProvider.notifier).deleteAll();
     _rawgApiKeyController.clear();
     _igdbClientIdController.clear();
     _igdbClientSecretController.clear();
     _steamGridDbApiKeyController.clear();
     if (!mounted) return;
-    setState(() {
-      _rawgConfigured = false;
-      _igdbConfigured = false;
-      _steamGridDbConfigured = false;
-      _loading = false;
-    });
     _showMessage(context.l10n.settingsExternalKeysDeleted);
   }
 

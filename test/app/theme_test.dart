@@ -1,6 +1,6 @@
-import 'package:backlog_vault/app/backlog_vault_app.dart';
-import 'package:backlog_vault/app/router.dart';
-import 'package:backlog_vault/app/theme.dart';
+import 'package:backlog_vault/app/bootstrap/backlog_vault_app.dart';
+import 'package:backlog_vault/app/routing/app_router.dart';
+import 'package:backlog_vault/app/theme/app_theme.dart';
 import 'package:backlog_vault/core/design_system/bv_theme_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

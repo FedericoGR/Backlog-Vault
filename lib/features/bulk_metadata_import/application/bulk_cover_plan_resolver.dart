@@ -1,6 +1,6 @@
 import '../../../core/privacy/privacy_redactor.dart';
 import '../../library/domain/library_game_row.dart';
-import '../../media/data/igdb_media_provider.dart';
+import '../../media/domain/igdb_cover_mapper.dart';
 import '../../media/domain/media_asset_models.dart';
 import '../../media/domain/media_exception.dart';
 import '../../media/domain/media_provider.dart';

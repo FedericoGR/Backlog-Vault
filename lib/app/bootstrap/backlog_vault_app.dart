@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../features/settings/application/app_language.dart';
-import '../l10n/l10n.dart';
-import 'router.dart';
-import 'theme.dart';
+import '../../features/settings/application/app_language.dart';
+import '../../l10n/l10n.dart';
+import '../routing/app_router.dart';
+import '../theme/app_theme.dart';
 
 class BacklogVaultApp extends ConsumerWidget {
   const BacklogVaultApp({super.key});

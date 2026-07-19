@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'app/backlog_vault_app.dart';
+import 'app/bootstrap/backlog_vault_app.dart';
 import 'core/database/database_providers.dart';
 import 'core/storage/offline_secure_storage_cleanup.dart';
 

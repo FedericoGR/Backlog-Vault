@@ -17,7 +17,7 @@ import '../../../core/formatting/date_formatters.dart';
 import '../../../l10n/domain_localizations.dart';
 import '../../../l10n/l10n.dart';
 import '../application/library_home_summary.dart';
-import '../data/library_query_repository.dart';
+import '../application/library_providers.dart';
 import '../domain/library_game_row.dart';
 import 'widgets/library_cover_thumbnail.dart';
 import 'widgets/rating_stars.dart';

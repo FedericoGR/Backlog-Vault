@@ -13,11 +13,10 @@ import '../../../core/design_system/bv_wizard_step.dart';
 import '../../../core/privacy/privacy_redactor.dart';
 import '../../../l10n/domain_localizations.dart';
 import '../../../l10n/l10n.dart';
-import '../../library/data/library_query_repository.dart';
+import '../../library/application/library_providers.dart';
 import '../../library/domain/library_game_row.dart';
 import '../../media/domain/media_asset_models.dart';
 import '../../metadata/domain/metadata_provider.dart';
-import '../application/bulk_cover_plan_resolver.dart';
 import '../application/bulk_metadata_import_providers.dart';
 import '../domain/bulk_metadata_import_models.dart';
 
@@ -211,17 +210,11 @@ class _BulkMetadataImportPageState
 
     try {
       final plan = await ref
-          .read(buildBulkMetadataPlanUseCaseProvider)
-          .call(
+          .read(bulkMetadataImportViewModelProvider)
+          .scan(
             rows: rows,
             provider: provider,
             options: options,
-            loadExternalIds:
-                ref.read(bulkMetadataRepositoryProvider).externalIdsForGame,
-            resolveCoverPlan:
-                BulkCoverPlanResolver(
-                  mediaProviders: ref.read(bulkMediaProviderListProvider),
-                ).call,
             onProgress: ({required processed, required total, title}) {
               if (!mounted) return;
               setState(() {
@@ -259,19 +252,12 @@ class _BulkMetadataImportPageState
     setState(() => _scanning = true);
     try {
       final rebuilt = await ref
-          .read(buildBulkMetadataPlanUseCaseProvider)
-          .buildItemFromCandidate(
-            row: item.row,
+          .read(bulkMetadataImportViewModelProvider)
+          .rebuildItem(
+            item: item,
             provider: provider,
             options: currentPlan.options,
-            selectedCandidate: candidate,
-            candidates: item.candidates,
-            loadExternalIds:
-                ref.read(bulkMetadataRepositoryProvider).externalIdsForGame,
-            resolveCoverPlan:
-                BulkCoverPlanResolver(
-                  mediaProviders: ref.read(bulkMediaProviderListProvider),
-                ).call,
+            candidate: candidate,
           );
       final nextItem =
           rebuilt.hasErrorIssue ? rebuilt : rebuilt.copyWith(included: true);
@@ -298,8 +284,8 @@ class _BulkMetadataImportPageState
     });
     try {
       final result = await ref
-          .read(applyBulkMetadataPlanUseCaseProvider)
-          .call(plan);
+          .read(bulkMetadataImportViewModelProvider)
+          .apply(plan);
       if (!mounted) return;
       setState(() {
         _result = result;

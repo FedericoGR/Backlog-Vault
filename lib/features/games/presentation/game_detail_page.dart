@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/database/app_database.dart';
 import '../../../core/design_system/bv_breakpoints.dart';
 import '../../../core/design_system/bv_chip.dart';
 import '../../../core/design_system/bv_empty_state.dart';
@@ -16,9 +15,10 @@ import '../../../core/design_system/bv_tokens.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../../../l10n/domain_localizations.dart';
 import '../../../l10n/l10n.dart';
+import '../../catalogs/domain/catalog_item.dart';
 import '../../library/domain/game_status.dart';
 import '../../library/domain/rating.dart';
-import '../../library/data/library_query_repository.dart';
+import '../../library/application/library_providers.dart';
 import '../../library/presentation/widgets/library_cover_thumbnail.dart';
 import '../../media/application/media_providers.dart';
 import '../../media/presentation/media_search_dialog.dart';
@@ -27,8 +27,8 @@ import '../../playthroughs/application/completion_form_model.dart';
 import '../../playthroughs/application/playthrough_form_model.dart';
 import '../../playthroughs/domain/playthrough_status.dart';
 import '../application/game_progress_summary.dart';
+import '../application/game_view_models.dart';
 import '../application/library_game_details.dart';
-import '../data/game_repository.dart';
 
 class GameDetailPage extends ConsumerWidget {
   const GameDetailPage({required this.entryId, super.key});
@@ -407,7 +407,7 @@ class _QuickProgressActions extends ConsumerWidget {
                       ref,
                       item,
                       () => ref
-                          .read(gameRepositoryProvider)
+                          .read(gameDetailViewModelProvider)
                           .markPlaying(item.entry.id),
                     )
                     : null,
@@ -422,7 +422,7 @@ class _QuickProgressActions extends ConsumerWidget {
                       ref,
                       item,
                       () => ref
-                          .read(gameRepositoryProvider)
+                          .read(gameDetailViewModelProvider)
                           .markPaused(item.entry.id),
                     )
                     : null,
@@ -446,7 +446,7 @@ class _QuickProgressActions extends ConsumerWidget {
                       ref,
                       item,
                       () => ref
-                          .read(gameRepositoryProvider)
+                          .read(gameDetailViewModelProvider)
                           .markDropped(item.entry.id),
                     )
                     : null,
@@ -461,7 +461,7 @@ class _QuickProgressActions extends ConsumerWidget {
                       ref,
                       item,
                       () => ref
-                          .read(gameRepositoryProvider)
+                          .read(gameDetailViewModelProvider)
                           .markBacklog(item.entry.id),
                     )
                     : null,
@@ -544,7 +544,7 @@ class _PlaythroughTile extends ConsumerWidget {
   const _PlaythroughTile({required this.item, required this.playthrough});
 
   final LibraryGameDetails item;
-  final Playthrough playthrough;
+  final PlaythroughDetails playthrough;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -827,7 +827,7 @@ Future<void> _showCompletionDialog(
     context,
     ref,
     item,
-    () => ref.read(gameRepositoryProvider).completeGame(result),
+    () => ref.read(gameDetailViewModelProvider).complete(result),
   );
 }
 
@@ -835,7 +835,7 @@ Future<void> _showPlaythroughDialog(
   BuildContext context,
   WidgetRef ref,
   LibraryGameDetails item, [
-  Playthrough? playthrough,
+  PlaythroughDetails? playthrough,
 ]) async {
   final result = await showDialog<PlaythroughFormModel>(
     context: context,
@@ -847,7 +847,7 @@ Future<void> _showPlaythroughDialog(
     context,
     ref,
     item,
-    () => ref.read(gameRepositoryProvider).savePlaythrough(result),
+    () => ref.read(gameDetailViewModelProvider).savePlaythrough(result),
   );
 }
 
@@ -855,7 +855,7 @@ Future<void> _confirmDeletePlaythrough(
   BuildContext context,
   WidgetRef ref,
   LibraryGameDetails item,
-  Playthrough playthrough,
+  PlaythroughDetails playthrough,
 ) async {
   final confirmed = await showDialog<bool>(
     context: context,
@@ -882,7 +882,7 @@ Future<void> _confirmDeletePlaythrough(
     ref,
     item,
     () =>
-        ref.read(gameRepositoryProvider).softDeletePlaythrough(playthrough.id),
+        ref.read(gameDetailViewModelProvider).deletePlaythrough(playthrough.id),
   );
 }
 
@@ -911,7 +911,7 @@ Future<void> _confirmDelete(
         ),
   );
   if (confirmed != true || !context.mounted) return;
-  await ref.read(gameRepositoryProvider).softDelete(item.entry.id);
+  await ref.read(gameDetailViewModelProvider).deleteGame(item.entry.id);
   if (context.mounted) context.go('/');
 }
 
@@ -1022,7 +1022,7 @@ class _PlaythroughDialog extends StatefulWidget {
   const _PlaythroughDialog({required this.item, this.playthrough});
 
   final LibraryGameDetails item;
-  final Playthrough? playthrough;
+  final PlaythroughDetails? playthrough;
 
   @override
   State<_PlaythroughDialog> createState() => _PlaythroughDialogState();
@@ -1253,7 +1253,7 @@ class _PlatformField extends StatelessWidget {
   });
 
   final String? platformId;
-  final List<Platform> platforms;
+  final List<CatalogItem> platforms;
   final ValueChanged<String?> onChanged;
 
   @override
@@ -1277,8 +1277,8 @@ class _PlatformField extends StatelessWidget {
 
 String _playthroughSubtitle(
   BuildContext context,
-  Playthrough playthrough,
-  List<Platform> platforms,
+  PlaythroughDetails playthrough,
+  List<CatalogItem> platforms,
 ) {
   final parts =
       [
@@ -1300,7 +1300,7 @@ String _playthroughSubtitle(
   return parts.isEmpty ? '-' : parts.join(' · ');
 }
 
-String _platformName(List<Platform> platforms, String? platformId) {
+String _platformName(List<CatalogItem> platforms, String? platformId) {
   if (platformId == null) return '-';
   for (final platform in platforms) {
     if (platform.id == platformId) return platform.name;

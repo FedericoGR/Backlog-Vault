@@ -6,6 +6,7 @@ import 'package:backlog_vault/features/library/data/library_query_repository.dar
 import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/playthroughs/application/completion_form_model.dart';
 import 'package:backlog_vault/features/playthroughs/application/playthrough_form_model.dart';
+import 'package:backlog_vault/features/playthroughs/data/playthrough_repository.dart';
 import 'package:backlog_vault/features/playthroughs/domain/playthrough_status.dart';
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
@@ -14,11 +15,16 @@ import 'package:test/test.dart';
 void main() {
   late AppDatabase db;
   late GameRepository repository;
+  late PlaythroughRepository playthroughRepository;
   late LibraryQueryRepository queryRepository;
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
     repository = GameRepository(db, clock: const _FixedClock());
+    playthroughRepository = PlaythroughRepository(
+      db,
+      clock: const _FixedClock(),
+    );
     queryRepository = LibraryQueryRepository(db);
   });
 
@@ -180,7 +186,7 @@ void main() {
     await _seedGame(db, status: GameStatus.playing);
     await _seedPlaythrough(db, status: PlaythroughStatus.active);
 
-    await repository.savePlaythrough(
+    await playthroughRepository.save(
       PlaythroughFormModel(
         playthroughId: 'playthrough-1',
         libraryEntryId: 'entry-1',
@@ -212,7 +218,7 @@ void main() {
       hoursPlayed: 10,
     );
 
-    await repository.softDeletePlaythrough('playthrough-1');
+    await playthroughRepository.softDelete('playthrough-1');
 
     final detail = await repository.getByEntryId('entry-1');
     final summary = GameProgressSummary.fromDetails(detail!);
@@ -268,7 +274,7 @@ void main() {
     expect(rows.single.hoursPlayed, 10);
     expect(rows.single.completedAt, DateTime(2026, 6, 9));
 
-    await repository.softDeletePlaythrough('playthrough-1');
+    await playthroughRepository.softDelete('playthrough-1');
 
     rows = await queryRepository.watchRows().first;
     expect(rows.single.playthroughCount, 0);

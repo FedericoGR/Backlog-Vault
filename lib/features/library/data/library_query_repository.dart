@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_providers.dart';
+import '../../../core/time/clock.dart';
 import '../domain/game_status.dart';
 import '../domain/library_game_row.dart';
 
@@ -10,16 +11,36 @@ final libraryQueryRepositoryProvider = Provider<LibraryQueryRepository>((ref) {
   return LibraryQueryRepository(ref.watch(appDatabaseProvider));
 });
 
-final libraryRowsProvider = StreamProvider.autoDispose<List<LibraryGameRow>>((
-  ref,
-) {
-  return ref.watch(libraryQueryRepositoryProvider).watchRows();
-});
-
 class LibraryQueryRepository {
-  const LibraryQueryRepository(this._db);
+  LibraryQueryRepository(this._db, {Clock clock = systemClock})
+    : _clock = clock;
 
   final AppDatabase _db;
+  final Clock _clock;
+
+  Future<void> softDelete(String entryId) => softDeleteMany([entryId]);
+
+  Future<void> softDeleteMany(Iterable<String> entryIds) {
+    final ids = entryIds.toSet();
+    if (ids.isEmpty) return Future.value();
+    return _db.transaction(() async {
+      final now = _clock.now();
+      final entries =
+          await (_db.select(_db.libraryEntries)
+                ..where((table) => table.id.isIn(ids))
+                ..where((table) => table.deletedAt.isNull()))
+              .get();
+      for (final entry in entries) {
+        await (_db.update(_db.libraryEntries)
+          ..where((table) => table.id.equals(entry.id))).write(
+          LibraryEntriesCompanion(updatedAt: Value(now), deletedAt: Value(now)),
+        );
+        await (_db.update(_db.games)..where(
+          (table) => table.id.equals(entry.gameId),
+        )).write(GamesCompanion(updatedAt: Value(now), deletedAt: Value(now)));
+      }
+    });
+  }
 
   Stream<List<LibraryGameRow>> watchRows() {
     final query =

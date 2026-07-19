@@ -1,8 +1,7 @@
-import 'package:backlog_vault/app/theme.dart';
-import 'package:backlog_vault/core/database/app_database.dart';
-import 'package:backlog_vault/features/catalogs/data/catalog_repository.dart';
-import 'package:backlog_vault/features/library/data/library_query_repository.dart';
-import 'package:backlog_vault/features/library/data/saved_library_view_repository.dart';
+import 'package:backlog_vault/app/theme/app_theme.dart';
+import 'package:backlog_vault/features/catalogs/application/catalog_controller.dart';
+import 'package:backlog_vault/features/catalogs/domain/catalog_item.dart';
+import 'package:backlog_vault/features/library/application/library_providers.dart';
 import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/library/domain/library_game_row.dart';
 import 'package:backlog_vault/features/library/presentation/game_list_page.dart';
@@ -12,14 +11,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class _MockCatalogRepository extends Mock implements CatalogRepository {}
+class _MockCatalogController extends Mock implements CatalogController {}
 
 void main() {
-  late _MockCatalogRepository catalogRepository;
+  late _MockCatalogController catalogRepository;
 
   setUp(() {
-    catalogRepository = _MockCatalogRepository();
-    when(() => catalogRepository.seedDefaultsIfEmpty()).thenAnswer((_) async {});
+    catalogRepository = _MockCatalogController();
+    when(
+      () => catalogRepository.seedDefaultsIfEmpty(),
+    ).thenAnswer((_) async {});
   });
 
   testWidgets('library table keeps sidebar visible on wide desktop', (
@@ -40,55 +41,57 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('library switches between table gallery and list on medium desktop', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(1366, 900);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets(
+    'library switches between table gallery and list on medium desktop',
+    (tester) async {
+      tester.view.physicalSize = const Size(1366, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(_buildLibraryApp(catalogRepository));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(_buildLibraryApp(catalogRepository));
+      await tester.pumpAndSettle();
 
-    expect(find.byType(DataTable2), findsOneWidget);
-    expect(find.text('Filtros'), findsNothing);
+      expect(find.byType(DataTable2), findsOneWidget);
+      expect(find.text('Filtros'), findsNothing);
 
-    await tester.tap(find.text('Galería'));
-    await tester.pumpAndSettle();
-    expect(find.byType(GridView), findsOneWidget);
-    expect(find.textContaining('Collector Edition'), findsWidgets);
+      await tester.tap(find.text('Galería'));
+      await tester.pumpAndSettle();
+      expect(find.byType(GridView), findsOneWidget);
+      expect(find.textContaining('Collector Edition'), findsWidgets);
 
-    await tester.tap(find.text('Lista'));
-    await tester.pumpAndSettle();
-    expect(find.byType(ListView), findsWidgets);
-    expect(find.text('Completado'), findsWidgets);
-    expect(tester.takeException(), isNull);
-  });
+      await tester.tap(find.text('Lista'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ListView), findsWidgets);
+      expect(find.text('Completado'), findsWidgets);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
-  testWidgets('library stays stable on android sized viewport and opens filters modal', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets(
+    'library stays stable on android sized viewport and opens filters modal',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(_buildLibraryApp(catalogRepository));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(_buildLibraryApp(catalogRepository));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Backlog Vault'), findsOneWidget);
-    expect(find.text('Crear juego'), findsOneWidget);
-    expect(find.byType(DataTable2), findsNothing);
-    expect(find.text('Filtros'), findsNothing);
+      expect(find.text('Backlog Vault'), findsOneWidget);
+      expect(find.text('Crear juego'), findsOneWidget);
+      expect(find.byType(DataTable2), findsNothing);
+      expect(find.text('Filtros'), findsNothing);
 
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Filtros (0)'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Filtros (0)'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Filtros'), findsWidgets);
-    expect(find.text('Aplicar'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      expect(find.text('Filtros'), findsWidgets);
+      expect(find.text('Aplicar'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('library selection bar stays accessible with long titles', (
     tester,
@@ -111,16 +114,14 @@ void main() {
   });
 }
 
-Widget _buildLibraryApp(_MockCatalogRepository catalogRepository) {
+Widget _buildLibraryApp(_MockCatalogController catalogRepository) {
   return ProviderScope(
     overrides: [
-      catalogRepositoryProvider.overrideWith((ref) => catalogRepository),
+      catalogControllerProvider.overrideWith((ref) => catalogRepository),
       libraryRowsProvider.overrideWith((ref) => Stream.value(_rows)),
-      platformsProvider.overrideWith((ref) => Stream.value(_platforms)),
-      genresProvider.overrideWith((ref) => Stream.value(_genres)),
-      customLibraryViewsProvider.overrideWith(
-        (ref) => Stream.value(const []),
-      ),
+      platformCatalogProvider.overrideWith((ref) => Stream.value(_platforms)),
+      genreCatalogProvider.overrideWith((ref) => Stream.value(_genres)),
+      customLibraryViewsProvider.overrideWith((ref) => Stream.value(const [])),
     ],
     child: MaterialApp(
       theme: buildBacklogVaultDarkTheme(),
@@ -132,21 +133,21 @@ Widget _buildLibraryApp(_MockCatalogRepository catalogRepository) {
 final _now = DateTime(2026, 6, 18);
 
 final _platforms = [
-  Platform(
+  CatalogItem(
     id: 'pc',
     name: 'PC',
     createdAt: _now,
     updatedAt: _now,
     deletedAt: null,
   ),
-  Platform(
+  CatalogItem(
     id: 'switch',
     name: 'Nintendo Switch',
     createdAt: _now,
     updatedAt: _now,
     deletedAt: null,
   ),
-  Platform(
+  CatalogItem(
     id: 'ps5',
     name: 'PS5',
     createdAt: _now,
@@ -156,21 +157,21 @@ final _platforms = [
 ];
 
 final _genres = [
-  Genre(
+  CatalogItem(
     id: 'jrpg',
     name: 'JRPG',
     createdAt: _now,
     updatedAt: _now,
     deletedAt: null,
   ),
-  Genre(
+  CatalogItem(
     id: 'action',
     name: 'Acción',
     createdAt: _now,
     updatedAt: _now,
     deletedAt: null,
   ),
-  Genre(
+  CatalogItem(
     id: 'adventure',
     name: 'Aventura',
     createdAt: _now,

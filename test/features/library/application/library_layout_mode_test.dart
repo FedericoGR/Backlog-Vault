@@ -1,4 +1,4 @@
-import 'package:backlog_vault/features/library/application/library_table_providers.dart';
+import 'package:backlog_vault/features/library/application/library_view_model.dart';
 import 'package:backlog_vault/features/library/domain/library_filter_state.dart';
 import 'package:backlog_vault/features/library/domain/library_layout_mode.dart';
 import 'package:backlog_vault/features/library/domain/library_sort_state.dart';
@@ -10,8 +10,8 @@ void main() {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
-    final tableController = container.read(libraryTableStateProvider.notifier);
-    final initial = container.read(libraryTableStateProvider);
+    final tableController = container.read(libraryViewModelProvider.notifier);
+    final initial = container.read(libraryViewModelProvider).table;
     tableController.setTableState(
       initial.copyWith(
         filter: const LibraryFilterState(textQuery: 'hades'),
@@ -20,12 +20,12 @@ void main() {
     );
 
     container
-        .read(libraryLayoutModeProvider.notifier)
-        .setMode(LibraryLayoutMode.gallery);
+        .read(libraryViewModelProvider.notifier)
+        .setLayoutMode(LibraryLayoutMode.gallery);
 
-    final tableState = container.read(libraryTableStateProvider);
+    final tableState = container.read(libraryViewModelProvider).table;
     expect(
-      container.read(libraryLayoutModeProvider),
+      container.read(libraryViewModelProvider).layoutMode,
       LibraryLayoutMode.gallery,
     );
     expect(tableState.filter.textQuery, 'hades');
@@ -37,10 +37,13 @@ void main() {
     addTearDown(container.dispose);
 
     container
-        .read(libraryLayoutModeProvider.notifier)
-        .setMode(LibraryLayoutMode.list);
+        .read(libraryViewModelProvider.notifier)
+        .setLayoutMode(LibraryLayoutMode.list);
 
-    expect(container.read(libraryLayoutModeProvider), LibraryLayoutMode.list);
+    expect(
+      container.read(libraryViewModelProvider).layoutMode,
+      LibraryLayoutMode.list,
+    );
     expect(LibraryLayoutMode.list.label, 'Lista');
   });
 }

@@ -1,9 +1,8 @@
-import 'package:backlog_vault/core/database/app_database.dart';
-import 'package:backlog_vault/features/games/application/library_game_details.dart';
-import 'package:backlog_vault/features/library/domain/game_status.dart';
+import 'package:backlog_vault/features/catalogs/domain/catalog_item.dart';
 import 'package:backlog_vault/features/metadata/application/build_metadata_diff_use_case.dart';
 import 'package:backlog_vault/features/metadata/domain/external_game_details.dart';
 import 'package:backlog_vault/features/metadata/domain/metadata_field.dart';
+import 'package:backlog_vault/features/metadata/domain/local_metadata_snapshot.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -71,59 +70,26 @@ void main() {
 }
 
 final _externalReleaseDate = DateTime(2026, 6, 10);
-final _now = DateTime(2026, 6, 10);
-
-LibraryGameDetails _details({
+LocalMetadataSnapshot _details({
   required DateTime? releaseDate,
-  required List<Platform> platforms,
-  required List<Genre> genres,
+  required List<CatalogItem> platforms,
+  required List<CatalogItem> genres,
 }) {
-  return LibraryGameDetails(
-    game: Game(
-      id: 'game-1',
-      title: 'Local Title',
-      sortTitle: null,
-      releaseDate: releaseDate,
-      type: 'game',
-      createdAt: _now,
-      updatedAt: _now,
-      deletedAt: null,
-    ),
-    entry: LibraryEntry(
-      id: 'entry-1',
-      gameId: 'game-1',
-      status: GameStatus.backlog.name,
-      personalRating: 4,
-      personalNotes: 'Manual',
-      createdAt: _now,
-      updatedAt: _now,
-      deletedAt: null,
-    ),
-    platforms: platforms,
-    genres: genres,
-    playthroughs: const [],
+  return LocalMetadataSnapshot(
+    title: 'Local Title',
+    releaseDate: releaseDate,
+    type: 'game',
+    platforms: [for (final platform in platforms) platform.name],
+    genres: [for (final genre in genres) genre.name],
   );
 }
 
-Platform _platform(String name) {
-  return Platform(
-    id: name,
-    name: name,
-    shortName: null,
-    createdAt: _now,
-    updatedAt: _now,
-    deletedAt: null,
-  );
+CatalogItem _platform(String name) {
+  return CatalogItem(id: name, name: name, shortName: null);
 }
 
-Genre _genre(String name) {
-  return Genre(
-    id: name,
-    name: name,
-    createdAt: _now,
-    updatedAt: _now,
-    deletedAt: null,
-  );
+CatalogItem _genre(String name) {
+  return CatalogItem(id: name, name: name);
 }
 
 dynamic _change(List<dynamic> changes, MetadataField field) {

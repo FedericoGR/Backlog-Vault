@@ -1,6 +1,6 @@
-import 'package:backlog_vault/app/theme.dart';
-import 'package:backlog_vault/core/database/app_database.dart';
-import 'package:backlog_vault/features/catalogs/data/catalog_repository.dart';
+import 'package:backlog_vault/app/theme/app_theme.dart';
+import 'package:backlog_vault/features/catalogs/application/catalog_controller.dart';
+import 'package:backlog_vault/features/catalogs/domain/catalog_item.dart';
 import 'package:backlog_vault/features/games/application/library_game_details.dart';
 import 'package:backlog_vault/features/games/data/game_repository.dart';
 import 'package:backlog_vault/features/games/presentation/game_form_page.dart';
@@ -10,16 +10,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class _MockCatalogRepository extends Mock implements CatalogRepository {}
+class _MockCatalogController extends Mock implements CatalogController {}
 
 class _MockGameRepository extends Mock implements GameRepository {}
 
 void main() {
-  late _MockCatalogRepository catalogRepository;
+  late _MockCatalogController catalogRepository;
   late _MockGameRepository gameRepository;
 
   setUp(() {
-    catalogRepository = _MockCatalogRepository();
+    catalogRepository = _MockCatalogController();
     gameRepository = _MockGameRepository();
     when(
       () => catalogRepository.watchPlatforms(),
@@ -35,7 +35,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          catalogRepositoryProvider.overrideWith((ref) => catalogRepository),
+          catalogControllerProvider.overrideWith((ref) => catalogRepository),
           gameRepositoryProvider.overrideWith((ref) => gameRepository),
         ],
         child: MaterialApp(
@@ -73,7 +73,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          catalogRepositoryProvider.overrideWith((ref) => catalogRepository),
+          catalogControllerProvider.overrideWith((ref) => catalogRepository),
           gameRepositoryProvider.overrideWith((ref) => gameRepository),
         ],
         child: MaterialApp(
@@ -114,7 +114,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            catalogRepositoryProvider.overrideWith((ref) => catalogRepository),
+            catalogControllerProvider.overrideWith((ref) => catalogRepository),
             gameRepositoryProvider.overrideWith((ref) => gameRepository),
           ],
           child: MaterialApp(
@@ -146,14 +146,14 @@ void main() {
 final _now = DateTime(2026, 6, 16);
 
 final _platforms = [
-  Platform(
+  CatalogItem(
     id: 'pc',
     name: 'PC',
     createdAt: _now,
     updatedAt: _now,
     deletedAt: null,
   ),
-  Platform(
+  CatalogItem(
     id: 'ps4',
     name: 'PS4',
     createdAt: _now,
@@ -163,14 +163,14 @@ final _platforms = [
 ];
 
 final _genres = [
-  Genre(
+  CatalogItem(
     id: 'action',
     name: 'Acción',
     createdAt: _now,
     updatedAt: _now,
     deletedAt: null,
   ),
-  Genre(
+  CatalogItem(
     id: 'adventure',
     name: 'Aventura',
     createdAt: _now,
@@ -181,7 +181,7 @@ final _genres = [
 
 final _densePlatforms = List.generate(
   14,
-  (index) => Platform(
+  (index) => CatalogItem(
     id: 'platform-$index',
     name: 'Platform $index With Long Name',
     createdAt: _now,
@@ -192,7 +192,7 @@ final _densePlatforms = List.generate(
 
 final _denseGenres = List.generate(
   18,
-  (index) => Genre(
+  (index) => CatalogItem(
     id: 'genre-$index',
     name: 'Genre $index With Long Label',
     createdAt: _now,
@@ -203,7 +203,7 @@ final _denseGenres = List.generate(
 
 LibraryGameDetails _details() {
   return LibraryGameDetails(
-    game: Game(
+    game: GameDetails(
       id: 'game-1',
       title: 'The Last of Us: Left Behind',
       sortTitle: null,
@@ -213,7 +213,7 @@ LibraryGameDetails _details() {
       updatedAt: _now,
       deletedAt: null,
     ),
-    entry: LibraryEntry(
+    entry: LibraryEntryDetails(
       id: 'entry-1',
       gameId: 'game-1',
       status: GameStatus.completed.name,

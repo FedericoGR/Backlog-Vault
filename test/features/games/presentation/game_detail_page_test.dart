@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:backlog_vault/app/theme.dart';
-import 'package:backlog_vault/core/database/app_database.dart';
+import 'package:backlog_vault/app/theme/app_theme.dart';
+import 'package:backlog_vault/features/catalogs/domain/catalog_item.dart';
 import 'package:backlog_vault/features/games/application/library_game_details.dart';
 import 'package:backlog_vault/features/games/data/game_repository.dart';
 import 'package:backlog_vault/features/games/presentation/game_detail_page.dart';
@@ -135,7 +135,7 @@ LibraryGameDetails _details({
   bool denseMetadata = false,
 }) {
   return LibraryGameDetails(
-    game: Game(
+    game: GameDetails(
       id: 'game-1',
       title:
           longTitle
@@ -148,7 +148,7 @@ LibraryGameDetails _details({
       updatedAt: _now,
       deletedAt: null,
     ),
-    entry: LibraryEntry(
+    entry: LibraryEntryDetails(
       id: withCover ? 'entry-1' : 'entry-2',
       gameId: 'game-1',
       status: GameStatus.completed.name,
@@ -162,7 +162,7 @@ LibraryGameDetails _details({
         denseMetadata
             ? List.generate(
               10,
-              (index) => Platform(
+              (index) => CatalogItem(
                 id: 'platform-$index',
                 name: 'Platform $index With Long Name',
                 createdAt: _now,
@@ -171,7 +171,7 @@ LibraryGameDetails _details({
               ),
             )
             : [
-              Platform(
+              CatalogItem(
                 id: 'pc',
                 name: 'PC',
                 createdAt: _now,
@@ -183,7 +183,7 @@ LibraryGameDetails _details({
         denseMetadata
             ? List.generate(
               12,
-              (index) => Genre(
+              (index) => CatalogItem(
                 id: 'genre-$index',
                 name: 'Genre $index With Long Label',
                 createdAt: _now,
@@ -192,7 +192,7 @@ LibraryGameDetails _details({
               ),
             )
             : [
-              Genre(
+              CatalogItem(
                 id: 'rogue',
                 name: 'Roguelike',
                 createdAt: _now,
@@ -201,7 +201,7 @@ LibraryGameDetails _details({
               ),
             ],
     playthroughs: [
-      Playthrough(
+      PlaythroughDetails(
         id: 'pt-1',
         libraryEntryId: withCover ? 'entry-1' : 'entry-2',
         platformId: 'pc',
@@ -218,17 +218,10 @@ LibraryGameDetails _details({
     ],
     selectedCover:
         withCover
-            ? MediaAsset(
+            ? GameCoverDetails(
               id: 'cover-1',
-              gameId: 'game-1',
-              kind: 'cover',
               source: 'local',
               localPath: 'missing-cover.png',
-              fileName: 'missing-cover.png',
-              isSelected: true,
-              createdAt: _now,
-              updatedAt: _now,
-              deletedAt: null,
             )
             : null,
   );

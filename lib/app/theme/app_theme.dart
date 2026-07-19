@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../core/design_system/bv_theme_extension.dart';
-import '../core/design_system/bv_tokens.dart';
+import '../../core/design_system/bv_theme_extension.dart';
+import '../../core/design_system/bv_tokens.dart';
 
 ThemeData buildBacklogVaultTheme() {
   return _buildBacklogVaultTheme(Brightness.light);

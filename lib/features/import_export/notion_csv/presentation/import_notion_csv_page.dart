@@ -15,7 +15,6 @@ import '../../../../l10n/l10n.dart';
 import '../../../library/domain/game_status.dart';
 import '../../../library/domain/rating.dart';
 import '../application/notion_csv_import_providers.dart';
-import '../data/notion_csv_import_repository.dart';
 import '../domain/csv_column_mapping.dart';
 import '../domain/csv_document.dart';
 import '../domain/import_field.dart';
@@ -104,23 +103,13 @@ class _ImportNotionCsvPageState extends ConsumerState<ImportNotionCsvPage> {
       _result = null;
     });
     try {
-      final picked = await ref.read(csvFilePickerServiceProvider).pickCsvFile();
-      if (picked == null) return;
-
-      final document = ref
-          .read(parseCsvFileUseCaseProvider)
-          .call(
-            fileName: picked.name,
-            sizeBytes: picked.sizeBytes,
-            bytes: picked.bytes,
-          );
-      final mapping = ref
-          .read(detectNotionCsvMappingUseCaseProvider)
-          .call(document.headers);
+      final selection =
+          await ref.read(notionCsvImportViewModelProvider).pickAndParse();
+      if (selection == null) return;
 
       setState(() {
-        _document = document;
-        _mapping = mapping;
+        _document = selection.document;
+        _mapping = selection.mapping;
         _preview = null;
       });
     } catch (error) {
@@ -144,15 +133,9 @@ class _ImportNotionCsvPageState extends ConsumerState<ImportNotionCsvPage> {
       _error = null;
     });
     try {
-      final existingGames =
-          await ref.read(notionCsvImportRepositoryProvider).loadExistingGames();
-      final preview = ref
-          .read(buildImportPreviewUseCaseProvider)
-          .call(
-            document: document,
-            mapping: mapping,
-            existingGames: existingGames,
-          );
+      final preview = await ref
+          .read(notionCsvImportViewModelProvider)
+          .buildPreview(document: document, mapping: mapping);
       setState(() => _preview = preview);
     } catch (error) {
       setState(() => _error = error.toString());
@@ -194,8 +177,8 @@ class _ImportNotionCsvPageState extends ConsumerState<ImportNotionCsvPage> {
     });
     try {
       final result = await ref
-          .read(importNotionCsvUseCaseProvider)
-          .call(preview);
+          .read(notionCsvImportViewModelProvider)
+          .import(preview);
       setState(() => _result = result);
     } catch (error) {
       setState(() => _error = error.toString());

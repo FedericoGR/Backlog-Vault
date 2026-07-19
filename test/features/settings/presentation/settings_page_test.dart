@@ -1,4 +1,4 @@
-import 'package:backlog_vault/app/theme.dart';
+import 'package:backlog_vault/app/theme/app_theme.dart';
 import 'package:backlog_vault/features/import_export/library_export/application/library_export_controller.dart';
 import 'package:backlog_vault/features/metadata/data/metadata_api_key_storage.dart';
 import 'package:backlog_vault/features/settings/presentation/settings_page.dart';

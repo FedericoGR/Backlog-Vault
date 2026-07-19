@@ -12,16 +12,15 @@ import '../../../core/privacy/privacy_redactor.dart';
 import '../../../l10n/domain_localizations.dart';
 import '../../../l10n/l10n.dart';
 import '../../media/application/media_providers.dart';
-import '../../media/data/igdb_media_provider.dart';
-import '../application/get_metadata_details_use_case.dart';
+import '../../media/domain/igdb_cover_mapper.dart';
 import '../../games/application/library_game_details.dart';
 import '../application/metadata_providers.dart';
-import '../application/search_metadata_use_case.dart';
 import '../domain/apply_metadata_request.dart';
 import '../domain/external_game_details.dart';
 import '../domain/metadata_diff.dart';
 import '../domain/metadata_exception.dart';
 import '../domain/metadata_field.dart';
+import '../domain/local_metadata_snapshot.dart';
 import '../domain/metadata_provider.dart';
 import '../domain/metadata_search_candidate.dart';
 
@@ -230,9 +229,9 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
         ref.read(metadataProviderListProvider),
         _selectedProviderId,
       );
-      final result = await SearchMetadataUseCase(
-        provider,
-      ).call(_queryController.text);
+      final result = await ref
+          .read(metadataSearchViewModelProvider)
+          .search(provider, _queryController.text);
       if (!mounted) return;
       setState(() {
         _candidates = result;
@@ -263,12 +262,23 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
         ref.read(metadataProviderListProvider),
         candidate.providerId,
       );
-      final details = await GetMetadataDetailsUseCase(
-        provider,
-      ).call(candidate.externalId);
+      final details = await ref
+          .read(metadataSearchViewModelProvider)
+          .details(provider, candidate.externalId);
       final diff = ref
-          .read(buildMetadataDiffUseCaseProvider)
-          .call(local: widget.item, external: details);
+          .read(metadataSearchViewModelProvider)
+          .diff(
+            local: LocalMetadataSnapshot(
+              title: widget.item.game.title,
+              releaseDate: widget.item.game.releaseDate,
+              type: widget.item.game.type,
+              platforms: [
+                for (final platform in widget.item.platforms) platform.name,
+              ],
+              genres: [for (final genre in widget.item.genres) genre.name],
+            ),
+            external: details,
+          );
       if (!mounted) return;
       setState(() {
         _details = details;
@@ -305,8 +315,8 @@ class _MetadataSearchDialogState extends ConsumerState<MetadataSearchDialog> {
     });
     try {
       await ref
-          .read(applyMetadataUseCaseProvider)
-          .call(
+          .read(metadataSearchViewModelProvider)
+          .apply(
             ApplyMetadataRequest(
               gameId: widget.item.game.id,
               libraryEntryId: widget.item.entry.id,

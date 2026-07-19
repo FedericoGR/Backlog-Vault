@@ -14,14 +14,12 @@ import '../../../core/design_system/bv_theme_extension.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../../../l10n/domain_localizations.dart';
 import '../../../l10n/l10n.dart';
-import '../../catalogs/data/catalog_repository.dart';
-import '../../games/data/game_repository.dart';
+import '../../catalogs/application/catalog_controller.dart';
 import '../application/library_default_views.dart';
 import '../application/library_responsive_layout.dart';
-import '../application/library_table_providers.dart';
+import '../application/library_providers.dart';
 import '../application/library_table_state.dart';
-import '../data/library_query_repository.dart';
-import '../data/saved_library_view_repository.dart';
+import '../application/library_view_model.dart';
 import '../domain/game_status.dart';
 import '../domain/library_column_config.dart';
 import '../domain/library_filter_state.dart';
@@ -49,7 +47,7 @@ class _GameListPageState extends ConsumerState<GameListPage> {
   void initState() {
     super.initState();
     Future.microtask(
-      () => ref.read(catalogRepositoryProvider).seedDefaultsIfEmpty(),
+      () => ref.read(catalogControllerProvider).seedDefaultsIfEmpty(),
     );
   }
 
@@ -58,7 +56,7 @@ class _GameListPageState extends ConsumerState<GameListPage> {
     final l10n = context.l10n;
     final rows = ref.watch(libraryRowsProvider);
     final platforms = ref
-        .watch(platformsProvider)
+        .watch(platformCatalogProvider)
         .maybeWhen(
           data:
               (items) =>
@@ -73,7 +71,7 @@ class _GameListPageState extends ConsumerState<GameListPage> {
           orElse: () => const <LibraryCatalogItem>[],
         );
     final genres = ref
-        .watch(genresProvider)
+        .watch(genreCatalogProvider)
         .maybeWhen(
           data:
               (items) =>
@@ -93,8 +91,9 @@ class _GameListPageState extends ConsumerState<GameListPage> {
         );
     final defaultViews = buildDefaultLibraryViews(platforms: platforms);
     final views = [...defaultViews, ...customViews];
-    final tableState = ref.watch(libraryTableStateProvider);
-    final layoutMode = ref.watch(libraryLayoutModeProvider);
+    final viewState = ref.watch(libraryViewModelProvider);
+    final tableState = viewState.table;
+    final layoutMode = viewState.layoutMode;
     final processor = ref.watch(libraryTableProcessorProvider);
 
     return Scaffold(
@@ -255,24 +254,24 @@ class _GameListPageState extends ConsumerState<GameListPage> {
   }
 
   void _toggleStatusFilter(GameStatus status) {
-    final current = ref.read(libraryTableStateProvider);
+    final current = ref.read(libraryViewModelProvider).table;
     final statuses = {...current.filter.statuses};
     statuses.contains(status) ? statuses.remove(status) : statuses.add(status);
     ref
-        .read(libraryTableStateProvider.notifier)
+        .read(libraryViewModelProvider.notifier)
         .setTableState(
           current.copyWith(filter: current.filter.copyWith(statuses: statuses)),
         );
   }
 
   void _togglePlatformFilter(String platformId) {
-    final current = ref.read(libraryTableStateProvider);
+    final current = ref.read(libraryViewModelProvider).table;
     final platformIds = {...current.filter.platformIds};
     platformIds.contains(platformId)
         ? platformIds.remove(platformId)
         : platformIds.add(platformId);
     ref
-        .read(libraryTableStateProvider.notifier)
+        .read(libraryViewModelProvider.notifier)
         .setTableState(
           current.copyWith(
             filter: current.filter.copyWith(platformIds: platformIds),
@@ -281,13 +280,13 @@ class _GameListPageState extends ConsumerState<GameListPage> {
   }
 
   void _toggleGenreFilter(String genreId) {
-    final current = ref.read(libraryTableStateProvider);
+    final current = ref.read(libraryViewModelProvider).table;
     final genreIds = {...current.filter.genreIds};
     genreIds.contains(genreId)
         ? genreIds.remove(genreId)
         : genreIds.add(genreId);
     ref
-        .read(libraryTableStateProvider.notifier)
+        .read(libraryViewModelProvider.notifier)
         .setTableState(
           current.copyWith(filter: current.filter.copyWith(genreIds: genreIds)),
         );
@@ -341,7 +340,9 @@ class _GameListPageState extends ConsumerState<GameListPage> {
     controller.dispose();
     if (confirmed != true || !mounted) return;
 
-    await ref.read(gameRepositoryProvider).softDeleteMany(_selectedEntryIds);
+    await ref
+        .read(libraryViewModelProvider.notifier)
+        .deleteGames(_selectedEntryIds);
     ref.invalidate(libraryRowsProvider);
     if (!mounted) return;
     setState(() {
@@ -514,7 +515,7 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
                           final view = _viewById(widget.views, id);
                           if (view == null) return;
                           ref
-                              .read(libraryTableStateProvider.notifier)
+                              .read(libraryViewModelProvider.notifier)
                               .setTableState(LibraryTableState.fromView(view));
                         },
                       ),
@@ -533,9 +534,10 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
                           prefixIcon: const Icon(Icons.search),
                         ),
                         onChanged: (value) {
-                          final current = ref.read(libraryTableStateProvider);
+                          final current =
+                              ref.read(libraryViewModelProvider).table;
                           ref
-                              .read(libraryTableStateProvider.notifier)
+                              .read(libraryViewModelProvider.notifier)
                               .setTableState(
                                 current.copyWith(
                                   filter: current.filter.copyWith(
@@ -585,8 +587,8 @@ class _LibraryToolbarState extends ConsumerState<_LibraryToolbar> {
                       onSelectionChanged: (selection) {
                         if (selection.isEmpty) return;
                         ref
-                            .read(libraryLayoutModeProvider.notifier)
-                            .setMode(selection.first);
+                            .read(libraryViewModelProvider.notifier)
+                            .setLayoutMode(selection.first);
                       },
                     ),
                     FilledButton.icon(
@@ -704,9 +706,9 @@ class _CompletedYearSelector extends ConsumerWidget {
       ],
       onChanged: (year) {
         if (year == null) return;
-        final current = ref.read(libraryTableStateProvider);
+        final current = ref.read(libraryViewModelProvider).table;
         ref
-            .read(libraryTableStateProvider.notifier)
+            .read(libraryViewModelProvider.notifier)
             .setTableState(
               current.copyWith(
                 filter: current.filter.copyWith(
@@ -805,7 +807,7 @@ class _LibraryDataTable extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(libraryTableStateProvider);
+    final state = ref.watch(libraryViewModelProvider).table;
     final theme = Theme.of(context);
     final bv = BvThemeExtension.of(context);
     final visibleColumns = state.columnConfig.visibleColumns;
@@ -1457,7 +1459,7 @@ Future<void> _showFiltersPanel(
   List<LibraryCatalogItem> genres,
 ) async {
   if (MediaQuery.sizeOf(context).width < BvBreakpoints.mobile) {
-    final current = ref.read(libraryTableStateProvider);
+    final current = ref.read(libraryViewModelProvider).table;
     final result = await showModalBottomSheet<LibraryFilterState>(
       context: context,
       isScrollControlled: true,
@@ -1474,7 +1476,7 @@ Future<void> _showFiltersPanel(
     );
     if (result == null) return;
     ref
-        .read(libraryTableStateProvider.notifier)
+        .read(libraryViewModelProvider.notifier)
         .setTableState(current.copyWith(filter: result));
     return;
   }
@@ -1488,7 +1490,7 @@ Future<void> _showFiltersDialog(
   List<LibraryCatalogItem> platforms,
   List<LibraryCatalogItem> genres,
 ) async {
-  final current = ref.read(libraryTableStateProvider);
+  final current = ref.read(libraryViewModelProvider).table;
   final result = await showDialog<LibraryFilterState>(
     context: context,
     builder:
@@ -1500,36 +1502,31 @@ Future<void> _showFiltersDialog(
   );
   if (result == null) return;
   ref
-      .read(libraryTableStateProvider.notifier)
+      .read(libraryViewModelProvider.notifier)
       .setTableState(current.copyWith(filter: result));
 }
 
 Future<void> _showColumnsDialog(BuildContext context, WidgetRef ref) async {
-  final current = ref.read(libraryTableStateProvider);
+  final current = ref.read(libraryViewModelProvider).table;
   final result = await showDialog<LibraryColumnConfig>(
     context: context,
     builder: (context) => _ColumnsDialog(initialConfig: current.columnConfig),
   );
   if (result == null) return;
   ref
-      .read(libraryTableStateProvider.notifier)
+      .read(libraryViewModelProvider.notifier)
       .setTableState(current.copyWith(columnConfig: result));
 }
 
 Future<void> _saveCurrentView(BuildContext context, WidgetRef ref) async {
   final name = await _askViewName(context, title: context.l10n.saveView);
   if (name == null) return;
-  final state = ref.read(libraryTableStateProvider);
+  final state = ref.read(libraryViewModelProvider).table;
   final id = await ref
-      .read(savedLibraryViewRepositoryProvider)
-      .create(
-        name: name,
-        filter: state.filter,
-        sort: state.sort,
-        columnConfig: state.columnConfig,
-      );
+      .read(libraryViewModelProvider.notifier)
+      .createView(name: name, table: state);
   ref
-      .read(libraryTableStateProvider.notifier)
+      .read(libraryViewModelProvider.notifier)
       .setTableState(state.copyWith(activeViewId: id));
 }
 
@@ -1538,10 +1535,10 @@ Future<void> _updateCurrentView(
   WidgetRef ref,
   SavedLibraryView view,
 ) async {
-  final state = ref.read(libraryTableStateProvider);
+  final state = ref.read(libraryViewModelProvider).table;
   await ref
-      .read(savedLibraryViewRepositoryProvider)
-      .update(
+      .read(libraryViewModelProvider.notifier)
+      .updateView(
         view.copyWith(
           filter: state.filter,
           sort: state.sort,
@@ -1567,8 +1564,8 @@ Future<void> _renameCurrentView(
   );
   if (name == null) return;
   await ref
-      .read(savedLibraryViewRepositoryProvider)
-      .update(view.copyWith(name: name));
+      .read(libraryViewModelProvider.notifier)
+      .updateView(view.copyWith(name: name));
 }
 
 Future<void> _deleteCurrentView(
@@ -1596,7 +1593,7 @@ Future<void> _deleteCurrentView(
         ),
   );
   if (confirmed != true) return;
-  await ref.read(savedLibraryViewRepositoryProvider).softDelete(view.id);
+  await ref.read(libraryViewModelProvider.notifier).deleteView(view.id);
   _resetTableState(ref);
 }
 
@@ -1662,7 +1659,9 @@ Future<void> _confirmDelete(
         ),
   );
   if (confirmed != true || !context.mounted) return;
-  await ref.read(gameRepositoryProvider).softDelete(row.libraryEntryId);
+  await ref
+      .read(libraryViewModelProvider.notifier)
+      .deleteGame(row.libraryEntryId);
 }
 
 Widget _tableCell(
@@ -1738,9 +1737,9 @@ DropdownButtonFormField<int?> _ratingDropdown({
 void _toggleSort(WidgetRef ref, LibraryColumnKey column) {
   final sortField = _sortFieldForColumn(column);
   if (sortField == null) return;
-  final current = ref.read(libraryTableStateProvider);
+  final current = ref.read(libraryViewModelProvider).table;
   ref
-      .read(libraryTableStateProvider.notifier)
+      .read(libraryViewModelProvider.notifier)
       .setTableState(current.copyWith(sort: current.sort.toggle(sortField)));
 }
 
@@ -1764,7 +1763,7 @@ LibrarySortField? _sortFieldForColumn(LibraryColumnKey column) {
 
 void _resetTableState(WidgetRef ref) {
   ref
-      .read(libraryTableStateProvider.notifier)
+      .read(libraryViewModelProvider.notifier)
       .setTableState(LibraryTableState.initial());
 }
 

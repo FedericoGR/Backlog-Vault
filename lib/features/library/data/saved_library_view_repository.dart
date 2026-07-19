@@ -18,11 +18,6 @@ final savedLibraryViewRepositoryProvider = Provider<SavedLibraryViewRepository>(
   },
 );
 
-final customLibraryViewsProvider =
-    StreamProvider.autoDispose<List<SavedLibraryView>>((ref) {
-      return ref.watch(savedLibraryViewRepositoryProvider).watchCustomViews();
-    });
-
 class SavedLibraryViewRepository {
   SavedLibraryViewRepository(
     this._db, {

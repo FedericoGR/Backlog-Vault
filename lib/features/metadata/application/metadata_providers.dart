@@ -5,7 +5,12 @@ import '../data/metadata_api_key_storage.dart';
 import '../data/igdb_metadata_provider.dart';
 import '../data/metadata_repository.dart';
 import '../data/rawg_metadata_provider.dart';
+import '../domain/apply_metadata_request.dart';
+import '../domain/external_game_details.dart';
+import '../domain/local_metadata_snapshot.dart';
+import '../domain/metadata_diff.dart';
 import '../domain/metadata_provider.dart';
+import '../domain/metadata_search_candidate.dart';
 import 'apply_metadata_use_case.dart';
 import 'build_metadata_diff_use_case.dart';
 import 'get_metadata_details_use_case.dart';
@@ -54,3 +59,43 @@ final buildMetadataDiffUseCaseProvider = Provider<BuildMetadataDiffUseCase>((
 final applyMetadataUseCaseProvider = Provider<ApplyMetadataUseCase>((ref) {
   return ApplyMetadataUseCase(ref.watch(metadataRepositoryProvider));
 });
+
+final metadataSearchViewModelProvider = Provider<MetadataSearchViewModel>((
+  ref,
+) {
+  return MetadataSearchViewModel(
+    diffBuilder: ref.watch(buildMetadataDiffUseCaseProvider),
+    apply: (request) => ref.read(applyMetadataUseCaseProvider).call(request),
+  );
+});
+
+/// Coordinates metadata search, detail comparison and local application.
+class MetadataSearchViewModel {
+  const MetadataSearchViewModel({
+    required BuildMetadataDiffUseCase diffBuilder,
+    required MetadataApplier apply,
+  }) : _diffBuilder = diffBuilder,
+       _apply = apply;
+
+  final BuildMetadataDiffUseCase _diffBuilder;
+  final MetadataApplier _apply;
+
+  Future<List<MetadataSearchCandidate>> search(
+    MetadataProvider provider,
+    String query,
+  ) => SearchMetadataUseCase(provider).call(query);
+
+  Future<ExternalGameDetails> details(
+    MetadataProvider provider,
+    String externalId,
+  ) => GetMetadataDetailsUseCase(provider).call(externalId);
+
+  MetadataDiff diff({
+    required LocalMetadataSnapshot local,
+    required ExternalGameDetails external,
+  }) => _diffBuilder.call(local: local, external: external);
+
+  Future<void> apply(ApplyMetadataRequest request) => _apply(request);
+}
+
+typedef MetadataApplier = Future<void> Function(ApplyMetadataRequest request);

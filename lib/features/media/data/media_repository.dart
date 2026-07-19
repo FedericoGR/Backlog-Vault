@@ -208,6 +208,12 @@ class MediaRepository {
     return _storage.resolveFile(localPath);
   }
 
+  Future<Uint8List?> readLocalFileBytes(String localPath) async {
+    final file = await resolveLocalFile(localPath);
+    if (!await file.exists()) return null;
+    return file.readAsBytes();
+  }
+
   Future<Uint8List> _download(String url) async {
     try {
       final response = await _httpClient

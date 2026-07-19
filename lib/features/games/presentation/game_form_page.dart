@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/database/app_database.dart';
 import '../../../core/design_system/bv_breakpoints.dart';
 import '../../../core/design_system/bv_chip.dart';
 import '../../../core/design_system/bv_empty_state.dart';
@@ -16,22 +15,20 @@ import '../../../core/privacy/privacy_redactor.dart';
 import '../../../core/widgets/dropdown_value_guard.dart';
 import '../../../l10n/domain_localizations.dart';
 import '../../../l10n/l10n.dart';
-import '../../catalogs/data/catalog_repository.dart';
+import '../../catalogs/application/catalog_controller.dart';
+import '../../catalogs/domain/catalog_item.dart';
 import '../../library/domain/game_status.dart';
-import '../../media/application/media_providers.dart';
-import '../../media/data/igdb_media_provider.dart';
+import '../../media/domain/igdb_cover_mapper.dart';
 import '../../media/domain/media_asset_models.dart';
-import '../../metadata/application/get_metadata_details_use_case.dart';
 import '../../metadata/application/metadata_providers.dart';
-import '../../metadata/application/search_metadata_use_case.dart';
 import '../../metadata/domain/external_game_details.dart';
 import '../../metadata/domain/metadata_field.dart';
 import '../../metadata/domain/metadata_provider.dart';
 import '../../metadata/domain/metadata_search_candidate.dart';
 import '../../playthroughs/application/completion_form_model.dart';
 import '../application/game_form_model.dart';
+import '../application/game_view_models.dart';
 import '../application/library_game_details.dart';
-import '../data/game_repository.dart';
 
 class GameFormPage extends ConsumerStatefulWidget {
   const GameFormPage({this.entryId, super.key});
@@ -82,8 +79,8 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
         widget.entryId == null
             ? const AsyncData<LibraryGameDetails?>(null)
             : ref.watch(libraryGameProvider(widget.entryId!));
-    final platforms = ref.watch(catalogRepositoryProvider).watchPlatforms();
-    final genres = ref.watch(catalogRepositoryProvider).watchGenres();
+    final platforms = ref.watch(catalogControllerProvider).watchPlatforms();
+    final genres = ref.watch(catalogControllerProvider).watchGenres();
 
     return Scaffold(
       appBar: AppBar(
@@ -278,7 +275,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                                 },
                                 onCreate: () async {
                                   final id = await ref
-                                      .read(catalogRepositoryProvider)
+                                      .read(catalogControllerProvider)
                                       .createPlatform(
                                         _newPlatformController.text,
                                       );
@@ -312,7 +309,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                                 },
                                 onCreate: () async {
                                   final id = await ref
-                                      .read(catalogRepositoryProvider)
+                                      .read(catalogControllerProvider)
                                       .createGenre(_newGenreController.text);
                                   setState(() {
                                     _selectedGenreIds.add(id);
@@ -440,19 +437,6 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
 
     setState(() => _saving = true);
     try {
-      final catalogRepository = ref.read(catalogRepositoryProvider);
-      final platformIds =
-          {
-            ..._selectedPlatformIds,
-            for (final name in _pendingPlatformNames)
-              await catalogRepository.createPlatform(name),
-          }.toList();
-      final genreIds =
-          {
-            ..._selectedGenreIds,
-            for (final name in _pendingGenreNames)
-              await catalogRepository.createGenre(name),
-          }.toList();
       final model = GameFormModel(
         entryId: existing?.entry.id,
         gameId: existing?.game.id,
@@ -462,10 +446,9 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
         status: _status,
         personalRating: _rating,
         personalNotes: _notesController.text,
-        platformIds: platformIds,
-        genreIds: genreIds,
+        platformIds: _selectedPlatformIds.toList(),
+        genreIds: _selectedGenreIds.toList(),
       );
-      final entryId = await ref.read(gameRepositoryProvider).save(model);
 
       final wasCompleted =
           existing != null &&
@@ -474,32 +457,28 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
         _completedHours = double.tryParse(
           _completedHoursController.text.trim().replaceAll(',', '.'),
         );
-        await ref
-            .read(gameRepositoryProvider)
-            .completeGame(
-              CompletionFormModel(
-                libraryEntryId: entryId,
-                completedAt: _completedAt ?? DateTime.now(),
-                platformId: _completedPlatformId,
-                hoursPlayed: _completedHours,
-                rating: _completedRating,
-                notes: null,
-              ),
-            );
       }
-
-      final pendingCover = _pendingCoverAsset;
-      if (pendingCover != null) {
-        final saved = await ref
-            .read(gameRepositoryProvider)
-            .getByEntryId(entryId);
-        final gameId = saved?.game.id ?? existing?.game.id;
-        if (gameId != null) {
-          await ref
-              .read(saveSelectedMediaAssetUseCaseProvider)
-              .fromRemoteCover(gameId: gameId, asset: pendingCover);
-        }
-      }
+      final entryId = await ref
+          .read(gameFormViewModelProvider)
+          .save(
+            GameFormSaveRequest(
+              model: model,
+              pendingPlatformNames: _pendingPlatformNames,
+              pendingGenreNames: _pendingGenreNames,
+              completion:
+                  _status == GameStatus.completed && !wasCompleted
+                      ? CompletionFormModel(
+                        libraryEntryId: existing?.entry.id ?? '',
+                        completedAt: _completedAt ?? DateTime.now(),
+                        platformId: _completedPlatformId,
+                        hoursPlayed: _completedHours,
+                        rating: _completedRating,
+                        notes: null,
+                      )
+                      : null,
+              cover: _pendingCoverAsset,
+            ),
+          );
 
       if (!mounted) return;
       context.go('/games/$entryId');
@@ -515,8 +494,8 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
 
   Future<void> _searchMetadataForForm(
     LibraryGameDetails? existing,
-    List<Platform> platformItems,
-    List<Genre> genreItems,
+    List<CatalogItem> platformItems,
+    List<CatalogItem> genreItems,
   ) async {
     final result = await showDialog<_FormMetadataResult>(
       context: context,
@@ -575,17 +554,15 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
     });
   }
 
-  void _applyCatalogPrefill<T>({
+  void _applyCatalogPrefill({
     required Iterable<String> externalNames,
-    required List<T> existingItems,
+    required List<CatalogItem> existingItems,
     required Set<String> selectedIds,
     required Set<String> pendingNames,
   }) {
     final byName = <String, String>{};
     for (final item in existingItems) {
-      final id = item is Platform ? item.id : (item as Genre).id;
-      final name = item is Platform ? item.name : (item as Genre).name;
-      byName[_normalizeName(name)] = id;
+      byName[_normalizeName(item.name)] = item.id;
     }
     for (final name in externalNames) {
       final normalized = _normalizeName(name);
@@ -599,7 +576,10 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
     }
   }
 
-  void _sanitizeSelections(List<Platform> platforms, List<Genre> genres) {
+  void _sanitizeSelections(
+    List<CatalogItem> platforms,
+    List<CatalogItem> genres,
+  ) {
     final platformIds = platforms.map((platform) => platform.id).toSet();
     final genreIds = genres.map((genre) => genre.id).toSet();
     final nextPlatformIds =
@@ -628,18 +608,18 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
     });
   }
 
-  List<Platform> _dedupePlatforms(List<Platform> values) {
+  List<CatalogItem> _dedupePlatforms(List<CatalogItem> values) {
     final seen = <String>{};
-    final result = <Platform>[];
+    final result = <CatalogItem>[];
     for (final value in values) {
       if (seen.add(value.id)) result.add(value);
     }
     return result;
   }
 
-  List<Genre> _dedupeGenres(List<Genre> values) {
+  List<CatalogItem> _dedupeGenres(List<CatalogItem> values) {
     final seen = <String>{};
-    final result = <Genre>[];
+    final result = <CatalogItem>[];
     for (final value in values) {
       if (seen.add(value.id)) result.add(value);
     }
@@ -938,9 +918,9 @@ class _GameFormMetadataDialogState
         ref.read(metadataProviderListProvider),
         _selectedProviderId,
       );
-      final candidates = await SearchMetadataUseCase(
-        provider,
-      ).call(_queryController.text);
+      final candidates = await ref
+          .read(metadataSearchViewModelProvider)
+          .search(provider, _queryController.text);
       if (!mounted) return;
       setState(() {
         _candidates = candidates;
@@ -970,9 +950,9 @@ class _GameFormMetadataDialogState
         ref.read(metadataProviderListProvider),
         candidate.providerId,
       );
-      final details = await GetMetadataDetailsUseCase(
-        provider,
-      ).call(candidate.externalId);
+      final details = await ref
+          .read(metadataSearchViewModelProvider)
+          .details(provider, candidate.externalId);
       if (!mounted) return;
       setState(() {
         _details = details;

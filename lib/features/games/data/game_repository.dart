@@ -7,8 +7,8 @@ import '../../../core/errors/app_exception.dart';
 import '../../../core/ids/id_generator.dart';
 import '../../../core/time/clock.dart';
 import '../../library/domain/game_status.dart';
+import '../../catalogs/domain/catalog_item.dart';
 import '../../playthroughs/application/completion_form_model.dart';
-import '../../playthroughs/application/playthrough_form_model.dart';
 import '../../playthroughs/domain/playthrough_status.dart';
 import '../application/game_form_model.dart';
 import '../application/library_game_details.dart';
@@ -16,16 +16,6 @@ import '../application/library_game_details.dart';
 final gameRepositoryProvider = Provider<GameRepository>((ref) {
   return GameRepository(ref.watch(appDatabaseProvider));
 });
-
-final libraryGamesProvider =
-    StreamProvider.autoDispose<List<LibraryGameDetails>>((ref) {
-      return ref.watch(gameRepositoryProvider).watchLibrary();
-    });
-
-final libraryGameProvider = FutureProvider.autoDispose
-    .family<LibraryGameDetails?, String>(
-      (ref, entryId) => ref.watch(gameRepositoryProvider).getByEntryId(entryId),
-    );
 
 class GameRepository {
   GameRepository(this._db, {IdGenerator? ids, Clock clock = systemClock})
@@ -191,94 +181,6 @@ class GameRepository {
           (table) => table.id.equals(entry.gameId),
         )).write(GamesCompanion(updatedAt: Value(now), deletedAt: Value(now)));
       }
-    });
-  }
-
-  Future<void> registerPlaythrough(PlaythroughFormModel model) {
-    return savePlaythrough(model);
-  }
-
-  Future<void> savePlaythrough(PlaythroughFormModel model) {
-    model.validate();
-    if (model.playthroughId == null) {
-      return _createPlaythrough(model);
-    }
-    return _updatePlaythrough(model);
-  }
-
-  Future<void> _createPlaythrough(PlaythroughFormModel model) {
-    return _db.transaction(() async {
-      final now = _clock.now();
-      await _requireEntry(model.libraryEntryId);
-      await _db
-          .into(_db.playthroughs)
-          .insert(
-            PlaythroughsCompanion.insert(
-              id: _ids.newId(),
-              libraryEntryId: model.libraryEntryId,
-              platformId: Value(model.platformId),
-              status: model.status.name,
-              startedAt: Value(model.startedAt),
-              completedAt: Value(model.completedAt),
-              hoursPlayed: Value(model.hoursPlayed),
-              rating: Value(model.rating),
-              notes: Value(_blankToNull(model.notes)),
-              createdAt: now,
-              updatedAt: now,
-            ),
-          );
-      await _touchEntry(model.libraryEntryId, now);
-    });
-  }
-
-  Future<void> _updatePlaythrough(PlaythroughFormModel model) {
-    return _db.transaction(() async {
-      final now = _clock.now();
-      await _requireEntry(model.libraryEntryId);
-      final existing =
-          await ((_db.select(_db.playthroughs)
-                ..where((table) => table.id.equals(model.playthroughId!))
-                ..where(
-                  (table) => table.libraryEntryId.equals(model.libraryEntryId),
-                )
-                ..where((table) => table.deletedAt.isNull()))
-              .getSingleOrNull());
-      if (existing == null) {
-        throw const AppException('No se encontró la partida.');
-      }
-
-      await (_db.update(_db.playthroughs)
-        ..where((table) => table.id.equals(existing.id))).write(
-        PlaythroughsCompanion(
-          platformId: Value(model.platformId),
-          status: Value(model.status.name),
-          startedAt: Value(model.startedAt),
-          completedAt: Value(model.completedAt),
-          hoursPlayed: Value(model.hoursPlayed),
-          rating: Value(model.rating),
-          notes: Value(_blankToNull(model.notes)),
-          updatedAt: Value(now),
-        ),
-      );
-      await _touchEntry(model.libraryEntryId, now);
-    });
-  }
-
-  Future<void> softDeletePlaythrough(String playthroughId) {
-    return _db.transaction(() async {
-      final now = _clock.now();
-      final playthrough =
-          await ((_db.select(_db.playthroughs)
-                ..where((table) => table.id.equals(playthroughId))
-                ..where((table) => table.deletedAt.isNull()))
-              .getSingleOrNull());
-      if (playthrough == null) return;
-
-      await (_db.update(_db.playthroughs)
-        ..where((table) => table.id.equals(playthroughId))).write(
-        PlaythroughsCompanion(updatedAt: Value(now), deletedAt: Value(now)),
-      );
-      await _touchEntry(playthrough.libraryEntryId, now);
     });
   }
 
@@ -482,12 +384,61 @@ class GameRepository {
 
       details.add(
         LibraryGameDetails(
-          game: game,
-          entry: entry,
-          platforms: platforms,
-          genres: genres,
-          playthroughs: playthroughs,
-          selectedCover: selectedCover,
+          game: GameDetails(
+            id: game.id,
+            title: game.title,
+            sortTitle: game.sortTitle,
+            releaseDate: game.releaseDate,
+            type: game.type,
+            createdAt: game.createdAt,
+            updatedAt: game.updatedAt,
+          ),
+          entry: LibraryEntryDetails(
+            id: entry.id,
+            gameId: entry.gameId,
+            status: entry.status,
+            personalRating: entry.personalRating,
+            personalNotes: entry.personalNotes,
+            createdAt: entry.createdAt,
+            updatedAt: entry.updatedAt,
+          ),
+          platforms: [
+            for (final platform in platforms)
+              CatalogItem(
+                id: platform.id,
+                name: platform.name,
+                shortName: platform.shortName,
+              ),
+          ],
+          genres: [
+            for (final genre in genres)
+              CatalogItem(id: genre.id, name: genre.name),
+          ],
+          playthroughs: [
+            for (final playthrough in playthroughs)
+              PlaythroughDetails(
+                id: playthrough.id,
+                libraryEntryId: playthrough.libraryEntryId,
+                platformId: playthrough.platformId,
+                status: playthrough.status,
+                startedAt: playthrough.startedAt,
+                completedAt: playthrough.completedAt,
+                hoursPlayed: playthrough.hoursPlayed,
+                rating: playthrough.rating,
+                notes: playthrough.notes,
+                createdAt: playthrough.createdAt,
+                updatedAt: playthrough.updatedAt,
+              ),
+          ],
+          selectedCover:
+              selectedCover == null
+                  ? null
+                  : GameCoverDetails(
+                    id: selectedCover.id,
+                    localPath: selectedCover.localPath,
+                    provider: selectedCover.provider,
+                    source: selectedCover.source,
+                  ),
         ),
       );
     }
@@ -590,12 +541,6 @@ class GameRepository {
             ),
           );
     }
-  }
-
-  Future<void> _touchEntry(String entryId, DateTime now) async {
-    await (_db.update(_db.libraryEntries)..where(
-      (table) => table.id.equals(entryId),
-    )).write(LibraryEntriesCompanion(updatedAt: Value(now)));
   }
 
   Future<LibraryEntry> _requireEntry(String entryId) async {

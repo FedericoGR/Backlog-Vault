@@ -1,4 +1,4 @@
-import 'package:backlog_vault/features/library/data/library_query_repository.dart';
+import 'package:backlog_vault/features/library/application/library_providers.dart';
 import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/library/domain/library_game_row.dart';
 import 'package:backlog_vault/features/library/presentation/home_page.dart';

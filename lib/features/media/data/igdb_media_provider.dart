@@ -4,11 +4,11 @@ import '../../../core/time/clock.dart';
 import '../../metadata/data/igdb_api_client.dart';
 import '../../metadata/data/igdb_auth_client.dart';
 import '../../metadata/data/metadata_api_key_storage.dart';
-import '../../metadata/domain/external_game_details.dart';
 import '../../metadata/domain/metadata_exception.dart';
 import '../domain/media_asset_models.dart';
 import '../domain/media_exception.dart';
 import '../domain/media_provider.dart';
+import '../domain/igdb_cover_mapper.dart';
 
 class IgdbMediaProvider implements MediaProvider {
   IgdbMediaProvider({
@@ -129,20 +129,4 @@ class IgdbMediaProvider implements MediaProvider {
       },
     );
   }
-}
-
-ExternalMediaAsset? externalGameCoverToMediaAsset(ExternalGameCover? cover) {
-  if (cover == null) return null;
-  return ExternalMediaAsset(
-    providerId: IgdbApiClient.providerId,
-    providerName: IgdbApiClient.providerName,
-    externalId: cover.externalId,
-    kind: MediaAssetKind.cover,
-    remoteUrl: cover.remoteUrl,
-    thumbnailUrl: cover.thumbnailUrl,
-    mimeType: 'image/jpeg',
-    width: cover.width,
-    height: cover.height,
-    attribution: 'IGDB',
-  );
 }

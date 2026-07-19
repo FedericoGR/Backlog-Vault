@@ -1,9 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../media/data/media_repository.dart';
+import '../../../media/application/media_providers.dart';
 
 class LibraryCoverThumbnail extends ConsumerWidget {
   const LibraryCoverThumbnail({
@@ -26,15 +24,14 @@ class LibraryCoverThumbnail extends ConsumerWidget {
       return _placeholder(context);
     }
 
-    return FutureBuilder<File?>(
-      future: _resolveExistingFile(ref, path),
-      builder: (context, snapshot) {
-        final file = snapshot.data;
-        if (file == null) return _placeholder(context);
+    final bytes = ref.watch(localMediaBytesProvider(path));
+    return bytes.when(
+      data: (value) {
+        if (value == null) return _placeholder(context);
         return ClipRRect(
           borderRadius: BorderRadius.circular(borderRadius),
-          child: Image.file(
-            file,
+          child: Image.memory(
+            value,
             width: width,
             height: height,
             fit: BoxFit.cover,
@@ -42,18 +39,9 @@ class LibraryCoverThumbnail extends ConsumerWidget {
           ),
         );
       },
+      loading: () => _placeholder(context),
+      error: (_, _) => _placeholder(context),
     );
-  }
-
-  Future<File?> _resolveExistingFile(WidgetRef ref, String path) async {
-    try {
-      final file = await ref
-          .watch(mediaRepositoryProvider)
-          .resolveLocalFile(path);
-      return await file.exists() ? file : null;
-    } on FileSystemException {
-      return null;
-    }
   }
 
   Widget _placeholder(BuildContext context) {

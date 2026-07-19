@@ -1,7 +1,7 @@
 import 'package:backlog_vault/features/bulk_metadata_import/application/apply_bulk_metadata_plan_use_case.dart';
 import 'package:backlog_vault/features/bulk_metadata_import/application/bulk_metadata_import_providers.dart';
 import 'package:backlog_vault/features/bulk_metadata_import/presentation/bulk_metadata_import_page.dart';
-import 'package:backlog_vault/features/library/data/library_query_repository.dart';
+import 'package:backlog_vault/features/library/application/library_providers.dart';
 import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/library/domain/library_game_row.dart';
 import 'package:backlog_vault/features/media/application/media_providers.dart';

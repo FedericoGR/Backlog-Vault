@@ -1,4 +1,3 @@
-import '../../../core/database/app_database.dart';
 import '../../playthroughs/domain/playthrough_status.dart';
 import 'library_game_details.dart';
 
@@ -49,7 +48,7 @@ class GameProgressSummary {
   final double? totalHours;
   final int playthroughCount;
   final DateTime? latestCompletedAt;
-  final Playthrough? activePlaythrough;
+  final PlaythroughDetails? activePlaythrough;
 }
 
 T? _firstOrNull<T>(Iterable<T> values) {

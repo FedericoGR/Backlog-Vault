@@ -1,5 +1,5 @@
-import '../../games/application/library_game_details.dart';
 import '../domain/external_game_details.dart';
+import '../domain/local_metadata_snapshot.dart';
 import '../domain/metadata_diff.dart';
 import '../domain/metadata_field.dart';
 
@@ -7,40 +7,40 @@ class BuildMetadataDiffUseCase {
   const BuildMetadataDiffUseCase();
 
   MetadataDiff call({
-    required LibraryGameDetails local,
+    required LocalMetadataSnapshot local,
     required ExternalGameDetails external,
   }) {
     final changes = <MetadataFieldChange>[];
     _addTextChange(
       changes,
       field: MetadataField.title,
-      currentValue: local.game.title,
+      currentValue: local.title,
       externalValue: external.title,
       selectedByDefault: false,
     );
     _addDateChange(
       changes,
       field: MetadataField.releaseDate,
-      currentValue: local.game.releaseDate,
+      currentValue: local.releaseDate,
       externalValue: external.releaseDate,
     );
     _addTextChange(
       changes,
       field: MetadataField.type,
-      currentValue: local.game.type,
+      currentValue: local.type,
       externalValue: external.type,
-      selectedByDefault: local.game.type.trim().isEmpty,
+      selectedByDefault: local.type.trim().isEmpty,
     );
     _addListChange(
       changes,
       field: MetadataField.genres,
-      currentValues: local.genres.map((genre) => genre.name),
+      currentValues: local.genres,
       externalValues: external.genres,
     );
     _addListChange(
       changes,
       field: MetadataField.platforms,
-      currentValues: local.platforms.map((platform) => platform.name),
+      currentValues: local.platforms,
       externalValues: external.platforms,
     );
     return MetadataDiff(changes: changes);

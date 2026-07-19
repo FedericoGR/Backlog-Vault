@@ -9,11 +9,6 @@ final statisticsRepositoryProvider = Provider<StatisticsRepository>((ref) {
   return StatisticsRepository(ref.watch(appDatabaseProvider));
 });
 
-final statisticsPlaythroughsProvider =
-    StreamProvider.autoDispose<List<StatisticsPlaythrough>>((ref) {
-      return ref.watch(statisticsRepositoryProvider).watchPlaythroughs();
-    });
-
 class StatisticsRepository {
   const StatisticsRepository(this._db);
 

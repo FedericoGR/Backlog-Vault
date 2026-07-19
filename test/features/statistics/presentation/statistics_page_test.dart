@@ -1,8 +1,8 @@
-import 'package:backlog_vault/features/library/data/library_query_repository.dart';
+import 'package:backlog_vault/features/library/application/library_providers.dart';
+import 'package:backlog_vault/features/statistics/application/statistics_providers.dart';
 import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/library/domain/library_game_row.dart';
 import 'package:backlog_vault/features/playthroughs/domain/playthrough_status.dart';
-import 'package:backlog_vault/features/statistics/data/statistics_repository.dart';
 import 'package:backlog_vault/features/statistics/domain/statistics_models.dart';
 import 'package:backlog_vault/features/statistics/presentation/statistics_page.dart';
 import 'package:flutter/material.dart';

@@ -16,10 +16,9 @@ import '../../../core/design_system/bv_theme_extension.dart';
 import '../../../core/formatting/date_formatters.dart';
 import '../../../l10n/domain_localizations.dart';
 import '../../../l10n/l10n.dart';
-import '../../library/data/library_query_repository.dart';
+import '../../library/application/library_providers.dart';
 import '../../library/domain/game_status.dart';
 import '../application/statistics_providers.dart';
-import '../data/statistics_repository.dart';
 import '../domain/statistics_models.dart';
 
 class StatisticsPage extends ConsumerStatefulWidget {

@@ -1,4 +1,3 @@
-import 'package:backlog_vault/core/database/app_database.dart';
 import 'package:backlog_vault/features/games/application/library_game_details.dart';
 import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/metadata/application/metadata_providers.dart';
@@ -138,7 +137,7 @@ final _now = DateTime(2026, 6, 13);
 
 LibraryGameDetails _details() {
   return LibraryGameDetails(
-    game: Game(
+    game: GameDetails(
       id: 'game-1',
       title: 'Hades',
       sortTitle: null,
@@ -148,7 +147,7 @@ LibraryGameDetails _details() {
       updatedAt: _now,
       deletedAt: null,
     ),
-    entry: LibraryEntry(
+    entry: LibraryEntryDetails(
       id: 'entry-1',
       gameId: 'game-1',
       status: GameStatus.backlog.name,
