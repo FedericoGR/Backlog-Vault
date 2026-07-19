@@ -4,6 +4,7 @@ import 'bv_spacing.dart';
 import 'bv_surface.dart';
 import 'bv_theme_extension.dart';
 
+/// Compact metric card for library and statistics summaries.
 class BvStatCard extends StatelessWidget {
   const BvStatCard({
     required this.label,

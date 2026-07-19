@@ -7,6 +7,7 @@ import '../../../core/design_system/bv_chip.dart';
 import '../../../core/design_system/bv_empty_state.dart';
 import '../../../core/design_system/bv_error_state.dart';
 import '../../../core/design_system/bv_loading_state.dart';
+import '../../../core/design_system/bv_layout.dart';
 import '../../../core/design_system/bv_page_scaffold.dart';
 import '../../../core/design_system/bv_panel.dart';
 import '../../../core/design_system/bv_section.dart';
@@ -22,6 +23,7 @@ import '../domain/library_game_row.dart';
 import 'widgets/library_cover_thumbnail.dart';
 import 'widgets/rating_stars.dart';
 
+/// Read-only summary of library activity and data-quality shortcuts.
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
@@ -32,6 +34,7 @@ class HomePage extends ConsumerWidget {
 
     return BvPageScaffold(
       title: l10n.navigationHome,
+      maxContentWidth: BvLayout.wideContentWidth,
       actions: [
         TextButton.icon(
           onPressed: () => context.go('/statistics'),
@@ -99,7 +102,9 @@ class HomePage extends ConsumerWidget {
         error:
             (error, stackTrace) => BvErrorState(
               title: l10n.homeLoadError,
-              message: error.toString(),
+              message: l10n.unexpectedErrorMessage,
+              retryLabel: l10n.retry,
+              onRetry: () => ref.invalidate(libraryRowsProvider),
             ),
       ),
     );
@@ -251,6 +256,7 @@ class _HomeSection extends StatelessWidget {
                         (context, index) => const SizedBox(width: BvSpacing.sm),
                     itemBuilder:
                         (context, index) => _HomeGameCard(
+                          key: ValueKey(rows[index].libraryEntryId),
                           row: rows[index],
                           subtitle: subtitleFor?.call(rows[index]),
                         ),
@@ -262,7 +268,7 @@ class _HomeSection extends StatelessWidget {
 }
 
 class _HomeGameCard extends StatelessWidget {
-  const _HomeGameCard({required this.row, this.subtitle});
+  const _HomeGameCard({required this.row, this.subtitle, super.key});
 
   final LibraryGameRow row;
   final String? subtitle;

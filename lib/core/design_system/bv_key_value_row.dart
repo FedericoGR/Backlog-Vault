@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'bv_spacing.dart';
 import 'bv_theme_extension.dart';
 
+/// A responsive label/value pair for compact summaries.
 class BvKeyValueRow extends StatelessWidget {
   const BvKeyValueRow({
     required this.label,

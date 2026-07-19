@@ -84,9 +84,12 @@ class _ComponentPreview extends StatelessWidget {
             ),
           ),
           SizedBox(height: 12),
-          BvErrorState(message: 'Mensaje de error de prueba.'),
+          BvErrorState(
+            title: 'No se pudo completar',
+            message: 'Mensaje de error de prueba.',
+          ),
           SizedBox(height: 12),
-          SizedBox(height: 120, child: BvLoadingState()),
+          SizedBox(height: 120, child: BvLoadingState(label: 'Cargando')),
         ],
       ),
     );

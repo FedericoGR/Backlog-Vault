@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'bv_breakpoints.dart';
 import 'bv_spacing.dart';
 
+/// Standard page chrome with responsive padding and optional readable width.
 class BvPageScaffold extends StatelessWidget {
   const BvPageScaffold({
     required this.title,

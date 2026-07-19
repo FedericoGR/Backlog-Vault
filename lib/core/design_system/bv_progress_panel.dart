@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'bv_panel.dart';
 import 'bv_spacing.dart';
 
+/// Progress summary with an optional, explicitly localized cancel action.
 class BvProgressPanel extends StatelessWidget {
   const BvProgressPanel({
     required this.title,
@@ -10,6 +11,7 @@ class BvProgressPanel extends StatelessWidget {
     this.subtitle,
     this.trailing,
     this.onCancel,
+    this.cancelLabel,
     super.key,
   });
 
@@ -18,6 +20,7 @@ class BvProgressPanel extends StatelessWidget {
   final String? subtitle;
   final String? trailing;
   final VoidCallback? onCancel;
+  final String? cancelLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -42,14 +45,14 @@ class BvProgressPanel extends StatelessWidget {
           ],
           const SizedBox(height: BvSpacing.sm),
           LinearProgressIndicator(value: progress?.clamp(0, 1)),
-          if (onCancel != null) ...[
+          if (onCancel != null && cancelLabel != null) ...[
             const SizedBox(height: BvSpacing.sm),
             Align(
               alignment: Alignment.centerRight,
               child: TextButton.icon(
                 onPressed: onCancel,
                 icon: const Icon(Icons.close),
-                label: const Text('Cancelar'),
+                label: Text(cancelLabel!),
               ),
             ),
           ],

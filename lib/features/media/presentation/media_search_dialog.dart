@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/design_system/bv_async_action_button.dart';
 import '../../../core/design_system/bv_chip.dart';
 import '../../../core/design_system/bv_empty_state.dart';
 import '../../../core/design_system/bv_spacing.dart';
@@ -16,6 +17,9 @@ import '../domain/media_asset_models.dart';
 import '../domain/media_exception.dart';
 import '../domain/media_provider.dart';
 
+part 'parts/media_search_widgets.dart';
+
+/// Searches configured media providers and lets the user choose an asset.
 class MediaSearchDialog extends ConsumerStatefulWidget {
   const MediaSearchDialog({required this.item, super.key});
 
@@ -195,19 +199,12 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
                     child: Text(context.l10n.close),
                   ),
                   if (_selectedAsset != null)
-                    FilledButton.icon(
-                      onPressed: _saving ? null : _saveRemoteAsset,
-                      icon:
-                          _saving
-                              ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                              : const Icon(Icons.save_alt_outlined),
-                      label: Text(context.l10n.coverSave),
+                    BvAsyncActionButton(
+                      label: context.l10n.coverSave,
+                      icon: Icons.save_alt_outlined,
+                      onPressed: _saveRemoteAsset,
+                      busy: _saving,
+                      busyLabel: context.l10n.loading,
                     ),
                 ],
               ),
@@ -345,155 +342,5 @@ class _MediaSearchDialogState extends ConsumerState<MediaSearchDialog> {
       if (provider.providerId == providerId) return provider;
     }
     return providers.first;
-  }
-}
-
-class _CandidateList extends StatelessWidget {
-  const _CandidateList({required this.candidates, required this.onSelected});
-
-  final List<MediaSearchCandidate> candidates;
-  final ValueChanged<MediaSearchCandidate> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final candidate in candidates)
-          Padding(
-            padding: const EdgeInsets.only(bottom: BvSpacing.xs),
-            child: BvSurface(
-              padding: const EdgeInsets.all(BvSpacing.sm),
-              onTap: () => onSelected(candidate),
-              child: Row(
-                children: [
-                  const Icon(Icons.image_search_outlined),
-                  const SizedBox(width: BvSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          candidate.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: BvSpacing.xxs),
-                        Text(
-                          '${candidate.providerName} · ID ${candidate.externalId}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right),
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class _AssetGrid extends StatelessWidget {
-  const _AssetGrid({
-    required this.assets,
-    required this.selectedAsset,
-    required this.onSelected,
-  });
-
-  final List<ExternalMediaAsset> assets;
-  final ExternalMediaAsset? selectedAsset;
-  final ValueChanged<ExternalMediaAsset> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final bv = BvThemeExtension.of(context);
-    return GridView.builder(
-      itemCount: assets.length,
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 156,
-        childAspectRatio: 2 / 3,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-      ),
-      itemBuilder: (context, index) {
-        final asset = assets[index];
-        final selected = selectedAsset?.externalId == asset.externalId;
-        return BvSurface(
-          padding: EdgeInsets.zero,
-          borderRadius: BvRadii.md,
-          selected: selected,
-          onTap: () => onSelected(asset),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(BvRadii.md),
-                child: Image.network(
-                  asset.thumbnailUrl ?? asset.remoteUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder:
-                      (context, error, stackTrace) => const Center(
-                        child: Icon(Icons.broken_image_outlined),
-                      ),
-                ),
-              ),
-              if (selected)
-                Positioned(
-                  right: BvSpacing.xs,
-                  top: BvSpacing.xs,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: bv.focus,
-                      borderRadius: BorderRadius.circular(BvRadii.pill),
-                    ),
-                    child: const Padding(
-                      padding: EdgeInsets.all(4),
-                      child: Icon(Icons.check, size: 16),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _MediaError extends StatelessWidget {
-  const _MediaError({
-    required this.message,
-    required this.onSettings,
-    required this.showSettings,
-  });
-
-  final String message;
-  final VoidCallback onSettings;
-  final bool showSettings;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          message,
-          style: TextStyle(color: Theme.of(context).colorScheme.error),
-        ),
-        if (showSettings) ...[
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: onSettings,
-            icon: const Icon(Icons.settings_outlined),
-            label: Text(context.l10n.openSettings),
-          ),
-        ],
-      ],
-    );
   }
 }

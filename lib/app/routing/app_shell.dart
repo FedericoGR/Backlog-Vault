@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/design_system/bv_breakpoints.dart';
 import '../../l10n/l10n.dart';
 
+/// Responsive top-level navigation shell shared by all primary routes.
 class AppShell extends StatelessWidget {
   const AppShell({required this.child, super.key});
 
@@ -23,7 +25,7 @@ class AppShell extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (constraints.maxWidth >= 840) {
+        if (BvBreakpoints.usesNavigationRail(constraints.maxWidth)) {
           return Scaffold(
             body: Row(
               children: [

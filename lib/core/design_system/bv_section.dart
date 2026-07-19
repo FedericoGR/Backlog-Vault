@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'bv_spacing.dart';
 import 'bv_theme_extension.dart';
 
+/// A section heading, optional explanation and owned content.
 class BvSection extends StatelessWidget {
   const BvSection({
     required this.title,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/rating.dart';
 
+/// Read-only star representation of the library-level personal rating.
 class RatingStars extends StatelessWidget {
   const RatingStars({
     required this.rating,

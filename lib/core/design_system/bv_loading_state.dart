@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'bv_spacing.dart';
 import 'bv_theme_extension.dart';
 
+/// Centered loading state with localized progress copy supplied by its owner.
 class BvLoadingState extends StatelessWidget {
-  const BvLoadingState({this.label = 'Cargando', super.key});
+  const BvLoadingState({required this.label, super.key});
 
   final String label;
 

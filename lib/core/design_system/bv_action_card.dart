@@ -4,6 +4,7 @@ import 'bv_panel.dart';
 import 'bv_spacing.dart';
 import 'bv_theme_extension.dart';
 
+/// A titled action surface used for settings and dashboard entry points.
 class BvActionCard extends StatelessWidget {
   const BvActionCard({
     required this.title,

@@ -5,6 +5,7 @@ import 'bv_surface.dart';
 import 'bv_theme_extension.dart';
 import 'bv_tokens.dart';
 
+/// Standard bordered surface for grouping one cohesive section.
 class BvPanel extends StatelessWidget {
   const BvPanel({
     required this.child,

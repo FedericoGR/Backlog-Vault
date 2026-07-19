@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'bv_tokens.dart';
 
+/// Backlog Vault surface and intent colors not represented by [ColorScheme].
 @immutable
 class BvThemeExtension extends ThemeExtension<BvThemeExtension> {
   const BvThemeExtension({

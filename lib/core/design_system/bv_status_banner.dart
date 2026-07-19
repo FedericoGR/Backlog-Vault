@@ -4,8 +4,10 @@ import 'bv_panel.dart';
 import 'bv_spacing.dart';
 import 'bv_theme_extension.dart';
 
+/// Semantic color intents available to [BvStatusBanner].
 enum BvBannerTone { info, success, warning, danger }
 
+/// Inline status feedback with optional title and recovery action.
 class BvStatusBanner extends StatelessWidget {
   const BvStatusBanner({
     required this.message,

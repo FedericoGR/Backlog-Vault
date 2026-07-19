@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Brand color constants consumed by the application themes.
 class BvColors {
   const BvColors._();
 
@@ -32,6 +33,7 @@ class BvColors {
   static const lightTextMuted = Color(0xFF77827F);
 }
 
+/// Shared corner radii for controls and surfaces.
 class BvRadii {
   const BvRadii._();
 
@@ -42,6 +44,7 @@ class BvRadii {
   static const double pill = 999;
 }
 
+/// Short durations reserved for standard visual state transitions.
 class BvDurations {
   const BvDurations._();
 

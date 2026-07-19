@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Small shared spacing scale used across multiple feature surfaces.
 class BvSpacing {
   const BvSpacing._();
 

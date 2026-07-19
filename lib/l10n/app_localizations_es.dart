@@ -103,6 +103,24 @@ class AppLocalizationsEs extends AppLocalizations {
   String get loading => 'Cargando…';
 
   @override
+  String get unexpectedErrorMessage => 'Algo salió mal. Volvé a intentarlo.';
+
+  @override
+  String get gameLoadError => 'No se pudo cargar el juego.';
+
+  @override
+  String get gameSaveFailed => 'No se pudo guardar el juego.';
+
+  @override
+  String get playthroughSaveFailed => 'No se pudo guardar la partida.';
+
+  @override
+  String get csvOperationFailed => 'No se pudo completar la operación del CSV.';
+
+  @override
+  String get bulkOperationFailed => 'No se pudo completar la operación masiva.';
+
+  @override
   String get notAvailable => 'No disponible';
 
   @override
@@ -177,6 +195,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsNewApiKey => 'Nueva API key';
+
+  @override
+  String get settingsClientId => 'Client ID';
+
+  @override
+  String get settingsClientSecret => 'Client Secret';
 
   @override
   String get settingsApiKeyHelper =>
@@ -1164,6 +1188,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get metadataTitleField => 'Título';
 
   @override
+  String externalIdValue(Object id, Object provider) {
+    return '$provider · ID $id';
+  }
+
+  @override
   String get metadataNoCandidates => 'Sin candidatos todavía';
 
   @override
@@ -1178,9 +1207,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get metadataApply => 'Aplicar metadata';
 
   @override
-  String metadataCoverSaveFailed(Object error) {
-    return 'Metadata aplicada, pero no se pudo guardar la portada. $error';
-  }
+  String get metadataCoverSaveFailed =>
+      'Metadata aplicada, pero no se pudo guardar la portada.';
 
   @override
   String get metadataReplaceCoverTitle => 'Reemplazar portada';
@@ -1505,9 +1533,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get bulkLoadingLibrary => 'Cargando biblioteca';
 
   @override
-  String bulkPreviewFailed(Object error) {
-    return 'No se pudo generar el preview. $error';
-  }
+  String get bulkPreviewFailed => 'No se pudo generar el preview.';
 
   @override
   String get bulkConfirmTitle => 'Confirmar importación masiva';
@@ -1537,6 +1563,71 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get bulkApply => 'Aplicar';
+
+  @override
+  String bulkScoreValue(Object score) {
+    return 'Puntaje $score';
+  }
+
+  @override
+  String get bulkGlobalIssue => 'Global';
+
+  @override
+  String get bulkIssueNoCandidates => 'El proveedor no devolvió candidatos.';
+
+  @override
+  String get bulkIssueProbableMatch =>
+      'Match probable: revisalo antes de aplicar.';
+
+  @override
+  String get bulkIssueAmbiguousMatch =>
+      'Match ambiguo: requiere revisión manual.';
+
+  @override
+  String get bulkIssueExternalReplacementAllowed =>
+      'Este juego ya tiene otro match externo para el proveedor. Se reemplaza sólo si incluís el juego y confirmás el reemplazo.';
+
+  @override
+  String get bulkIssueExternalReplacementBlocked =>
+      'Este juego ya tiene otro match externo para el proveedor. Elegí Revisar y reemplazar para permitir el reemplazo.';
+
+  @override
+  String get bulkIssueExistingCover => 'Ya hay una portada seleccionada.';
+
+  @override
+  String get bulkIssueReplacementAvailable =>
+      'Hay un reemplazo de portada disponible.';
+
+  @override
+  String get bulkIssueNoCover => 'No se encontró una portada aplicable.';
+
+  @override
+  String get bulkIssueReviewRequired =>
+      'Revisá este elemento antes de aplicar cambios.';
+
+  @override
+  String get bulkMatchReasonExistingExternalId => 'ID externo existente';
+
+  @override
+  String get bulkMatchReasonExactTitle => 'título exacto';
+
+  @override
+  String get bulkMatchReasonSimilarTitle => 'título parecido';
+
+  @override
+  String get bulkMatchReasonSameYear => 'mismo año';
+
+  @override
+  String get bulkMatchReasonNearbyYear => 'año cercano';
+
+  @override
+  String get bulkMatchReasonMatchingPlatform => 'plataforma coincidente';
+
+  @override
+  String get bulkMatchReasonFirstCandidate => 'primer candidato';
+
+  @override
+  String get bulkMatchReasonOther => 'coincidencia del proveedor';
 
   @override
   String get bulkWhatImport => 'Qué querés importar';

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'bv_spacing.dart';
 import 'bv_theme_extension.dart';
 
+/// Empty-result presentation whose title, explanation and action remain local.
 class BvEmptyState extends StatelessWidget {
   const BvEmptyState({
     required this.title,

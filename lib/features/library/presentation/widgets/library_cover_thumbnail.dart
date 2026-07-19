@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../media/application/media_providers.dart';
 
+/// Displays bounded local cover bytes with a non-sensitive visual fallback.
 class LibraryCoverThumbnail extends ConsumerWidget {
   const LibraryCoverThumbnail({
     required this.localPath,

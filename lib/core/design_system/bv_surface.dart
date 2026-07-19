@@ -4,6 +4,7 @@ import 'bv_spacing.dart';
 import 'bv_theme_extension.dart';
 import 'bv_tokens.dart';
 
+/// Low-level themed surface with optional selection and pointer interaction.
 class BvSurface extends StatelessWidget {
   const BvSurface({
     required this.child,

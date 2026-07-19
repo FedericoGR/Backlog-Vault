@@ -4,8 +4,10 @@ import 'bv_spacing.dart';
 import 'bv_theme_extension.dart';
 import 'bv_tokens.dart';
 
+/// Semantic color intents available to [BvChip].
 enum BvChipTone { neutral, primary, warning, danger }
 
+/// Compact labeled status or selection indicator.
 class BvChip extends StatelessWidget {
   const BvChip({
     required this.label,

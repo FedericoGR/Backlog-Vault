@@ -5,6 +5,7 @@ import 'bv_section.dart';
 import 'bv_spacing.dart';
 import 'bv_surface.dart';
 
+/// A numbered workflow section with responsive trailing actions.
 class BvWizardStep extends StatelessWidget {
   const BvWizardStep({
     required this.step,

@@ -4,6 +4,7 @@ import 'bv_panel.dart';
 import 'bv_spacing.dart';
 import 'bv_theme_extension.dart';
 
+/// Visually separates destructive actions from ordinary settings.
 class BvDangerZone extends StatelessWidget {
   const BvDangerZone({
     required this.title,

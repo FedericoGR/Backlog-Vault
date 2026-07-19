@@ -284,6 +284,42 @@ abstract class AppLocalizations {
   /// **'Loading…'**
   String get loading;
 
+  /// No description provided for @unexpectedErrorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Try again.'**
+  String get unexpectedErrorMessage;
+
+  /// No description provided for @gameLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'The game could not be loaded.'**
+  String get gameLoadError;
+
+  /// No description provided for @gameSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The game could not be saved.'**
+  String get gameSaveFailed;
+
+  /// No description provided for @playthroughSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The playthrough could not be saved.'**
+  String get playthroughSaveFailed;
+
+  /// No description provided for @csvOperationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The CSV operation could not be completed.'**
+  String get csvOperationFailed;
+
+  /// No description provided for @bulkOperationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The bulk operation could not be completed.'**
+  String get bulkOperationFailed;
+
   /// No description provided for @notAvailable.
   ///
   /// In en, this message translates to:
@@ -421,6 +457,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New API key'**
   String get settingsNewApiKey;
+
+  /// No description provided for @settingsClientId.
+  ///
+  /// In en, this message translates to:
+  /// **'Client ID'**
+  String get settingsClientId;
+
+  /// No description provided for @settingsClientSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'Client Secret'**
+  String get settingsClientSecret;
 
   /// No description provided for @settingsApiKeyHelper.
   ///
@@ -2202,6 +2250,12 @@ abstract class AppLocalizations {
   /// **'Title'**
   String get metadataTitleField;
 
+  /// No description provided for @externalIdValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} · ID {id}'**
+  String externalIdValue(Object id, Object provider);
+
   /// No description provided for @metadataNoCandidates.
   ///
   /// In en, this message translates to:
@@ -2229,8 +2283,8 @@ abstract class AppLocalizations {
   /// No description provided for @metadataCoverSaveFailed.
   ///
   /// In en, this message translates to:
-  /// **'Metadata was applied, but the cover could not be saved. {error}'**
-  String metadataCoverSaveFailed(Object error);
+  /// **'Metadata was applied, but the cover could not be saved.'**
+  String get metadataCoverSaveFailed;
 
   /// No description provided for @metadataReplaceCoverTitle.
   ///
@@ -2761,8 +2815,8 @@ abstract class AppLocalizations {
   /// No description provided for @bulkPreviewFailed.
   ///
   /// In en, this message translates to:
-  /// **'The preview could not be generated. {error}'**
-  String bulkPreviewFailed(Object error);
+  /// **'The preview could not be generated.'**
+  String get bulkPreviewFailed;
 
   /// No description provided for @bulkConfirmTitle.
   ///
@@ -2805,6 +2859,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Apply'**
   String get bulkApply;
+
+  /// No description provided for @bulkScoreValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Score {score}'**
+  String bulkScoreValue(Object score);
+
+  /// No description provided for @bulkGlobalIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Global'**
+  String get bulkGlobalIssue;
+
+  /// No description provided for @bulkIssueNoCandidates.
+  ///
+  /// In en, this message translates to:
+  /// **'The provider returned no candidates.'**
+  String get bulkIssueNoCandidates;
+
+  /// No description provided for @bulkIssueProbableMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Probable match: review it before applying.'**
+  String get bulkIssueProbableMatch;
+
+  /// No description provided for @bulkIssueAmbiguousMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Ambiguous match: manual review is required.'**
+  String get bulkIssueAmbiguousMatch;
+
+  /// No description provided for @bulkIssueExternalReplacementAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'This game already has another external match for the provider. It is replaced only when you include the game and confirm the replacement.'**
+  String get bulkIssueExternalReplacementAllowed;
+
+  /// No description provided for @bulkIssueExternalReplacementBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'This game already has another external match for the provider. Choose Review and replace to allow the replacement.'**
+  String get bulkIssueExternalReplacementBlocked;
+
+  /// No description provided for @bulkIssueExistingCover.
+  ///
+  /// In en, this message translates to:
+  /// **'A cover is already selected.'**
+  String get bulkIssueExistingCover;
+
+  /// No description provided for @bulkIssueReplacementAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'A cover replacement is available.'**
+  String get bulkIssueReplacementAvailable;
+
+  /// No description provided for @bulkIssueNoCover.
+  ///
+  /// In en, this message translates to:
+  /// **'No applicable cover was found.'**
+  String get bulkIssueNoCover;
+
+  /// No description provided for @bulkIssueReviewRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Review this item before applying changes.'**
+  String get bulkIssueReviewRequired;
+
+  /// No description provided for @bulkMatchReasonExistingExternalId.
+  ///
+  /// In en, this message translates to:
+  /// **'existing external ID'**
+  String get bulkMatchReasonExistingExternalId;
+
+  /// No description provided for @bulkMatchReasonExactTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'exact title'**
+  String get bulkMatchReasonExactTitle;
+
+  /// No description provided for @bulkMatchReasonSimilarTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'similar title'**
+  String get bulkMatchReasonSimilarTitle;
+
+  /// No description provided for @bulkMatchReasonSameYear.
+  ///
+  /// In en, this message translates to:
+  /// **'same year'**
+  String get bulkMatchReasonSameYear;
+
+  /// No description provided for @bulkMatchReasonNearbyYear.
+  ///
+  /// In en, this message translates to:
+  /// **'nearby year'**
+  String get bulkMatchReasonNearbyYear;
+
+  /// No description provided for @bulkMatchReasonMatchingPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'matching platform'**
+  String get bulkMatchReasonMatchingPlatform;
+
+  /// No description provided for @bulkMatchReasonFirstCandidate.
+  ///
+  /// In en, this message translates to:
+  /// **'first candidate'**
+  String get bulkMatchReasonFirstCandidate;
+
+  /// No description provided for @bulkMatchReasonOther.
+  ///
+  /// In en, this message translates to:
+  /// **'provider match'**
+  String get bulkMatchReasonOther;
 
   /// No description provided for @bulkWhatImport.
   ///

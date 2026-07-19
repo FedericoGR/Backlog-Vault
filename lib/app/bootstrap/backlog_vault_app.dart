@@ -21,7 +21,7 @@ class BacklogVaultApp extends ConsumerWidget {
         );
 
     return MaterialApp.router(
-      title: 'Backlog Vault',
+      onGenerateTitle: (context) => context.l10n.appTitle,
       debugShowCheckedModeBanner: false,
       theme: buildBacklogVaultTheme(),
       darkTheme: buildBacklogVaultDarkTheme(),
