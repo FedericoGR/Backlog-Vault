@@ -135,17 +135,26 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsPrivacyProtectionMessage =>
-      'La DB local y los archivos media siguen sin cifrado en disco. Los backups cifrados ya están disponibles para exportación y restauración.';
+      'La base local y los archivos de media permanecen en este dispositivo. La exportación excluye imágenes y credenciales.';
 
   @override
-  String get settingsDataBackups => 'Datos y backups';
+  String get settingsLibraryData => 'Datos de la biblioteca';
 
   @override
-  String get settingsDataBackupsSubtitle =>
-      'Exportá JSON/CSV, generá backups normales o cifrados y restaurá archivos locales.';
+  String get settingsLibraryDataSubtitle =>
+      'Guarda tus juegos y datos personales en un archivo JSON. La exportación no incluye imágenes ni credenciales.';
 
   @override
-  String get settingsOpenBackups => 'Abrir backups';
+  String get settingsExportLibrary => 'Exportar biblioteca';
+
+  @override
+  String get libraryExportSucceeded => 'Biblioteca exportada correctamente.';
+
+  @override
+  String get libraryExportCancelled => 'No se seleccionó una ubicación.';
+
+  @override
+  String get libraryExportFailed => 'No se pudo exportar la biblioteca.';
 
   @override
   String get settingsGoodPractices => 'Buenas prácticas';
@@ -171,11 +180,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsApiKeyHelper =>
-      'No se exporta en backups, no se muestra en claro y no debe terminar en commits.';
+      'No se incluye en exportaciones de biblioteca, no se muestra en claro y no debe terminar en commits.';
 
   @override
   String get settingsClientIdHelper =>
-      'Se guarda solo en el equipo actual y no viaja en backups.';
+      'Se guarda solo en este dispositivo y no se incluye en exportaciones de biblioteca.';
 
   @override
   String get settingsClientSecretHelper =>
@@ -1254,171 +1263,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get coverOperationFailed =>
       'No se pudo completar la operación de portada.';
-
-  @override
-  String get backupTitle => 'Datos y backups';
-
-  @override
-  String get backupLocalPortability => 'Portabilidad local';
-
-  @override
-  String get backupLocalPortabilityMessage =>
-      '.vaultbackup no está cifrado y puede incluir notas personales, juegos, estados y media local. .vaultbackup.enc cifra el backup completo con una password que la app no guarda.';
-
-  @override
-  String get backupProcessingTitle => 'Procesando archivo';
-
-  @override
-  String get backupProcessingMessage =>
-      'Esperá mientras Backlog Vault prepara o valida el contenido seleccionado.';
-
-  @override
-  String get backupLastOperation => 'Última operación';
-
-  @override
-  String get backupRestoreLogicTitle => 'Restauración y reemplazo lógico';
-
-  @override
-  String get backupRestoreLogicMessage =>
-      'Antes de restaurar, la app crea un backup previo automático. La restauración inserta o actualiza lo que está en el archivo y marca como borrado lógico lo que quedó afuera.';
-
-  @override
-  String get backupRestore => 'Restaurar backup';
-
-  @override
-  String get backupRestoreEncrypted => 'Restaurar cifrado';
-
-  @override
-  String get backupCreated => 'Backup completo creado.';
-
-  @override
-  String get backupEncryptedCreated => 'Backup cifrado creado.';
-
-  @override
-  String get backupJsonCreated => 'Export JSON creado.';
-
-  @override
-  String get backupCsvCreated => 'Export CSV creado.';
-
-  @override
-  String get backupRestoredWithSafety =>
-      'Backup restaurado. Se creó un backup previo automático.';
-
-  @override
-  String get backupRestored => 'Backup restaurado.';
-
-  @override
-  String get backupEncryptedRestoredWithSafety =>
-      'Backup cifrado restaurado. Se creó un backup previo cifrado automático.';
-
-  @override
-  String get backupEncryptedRestored => 'Backup cifrado restaurado.';
-
-  @override
-  String get backupConfirmRestore => 'Confirmar restauración';
-
-  @override
-  String backupDate(Object date) {
-    return 'Fecha: $date';
-  }
-
-  @override
-  String backupGames(Object count) {
-    return 'Juegos: $count';
-  }
-
-  @override
-  String backupPlaythroughs(Object count) {
-    return 'Playthroughs: $count';
-  }
-
-  @override
-  String backupMediaFiles(Object count) {
-    return 'Media: $count archivos';
-  }
-
-  @override
-  String backupSchema(Object version) {
-    return 'Schema: $version';
-  }
-
-  @override
-  String backupWarnings(Object count) {
-    return 'Warnings: $count';
-  }
-
-  @override
-  String get backupTypeRestore => 'Escribí RESTAURAR para continuar.';
-
-  @override
-  String get backupRestoreKeyword => 'RESTAURAR';
-
-  @override
-  String get backupOperationFailed => 'No se pudo completar la operación.';
-
-  @override
-  String get backupCreateEncrypted => 'Crear backup cifrado';
-
-  @override
-  String get backupOpenEncrypted => 'Abrir backup cifrado';
-
-  @override
-  String get backupPasswordWarning =>
-      'La password no se guarda. Si la perdés, el backup cifrado no se puede recuperar.';
-
-  @override
-  String get backupPassword => 'Password';
-
-  @override
-  String get backupRepeatPassword => 'Repetir password';
-
-  @override
-  String get backupEnterPassword => 'Ingresá una password.';
-
-  @override
-  String get backupPasswordsMismatch => 'Las passwords no coinciden.';
-
-  @override
-  String get openAction => 'Abrir';
-
-  @override
-  String get backupCompleteTitle => 'Backup completo';
-
-  @override
-  String get backupCompleteDescription =>
-      'Genera un .vaultbackup con juegos, partidas, metadata aplicada y media local sin cifrado.';
-
-  @override
-  String get backupCreate => 'Crear backup';
-
-  @override
-  String get backupEncryptedTitle => 'Backup cifrado';
-
-  @override
-  String get backupEncryptedDescription =>
-      'Genera un .vaultbackup.enc protegido con password. La password no queda almacenada.';
-
-  @override
-  String get backupExportJson => 'Exportar JSON';
-
-  @override
-  String get backupExportJsonDescription =>
-      'Exporta la biblioteca en un formato legible y útil para revisión o scripting local.';
-
-  @override
-  String get backupExportCsv => 'Exportar CSV';
-
-  @override
-  String get backupExportCsvDescription =>
-      'Genera una exportación tabular compacta para hojas de cálculo o intercambio manual.';
-
-  @override
-  String get backupRestoreDescription =>
-      'Abre un .vaultbackup, muestra preview y pide confirmación fuerte antes de aplicar cambios.';
-
-  @override
-  String get backupRestoreEncryptedDescription =>
-      'Abre un .vaultbackup.enc, pide password y valida el contenido antes de reemplazar datos.';
 
   @override
   String get warnings => 'Warnings';

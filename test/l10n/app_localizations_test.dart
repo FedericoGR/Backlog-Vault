@@ -9,7 +9,8 @@ void main() {
 
     expect(english.navigationLibrary, 'Library');
     expect(english.settingsTitle, 'Settings');
-    expect(english.backupTitle, 'Data and backups');
+    expect(english.settingsLibraryData, 'Library data');
+    expect(english.settingsExportLibrary, 'Export library');
     expect(english.bulkTitle, 'Import metadata');
     expect(english.settingsUsageMode, 'Usage mode');
     expect(english.settingsLocalDatabase, 'Local database');
@@ -19,7 +20,8 @@ void main() {
 
     expect(spanish.navigationLibrary, 'Biblioteca');
     expect(spanish.settingsTitle, 'Ajustes');
-    expect(spanish.backupTitle, 'Datos y backups');
+    expect(spanish.settingsLibraryData, 'Datos de la biblioteca');
+    expect(spanish.settingsExportLibrary, 'Exportar biblioteca');
     expect(spanish.bulkTitle, 'Importar metadata');
     expect(spanish.settingsUsageMode, 'Modo de uso');
     expect(spanish.settingsLocalDatabase, 'Base local');

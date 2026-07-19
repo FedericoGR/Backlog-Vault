@@ -347,26 +347,44 @@ abstract class AppLocalizations {
   /// No description provided for @settingsPrivacyProtectionMessage.
   ///
   /// In en, this message translates to:
-  /// **'The local database and media files are not encrypted at rest yet. Encrypted backups are available for export and restore.'**
+  /// **'The local database and media files stay on this device. Library exports exclude images and credentials.'**
   String get settingsPrivacyProtectionMessage;
 
-  /// No description provided for @settingsDataBackups.
+  /// No description provided for @settingsLibraryData.
   ///
   /// In en, this message translates to:
-  /// **'Data and backups'**
-  String get settingsDataBackups;
+  /// **'Library data'**
+  String get settingsLibraryData;
 
-  /// No description provided for @settingsDataBackupsSubtitle.
+  /// No description provided for @settingsLibraryDataSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Export JSON/CSV, create regular or encrypted backups, and restore local files.'**
-  String get settingsDataBackupsSubtitle;
+  /// **'Save your games and personal data to a JSON file. The export does not include images or credentials.'**
+  String get settingsLibraryDataSubtitle;
 
-  /// No description provided for @settingsOpenBackups.
+  /// No description provided for @settingsExportLibrary.
   ///
   /// In en, this message translates to:
-  /// **'Open backups'**
-  String get settingsOpenBackups;
+  /// **'Export library'**
+  String get settingsExportLibrary;
+
+  /// No description provided for @libraryExportSucceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Library exported successfully.'**
+  String get libraryExportSucceeded;
+
+  /// No description provided for @libraryExportCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'No location was selected.'**
+  String get libraryExportCancelled;
+
+  /// No description provided for @libraryExportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The library could not be exported.'**
+  String get libraryExportFailed;
 
   /// No description provided for @settingsGoodPractices.
   ///
@@ -407,13 +425,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsApiKeyHelper.
   ///
   /// In en, this message translates to:
-  /// **'It is excluded from backups, never shown in plain text, and must not end up in commits.'**
+  /// **'It is excluded from library exports, never shown in plain text, and must not end up in commits.'**
   String get settingsApiKeyHelper;
 
   /// No description provided for @settingsClientIdHelper.
   ///
   /// In en, this message translates to:
-  /// **'Stored only on this device and excluded from backups.'**
+  /// **'Stored only on this device and excluded from library exports.'**
   String get settingsClientIdHelper;
 
   /// No description provided for @settingsClientSecretHelper.
@@ -2343,288 +2361,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The cover operation could not be completed.'**
   String get coverOperationFailed;
-
-  /// No description provided for @backupTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Data and backups'**
-  String get backupTitle;
-
-  /// No description provided for @backupLocalPortability.
-  ///
-  /// In en, this message translates to:
-  /// **'Local portability'**
-  String get backupLocalPortability;
-
-  /// No description provided for @backupLocalPortabilityMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'.vaultbackup is not encrypted and may include personal notes, games, statuses, and local media. .vaultbackup.enc encrypts the complete backup with a password the app does not store.'**
-  String get backupLocalPortabilityMessage;
-
-  /// No description provided for @backupProcessingTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Processing file'**
-  String get backupProcessingTitle;
-
-  /// No description provided for @backupProcessingMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Wait while Backlog Vault prepares or validates the selected content.'**
-  String get backupProcessingMessage;
-
-  /// No description provided for @backupLastOperation.
-  ///
-  /// In en, this message translates to:
-  /// **'Last operation'**
-  String get backupLastOperation;
-
-  /// No description provided for @backupRestoreLogicTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore and logical replacement'**
-  String get backupRestoreLogicTitle;
-
-  /// No description provided for @backupRestoreLogicMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Before restoring, the app creates an automatic backup. Restore inserts or updates file content and soft-deletes current records left outside it.'**
-  String get backupRestoreLogicMessage;
-
-  /// No description provided for @backupRestore.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore backup'**
-  String get backupRestore;
-
-  /// No description provided for @backupRestoreEncrypted.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore encrypted backup'**
-  String get backupRestoreEncrypted;
-
-  /// No description provided for @backupCreated.
-  ///
-  /// In en, this message translates to:
-  /// **'Complete backup created.'**
-  String get backupCreated;
-
-  /// No description provided for @backupEncryptedCreated.
-  ///
-  /// In en, this message translates to:
-  /// **'Encrypted backup created.'**
-  String get backupEncryptedCreated;
-
-  /// No description provided for @backupJsonCreated.
-  ///
-  /// In en, this message translates to:
-  /// **'JSON export created.'**
-  String get backupJsonCreated;
-
-  /// No description provided for @backupCsvCreated.
-  ///
-  /// In en, this message translates to:
-  /// **'CSV export created.'**
-  String get backupCsvCreated;
-
-  /// No description provided for @backupRestoredWithSafety.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup restored. An automatic safety backup was created.'**
-  String get backupRestoredWithSafety;
-
-  /// No description provided for @backupRestored.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup restored.'**
-  String get backupRestored;
-
-  /// No description provided for @backupEncryptedRestoredWithSafety.
-  ///
-  /// In en, this message translates to:
-  /// **'Encrypted backup restored. An automatic encrypted safety backup was created.'**
-  String get backupEncryptedRestoredWithSafety;
-
-  /// No description provided for @backupEncryptedRestored.
-  ///
-  /// In en, this message translates to:
-  /// **'Encrypted backup restored.'**
-  String get backupEncryptedRestored;
-
-  /// No description provided for @backupConfirmRestore.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm restore'**
-  String get backupConfirmRestore;
-
-  /// No description provided for @backupDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Date: {date}'**
-  String backupDate(Object date);
-
-  /// No description provided for @backupGames.
-  ///
-  /// In en, this message translates to:
-  /// **'Games: {count}'**
-  String backupGames(Object count);
-
-  /// No description provided for @backupPlaythroughs.
-  ///
-  /// In en, this message translates to:
-  /// **'Playthroughs: {count}'**
-  String backupPlaythroughs(Object count);
-
-  /// No description provided for @backupMediaFiles.
-  ///
-  /// In en, this message translates to:
-  /// **'Media: {count} files'**
-  String backupMediaFiles(Object count);
-
-  /// No description provided for @backupSchema.
-  ///
-  /// In en, this message translates to:
-  /// **'Schema: {version}'**
-  String backupSchema(Object version);
-
-  /// No description provided for @backupWarnings.
-  ///
-  /// In en, this message translates to:
-  /// **'Warnings: {count}'**
-  String backupWarnings(Object count);
-
-  /// No description provided for @backupTypeRestore.
-  ///
-  /// In en, this message translates to:
-  /// **'Type RESTORE to continue.'**
-  String get backupTypeRestore;
-
-  /// No description provided for @backupRestoreKeyword.
-  ///
-  /// In en, this message translates to:
-  /// **'RESTORE'**
-  String get backupRestoreKeyword;
-
-  /// No description provided for @backupOperationFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'The operation could not be completed.'**
-  String get backupOperationFailed;
-
-  /// No description provided for @backupCreateEncrypted.
-  ///
-  /// In en, this message translates to:
-  /// **'Create encrypted backup'**
-  String get backupCreateEncrypted;
-
-  /// No description provided for @backupOpenEncrypted.
-  ///
-  /// In en, this message translates to:
-  /// **'Open encrypted backup'**
-  String get backupOpenEncrypted;
-
-  /// No description provided for @backupPasswordWarning.
-  ///
-  /// In en, this message translates to:
-  /// **'The password is not stored. If you lose it, the encrypted backup cannot be recovered.'**
-  String get backupPasswordWarning;
-
-  /// No description provided for @backupPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Password'**
-  String get backupPassword;
-
-  /// No description provided for @backupRepeatPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Repeat password'**
-  String get backupRepeatPassword;
-
-  /// No description provided for @backupEnterPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a password.'**
-  String get backupEnterPassword;
-
-  /// No description provided for @backupPasswordsMismatch.
-  ///
-  /// In en, this message translates to:
-  /// **'Passwords do not match.'**
-  String get backupPasswordsMismatch;
-
-  /// No description provided for @openAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Open'**
-  String get openAction;
-
-  /// No description provided for @backupCompleteTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Complete backup'**
-  String get backupCompleteTitle;
-
-  /// No description provided for @backupCompleteDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Creates a .vaultbackup with games, playthroughs, applied metadata, and unencrypted local media.'**
-  String get backupCompleteDescription;
-
-  /// No description provided for @backupCreate.
-  ///
-  /// In en, this message translates to:
-  /// **'Create backup'**
-  String get backupCreate;
-
-  /// No description provided for @backupEncryptedTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Encrypted backup'**
-  String get backupEncryptedTitle;
-
-  /// No description provided for @backupEncryptedDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Creates a password-protected .vaultbackup.enc. The password is not stored.'**
-  String get backupEncryptedDescription;
-
-  /// No description provided for @backupExportJson.
-  ///
-  /// In en, this message translates to:
-  /// **'Export JSON'**
-  String get backupExportJson;
-
-  /// No description provided for @backupExportJsonDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Exports the library in a readable format useful for review or local scripting.'**
-  String get backupExportJsonDescription;
-
-  /// No description provided for @backupExportCsv.
-  ///
-  /// In en, this message translates to:
-  /// **'Export CSV'**
-  String get backupExportCsv;
-
-  /// No description provided for @backupExportCsvDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Creates a compact tabular export for spreadsheets or manual exchange.'**
-  String get backupExportCsvDescription;
-
-  /// No description provided for @backupRestoreDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Opens a .vaultbackup, shows a preview, and requires strong confirmation before applying changes.'**
-  String get backupRestoreDescription;
-
-  /// No description provided for @backupRestoreEncryptedDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Opens a .vaultbackup.enc, asks for its password, and validates the content before replacing data.'**
-  String get backupRestoreEncryptedDescription;
 
   /// No description provided for @warnings.
   ///

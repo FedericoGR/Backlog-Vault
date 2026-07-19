@@ -65,8 +65,8 @@ void main() {
 
   test('redacts absolute paths but keeps relative media paths', () {
     final text =
-        r'C:\Users\Feder\Documents\Backlog Vault\backup.vaultbackup '
-        '/home/feder/backlog/backup.vaultbackup '
+        r'C:\Users\Feder\Documents\Backlog Vault\library-export.json '
+        '/home/feder/backlog/library-export.json '
         'media/games/game-1/cover.png';
 
     final redacted = redactor.redact(text);

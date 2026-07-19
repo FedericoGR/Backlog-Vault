@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/design_system/bv_action_card.dart';
 import '../../../core/design_system/bv_danger_zone.dart';
@@ -12,6 +11,7 @@ import '../../../core/design_system/bv_spacing.dart';
 import '../../../core/design_system/bv_status_banner.dart';
 import '../../../core/design_system/bv_theme_extension.dart';
 import '../../../l10n/l10n.dart';
+import '../../import_export/library_export/application/library_export_controller.dart';
 import '../../metadata/data/metadata_api_key_storage.dart';
 import '../application/app_language.dart';
 
@@ -428,25 +428,55 @@ class _OverviewSection extends StatelessWidget {
   }
 }
 
-class _ActionShortcuts extends StatelessWidget {
+class _ActionShortcuts extends ConsumerStatefulWidget {
   const _ActionShortcuts({required this.loading});
 
   final bool loading;
 
   @override
+  ConsumerState<_ActionShortcuts> createState() => _ActionShortcutsState();
+}
+
+class _ActionShortcutsState extends ConsumerState<_ActionShortcuts> {
+  bool _exporting = false;
+
+  Future<void> _exportLibrary() async {
+    setState(() => _exporting = true);
+    final outcome = await ref.read(libraryExportControllerProvider).execute();
+    if (!mounted) return;
+    setState(() => _exporting = false);
+
+    final l10n = context.l10n;
+    final message = switch (outcome.status) {
+      LibraryExportStatus.saved => l10n.libraryExportSucceeded,
+      LibraryExportStatus.cancelled => l10n.libraryExportCancelled,
+      LibraryExportStatus.failed => l10n.libraryExportFailed,
+    };
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final compact = MediaQuery.sizeOf(context).width < 860;
-    final backupCard = BvActionCard(
-      title: l10n.settingsDataBackups,
-      subtitle: l10n.settingsDataBackupsSubtitle,
-      icon: Icons.archive_outlined,
+    final dataCard = BvActionCard(
+      title: l10n.settingsLibraryData,
+      subtitle: l10n.settingsLibraryDataSubtitle,
+      icon: Icons.download_outlined,
       emphasized: true,
       actions: [
         FilledButton.icon(
-          onPressed: loading ? null : () => context.go('/settings/backups'),
-          icon: const Icon(Icons.chevron_right),
-          label: Text(l10n.settingsOpenBackups),
+          onPressed: widget.loading || _exporting ? null : _exportLibrary,
+          icon:
+              _exporting
+                  ? const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Icon(Icons.file_download_outlined),
+          label: Text(l10n.settingsExportLibrary),
         ),
       ],
     );
@@ -458,14 +488,14 @@ class _ActionShortcuts extends StatelessWidget {
 
     if (compact) {
       return Column(
-        children: [backupCard, const SizedBox(height: BvSpacing.md), notesCard],
+        children: [dataCard, const SizedBox(height: BvSpacing.md), notesCard],
       );
     }
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: backupCard),
+        Expanded(child: dataCard),
         const SizedBox(width: BvSpacing.md),
         Expanded(child: notesCard),
       ],
