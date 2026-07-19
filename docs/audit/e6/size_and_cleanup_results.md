@@ -8,25 +8,26 @@ consolidation and normal `git gc`.
 
 | Metric | Before E6 | After E6 | Difference | Percentage |
 |---|---:|---:|---:|---:|
-| Clean repository directory | 2,499,850,391 B | 4,521,600 B pre-final-docs | -2,495,328,791 B | -99.82% |
-| Working tree without `.git` | 2,497,972,153 B | 2,616,158 B pre-final-docs | -2,495,355,995 B | -99.90% |
-| `.git` | 1,878,238 B | 1,905,442 B pre-GC | +27,204 B | +1.45% |
-| Tracked files | 384 | 403 projected after E6 docs | +19 | +4.95% |
+| Clean repository directory | 2,499,850,391 B | 3,929,448 B | -2,495,920,943 B | -99.84% |
+| Working tree without `.git` | 2,497,972,153 B | 2,668,889 B | -2,495,303,264 B | -99.89% |
+| `.git` | 1,878,238 B | 1,260,559 B | -617,679 B | -32.89% |
+| Tracked files | 384 | 403 | +19 | +4.95% |
 | Direct dependencies | 22 | 22 | 0 | 0.00% |
 | Android plugin records | 7 | 7 | 0 | 0.00% |
 | Windows plugin records | 5 | 5 | 0 | 0.00% |
 | Source platform assets | 6 | 6 | 0 | 0.00% |
 | Windows Release bundle | 35,667,270 B / 15 files | 35,667,064 B / 14 files | -206 B / -1 | -0.0006% |
-| Windows ZIP | 15,186,459 B | 15,186,576 B | +117 B | +0.0008% |
+| Windows ZIP | 15,186,459 B | 15,186,575 B | +116 B | +0.0008% |
 | Android universal APK | 67,324,009 B | 67,324,009 B | 0 | 0.00% |
 | Android arm64-v8a APK | 23,697,690 B | 23,697,690 B | 0 | 0.00% |
 | Android armeabi-v7a APK | 21,382,540 B | 21,382,540 B | 0 | 0.00% |
 | Android x86_64 APK | 25,134,447 B | 25,134,447 B | 0 | 0.00% |
 
-The final two source-only workspace values and Git values are recorded after
-the merge because committing this report and running normal GC necessarily
-changes them. The pre-final-docs figures already prove that ignored build and
-packaging output, not tracked source, caused the multi-gigabyte workspace.
+The after values are the final source-only snapshot immediately before the
+consolidation evidence commit: 458 files total (down from 8,513) and 417 files
+outside `.git` (down from 7,961). Committing the measurements adds only normal
+Git metadata. The figures prove that ignored build and packaging output, not
+tracked source, caused the multi-gigabyte workspace.
 
 ## What changed
 
@@ -40,10 +41,10 @@ source file was removed.
 The Windows package no longer copies a build tree opportunistically. It stages
 an explicit runtime allowlist, rejects development artifacts, validates the
 result, writes entries in a stable order with a fixed timestamp, and emits a
-SHA-256 companion. Two consecutive final packages were byte-identical at
-15,186,576 bytes with SHA-256
-`AB19AD4EFF549E14D151E0DCEA3767C25F643FEAF7BC644578A658A00C067D77`.
-The 117-byte increase over the old non-deterministic ZIP is immaterial and is
+SHA-256 companion. Two consecutive post-merge packages were byte-identical at
+15,186,575 bytes with SHA-256
+`DEA665BF6A6506DF4A9423D69E02F3EB95EA667F2C57908A18461FC31564FA85`.
+The 116-byte increase over the old non-deterministic ZIP is immaterial and is
 accepted in exchange for completeness checks and reproducibility.
 
 ## What did not change

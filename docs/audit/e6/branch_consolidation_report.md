@@ -25,18 +25,21 @@ For every local and origin remote-tracking branch, E6 ran an ancestry check and
 zero unique commits. `git branch --no-merged main` and the corresponding remote
 query were empty before E6 diverged from main.
 
-After E6 is pushed, fast-forwarded, validated, and `origin/main` is aligned,
-the following contained branch groups are approved for safe deletion with
-`git branch -d` and `git push origin --delete`:
+After E6 was pushed, fast-forwarded to `main` at `525d7b9`, validated, and
+aligned with `origin/main`, a second check again returned contained/zero for
+all candidates. E6 then deleted these groups with `git branch -d` and
+`git push origin --delete`:
 
 - local/remote Offline E1-E5 and the E6 branch itself after merge;
 - Sync foundation, device pairing, encrypted package, Sync UX;
 - QR pairing/QA and LAN now/hardening/media;
 - historical branch names `release/v0.2`, `release/v0.3`, and old `release/v1`.
 
-The commits/releases remain reachable from `main`, tags, and the verified
-bundle. No tag is deleted or moved. No `release/v1` replacement is created in
-E6, no history is rewritten, and no force push is used.
+Result: 12 local branches and 18 remote branches deleted, with no rejection or
+unexpected retention. The final branch sets are exactly local `main` and
+remote-tracking `origin/main`. Remote `ls-remote --heads` also reports only
+`main`.
 
-Final branch deletion results and any unexpected retention are recorded in the
-E6 completion report after the post-merge operation.
+The commits/releases remain reachable from `main`, the six preserved tags, and
+the verified bundle. No tag was deleted or moved. No `release/v1` replacement
+was created, no history was rewritten, and no force push was used.

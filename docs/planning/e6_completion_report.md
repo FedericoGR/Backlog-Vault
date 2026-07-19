@@ -17,9 +17,9 @@ installation or physical-device QA.
   the earlier E1 bundle is untouched.
 
 All local and origin branch tips were proved ancestors of `main` with zero
-unique commits before E6 diverged. Deletion is deferred until E6 is on and
-pushed from `main`; results are appended after that operation. No rebase,
-force-push, history rewrite, tag creation, tag deletion, or release occurs.
+unique commits before E6 diverged and again immediately before deletion. No
+rebase, force-push, history rewrite, tag creation, tag deletion, or release
+occurred.
 
 ## Audits and implementation
 
@@ -44,11 +44,11 @@ force-push, history rewrite, tag creation, tag deletion, or release occurs.
 | Artifact | Bytes | SHA-256 |
 |---|---:|---|
 | Windows Release folder | 35,667,064 / 14 files | directory |
-| Windows deterministic ZIP | 15,186,576 | `AB19AD4EFF549E14D151E0DCEA3767C25F643FEAF7BC644578A658A00C067D77` |
-| Android universal | 67,324,009 | `5CC486EE14BDAADEF5DA71B6D37D6776410F21EA7E15F2852066B8C5E913C6FB` |
-| Android arm64-v8a | 23,697,690 | checksum manifest generated; final value refreshed post-merge |
-| Android armeabi-v7a | 21,382,540 | checksum manifest generated; final value refreshed post-merge |
-| Android x86_64 | 25,134,447 | checksum manifest generated; final value refreshed post-merge |
+| Windows deterministic ZIP | 15,186,575 | `DEA665BF6A6506DF4A9423D69E02F3EB95EA667F2C57908A18461FC31564FA85` |
+| Android universal | 67,324,009 | `5B9E5AA3B5590A376F4271BDF1E2FDE0A8CDD6F93D7371A160EBA90708CFDB25` |
+| Android arm64-v8a | 23,697,690 | measured pre-merge split gate |
+| Android armeabi-v7a | 21,382,540 | measured pre-merge split gate |
+| Android x86_64 | 25,134,447 | measured pre-merge split gate |
 
 The Windows ZIP was produced twice from identical release input and both size
 and hash matched. It excludes PDB, LIB, EXP, object files, logs, sources,
@@ -90,6 +90,8 @@ completeness without modifying real data.
 Measured final-gate times were 17.25 seconds for analysis, 36.17 seconds for
 268 tests, 82.57 seconds for the post-clean Windows build, 163.83 seconds for
 the successful universal APK build, and 39.84 seconds for all split APKs.
+The post-merge repetitions also passed: analyze in 45.4 seconds, 268 tests in
+33 seconds, Windows in 75.83 seconds, and universal APK in 168.09 seconds.
 
 ## Warnings and incidents
 
@@ -107,5 +109,14 @@ or Android installation was involved.
 
 ## Merge status
 
-E6 merge, branch deletion, normal Git GC, final source-only metrics, and pushes
-are recorded in the final documentation update after the post-merge gate.
+E6 was fast-forwarded to `main` (`323e533` → `525d7b9`), passed the required
+post-merge checker/analyze/tests/Windows/APK/ZIP gate, and was pushed. After
+`origin/main` was verified identical, 12 contained local branches and 18
+contained remote branches were deleted. Only `main` and `origin/main` remain;
+all six tags remain unchanged. Normal `git gc` reduced `.git` to 1,260,559
+bytes with one pack and zero garbage.
+
+The final source-only snapshot before this evidence commit is 3,929,448 bytes
+for the repository and 2,668,889 bytes for the working tree, with 403 tracked
+files. `build/`, `dist/`, `.dart_tool/`, Gradle output, Windows ephemeral
+output, and Flutter plugin metadata are absent. E7 was not started.

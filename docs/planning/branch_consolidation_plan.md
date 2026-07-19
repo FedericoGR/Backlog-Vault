@@ -22,5 +22,15 @@ and six historical tags. The E1 bundle remains untouched.
 7. Preserve main and every historical tag; do not create `release/v1` yet.
 8. Run normal `git gc`, measure, and clean generated workspace output.
 
+## Execution result
+
+Completed on 2026-07-19. E6 was fast-forwarded to `main` at `525d7b9`, the
+post-merge gate passed, and `origin/main` was verified at the same commit before
+deletion. A second ancestry/unique-commit audit returned contained/zero for
+every candidate. Twelve local branches and eighteen remote branches were then
+deleted with the safe commands above. Only `main` and `origin/main` remain;
+all six tags and both external recovery boundaries remain intact. Normal Git
+GC and the final generated-output cleanup also completed.
+
 No force push, rebase, filter-repo, immediate reflog expiration, aggressive
 pruning, tag move, tag deletion, or manual object deletion is allowed.

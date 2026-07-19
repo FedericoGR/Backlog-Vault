@@ -24,10 +24,11 @@ no longer remains; this is a build-script replacement, not product deletion.
 ## Generated candidates
 
 The cleanup dry-run identified only ignored/reproducible output: `build/`,
-`dist/`, `.dart_tool/`, `android/.gradle/`, `windows/flutter/ephemeral/`, and
-Flutter plugin metadata. At the first E6 dry-run these occupied more than
-2.1 GiB. They are removed only after final validation with the reviewed
-`tool/clean_workspace.ps1 -Apply` allowlist.
+`dist/`, `.dart_tool/`, `android/.gradle/`, `android/build/`,
+`windows/flutter/ephemeral/`, and Flutter plugin metadata. At the first E6
+dry-run these occupied more than 2.1 GiB. They were removed after validation
+with `flutter clean` plus the reviewed `tool/clean_workspace.ps1 -Apply`
+allowlist. The final check confirms every listed generated path is absent.
 
 No external bundle, AppData, database, export, cover, credential, SDK cache, or
 the retained E1 diagnostic directories is targeted.
