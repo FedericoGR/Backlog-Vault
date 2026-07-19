@@ -125,6 +125,52 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('editing an imported playthrough keeps a missing start date', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(432, 960);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    when(() => gameRepository.getByEntryId('entry-4')).thenAnswer(
+      (_) async => _details(withCover: false, missingPlaythroughStart: true),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          gameRepositoryProvider.overrideWith((ref) => gameRepository),
+          mediaRepositoryProvider.overrideWith((ref) => mediaRepository),
+        ],
+        child: MaterialApp(
+          theme: buildBacklogVaultDarkTheme(),
+          home: const Scaffold(body: GameDetailPage(entryId: 'entry-4')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final actions = find.byTooltip('Acciones de partida');
+    await tester.scrollUntilVisible(
+      actions,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(actions);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Editar').last);
+    await tester.pumpAndSettle();
+
+    final startDateTile = find.widgetWithText(ListTile, 'Fecha de inicio');
+    expect(startDateTile, findsOneWidget);
+    expect(
+      find.descendant(of: startDateTile, matching: find.text('-')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }
 
 final _now = DateTime(2026, 6, 16);
@@ -133,6 +179,7 @@ LibraryGameDetails _details({
   required bool withCover,
   bool longTitle = false,
   bool denseMetadata = false,
+  bool missingPlaythroughStart = false,
 }) {
   return LibraryGameDetails(
     game: GameDetails(
@@ -206,7 +253,7 @@ LibraryGameDetails _details({
         libraryEntryId: withCover ? 'entry-1' : 'entry-2',
         platformId: 'pc',
         status: 'completed',
-        startedAt: DateTime(2026, 1, 1),
+        startedAt: missingPlaythroughStart ? null : DateTime(2026, 1, 1),
         completedAt: DateTime(2026, 1, 20),
         hoursPlayed: 24,
         rating: 5,

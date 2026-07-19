@@ -130,7 +130,7 @@ class _PlaythroughDialogState extends State<_PlaythroughDialog> {
         playthrough == null
             ? PlaythroughStatus.active
             : parsePlaythroughStatus(playthrough.status);
-    _startedAt = playthrough?.startedAt ?? DateTime.now();
+    _startedAt = playthrough == null ? DateTime.now() : playthrough.startedAt;
     _completedAt = playthrough?.completedAt;
     _platformId =
         playthrough?.platformId ??
