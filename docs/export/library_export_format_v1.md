@@ -139,7 +139,7 @@ UTF-8 content is identical. Between two exports of an unchanged database, only
   "format": "backlog-vault-library-export",
   "formatVersion": 1,
   "exportedAt": "2026-07-17T18:30:45.000Z",
-  "appVersion": "0.3.0",
+  "appVersion": "1.0.0-rc1",
   "sourcePlatform": "windows",
   "summary": {
     "games": 1,

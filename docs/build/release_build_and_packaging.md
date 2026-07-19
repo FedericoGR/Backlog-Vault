@@ -1,6 +1,6 @@
 # Release build and packaging
 
-E6 provides repository-relative PowerShell scripts for Windows and Android.
+The Offline v1 release line provides repository-relative PowerShell scripts for Windows and Android.
 They read `version` from `pubspec.yaml`, fail on command errors, never install
 an APK, and keep all generated artifacts under ignored `build/` or `dist/`.
 
@@ -64,17 +64,17 @@ Default mode builds and packages universal plus `arm64-v8a`. Other modes are
 and x86_64 APKs. The script creates a JSON manifest and SHA-256 list, but does
 not call ADB or Flutter install.
 
-E7 recommendation: physically validate and publish the arm64 APK for the
+For `v1.0.0-rc1`, physically validate and publish the arm64 APK for the
 Motorola edge 40 pro, retaining universal as the simplest fallback. The other
-splits remain build gates unless an actual supported device requires them.
+splits remain local build gates and are not release assets.
 
 ## Symbols and obfuscation
 
 E6 measured `--split-debug-info` and `--obfuscate` experimentally outside the
 repository. Split debug information saves about 4.6% on arm64 but requires the
 matching symbol file for every crash. Obfuscation saves only another 0.58% and
-is not security. Neither option is enabled by the packaging script in E6;
-adoption requires an explicit E7 retention/support decision.
+is not security. Neither option is enabled for `v1.0.0-rc1`; normal release
+builds retain the simplest support and symbol model.
 
 ## Measurement and hygiene
 
@@ -103,6 +103,8 @@ flutter build windows --release
 flutter build apk --release
 flutter build apk --release --split-per-abi
 .\tool\package_windows.ps1 -SkipBuild
+.\tool\package_android.ps1 -SkipBuild -Mode Arm64AndUniversal
+.\tool\verify_release_candidate.ps1
 .\tool\check_repository_hygiene.ps1
 git diff --check
 ```

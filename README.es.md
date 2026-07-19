@@ -4,7 +4,8 @@ Backlog Vault es un gestor offline de backlog de videojuegos para Windows y Andr
 
 > Documentación principal en inglés: [README.md](README.md)
 
-Release candidate histórico: `v0.3.0-rc1` (`0.3.0+5`). La rama activa retira su sincronización histórica sin cambiar todavía la versión.
+Release candidate actual: `v1.0.0-rc1` (`1.0.0-rc1+6`). Consolida
+Backlog Vault como producto intencionalmente Offline.
 
 ## Funcionalidades
 
@@ -40,7 +41,11 @@ Extraé el ZIP completo y ejecutá `backlog_vault.exe`. La carpeta portable de l
 
 ### Android APK
 
-Instalá el APK local aceptando el permiso de origen cuando Android lo solicite. Los APK actuales usan firma local para uso personal y QA; no son paquetes de Play Store. Actualizá sólo in-place con el mismo package y una firma compatible. No desinstales una instalación con datos importantes: el uninstall puede borrar AppData y el JSON no es un formato de restore automático.
+Instalá el APK arm64 en un dispositivo arm64 compatible; el APK universal es
+un fallback más pesado. Los APK usan firma local para uso personal y QA y no
+son paquetes de Play Store. Actualizá sólo in-place con el mismo package y una
+firma compatible. No desinstales una instalación con datos importantes: el
+uninstall puede borrar AppData y el JSON no es un formato de restore automático.
 
 ## Compilar desde source
 
@@ -60,7 +65,8 @@ Para ejecutar el build limpio y los helpers reproducibles de packaging:
 ```powershell
 .\tool\build_release.ps1
 .\tool\package_windows.ps1 -SkipBuild
-.\tool\package_android.ps1 -SkipBuild -Mode All
+.\tool\package_android.ps1 -SkipBuild -Mode Arm64AndUniversal
+.\tool\verify_release_candidate.ps1
 .\tool\check_repository_hygiene.ps1
 ```
 
@@ -107,6 +113,9 @@ La sección queda preparada. Se agregarán capturas reales de Windows y Android 
 
 - [Instalación y portabilidad](docs/install_and_portability.md)
 - [Formato de exportación de biblioteca v1](docs/export/library_export_format_v1.md)
+- [Flujos Offline](docs/product/offline_workflows.md)
+- [Notas v1.0.0-rc1](docs/release/release_notes_v1_0_0_rc1.md)
+- [Checklist QA v1.0.0-rc1](docs/release/qa_checklist_v1_0_0_rc1.md)
 - [Checklist QA v0.2](docs/qa_v0_2_checklist.md)
 - [Notas v0.2](docs/release_notes_v0_2.md)
 - [Checklist QA v0.3](docs/qa_v0_3_checklist.md)

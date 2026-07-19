@@ -21,6 +21,20 @@ $artifactVersion = if ([string]::IsNullOrWhiteSpace($ReleaseLabel)) {
     $ReleaseLabel.Trim().TrimStart('v')
 }
 
+function Get-AndroidArtifactFileName {
+    param(
+        [Parameter(Mandatory = $true)][string]$Abi,
+        [Parameter(Mandatory = $true)][string]$Version
+    )
+
+    $architecture = switch ($Abi) {
+        "universal" { "universal" }
+        "arm64-v8a" { "arm64" }
+        default { $Abi }
+    }
+    return "BacklogVault-android-$architecture-v$Version.apk"
+}
+
 Assert-BacklogVaultCommand "flutter"
 
 Push-Location $repoRoot
@@ -40,7 +54,7 @@ try {
                 throw "Universal APK was not produced."
             }
             Copy-Item -LiteralPath $universalSource -Destination (
-                Join-Path $distDir "BacklogVault-android-v$artifactVersion-universal.apk"
+                Join-Path $distDir (Get-AndroidArtifactFileName -Abi "universal" -Version $artifactVersion)
             ) -Force
         }
 
@@ -54,7 +68,7 @@ try {
         $wanted["universal"] = if ($SkipBuild) {
             Join-Path $apkOutput "app-release.apk"
         } else {
-            Join-Path $distDir "BacklogVault-android-v$artifactVersion-universal.apk"
+            Join-Path $distDir (Get-AndroidArtifactFileName -Abi "universal" -Version $artifactVersion)
         }
     }
     if ($Mode -in @("Split", "All")) {
@@ -71,7 +85,7 @@ try {
         if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
             throw "Required APK not found for ${abi}: $source"
         }
-        $destination = Join-Path $distDir "BacklogVault-android-v$artifactVersion-$abi.apk"
+        $destination = Join-Path $distDir (Get-AndroidArtifactFileName -Abi $abi -Version $artifactVersion)
         if ($source -ne $destination) {
             Copy-Item -LiteralPath $source -Destination $destination -Force
         }

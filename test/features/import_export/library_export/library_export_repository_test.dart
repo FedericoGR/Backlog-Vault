@@ -32,7 +32,7 @@ void main() {
     expect(json['format'], libraryExportFormat);
     expect(json['formatVersion'], 1);
     expect(json['exportedAt'], '2026-07-17T18:30:45.000Z');
-    expect(json['appVersion'], '0.3.0');
+    expect(json['appVersion'], '1.0.0-rc1');
     expect(json['sourcePlatform'], 'windows');
     final summary = json['summary']! as Map<String, Object?>;
     for (final value in summary.values) {

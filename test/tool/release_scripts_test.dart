@@ -10,6 +10,8 @@ void main() {
     'tool/measure_artifacts.ps1',
     'tool/clean_workspace.ps1',
     'tool/check_repository_hygiene.ps1',
+    'tool/verify_release_candidate.ps1',
+    'tool/generate_final_repository_review.ps1',
   ];
 
   test('release scripts are repository-relative and never install Android', () {
@@ -57,5 +59,30 @@ void main() {
     expect(source, contains('/build/'));
     expect(source, isNot(contains(RegExp(r'^build/$', multiLine: true))));
     expect(File('docs/build/generated_files_policy.md').existsSync(), isTrue);
+  });
+
+  test('release candidate version and artifact names are canonical', () {
+    final pubspec = File('pubspec.yaml').readAsStringSync();
+    expect(
+      pubspec,
+      contains(RegExp(r'^version: 1\.0\.0-rc1\+6$', multiLine: true)),
+    );
+
+    final versions =
+        File('lib/core/version/app_versions.dart').readAsStringSync();
+    expect(versions, contains("appVersionName = '1.0.0-rc1'"));
+
+    final common = File('tool/release_common.ps1').readAsStringSync();
+    final android = File('tool/package_android.ps1').readAsStringSync();
+    final windows = File('tool/package_windows.ps1').readAsStringSync();
+    expect(common, contains('Get-BacklogVaultVersion'));
+    expect(
+      android,
+      contains('BacklogVault-android-\$architecture-v\$Version.apk'),
+    );
+    expect(
+      windows,
+      contains('BacklogVault-windows-x64-v\$artifactVersion.zip'),
+    );
   });
 }

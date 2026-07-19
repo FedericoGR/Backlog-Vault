@@ -65,15 +65,15 @@ void main() {
 
   test('redacts absolute paths but keeps relative media paths', () {
     final text =
-        r'C:\Users\Feder\Documents\Backlog Vault\library-export.json '
-        '/home/feder/backlog/library-export.json '
+        r'C:\Users\ExampleUser\Documents\Backlog Vault\library-export.json '
+        '/home/example/backlog/library-export.json '
         'media/games/game-1/cover.png';
 
     final redacted = redactor.redact(text);
 
     expect(redacted, contains('[ruta local]'));
-    expect(redacted, isNot(contains(r'C:\Users\Feder')));
-    expect(redacted, isNot(contains('/home/feder')));
+    expect(redacted, isNot(contains(r'C:\Users\ExampleUser')));
+    expect(redacted, isNot(contains('/home/example')));
     expect(redacted, contains('media/games/game-1/cover.png'));
   });
 

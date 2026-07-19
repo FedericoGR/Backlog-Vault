@@ -18,7 +18,7 @@ El peso no está en el código: 327 archivos trackeados ocupan 2,65 MiB, mientra
 
 ## Preservación histórica
 
-- Carpeta: `C:\Users\Feder\Documents\Backlog Vault Backups\pre-offline-refactor\20260716-1613`
+- Carpeta externa: `<external-backup-directory>/pre-offline-refactor/<timestamp>`
 - Bundle: `backlog-vault-pre-offline-20260716-1613.bundle`
 - SHA-256: `ebacf65e90e07a9d1959cc333b8d32bc5acac88cc26693e0ce36991f3f1916ee`
 - `git bundle verify`: correcto; 29 refs y “complete history”.

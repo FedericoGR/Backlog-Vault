@@ -107,7 +107,7 @@ void main() {
       throwsA(isA<MediaException>()),
     );
     await expectLater(
-      storage.resolveFile('C:/Users/Feder/secret.png'),
+      storage.resolveFile('C:/Users/ExampleUser/secret.png'),
       throwsA(isA<MediaException>()),
     );
     await expectLater(

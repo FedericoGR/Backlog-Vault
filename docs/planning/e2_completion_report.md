@@ -26,7 +26,7 @@ transversal.
 
 El bundle histórico externo se volvió a verificar:
 
-- ruta: `C:\Users\Feder\Documents\Backlog Vault Backups\pre-offline-refactor\20260716-1613\backlog-vault-pre-offline-20260716-1613.bundle`;
+- ruta: `<external-backup-directory>/pre-offline-refactor/<timestamp>/backlog-vault-pre-offline.bundle`;
 - tamaño: 741.091 bytes;
 - SHA-256: `ebacf65e90e07a9d1959cc333b8d32bc5acac88cc26693e0ce36991f3f1916ee`;
 - `git bundle verify`: válido, historia completa y 29 referencias.
@@ -277,7 +277,7 @@ backup/restore está fuera del alcance autorizado de este gate.
 No se usó `adb backup`, no se copió la DB privada, no se hizo root, no se
 alteraron permisos y no se generó ningún archivo recuperable. Se preparó la
 ruta externa
-`C:\Users\Feder\Documents\Backlog Vault Backups\pre-schema6-android\`, pero
+`<external-backup-directory>/pre-schema6-android/`, pero
 permanece sin un backup válido.
 
 La baseline de E2 volvió a quedar verde: `flutter analyze` sin issues,

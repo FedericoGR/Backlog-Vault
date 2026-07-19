@@ -1,7 +1,8 @@
-# Arquitectura actual después de E6
+# Arquitectura final del RC Offline
 
-Fecha: 2026-07-19. Este documento describe el árbol feature-first activo después
-del refactor arquitectónico E4 y el refinamiento de presentación E5; la reconstrucción previa permanece en
+Fecha: 2026-07-19. Este documento describe el árbol feature-first de
+`v1.0.0-rc1` después del refactor arquitectónico E4, el refinamiento de
+presentación E5 y la consolidación E6; la reconstrucción previa permanece en
 `docs/audit/e1/` y el detalle posterior en `docs/audit/e4/`.
 
 ## Entrada, app y routing
@@ -98,8 +99,9 @@ Los parts residuales grandes conservan una responsabilidad visual coherente y
 están registrados en `docs/audit/e5/remaining_presentation_hotspots.md`. El
 checker impide reintroducir acoplamientos o errores técnicos visibles.
 
-E6 no cambia estas capas ni el comportamiento visible. Agrega exclusivamente
+E6 no cambió estas capas ni el comportamiento visible. Agregó exclusivamente
 build/packaging reproducible: allowlist runtime de Windows, APK universal y por
 ABI, checksums, medición de artefactos, hygiene scan y limpieza dry-run. No hay
 dependencias o assets productivos sin uso; schema 6 y export format 1 siguen
-invariantes. La QA física y los artefactos RC corresponden a E7.
+invariantes. E7 fija versión y artefactos, audita el resultado y ejecuta la QA
+final sin agregar capas ni funcionalidades.

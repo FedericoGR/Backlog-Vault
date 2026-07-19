@@ -4,7 +4,8 @@ Backlog Vault is an offline videogame backlog manager for Windows and Android. I
 
 > Spanish documentation: [README.es.md](README.es.md)
 
-Current historical release candidate: `v0.3.0-rc1` (`0.3.0+5`). The active development branch has removed its historical synchronization feature without changing the version yet.
+Current release candidate: `v1.0.0-rc1` (`1.0.0-rc1+6`). It consolidates
+Backlog Vault as an intentionally Offline product.
 
 ## What it does
 
@@ -38,7 +39,7 @@ See [install and portability](docs/install_and_portability.md) for the current d
 
 ### Windows ZIP
 
-1. Download or build the Windows ZIP for the desired stable release.
+1. Download or build `BacklogVault-windows-x64-v1.0.0-rc1.zip`.
 2. Extract the complete archive; do not run the executable from inside the ZIP.
 3. Launch `backlog_vault.exe`.
 
@@ -46,7 +47,8 @@ The portable application folder is separate from the OS-managed app data folder.
 
 ### Android APK
 
-1. Download or build the APK.
+1. Download the arm64 APK for a compatible arm64 device, or use the larger
+   universal APK as a fallback.
 2. Allow installation from the local source when Android prompts you.
 3. Install the APK and open Backlog Vault.
 
@@ -74,7 +76,8 @@ Run the clean release build and reproducible packaging helpers with:
 ```powershell
 .\tool\build_release.ps1
 .\tool\package_windows.ps1 -SkipBuild
-.\tool\package_android.ps1 -SkipBuild -Mode All
+.\tool\package_android.ps1 -SkipBuild -Mode Arm64AndUniversal
+.\tool\verify_release_candidate.ps1
 .\tool\check_repository_hygiene.ps1
 ```
 
@@ -127,6 +130,9 @@ Screenshots will be added after the bilingual Windows and Android UI pass is cap
 
 - [Install and portability](docs/install_and_portability.md)
 - [Library export format v1](docs/export/library_export_format_v1.md)
+- [Offline workflows](docs/product/offline_workflows.md)
+- [v1.0.0-rc1 release notes](docs/release/release_notes_v1_0_0_rc1.md)
+- [v1.0.0-rc1 QA checklist](docs/release/qa_checklist_v1_0_0_rc1.md)
 - [v0.2 QA checklist](docs/qa_v0_2_checklist.md)
 - [v0.2 release notes](docs/release_notes_v0_2.md)
 - [v0.3 QA checklist](docs/qa_v0_3_checklist.md)
