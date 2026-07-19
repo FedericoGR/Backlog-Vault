@@ -7,6 +7,15 @@
 build/
 coverage/
 dist/
+symbols/
+size-analysis/
+*.apk
+*.aab
+*.zip
+*.symbols
+*.pdb
+*.lib
+*.exp
 
 *.iml
 *.ipr
@@ -15,7 +24,32 @@ dist/
 .vscode/
 
 *.log
+*.tmp
 devtools_options.yaml
+.env
+.env.*
+!.env.example
+
+# Local data, exports, signing material, and certificates.
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+BacklogVault-*.json
+backlog-vault-library-*.json
+*.vaultbackup
+*.vaultbackup.enc
+*.vaultsync
+*.vaultpair
+*.jks
+*.keystore
+*.pfx
+*.p12
+*.pem
+*.key
+*.crt
+*.cer
 
 # Generated locally by Flutter platform tooling.
 android/.gradle/
