@@ -55,13 +55,19 @@ flutter build windows
 flutter build apk
 ```
 
-Para generar el ZIP portable local:
+Para ejecutar el build limpio y los helpers reproducibles de packaging:
 
 ```powershell
-.\tool\package_windows.ps1 -SkipBuild -ReleaseLabel v0.2.0
+.\tool\build_release.ps1
+.\tool\package_windows.ps1 -SkipBuild
+.\tool\package_android.ps1 -SkipBuild -Mode All
+.\tool\check_repository_hygiene.ps1
 ```
 
-Los artefactos históricos pueden usar `-ReleaseLabel v0.3.0-rc1`; E2 no crea un release ni cambia la versión.
+El ZIP Windows usa una allowlist de runtime y es determinista para el mismo
+build. Android nombra y calcula checksums de APK universal y por ABI; nunca los
+instala. Consultá la
+[guía de build y packaging](docs/build/release_build_and_packaging.md).
 
 `build/`, `dist/`, APKs, ZIPs y cachés no se versionan.
 
@@ -107,6 +113,8 @@ La sección queda preparada. Se agregarán capturas reales de Windows y Android 
 - [Notas v0.3](docs/release_notes_v0_3.md)
 - [Migración Offline schema 5→6](docs/migrations/offline_schema_5_to_6.md)
 - [Reporte de finalización E2](docs/planning/e2_completion_report.md)
+- [Build y packaging de release](docs/build/release_build_and_packaging.md)
+- [Resultados de tamaño y limpieza E6](docs/audit/e6/size_and_cleanup_results.md)
 
 ## Licencia
 

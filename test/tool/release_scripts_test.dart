@@ -51,4 +51,11 @@ void main() {
       expect(source, contains(extension));
     }
   });
+
+  test('root build output ignore does not hide build documentation', () {
+    final source = File('.gitignore').readAsStringSync();
+    expect(source, contains('/build/'));
+    expect(source, isNot(contains(RegExp(r'^build/$', multiLine: true))));
+    expect(File('docs/build/generated_files_policy.md').existsSync(), isTrue);
+  });
 }

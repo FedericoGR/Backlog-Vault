@@ -11,6 +11,7 @@ $candidates = @(
     "build",
     "dist",
     ".dart_tool",
+    "android/build",
     "android/.gradle",
     "windows/flutter/ephemeral",
     ".flutter-plugins",

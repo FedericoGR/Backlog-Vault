@@ -1,4 +1,4 @@
-# Arquitectura actual después de E5
+# Arquitectura actual después de E6
 
 Fecha: 2026-07-19. Este documento describe el árbol feature-first activo después
 del refactor arquitectónico E4 y el refinamiento de presentación E5; la reconstrucción previa permanece en
@@ -96,5 +96,10 @@ packaging o transporte de media entre instalaciones.
 
 Los parts residuales grandes conservan una responsabilidad visual coherente y
 están registrados en `docs/audit/e5/remaining_presentation_hotspots.md`. El
-checker impide reintroducir acoplamientos o errores técnicos visibles. La
-optimización de binarios, assets y dependencias corresponde a E6.
+checker impide reintroducir acoplamientos o errores técnicos visibles.
+
+E6 no cambia estas capas ni el comportamiento visible. Agrega exclusivamente
+build/packaging reproducible: allowlist runtime de Windows, APK universal y por
+ABI, checksums, medición de artefactos, hygiene scan y limpieza dry-run. No hay
+dependencias o assets productivos sin uso; schema 6 y export format 1 siguen
+invariantes. La QA física y los artefactos RC corresponden a E7.

@@ -21,6 +21,11 @@ Create a portable application ZIP without rebuilding:
 .\tool\package_windows.ps1 -SkipBuild
 ```
 
+Without `-SkipBuild`, the script performs a clean release build. It copies only
+the executable, release DLLs, generated native manifest, and `data` directory;
+then validates a deterministic ZIP and writes SHA-256 beside it. The target
+machine needs a compatible Microsoft Visual C++ runtime.
+
 Extract the complete ZIP and launch `backlog_vault.exe`. The executable, DLLs,
 native assets, and `data` folder must remain together. The portable application
 folder is separate from the OS-managed user-data folder. Replacing binaries
@@ -33,6 +38,16 @@ Build the release APK:
 ```powershell
 flutter build apk --release
 ```
+
+For checksummed personal-distribution artifacts, use:
+
+```powershell
+.\tool\package_android.ps1
+```
+
+The default packages arm64-v8a for modern Motorola/Android hardware plus a
+universal fallback. `-Mode All` also emits armeabi-v7a and x86_64. The script
+never installs an APK. E7 performs the physical in-place QA.
 
 The APK is written to `build\app\outputs\flutter-apk\app-release.apk`. It is a
 personal/QA package, not a Play Store artifact. An in-place update requires the
