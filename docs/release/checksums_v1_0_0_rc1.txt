@@ -1,0 +1,11 @@
+Backlog Vault Offline v1.0.0-rc1 release-candidate artifacts
+
+SHA-256                                                          Bytes      Platform  Architecture  File
+65E2F4183CAC54896AE8D946AFA2B422A9BC6C699ABFA248777DAFD2849E2E67  15186708   Windows   x64           BacklogVault-windows-x64-v1.0.0-rc1.zip
+11EF0CFC0D32200C97CD535E2494FDFBE6720A43004A65560654E5AE3A3784F2  23920702   Android   arm64-v8a     BacklogVault-android-arm64-v1.0.0-rc1.apk
+FF3CAB6BDB94B99B345F0D0FB3B6FFBA39B261F4352BA59E47B8563D73F0977D  67324013   Android   universal     BacklogVault-android-universal-v1.0.0-rc1.apk
+
+The files above are the exact preserved QA candidates in the ignored dist/
+directory. APK container/signature metadata is not byte-reproducible across
+later rebuilds; do not substitute a rebuilt file without repeating QA and
+updating this checksum manifest.

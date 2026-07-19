@@ -13,7 +13,8 @@ library for Windows and Android. No account or Backlog Vault cloud is required.
 - Readable JSON library export, format version 1.
 - Optional RAWG/IGDB metadata and IGDB/SteamGridDB/local covers.
 - Home dashboard and statistics.
-- English and Spanish, plus system, light, dark, and OLED-friendly appearance.
+- English and Spanish, plus system-selected light/dark themes with an
+  OLED-friendly dark palette.
 - Portable Windows x64 ZIP.
 - Recommended Android arm64 APK and a universal fallback APK.
 

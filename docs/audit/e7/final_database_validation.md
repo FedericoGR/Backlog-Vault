@@ -37,9 +37,15 @@ external-ID→game, and media→game.
 
 ## Physical evidence
 
-The Android release gate records version/install times, first opening logs,
-visible library state, a force-stop/reopen, and the absence of Drift, missing
-table, and foreign-key errors. It does not use root, extract the private DB, or
-modify the DB outside normal app behavior. This is indirect runtime evidence
-for an already-schema-6 installation and direct migration evidence only when
-the installed profile is still schema 5.
+The E7 Android release gate updated the already-schema-6 E2 installation in
+place from application version `0.3.0+5` to `1.0.0-rc1+6`. It preserved the
+package first-install time, imported a four-game synthetic CSV through the UI,
+created and edited playthroughs, exported and parsed the resulting JSON, and
+then passed a force-stop/reopen with the same visible counts. Filtered logs
+contained no Drift, missing-table, foreign-key, or unhandled runtime error.
+
+This is direct runtime evidence for opening, writing, and reopening schema 6;
+it is not a second physical 5→6 migration claim. The earlier E2 gate supplied
+the physical 5→6 evidence, while the final schema-5 fixture supplies direct and
+repeatable migration assertions. Neither gate uses root, extracts the private
+database, or modifies it outside normal application behavior.

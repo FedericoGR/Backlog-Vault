@@ -34,7 +34,18 @@ release-critical database/export/packaging paths.
   added release-script regression coverage.
 - Corrected active product/install/build/export documentation for
   `1.0.0-rc1+6` and the arm64/universal strategy.
+- Corrected two QA-discovered presentation defects without changing product
+  scope: the Home localized count arguments now follow the ARB contract, and
+  editing an imported playthrough whose start date is absent preserves that
+  absence instead of inventing the current date. Both have widget regressions.
+- Corrected Android candidate packaging so the recommended arm64-only APK is a
+  non-split build with versionCode 6. Flutter's validation-only ABI split keeps
+  its derived code 2006 and is deliberately not the published arm64 asset.
 
-No stable feature code was reformatted or refactored for aesthetics. The only
-application constant change is the approved version name; schema 6, export
-format 1, models, and behavior remain unchanged.
+No stable feature code was reformatted or refactored for aesthetics. Product
+changes are limited to the approved version name and those two observed bug
+fixes. Schema 6, export format 1, models, and product scope remain unchanged.
+
+The final executable gate is 270/270 tests, architecture checker 6/6, clean
+analysis, Windows and Android release builds, and physical Android QA of the
+exact arm64 candidate.

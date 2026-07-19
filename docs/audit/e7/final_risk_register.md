@@ -14,6 +14,14 @@
 | Secret or personal data enters Git/assets | low | critical | synthetic external dataset, hygiene and history scans, no full logcat/DB/export committed | publication gate |
 | Removed transport surface reappears | low | high | architecture absence test plus source, manifest, dependency, and log scans | covered |
 | Upstream/toolchain warning blocks future build | medium | medium | pin current lock/toolchain and document warnings; defer upgrades | accepted for RC |
+| Android RC uses the existing debug signing identity | certain | high | required to update the installed baseline in place; disclose as an RC-only personal-distribution constraint; choose a protected production-signing and migration policy before stable | new stable-promotion decision |
+| APK bytes are not reproducible across rebuilds | high | medium | preserve and checksum the exact physically tested candidates; validate package/version/ABI/signature; do not replace them with later validation rebuilds | accepted for RC |
 
 No open risk authorizes uninstalling, clearing data, extracting private app
 storage, using real credentials, or adding release-scope functionality.
+
+The Android signing identity is compatible with the installed baseline and
+therefore suitable for this controlled RC smoke. It is not an acceptable
+long-term public production key. Publishing the APKs broadly or promoting to
+stable requires an explicit signing decision; changing keys also requires a
+user-data transition plan because Android will reject an in-place update.
