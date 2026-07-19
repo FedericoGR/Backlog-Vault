@@ -1,7 +1,7 @@
-# Arquitectura actual después de E4
+# Arquitectura actual después de E5
 
-Fecha: 2026-07-18. Este documento describe el árbol feature-first activo después
-del refactor arquitectónico E4; la reconstrucción previa permanece en
+Fecha: 2026-07-19. Este documento describe el árbol feature-first activo después
+del refactor arquitectónico E4 y el refinamiento de presentación E5; la reconstrucción previa permanece en
 `docs/audit/e1/` y el detalle posterior en `docs/audit/e4/`.
 
 ## Entrada, app y routing
@@ -40,6 +40,18 @@ flowchart LR
 Catalog, Game, Playthrough, Notion CSV import, Saved Views, Media, Metadata y
 Library Export usan repositories transaccionales. La UI recibe read models y
 no importa Drift, filesystem, HTTP, plugins ni secure storage.
+
+## Presentación responsive
+
+E5 mantiene los mismos ViewModels y divide los hotspots visuales en partes
+cohesivas privadas: shell/coordinación, secciones, layouts, dialogs y acciones.
+`BvBreakpoints` y `BvLayout` gobiernan composición por ancho disponible;
+`BvPageScaffold` aplica padding/ancho legible. Loading, empty, error, progreso,
+acción async y feedback usan contratos compartidos sin dependencias de features.
+
+El checker tiene seis reglas: además de los límites E4, impide volver a mostrar
+`error.toString()` desde presentación. Copy funcional se localiza en EN/ES y
+los errores visibles no contienen excepciones, stack traces ni credenciales.
 
 ## Persistencia local
 
@@ -82,6 +94,7 @@ packaging o transporte de media entre instalaciones.
 
 ## Deuda deliberadamente no abordada
 
-Las páginas grandes conservan composición visual y dialogs para no mezclar E4
-con el rediseño de E5. El checker impide reintroducir acoplamientos de
-infraestructura. La optimización de binarios y dependencias corresponde a E6.
+Los parts residuales grandes conservan una responsabilidad visual coherente y
+están registrados en `docs/audit/e5/remaining_presentation_hotspots.md`. El
+checker impide reintroducir acoplamientos o errores técnicos visibles. La
+optimización de binarios, assets y dependencias corresponde a E6.

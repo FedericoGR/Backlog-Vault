@@ -1,9 +1,10 @@
 # Estructura objetivo de carpetas
 
-Estado tras E4: `app/bootstrap`, `app/routing` y `app/theme` están activos;
+Estado tras E5: `app/bootstrap`, `app/routing` y `app/theme` están activos;
 Library, Games, Playthroughs, Catalogs, Metadata, Media, Import/Export,
-Statistics y Settings usan sólo las capas que necesitan. No se crearon carpetas
-vacías ni adapters hipotéticos.
+Statistics y Settings usan sólo las capas que necesitan. Hotspots de
+presentación usan `parts/` sólo para secciones privadas cohesivas de su página
+dueña. No se crearon carpetas vacías ni adapters hipotéticos.
 
 Estructura conceptual, no instrucción de mover todo en un solo commit:
 
@@ -107,9 +108,10 @@ integration_test/
 1. E2 no aplica movimientos masivos; sólo seams indispensables para retirar Sync.
 2. E3 simplifica el producto sin mover vertical slices completas.
 3. E4 movió las vertical slices con tests verdes y sin alias/barrels globales.
-4. Mantener imports explícitos; actualizar tests en el mismo slice.
-5. No crear todas las carpetas anticipadamente.
-6. Un movimiento puro y una reescritura conductual deben ser commits separados cuando sea práctico.
+4. E5 dividió composición visual sin crear nuevos límites de dominio.
+5. Mantener imports explícitos; actualizar tests en el mismo slice.
+6. No crear todas las carpetas anticipadamente.
+7. Un movimiento puro y una reescritura conductual deben ser commits separados cuando sea práctico.
 
 ## Naming
 

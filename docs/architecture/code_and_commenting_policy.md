@@ -60,6 +60,19 @@ No crear `GetGameUseCase`/`DeleteGameUseCase` de una línea sin regla adicional.
 - Mapear infra failures en la frontera; localizar mensaje en UI.
 - State async consistente por screen (`AsyncValue`/state sellado), sin booleanos conflictivos dispersos.
 - Cancelar/dispose controllers, clients y streams.
+- Presentación nunca renderiza `error.toString()`, stack traces o valores de
+  credenciales; usa copy localizada y segura del flujo propietario.
+- Acciones async visibles impiden doble submit y verifican `mounted` después de
+  cada `await` antes de usar estado o contexto.
+
+## Presentación
+
+- Elegir composición por constraints y breakpoints compartidos, no sólo por OS.
+- Extraer componentes globales únicamente con múltiples consumidores reales.
+- Mantener dialogs y secciones de una sola feature dentro de esa feature.
+- Toda acción sólo-icono requiere tooltip/label semántico localizado.
+- Usar `part` sólo para preservar helpers privados cohesivos de una misma
+  biblioteca; no para simular modularidad pública.
 
 ## Generados
 
