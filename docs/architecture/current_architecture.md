@@ -1,8 +1,8 @@
-# Arquitectura actual después de E3
+# Arquitectura actual después de E4
 
-Fecha: 2026-07-17. Este documento describe el árbol activo posterior al retiro
-de Sync y del backup/restore complejo; la reconstrucción previa permanece en
-`docs/audit/e1/` y en Git.
+Fecha: 2026-07-18. Este documento describe el árbol feature-first activo después
+del refactor arquitectónico E4; la reconstrucción previa permanece en
+`docs/audit/e1/` y el detalle posterior en `docs/audit/e4/`.
 
 ## Entrada, app y routing
 
@@ -29,20 +29,17 @@ idioma; no contiene restore, cifrado ni passwords.
 
 ```mermaid
 flowchart LR
-  View["ConsumerWidget/Page"] --> Provider["Riverpod Provider/StreamProvider"]
-  View --> RepoDirect["ref.read(repositoryProvider)"]
-  Provider --> Repo["Repository"]
-  RepoDirect --> Repo
+  View["ConsumerWidget/Page"] --> VM["Application Provider/ViewModel"]
+  VM --> Repo["Repository/Service"]
   Repo --> Tx["AppDatabase.transaction"]
   Tx --> Drift[("Drift schema 6")]
   Drift --> Streams["watch() streams"]
-  Streams --> Provider
+  Streams --> VM
 ```
 
-Catalog, Game, Notion CSV import, Saved Views, Media, Metadata y Library Export
-usan transacciones Drift locales. Se preservaron atomicidad, timestamps, soft
-delete y comportamiento; no existe wrapper de tracking u oplog. El export toma
-un snapshot de lectura consistente y delega el guardado al picker del sistema.
+Catalog, Game, Playthrough, Notion CSV import, Saved Views, Media, Metadata y
+Library Export usan repositories transaccionales. La UI recibe read models y
+no importa Drift, filesystem, HTTP, plugins ni secure storage.
 
 ## Persistencia local
 
@@ -85,8 +82,6 @@ packaging o transporte de media entre instalaciones.
 
 ## Deuda deliberadamente no abordada
 
-E3 no ejecutó el refactor general de ADR-001. Pages grandes todavía coordinan
-workflows; algunas presentation importan data/filesystem; existen ciclos de
-ownership games/library/metadata/media y modelos Drift alcanzan application.
-E4 debe aplicar MVVM pragmático por vertical slice, sin combinarlo con una
-migración destructiva o con cambios de contrato del export.
+Las páginas grandes conservan composición visual y dialogs para no mezclar E4
+con el rediseño de E5. El checker impide reintroducir acoplamientos de
+infraestructura. La optimización de binarios y dependencias corresponde a E6.

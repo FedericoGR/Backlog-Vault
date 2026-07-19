@@ -37,11 +37,12 @@
 
 ## Enforcement
 
-E3 puede agregar un test/script read-only de imports sin nueva dependencia:
+E4 agregó `test/architecture/offline_architecture_test.dart`, sin dependencia
+nueva. El test hace fallar la suite al:
 
 - fallar si `lib/core` contiene `/features/`;
 - fallar si presentation importa Drift, `dart:io`, http, secure storage o file_picker/mobile plugins;
-- listar pares bidireccionales feature↔feature;
+- detectar ciclos no visuales feature↔feature;
 - evitar barrels `features.dart`/`core.dart` globales.
 
 No agregar una herramienta externa en E1. `flutter analyze`, tests y revisión del grafo son suficientes para comenzar.

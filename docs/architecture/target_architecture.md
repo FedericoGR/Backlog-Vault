@@ -1,5 +1,9 @@
 # Arquitectura objetivo Offline
 
+> Estado E4: implementada para las fronteras obligatorias. La división visual
+> fina marcada para E5 y la optimización E6 no forman parte de esta arquitectura
+> de dependencias.
+
 ## Forma general
 
 ```mermaid

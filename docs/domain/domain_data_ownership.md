@@ -1,8 +1,8 @@
 # Domain data ownership
 
-E3 documents the current meaning of the functional model without changing
-Drift schema 6 or merging entities. Generated Drift rows still cross some
-layer boundaries; moving them behind stable domain contracts belongs to E4.
+E4 confirms the functional model without changing Drift schema 6 or merging
+entities. Generated Drift rows stay inside data; presentation consumes explicit
+read models (`GameDetails`, `LibraryEntryDetails`, `PlaythroughDetails`).
 
 ## Game
 
@@ -66,14 +66,14 @@ including stable IDs, relation IDs, timestamps, optional fields, and soft
 deletes. It does not infer or rewrite one entity from another and never updates
 the database.
 
-## Recommendation for E4/E5
+## Compatibility and future migration debt
 
-1. Encapsulate the existing completion/pause/resume workflow in one selective
-   application use case that coordinates entry and playthrough invariants in a
-   single transaction.
-2. Keep `LibraryEntry.personalRating` as the global rating and label
+1. E4 keeps completion/pause/resume transitions atomic in the game repository
+   and moves independent playthrough CRUD to `PlaythroughRepository`.
+2. `LibraryEntry.personalRating` remains the global rating and
    `Playthrough.rating` explicitly as a run rating.
-3. Keep total hours and completion summaries calculated from playthroughs.
-4. Add transition tests before moving Drift types behind domain models.
-5. Preserve current UI and export behavior while boundaries move; do not mix
-   that refactor with a schema migration.
+3. Total hours and completion summaries remain calculated from non-deleted
+   playthroughs.
+4. Any future removal or consolidation of persisted duplicate fields requires a
+   separately approved migration and export compatibility plan.
+5. E5 may clarify labels visually but must preserve these ownership rules.

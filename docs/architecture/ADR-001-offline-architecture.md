@@ -1,6 +1,6 @@
 # ADR-001 — Arquitectura Offline
 
-- Estado: aceptado para el ciclo Offline; aprobado por Federico antes de E2.
+- Estado: implementado por E4; aprobado por Federico antes de E2.
 - Fecha: 2026-07-16.
 - Aprobación registrada: 2026-07-17.
 - Decisores: Federico + implementación revisada por entregable.
@@ -68,10 +68,10 @@ flowchart TD
 
 ## Secuencia
 
-E2 eliminó Sync sin mover masivamente carpetas. E3 simplifica exportación y
-retira backup/restore sin ejecutar el refactor general. E4 aplicará este ADR
-slice por slice; la optimización profunda de dependencias/packaging permanece
-separada del cambio funcional.
+E2 eliminó Sync sin mover masivamente carpetas. E3 simplificó exportación y
+retiró backup/restore. E4 aplicó este ADR slice por slice, incorporó read
+models, ViewModels y enforcement automático. La división visual corresponde a
+E5 y la optimización profunda de dependencias/packaging permanece en E6.
 
 ## Criterios de aceptación
 
