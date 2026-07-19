@@ -1,46 +1,26 @@
-# Plan de consolidación de ramas
+# Branch consolidation plan after E6
 
-## Hecho probado
+E5 is canonical on `main` at `323e533`. E6 starts there on
+`codex/offline-e6-size-cleanup`. All historical branch tips are ancestors of
+main and have zero commits in `main..branch`.
 
-`release/v0.3` contiene todas las ramas locales y remotas. No hay commits exclusivos que integrar. El baseline canónico es `badbaa8`; E1 agrega sólo docs sobre ese baseline.
+## Recovery boundary
 
-## Topología objetivo temporal
+Before any deletion, E6 created and verified a full 38-ref bundle outside the
+repository. It includes main, E1-E5, all Sync/QR/LAN refs, release branches,
+and six historical tags. The E1 bundle remains untouched.
 
-```mermaid
-gitGraph
-  commit id: "main 78d52fe"
-  branch release-v0-3
-  checkout release-v0-3
-  commit id: "84a47f6"
-  commit id: "badbaa8 / v0.3.0-rc1"
-  branch offline-e1-audit
-  checkout offline-e1-audit
-  commit id: "E1 docs"
-  branch offline-e2-remove-sync
-  checkout offline-e2-remove-sync
-  commit id: "E2 phases (future)"
-```
+## Final sequence
 
-## Acciones
+1. Complete and push E6.
+2. Fast-forward E6 to main; run checker, analyze, tests, Windows/APK builds,
+   and Windows packaging.
+3. Push main and verify `origin/main` is identical.
+4. Recheck ancestry/unique-commit counts.
+5. Delete only contained local branches with `git branch -d`.
+6. Delete only contained remote branches with `git push origin --delete`.
+7. Preserve main and every historical tag; do not create `release/v1` yet.
+8. Run normal `git gc`, measure, and clean generated workspace output.
 
-1. E1: push `codex/offline-e1-audit`; no merge a main.
-2. Aprobación: baseline/ADR/scope.
-3. E2: branch desde E1; no merge/cherry-pick de ramas históricas.
-4. Mantener `release/v0.3` y tag RC1 inmutables.
-5. Mantener `main` sin force/rewrites; integración futura por PR revisado.
-6. Tras Offline Release estable, clasificar ramas antiguas para archivar/eliminar con aprobación separada.
-
-## Ramas históricas
-
-- sync foundation, encrypted package, pairing, LAN now/hardening/media: mantener como referencias hasta release Offline.
-- sync UX y QR branches: igual; ya contenidas.
-- release/v1 y release/v0.2: mantener por tags/releases.
-- no recrear ramas locales remotas sólo para “ordenar”; el bundle preserva refs y GitHub las mantiene.
-
-## Prohibiciones
-
-No delete, force push, rebase de releases, filter-repo, tag move ni merge a main en E1. Una futura poda de ramas no reduce significativamente el historial y debe priorizar trazabilidad.
-
-## Gate de consolidación final
-
-Sólo cuando E2–E5 terminen: PR Offline a main, CI/builds/QA, backup/migration validados, versión aprobada. Después se decide retención de ramas y GC local.
+No force push, rebase, filter-repo, immediate reflog expiration, aggressive
+pruning, tag move, tag deletion, or manual object deletion is allowed.
