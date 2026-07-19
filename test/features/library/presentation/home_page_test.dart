@@ -24,6 +24,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Inicio'), findsOneWidget);
+    expect(
+      find.text('1 juegos activos, 1 completados y 0 en progreso.'),
+      findsOneWidget,
+    );
     await tester.scrollUntilVisible(
       find.text('Últimos actualizados'),
       400,

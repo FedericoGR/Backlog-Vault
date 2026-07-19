@@ -81,6 +81,12 @@ void main() {
       contains('BacklogVault-android-\$architecture-v\$Version.apk'),
     );
     expect(
+      android,
+      contains('"--target-platform", "android-arm64"'),
+      reason: 'the published arm64 APK must retain the pubspec versionCode',
+    );
+    expect(android, contains('"arm64-v8a-split" { "arm64-split" }'));
+    expect(
       windows,
       contains('BacklogVault-windows-x64-v\$artifactVersion.zip'),
     );

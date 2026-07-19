@@ -14,6 +14,9 @@ Set-StrictMode -Version Latest
 $repoRoot = Get-BacklogVaultRepositoryRoot
 $distDir = Resolve-BacklogVaultRepositoryPath -RepositoryRoot $repoRoot -Path $OutputDirectory
 $apkOutput = Join-Path $repoRoot "build\app\outputs\flutter-apk"
+$candidateOutput = Join-Path $apkOutput "release-candidates"
+$universalCandidate = Join-Path $candidateOutput "app-universal-release.apk"
+$arm64Candidate = Join-Path $candidateOutput "app-arm64-release.apk"
 $version = Get-BacklogVaultVersion -RepositoryRoot $repoRoot
 $artifactVersion = if ([string]::IsNullOrWhiteSpace($ReleaseLabel)) {
     $version.Name
@@ -29,7 +32,8 @@ function Get-AndroidArtifactFileName {
 
     $architecture = switch ($Abi) {
         "universal" { "universal" }
-        "arm64-v8a" { "arm64" }
+        "arm64" { "arm64" }
+        "arm64-v8a-split" { "arm64-split" }
         default { $Abi }
     }
     return "BacklogVault-android-$architecture-v$Version.apk"
@@ -46,6 +50,7 @@ try {
             Invoke-BacklogVaultCommand "flutter" @("clean")
         }
         Invoke-BacklogVaultCommand "flutter" @("pub", "get")
+        New-Item -ItemType Directory -Path $candidateOutput -Force | Out-Null
 
         if ($Mode -in @("Universal", "Arm64AndUniversal", "All")) {
             Invoke-BacklogVaultCommand "flutter" @("build", "apk", "--release")
@@ -53,30 +58,38 @@ try {
             if (-not (Test-Path -LiteralPath $universalSource -PathType Leaf)) {
                 throw "Universal APK was not produced."
             }
-            Copy-Item -LiteralPath $universalSource -Destination (
-                Join-Path $distDir (Get-AndroidArtifactFileName -Abi "universal" -Version $artifactVersion)
-            ) -Force
+            Copy-Item -LiteralPath $universalSource -Destination $universalCandidate -Force
         }
 
-        if ($Mode -in @("Split", "Arm64AndUniversal", "All")) {
+        if ($Mode -in @("Arm64AndUniversal", "All")) {
+            Invoke-BacklogVaultCommand "flutter" @(
+                "build", "apk", "--release", "--target-platform", "android-arm64"
+            )
+            $arm64Source = Join-Path $apkOutput "app-release.apk"
+            if (-not (Test-Path -LiteralPath $arm64Source -PathType Leaf)) {
+                throw "Arm64 APK was not produced."
+            }
+            Copy-Item -LiteralPath $arm64Source -Destination $arm64Candidate -Force
+        }
+
+        if ($Mode -in @("Split", "All")) {
             Invoke-BacklogVaultCommand "flutter" @("build", "apk", "--release", "--split-per-abi")
         }
     }
 
     $wanted = [ordered]@{}
     if ($Mode -in @("Universal", "Arm64AndUniversal", "All")) {
-        $wanted["universal"] = if ($SkipBuild) {
-            Join-Path $apkOutput "app-release.apk"
-        } else {
-            Join-Path $distDir (Get-AndroidArtifactFileName -Abi "universal" -Version $artifactVersion)
-        }
+        $wanted["universal"] = $universalCandidate
     }
     if ($Mode -in @("Split", "All")) {
         $wanted["armeabi-v7a"] = Join-Path $apkOutput "app-armeabi-v7a-release.apk"
         $wanted["x86_64"] = Join-Path $apkOutput "app-x86_64-release.apk"
     }
-    if ($Mode -in @("Split", "Arm64AndUniversal", "All")) {
-        $wanted["arm64-v8a"] = Join-Path $apkOutput "app-arm64-v8a-release.apk"
+    if ($Mode -in @("Arm64AndUniversal", "All")) {
+        $wanted["arm64"] = $arm64Candidate
+    }
+    if ($Mode -eq "Split") {
+        $wanted["arm64-v8a-split"] = Join-Path $apkOutput "app-arm64-v8a-release.apk"
     }
 
     $artifacts = @()
@@ -103,6 +116,8 @@ try {
         application = "Backlog Vault"
         version = $version.Full
         package = "dev.backlogvault.app"
+        versionName = $version.Name
+        versionCode = $version.Code
         mode = $Mode
         artifacts = $artifacts
     } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $manifestPath -Encoding utf8

@@ -125,9 +125,9 @@ class _HomeHero extends StatelessWidget {
         final primary = BvActionCard(
           title: l10n.navigationLibrary,
           subtitle: l10n.homeLibrarySummary(
-            data.totalGames,
             data.completedCount,
             data.playingCount,
+            data.totalGames,
           ),
           icon: Icons.library_books_outlined,
           emphasized: true,

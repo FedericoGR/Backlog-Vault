@@ -59,7 +59,8 @@ or bundle the officially redistributable runtime files.
 .\tool\package_android.ps1
 ```
 
-Default mode builds and packages universal plus `arm64-v8a`. Other modes are
+Default mode builds and packages universal plus an arm64-targeted APK while
+preserving the pubspec version code. Other modes are
 `Universal`, `Split`, and `All`. `All` emits universal, armeabi-v7a, arm64-v8a,
 and x86_64 APKs. The script creates a JSON manifest and SHA-256 list, but does
 not call ADB or Flutter install.
@@ -103,7 +104,7 @@ flutter build windows --release
 flutter build apk --release
 flutter build apk --release --split-per-abi
 .\tool\package_windows.ps1 -SkipBuild
-.\tool\package_android.ps1 -SkipBuild -Mode Arm64AndUniversal
+.\tool\package_android.ps1 -Mode Arm64AndUniversal
 .\tool\verify_release_candidate.ps1
 .\tool\check_repository_hygiene.ps1
 git diff --check

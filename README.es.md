@@ -65,7 +65,7 @@ Para ejecutar el build limpio y los helpers reproducibles de packaging:
 ```powershell
 .\tool\build_release.ps1
 .\tool\package_windows.ps1 -SkipBuild
-.\tool\package_android.ps1 -SkipBuild -Mode Arm64AndUniversal
+.\tool\package_android.ps1 -Mode Arm64AndUniversal
 .\tool\verify_release_candidate.ps1
 .\tool\check_repository_hygiene.ps1
 ```
