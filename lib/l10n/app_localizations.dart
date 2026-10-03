@@ -869,7 +869,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeLibrarySummary.
   ///
   /// In en, this message translates to:
-  /// **'{total} active games, {completedCount} completed, and {playingCount} in progress.'**
+  /// **'{total} games, {completedCount} completed, and {playingCount} pending.'**
   String homeLibrarySummary(
     Object completedCount,
     Object playingCount,
@@ -1785,7 +1785,7 @@ abstract class AppLocalizations {
   /// No description provided for @columnPlaythroughs.
   ///
   /// In en, this message translates to:
-  /// **'Playthroughs'**
+  /// **'Legacy playthroughs'**
   String get columnPlaythroughs;
 
   /// No description provided for @gameCreateTitle.
@@ -1881,13 +1881,13 @@ abstract class AppLocalizations {
   /// No description provided for @gameCompletionSection.
   ///
   /// In en, this message translates to:
-  /// **'Completion / playthrough'**
+  /// **'Personal record'**
   String get gameCompletionSection;
 
   /// No description provided for @gameCompletionSectionSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Initial details when marking the game as completed.'**
+  /// **'Completion date is optional. Hours and platform belong to this game.'**
   String get gameCompletionSectionSubtitle;
 
   /// No description provided for @gameImportMetadata.
@@ -2085,7 +2085,7 @@ abstract class AppLocalizations {
   /// No description provided for @gamePlaythroughs.
   ///
   /// In en, this message translates to:
-  /// **'Playthroughs'**
+  /// **'Legacy playthroughs'**
   String get gamePlaythroughs;
 
   /// No description provided for @gameMarkPlaying.
@@ -2133,7 +2133,7 @@ abstract class AppLocalizations {
   /// No description provided for @gameNoPlaythroughsMessage.
   ///
   /// In en, this message translates to:
-  /// **'Played or completed playthroughs will appear here.'**
+  /// **'Legacy playthrough history is preserved here. New tracking uses the personal record.'**
   String get gameNoPlaythroughsMessage;
 
   /// No description provided for @gamePlaythroughActions.

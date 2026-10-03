@@ -53,7 +53,7 @@ class LibraryFilterSidebar extends StatelessWidget {
             _SidebarSection(
               title: context.l10n.libraryStatus,
               children: [
-                for (final status in GameStatus.values)
+                for (final status in personalGameStatuses)
                   Material(
                     color: Colors.transparent,
                     child: CheckboxListTile(

@@ -1,6 +1,5 @@
 import '../../library/domain/game_status.dart';
 import '../../library/domain/library_game_row.dart';
-import '../../playthroughs/domain/playthrough_status.dart';
 import '../domain/statistics_models.dart';
 
 class LibraryStatisticsCalculator {
@@ -8,63 +7,47 @@ class LibraryStatisticsCalculator {
 
   LibraryStatistics calculate({
     required List<LibraryGameRow> rows,
-    required List<StatisticsPlaythrough> playthroughs,
+    List<StatisticsPlaythrough> playthroughs = const [],
   }) {
-    final rowsByEntryId = {for (final row in rows) row.libraryEntryId: row};
-    final activePlaythroughs =
-        playthroughs
-            .where(
-              (playthrough) =>
-                  rowsByEntryId.containsKey(playthrough.libraryEntryId),
-            )
-            .toList();
-    final completedPlaythroughs =
-        activePlaythroughs
-            .where(
-              (playthrough) =>
-                  playthrough.status == PlaythroughStatus.completed &&
-                  playthrough.completedAt != null,
-            )
-            .toList();
+    final completedRows = rows.where(
+      (row) => row.isCompleted && row.completedAt != null,
+    );
 
     final statusCounts = <GameStatus, int>{
-      for (final status in GameStatus.values) status: 0,
+      for (final status in personalGameStatuses) status: 0,
     };
     for (final row in rows) {
-      statusCounts[row.status] = (statusCounts[row.status] ?? 0) + 1;
+      final status = personalGameStatus(row.status);
+      statusCounts[status] = (statusCounts[status] ?? 0) + 1;
     }
 
-    final totalHours = _sumHours(activePlaythroughs);
+    final totalHours = rows.fold(
+      0.0,
+      (sum, row) => sum + (row.hoursPlayed ?? 0),
+    );
     final ratingDistribution = _buildRatingDistribution(rows);
     final completedByYear = <int, int>{};
     final hoursByYear = <int, double>{};
     final monthlyByYear = <int, Map<int, _MutableMonthStats>>{};
     final latestByEntryId = <String, LatestCompletedGame>{};
 
-    for (final playthrough in completedPlaythroughs) {
-      final completedAt = playthrough.completedAt!;
+    for (final row in completedRows) {
+      final completedAt = row.completedAt!;
       final year = completedAt.year;
       final month = completedAt.month;
       completedByYear[year] = (completedByYear[year] ?? 0) + 1;
-      final hours = playthrough.hoursPlayed ?? 0;
+      final hours = row.hoursPlayed ?? 0;
       hoursByYear[year] = (hoursByYear[year] ?? 0) + hours;
       final monthStats = monthlyByYear
           .putIfAbsent(year, () => {})
           .putIfAbsent(month, () => _MutableMonthStats(month));
       monthStats.completedCount++;
       monthStats.hours += hours;
-
-      final row = rowsByEntryId[playthrough.libraryEntryId];
-      if (row != null) {
-        final current = latestByEntryId[row.libraryEntryId];
-        if (current == null || completedAt.isAfter(current.completedAt)) {
-          latestByEntryId[row.libraryEntryId] = LatestCompletedGame(
-            row: row,
-            completedAt: completedAt,
-            hoursPlayed: playthrough.hoursPlayed,
-          );
-        }
-      }
+      latestByEntryId[row.libraryEntryId] = LatestCompletedGame(
+        row: row,
+        completedAt: completedAt,
+        hoursPlayed: row.hoursPlayed,
+      );
     }
 
     final yearlyStatistics =
@@ -87,8 +70,7 @@ class LibraryStatisticsCalculator {
           ..sort((a, b) => b.year.compareTo(a.year));
 
     final completedEntriesWithDate = {
-      for (final playthrough in completedPlaythroughs)
-        playthrough.libraryEntryId,
+      for (final row in completedRows) row.libraryEntryId,
     };
     final latestCompleted =
         latestByEntryId.values.toList()
@@ -140,14 +122,6 @@ class LibraryStatisticsCalculator {
       availableYears:
           completedByYear.keys.toList()..sort((a, b) => b.compareTo(a)),
     );
-  }
-
-  double _sumHours(List<StatisticsPlaythrough> playthroughs) {
-    var total = 0.0;
-    for (final playthrough in playthroughs) {
-      total += playthrough.hoursPlayed ?? 0;
-    }
-    return total;
   }
 
   RatingDistribution _buildRatingDistribution(List<LibraryGameRow> rows) {

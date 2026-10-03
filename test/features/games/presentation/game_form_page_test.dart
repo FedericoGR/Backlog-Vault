@@ -85,12 +85,12 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
-      find.text('Completado / partida'),
+      find.text('Registro personal'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
 
-    expect(find.text('Completado / partida'), findsOneWidget);
+    expect(find.text('Registro personal'), findsOneWidget);
     expect(find.textContaining('Portada pendiente'), findsNothing);
     expect(find.text('Editar juego'), findsOneWidget);
     expect(tester.takeException(), isNull);

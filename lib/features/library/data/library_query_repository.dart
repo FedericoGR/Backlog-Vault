@@ -214,23 +214,6 @@ class LibraryQueryRepository {
     required MediaAsset? selectedCover,
     required bool hasExternalMetadata,
   }) {
-    DateTime? completedAt;
-    var hoursPlayed = 0.0;
-    var hasHours = false;
-
-    for (final playthrough in playthroughs) {
-      final candidateCompletedAt = playthrough.completedAt;
-      if (candidateCompletedAt != null &&
-          (completedAt == null || candidateCompletedAt.isAfter(completedAt))) {
-        completedAt = candidateCompletedAt;
-      }
-      final hours = playthrough.hoursPlayed;
-      if (hours != null) {
-        hoursPlayed += hours;
-        hasHours = true;
-      }
-    }
-
     return LibraryGameRow(
       gameId: game.id,
       libraryEntryId: entry.id,
@@ -239,10 +222,11 @@ class LibraryQueryRepository {
       selectedCoverLocalPath: selectedCover?.localPath,
       selectedCoverProvider: selectedCover?.provider ?? selectedCover?.source,
       hasExternalMetadata: hasExternalMetadata,
-      status: parseGameStatus(entry.status),
+      status: entry.isCompleted ? GameStatus.completed : GameStatus.backlog,
       releaseDate: game.releaseDate,
-      completedAt: completedAt,
-      hoursPlayed: hasHours ? hoursPlayed : null,
+      completedAt: entry.completedAt,
+      hoursPlayed: entry.hoursPlayed,
+      playedPlatformId: entry.playedPlatformId,
       personalRating: entry.personalRating,
       personalNotes: entry.personalNotes,
       type: game.type,

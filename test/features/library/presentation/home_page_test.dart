@@ -25,7 +25,7 @@ void main() {
 
     expect(find.text('Inicio'), findsOneWidget);
     expect(
-      find.text('1 juegos activos, 1 completados y 0 en progreso.'),
+      find.text('1 juegos, 1 completados y 0 pendientes.'),
       findsOneWidget,
     );
     await tester.scrollUntilVisible(

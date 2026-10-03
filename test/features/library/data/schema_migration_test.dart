@@ -2,8 +2,10 @@ import 'package:backlog_vault/core/database/app_database.dart';
 import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
+import '../../../fixtures/schema_v6_fixture.dart';
+
 void main() {
-  test('migrates schema 1 database to schema 6 preserving library data', () async {
+  test('migrates schema 1 database to schema 7 preserving library data', () async {
     final executor = NativeDatabase.memory(
       setup: (db) {
         db
@@ -138,41 +140,19 @@ void main() {
     expect(await db.select(db.mediaAssets).get(), isEmpty);
   });
 
-  test('migrates schema 2 database to schema 6 preserving saved views', () async {
+  test('migrates schema 2 database to schema 7 preserving saved views', () async {
     final executor = NativeDatabase.memory(
       setup: (db) {
-        db
-          ..execute('''
-            CREATE TABLE games (
-              id TEXT NOT NULL PRIMARY KEY,
-              title TEXT NOT NULL,
-              sort_title TEXT NULL,
-              release_date INTEGER NULL,
-              type TEXT NOT NULL DEFAULT 'game',
-              created_at INTEGER NOT NULL,
-              updated_at INTEGER NOT NULL,
-              deleted_at INTEGER NULL
-            );
-          ''')
-          ..execute('''
-            CREATE TABLE saved_views (
-              id TEXT NOT NULL PRIMARY KEY,
-              name TEXT NOT NULL,
-              filter_json TEXT NOT NULL,
-              sort_json TEXT NOT NULL,
-              column_config_json TEXT NOT NULL,
-              created_at INTEGER NOT NULL,
-              updated_at INTEGER NOT NULL,
-              deleted_at INTEGER NULL
-            );
-          ''')
-          ..execute(
-            "INSERT INTO games (id, title, type, created_at, updated_at) VALUES ('game-1', 'Existing Game', 'game', 0, 0);",
-          )
-          ..execute(
-            "INSERT INTO saved_views (id, name, filter_json, sort_json, column_config_json, created_at, updated_at) VALUES ('view-1', 'Vista', '{}', '{}', '{}', 0, 0);",
-          )
-          ..execute('PRAGMA user_version = 2;');
+        createEmptySchemaV6(db);
+        db.execute('DROP TABLE external_game_ids');
+        db.execute('DROP TABLE media_assets');
+        db.execute(
+          "INSERT INTO games (id,title,created_at,updated_at) VALUES ('game-1','Existing Game',0,0)",
+        );
+        db.execute(
+          "INSERT INTO saved_views (id,name,filter_json,sort_json,column_config_json,created_at,updated_at) VALUES ('view-1','Vista','{}','{}','{}',0,0)",
+        );
+        db.execute('PRAGMA user_version = 2');
       },
     );
     final db = AppDatabase(executor);
@@ -209,43 +189,18 @@ void main() {
     expect(await db.select(db.mediaAssets).get(), isEmpty);
   });
 
-  test('migrates schema 3 database to schema 6 preserving external ids', () async {
+  test('migrates schema 3 database to schema 7 preserving external ids', () async {
     final executor = NativeDatabase.memory(
       setup: (db) {
-        db
-          ..execute('''
-            CREATE TABLE games (
-              id TEXT NOT NULL PRIMARY KEY,
-              title TEXT NOT NULL,
-              sort_title TEXT NULL,
-              release_date INTEGER NULL,
-              type TEXT NOT NULL DEFAULT 'game',
-              created_at INTEGER NOT NULL,
-              updated_at INTEGER NOT NULL,
-              deleted_at INTEGER NULL
-            );
-          ''')
-          ..execute('''
-            CREATE TABLE external_game_ids (
-              id TEXT NOT NULL PRIMARY KEY,
-              game_id TEXT NOT NULL REFERENCES games(id),
-              provider TEXT NOT NULL,
-              external_id TEXT NOT NULL,
-              external_slug TEXT NULL,
-              external_url TEXT NULL,
-              matched_title TEXT NULL,
-              created_at INTEGER NOT NULL,
-              updated_at INTEGER NOT NULL,
-              deleted_at INTEGER NULL
-            );
-          ''')
-          ..execute(
-            "INSERT INTO games (id, title, type, created_at, updated_at) VALUES ('game-1', 'Existing Game', 'game', 0, 0);",
-          )
-          ..execute(
-            "INSERT INTO external_game_ids (id, game_id, provider, external_id, created_at, updated_at) VALUES ('external-1', 'game-1', 'rawg', '123', 0, 0);",
-          )
-          ..execute('PRAGMA user_version = 3;');
+        createEmptySchemaV6(db);
+        db.execute('DROP TABLE media_assets');
+        db.execute(
+          "INSERT INTO games (id,title,created_at,updated_at) VALUES ('game-1','Existing Game',0,0)",
+        );
+        db.execute(
+          "INSERT INTO external_game_ids (id,game_id,provider,external_id,created_at,updated_at) VALUES ('external-1','game-1','rawg','123',0,0)",
+        );
+        db.execute('PRAGMA user_version = 3');
       },
     );
     final db = AppDatabase(executor);

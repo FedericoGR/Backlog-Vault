@@ -80,7 +80,12 @@ class LibraryExportRepository {
         {
           'id': row.id,
           'gameId': row.gameId,
-          'status': row.status,
+          'status':
+              row.status, // Legacy value retained for archival compatibility.
+          'isCompleted': row.isCompleted,
+          'completedAt': _date(row.completedAt),
+          'hoursPlayed': row.hoursPlayed,
+          'playedPlatformId': row.playedPlatformId,
           'personalRating': row.personalRating,
           'personalNotes': row.personalNotes,
           'createdAt': _date(row.createdAt),

@@ -7,6 +7,7 @@ import 'package:backlog_vault/features/games/data/game_repository.dart';
 import 'package:backlog_vault/features/games/presentation/game_detail_page.dart';
 import 'package:backlog_vault/features/media/data/media_repository.dart';
 import 'package:backlog_vault/features/library/domain/game_status.dart';
+import 'package:backlog_vault/features/playthroughs/application/completion_form_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -26,6 +27,39 @@ void main() {
     when(
       () => mediaRepository.resolveLocalFile(any()),
     ).thenAnswer((_) async => File('Z:/backlog-vault-test/missing-cover.png'));
+  });
+
+  testWidgets('completion dialog can save without a date', (tester) async {
+    registerFallbackValue(const CompletionFormModel(libraryEntryId: ''));
+    when(
+      () => gameRepository.getByEntryId('entry-2'),
+    ).thenAnswer((_) async => _details(withCover: false));
+    when(() => gameRepository.completeGame(any())).thenAnswer((_) async {});
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          gameRepositoryProvider.overrideWith((ref) => gameRepository),
+          mediaRepositoryProvider.overrideWith((ref) => mediaRepository),
+        ],
+        child: MaterialApp(
+          theme: buildBacklogVaultDarkTheme(),
+          home: const GameDetailPage(entryId: 'entry-2'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final button = find.widgetWithText(FilledButton, 'Completar');
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    final date = find.widgetWithText(ListTile, 'Fecha de completado');
+    expect(find.descendant(of: date, matching: find.text('-')), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Completar').last);
+    await tester.pumpAndSettle();
+    final saved =
+        verify(() => gameRepository.completeGame(captureAny())).captured.single
+            as CompletionFormModel;
+    expect(saved.completedAt, isNull);
   });
 
   testWidgets('GameDetailPage renders with cover and without overflow', (
@@ -126,51 +160,42 @@ void main() {
     },
   );
 
-  testWidgets('editing an imported playthrough keeps a missing start date', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(432, 960);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets(
+    'legacy playthrough history is visible without mutation controls',
+    (tester) async {
+      tester.view.physicalSize = const Size(432, 960);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    when(() => gameRepository.getByEntryId('entry-4')).thenAnswer(
-      (_) async => _details(withCover: false, missingPlaythroughStart: true),
-    );
+      when(() => gameRepository.getByEntryId('entry-4')).thenAnswer(
+        (_) async => _details(withCover: false, missingPlaythroughStart: true),
+      );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          gameRepositoryProvider.overrideWith((ref) => gameRepository),
-          mediaRepositoryProvider.overrideWith((ref) => mediaRepository),
-        ],
-        child: MaterialApp(
-          theme: buildBacklogVaultDarkTheme(),
-          home: const Scaffold(body: GameDetailPage(entryId: 'entry-4')),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            gameRepositoryProvider.overrideWith((ref) => gameRepository),
+            mediaRepositoryProvider.overrideWith((ref) => mediaRepository),
+          ],
+          child: MaterialApp(
+            theme: buildBacklogVaultDarkTheme(),
+            home: const Scaffold(body: GameDetailPage(entryId: 'entry-4')),
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    final actions = find.byTooltip('Acciones de partida');
-    await tester.scrollUntilVisible(
-      actions,
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.tap(actions);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Editar').last);
-    await tester.pumpAndSettle();
-
-    final startDateTile = find.widgetWithText(ListTile, 'Fecha de inicio');
-    expect(startDateTile, findsOneWidget);
-    expect(
-      find.descendant(of: startDateTile, matching: find.text('-')),
-      findsOneWidget,
-    );
-    expect(tester.takeException(), isNull);
-  });
+      await tester.scrollUntilVisible(
+        find.text('Notas personales'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.byTooltip('Acciones de partida'), findsNothing);
+      expect(find.text('Nueva partida'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
 
 final _now = DateTime(2026, 6, 16);

@@ -25,7 +25,7 @@ void main() {
   });
 
   test(
-    'imports a valid row creating game, entry, catalogs and playthrough',
+    'imports a valid row creating game, entry, catalogs and personal record',
     () async {
       final preview = await _previewFromFixture(
         db,
@@ -38,7 +38,7 @@ void main() {
       expect(result.importedGames, 1);
       expect(result.platformsCreated, 1);
       expect(result.genresCreated, 1);
-      expect(result.playthroughsCreated, 1);
+      expect(result.playthroughsCreated, 0);
 
       final games = await db.select(db.games).get();
       final entries = await db.select(db.libraryEntries).get();
@@ -46,13 +46,40 @@ void main() {
       final genres = await db.select(db.genres).get();
       final playthroughs = await db.select(db.playthroughs).get();
 
+      expect(playthroughs, isEmpty);
+      expect(entries.single.isCompleted, isTrue);
+      expect(entries.single.playedPlatformId, platforms.single.id);
       expect(games.single.title, 'Hades');
       expect(entries.single.status, GameStatus.completed.name);
       expect(entries.single.personalRating, 5);
       expect(platforms.single.name, 'PC');
       expect(genres.single.name, 'Roguelite');
-      expect(playthroughs.single.completedAt, DateTime(2026, 6, 9));
-      expect(playthroughs.single.hoursPlayed, 42.5);
+      expect(entries.single.completedAt, DateTime(2026, 6, 9));
+      expect(entries.single.hoursPlayed, 42.5);
+    },
+  );
+
+  test(
+    'imports undated completion and pending hours directly into records',
+    () async {
+      const text =
+          'Name,Status,Duration\nUndated,Completed,\nPending,Backlog,3.5';
+      final document = const CsvParser().parseText(
+        fileName: 'personal.csv',
+        sizeBytes: text.length,
+        text: text,
+      );
+      final preview = const BuildImportPreviewUseCase()(
+        document: document,
+        mapping: const DetectNotionCsvMappingUseCase()(document.headers),
+        existingGames: const [],
+      );
+      expect(preview.rows.expand((row) => row.issues), isEmpty);
+      await repository.importPreview(preview);
+      final entries = await db.select(db.libraryEntries).get();
+      expect(entries.where((e) => e.isCompleted).single.completedAt, isNull);
+      expect(entries.where((e) => !e.isCompleted).single.hoursPlayed, 3.5);
+      expect(await db.select(db.playthroughs).get(), isEmpty);
     },
   );
 

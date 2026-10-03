@@ -15,24 +15,24 @@ void main() {
     );
 
     expect(stats.totalGames, 5);
-    expect(stats.backlogCount, 1);
-    expect(stats.playingCount, 1);
+    expect(stats.backlogCount, 2);
+    expect(stats.playingCount, 0);
     expect(stats.pausedCount, 0);
-    expect(stats.completedCount, 2);
-    expect(stats.statusCounts[GameStatus.dropped], 1);
-    expect(stats.completedByYear[2026], 3);
-    expect(stats.completedByYear[2025], 1);
-    expect(stats.hoursByYear[2026], 60);
-    expect(stats.hoursByYear[2025], 5);
+    expect(stats.completedCount, 3);
+    expect(stats.statusCounts[GameStatus.dropped], isNull);
+    expect(stats.completedByYear[2026], 2);
+    expect(stats.completedByYear[2025], isNull);
+    expect(stats.hoursByYear[2026], 77);
+    expect(stats.hoursByYear[2025], isNull);
     expect(stats.totalHours, 77);
 
     final year2026 = stats.statsForYear(2026)!;
-    expect(year2026.completedCount, 3);
-    expect(year2026.hours, 60);
-    expect(year2026.monthlyCompletions[0].completedCount, 1);
+    expect(year2026.completedCount, 2);
+    expect(year2026.hours, 77);
+    expect(year2026.monthlyCompletions[0].completedCount, 0);
     expect(year2026.monthlyCompletions[1].completedCount, 1);
     expect(year2026.monthlyCompletions[2].completedCount, 1);
-    expect(year2026.monthlyCompletions[2].hours, 30);
+    expect(year2026.monthlyCompletions[2].hours, 42);
 
     expect(stats.averageRating, closeTo(3.67, 0.01));
     expect(stats.ratingDistribution.countByRating[5], 1);
@@ -67,45 +67,48 @@ void main() {
     expect(stats.latestCompleted.last.completedAt, DateTime(2026, 2, 2));
   });
 
-  test('uses completed status and dated completed playthroughs distinctly', () {
-    final stats = calculator.calculate(
-      rows: [
-        ..._rows,
-        LibraryGameRow(
-          gameId: 'g6',
-          libraryEntryId: 'e6',
-          title: 'Retired Game',
-          status: GameStatus.retired,
-          type: 'game',
-          platforms: const [],
-          genres: const [],
-          playthroughCount: 1,
-          updatedAt: DateTime(2026, 6, 6),
-        ),
-      ],
-      playthroughs: [
-        ..._playthroughs,
-        StatisticsPlaythrough(
-          libraryEntryId: 'e5',
-          status: PlaythroughStatus.dropped,
-          completedAt: DateTime(2026, 5, 1),
-          hoursPlayed: 7,
-        ),
-        StatisticsPlaythrough(
-          libraryEntryId: 'e6',
-          status: PlaythroughStatus.completed,
-          hoursPlayed: 11,
-        ),
-      ],
-    );
+  test(
+    'ignores legacy playthroughs when calculating personal record statistics',
+    () {
+      final stats = calculator.calculate(
+        rows: [
+          ..._rows,
+          LibraryGameRow(
+            gameId: 'g6',
+            libraryEntryId: 'e6',
+            title: 'Retired Game',
+            status: GameStatus.retired,
+            type: 'game',
+            platforms: const [],
+            genres: const [],
+            playthroughCount: 1,
+            updatedAt: DateTime(2026, 6, 6),
+          ),
+        ],
+        playthroughs: [
+          ..._playthroughs,
+          StatisticsPlaythrough(
+            libraryEntryId: 'e5',
+            status: PlaythroughStatus.dropped,
+            completedAt: DateTime(2026, 5, 1),
+            hoursPlayed: 7,
+          ),
+          StatisticsPlaythrough(
+            libraryEntryId: 'e6',
+            status: PlaythroughStatus.completed,
+            hoursPlayed: 11,
+          ),
+        ],
+      );
 
-    expect(stats.completedCount, 2);
-    expect(stats.statusCounts[GameStatus.retired], 1);
-    expect(stats.completedByYear[2026], 3);
-    expect(stats.hoursByYear[2026], 60);
-    expect(stats.totalHours, 95);
-    expect(stats.qualityStats.completedWithoutDate, 1);
-  });
+      expect(stats.completedCount, 3);
+      expect(stats.statusCounts[GameStatus.retired], isNull);
+      expect(stats.completedByYear[2026], 2);
+      expect(stats.hoursByYear[2026], 77);
+      expect(stats.totalHours, 77);
+      expect(stats.qualityStats.completedWithoutDate, 1);
+    },
+  );
 
   test('handles an empty library without ugly values', () {
     final stats = calculator.calculate(rows: const [], playthroughs: const []);
@@ -129,6 +132,8 @@ final _rows = [
     selectedCoverLocalPath: 'media/games/g1/cover.png',
     hasExternalMetadata: true,
     status: GameStatus.completed,
+    completedAt: DateTime(2026, 2, 2),
+    hoursPlayed: 35,
     personalRating: 5,
     type: 'game',
     platforms: const [
@@ -143,7 +148,9 @@ final _rows = [
     gameId: 'g2',
     libraryEntryId: 'e2',
     title: 'Baldur\'s Gate 3',
-    status: GameStatus.playing,
+    status: GameStatus.completed,
+    completedAt: DateTime(2026, 3, 10),
+    hoursPlayed: 42,
     personalRating: 4,
     type: 'game',
     platforms: const [LibraryCatalogItem(id: 'pc', name: 'PC')],

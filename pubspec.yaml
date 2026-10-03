@@ -27,6 +27,7 @@ dependencies:
   shared_preferences: ^2.5.3
 
 dev_dependencies:
+  sqlite3: ^3.3.2
   build_runner: ^2.10.4
   drift_dev: ^2.33.0
   flutter_lints: ^6.0.0

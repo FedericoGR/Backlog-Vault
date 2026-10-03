@@ -27,40 +27,12 @@ GameStatus parseGameStatus(String value) {
   );
 }
 
-const validGameStatusTransitions = <GameStatus, Set<GameStatus>>{
-  GameStatus.wishlist: {GameStatus.backlog, GameStatus.retired},
-  GameStatus.backlog: {
-    GameStatus.playing,
-    GameStatus.completed,
-    GameStatus.dropped,
-    GameStatus.retired,
-  },
-  GameStatus.playing: {
-    GameStatus.paused,
-    GameStatus.completed,
-    GameStatus.dropped,
-    GameStatus.backlog,
-  },
-  GameStatus.paused: {
-    GameStatus.playing,
-    GameStatus.completed,
-    GameStatus.dropped,
-    GameStatus.backlog,
-  },
-  GameStatus.completed: {
-    GameStatus.playing,
-    GameStatus.backlog,
-    GameStatus.retired,
-  },
-  GameStatus.dropped: {
-    GameStatus.backlog,
-    GameStatus.playing,
-    GameStatus.retired,
-  },
-  GameStatus.retired: {GameStatus.wishlist, GameStatus.backlog},
-};
+/// Only these states are offered by the product. Other enum values remain
+/// available for interpreting legacy status values and external imports.
+const personalGameStatuses = [GameStatus.backlog, GameStatus.completed];
 
-bool canTransitionGameStatus(GameStatus from, GameStatus to) {
-  if (from == to) return true;
-  return validGameStatusTransitions[from]?.contains(to) ?? false;
-}
+GameStatus personalGameStatus(GameStatus legacy) =>
+    legacy == GameStatus.completed ? GameStatus.completed : GameStatus.backlog;
+
+bool canTransitionGameStatus(GameStatus from, GameStatus to) =>
+    personalGameStatuses.contains(to);

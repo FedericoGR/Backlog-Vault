@@ -10,9 +10,6 @@ class GameProgressSummary {
   });
 
   factory GameProgressSummary.fromDetails(LibraryGameDetails details) {
-    var totalHours = 0.0;
-    var hasHours = false;
-    DateTime? latestCompletedAt;
     var orderedPlaythroughs = [...details.playthroughs]
       ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     final activePlaythrough = _firstOrNull(
@@ -23,24 +20,10 @@ class GameProgressSummary {
       }),
     );
 
-    for (final playthrough in details.playthroughs) {
-      final hours = playthrough.hoursPlayed;
-      if (hours != null) {
-        totalHours += hours;
-        hasHours = true;
-      }
-      final completedAt = playthrough.completedAt;
-      if (completedAt != null &&
-          (latestCompletedAt == null ||
-              completedAt.isAfter(latestCompletedAt))) {
-        latestCompletedAt = completedAt;
-      }
-    }
-
     return GameProgressSummary(
-      totalHours: hasHours ? totalHours : null,
+      totalHours: details.entry.hoursPlayed,
       playthroughCount: details.playthroughs.length,
-      latestCompletedAt: latestCompletedAt,
+      latestCompletedAt: details.entry.completedAt,
       activePlaythrough: activePlaythrough,
     );
   }

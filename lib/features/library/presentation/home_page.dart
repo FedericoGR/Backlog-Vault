@@ -53,13 +53,6 @@ class HomePage extends ConsumerWidget {
               _HomeCounters(data: data),
               const SizedBox(height: BvSpacing.md),
               _HomeSection(
-                title: l10n.homeNowPlaying,
-                description: l10n.homeNowPlayingDescription,
-                rows: data.playingNow,
-                emptyText: l10n.homeNowPlayingEmpty,
-              ),
-              const SizedBox(height: BvSpacing.md),
-              _HomeSection(
                 title: l10n.backlog,
                 description: l10n.homeBacklogDescription,
                 rows: data.backlog,
@@ -126,7 +119,7 @@ class _HomeHero extends StatelessWidget {
           title: l10n.navigationLibrary,
           subtitle: l10n.homeLibrarySummary(
             data.completedCount,
-            data.playingCount,
+            data.backlogCount,
             data.totalGames,
           ),
           icon: Icons.library_books_outlined,
@@ -194,7 +187,6 @@ class _HomeCounters extends StatelessWidget {
       children: [
         _CounterCard(label: l10n.games, value: data.totalGames),
         _CounterCard(label: l10n.backlog, value: data.backlogCount),
-        _CounterCard(label: l10n.playing, value: data.playingCount),
         _CounterCard(label: l10n.completed, value: data.completedCount),
         _CounterCard(label: l10n.missingCover, value: data.missingCoverCount),
       ],

@@ -20,6 +20,27 @@ void main() {
     await db.close();
   });
 
+  test(
+    'old saved lifecycle filters are read as pending without rewriting JSON',
+    () async {
+      await repository.create(
+        name: 'Legacy playing',
+        filter: const LibraryFilterState(
+          statuses: {GameStatus.playing, GameStatus.paused},
+        ),
+        sort: const LibrarySortState(field: LibrarySortField.title),
+        columnConfig: LibraryColumnConfig(
+          visibleColumns: const [LibraryColumnKey.title],
+        ),
+      );
+      final view = (await repository.watchCustomViews().first).single;
+      expect(view.filter.statuses, {GameStatus.backlog});
+      final raw = (await db.select(db.savedViews).get()).single;
+      expect(raw.filterJson, contains('playing'));
+      expect(raw.filterJson, contains('paused'));
+    },
+  );
+
   test('creates, lists, updates and soft-deletes custom views', () async {
     final id = await repository.create(
       name: 'Mi backlog PC',

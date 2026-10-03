@@ -5,13 +5,11 @@ import '../../../../core/database/app_database.dart';
 import '../../../../core/database/database_providers.dart';
 import '../../../../core/ids/id_generator.dart';
 import '../../../../core/time/clock.dart';
-import '../../../playthroughs/domain/playthrough_status.dart';
-import '../application/build_import_preview_use_case.dart';
+import '../../../library/domain/game_status.dart';
 import '../application/duplicate_detector.dart';
 import '../domain/existing_game_summary.dart';
 import '../domain/import_preview.dart';
 import '../domain/import_result.dart';
-import '../domain/normalized_import_row.dart';
 
 final notionCsvImportRepositoryProvider = Provider<NotionCsvImportRepository>((
   ref,
@@ -80,7 +78,6 @@ class NotionCsvImportRepository {
       var importedGames = 0;
       var platformsCreated = 0;
       var genresCreated = 0;
-      var playthroughsCreated = 0;
 
       for (final row in preview.rows.where((row) => row.canImport)) {
         final gameId = _ids.newId();
@@ -107,6 +104,9 @@ class NotionCsvImportRepository {
                 id: entryId,
                 gameId: gameId,
                 status: row.status.name,
+                isCompleted: Value(row.status == GameStatus.completed),
+                completedAt: Value(row.completedAt),
+                hoursPlayed: Value(row.hoursPlayed),
                 personalRating: Value(row.personalRating),
                 personalNotes: Value(_blankToNull(row.personalNotes)),
                 createdAt: now,
@@ -155,28 +155,12 @@ class NotionCsvImportRepository {
               );
         }
 
-        if (shouldCreatePlaythroughForImport(row)) {
-          await _db
-              .into(_db.playthroughs)
-              .insert(
-                PlaythroughsCompanion.insert(
-                  id: _ids.newId(),
-                  libraryEntryId: entryId,
-                  platformId: Value(
-                    platformIds.isEmpty ? null : platformIds.first,
-                  ),
-                  status: playthroughStatusForImport(row).name,
-                  startedAt: Value(_startedAtFor(row)),
-                  completedAt: Value(row.completedAt),
-                  hoursPlayed: Value(row.hoursPlayed),
-                  rating: Value(row.personalRating),
-                  notes: Value(_blankToNull(row.personalNotes)),
-                  createdAt: now,
-                  updatedAt: now,
-                ),
-              );
-          playthroughsCreated++;
-        }
+        await (_db.update(_db.libraryEntries)
+          ..where((table) => table.id.equals(entryId))).write(
+          LibraryEntriesCompanion(
+            playedPlatformId: Value(platformIds.firstOrNull),
+          ),
+        );
 
         importedGames++;
       }
@@ -192,7 +176,7 @@ class NotionCsvImportRepository {
         duplicatesSkipped: duplicatesSkipped,
         platformsCreated: platformsCreated,
         genresCreated: genresCreated,
-        playthroughsCreated: playthroughsCreated,
+        playthroughsCreated: 0,
       );
     });
   }
@@ -267,15 +251,6 @@ String? _blankToNull(String? value) {
 String? _sortTitle(String title) {
   final trimmed = title.trim();
   return trimmed.isEmpty ? null : trimmed.toLowerCase();
-}
-
-DateTime? _startedAtFor(NormalizedImportRow row) {
-  final status = playthroughStatusForImport(row);
-  if (status == PlaythroughStatus.active ||
-      status == PlaythroughStatus.paused) {
-    return null;
-  }
-  return null;
 }
 
 T? _firstOrNull<T>(Iterable<T> values) {

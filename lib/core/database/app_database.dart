@@ -32,23 +32,69 @@ class AppDatabase extends _$AppDatabase {
       await migrator.createAll();
     },
     onUpgrade: (migrator, from, to) async {
-      if (from < 2) {
-        await migrator.createTable(savedViews);
-      }
-      if (from < 3) {
-        await migrator.createTable(externalGameIds);
-      }
-      if (from < 4) {
-        await migrator.createTable(mediaAssets);
-      }
-      if (from == 5) {
-        await _migrateSchema5ToOffline6();
-      }
+      await transaction(() async {
+        if (from < 2) {
+          await migrator.createTable(savedViews);
+        }
+        if (from < 3) {
+          await migrator.createTable(externalGameIds);
+        }
+        if (from < 4) {
+          await migrator.createTable(mediaAssets);
+        }
+        if (from == 5) {
+          await _migrateSchema5ToOffline6();
+        }
+        if (from < 7) {
+          await _migratePersonalRecord7(migrator);
+        }
+      });
     },
     beforeOpen: (_) async {
       await customStatement('PRAGMA foreign_keys = ON');
     },
   );
+
+  Future<void> _migratePersonalRecord7(Migrator migrator) async {
+    await migrator.addColumn(libraryEntries, libraryEntries.isCompleted);
+    await migrator.addColumn(libraryEntries, libraryEntries.completedAt);
+    await migrator.addColumn(libraryEntries, libraryEntries.hoursPlayed);
+    await migrator.addColumn(libraryEntries, libraryEntries.playedPlatformId);
+
+    // Dates sort before undated completions. Stable IDs resolve remaining ties.
+    // SUM intentionally returns NULL when no recorded hours exist.
+    const completed = '''
+      FROM playthroughs p
+      WHERE p.library_entry_id = library_entries.id
+        AND p.deleted_at IS NULL AND p.status = 'completed'
+    ''';
+    const latestCompleted = '''
+      $completed ORDER BY p.completed_at DESC, p.updated_at DESC, p.id ASC LIMIT 1
+    ''';
+    await customStatement('''
+      UPDATE library_entries SET
+        is_completed = (status = 'completed' OR EXISTS (SELECT 1 $completed)),
+        completed_at = (SELECT MAX(p.completed_at) $completed),
+        hours_played = (
+          SELECT SUM(p.hours_played) FROM playthroughs p
+          WHERE p.library_entry_id = library_entries.id AND p.deleted_at IS NULL
+        ),
+        played_platform_id = COALESCE(
+          (SELECT p.platform_id $latestCompleted),
+          (SELECT p.platform_id FROM playthroughs p
+           WHERE p.library_entry_id = library_entries.id AND p.deleted_at IS NULL
+           ORDER BY p.updated_at DESC, p.id ASC LIMIT 1),
+          (SELECT lp.platform_id FROM library_entry_platforms lp
+           WHERE lp.library_entry_id = library_entries.id
+             AND lp.deleted_at IS NULL AND lp.is_primary = 1
+           ORDER BY lp.updated_at DESC, lp.id ASC LIMIT 1)
+        ),
+        personal_rating = COALESCE(
+          personal_rating, (SELECT p.rating $latestCompleted)
+        )
+    ''');
+    await _requireForeignKeyIntegrity();
+  }
 
   Future<void> _migrateSchema5ToOffline6() async {
     await _requireFunctionalSchema();

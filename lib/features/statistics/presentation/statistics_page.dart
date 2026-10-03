@@ -41,7 +41,6 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final rows = ref.watch(libraryRowsProvider);
-    final playthroughs = ref.watch(statisticsPlaythroughsProvider);
 
     return BvPageScaffold(
       title: l10n.navigationStatistics,
@@ -54,31 +53,17 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
         ),
       ],
       body: rows.when(
-        data:
-            (items) => playthroughs.when(
-              data: (playthroughItems) {
-                final stats = ref
-                    .watch(libraryStatisticsCalculatorProvider)
-                    .calculate(rows: items, playthroughs: playthroughItems);
-                if (items.isEmpty) return const _EmptyStatisticsState();
-                final selectedYear = _resolveSelectedYear(stats);
-                return _StatisticsContent(
-                  stats: stats,
-                  selectedYear: selectedYear,
-                  onYearChanged: (year) => setState(() => _selectedYear = year),
-                );
-              },
-              loading:
-                  () => BvLoadingState(label: l10n.statisticsProgressLoading),
-              error:
-                  (error, stackTrace) => BvErrorState(
-                    title: l10n.statisticsLoadProgressError,
-                    message: l10n.unexpectedErrorMessage,
-                    retryLabel: l10n.retry,
-                    onRetry:
-                        () => ref.invalidate(statisticsPlaythroughsProvider),
-                  ),
-            ),
+        data: (items) {
+          final stats = ref
+              .watch(libraryStatisticsCalculatorProvider)
+              .calculate(rows: items);
+          if (items.isEmpty) return const _EmptyStatisticsState();
+          return _StatisticsContent(
+            stats: stats,
+            selectedYear: _resolveSelectedYear(stats),
+            onYearChanged: (year) => setState(() => _selectedYear = year),
+          );
+        },
         loading: () => BvLoadingState(label: l10n.statisticsLibraryLoading),
         error:
             (error, stackTrace) => BvErrorState(

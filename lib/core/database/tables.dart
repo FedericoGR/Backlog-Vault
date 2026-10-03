@@ -17,7 +17,14 @@ class Games extends Table {
 class LibraryEntries extends Table {
   TextColumn get id => text()();
   TextColumn get gameId => text().references(Games, #id)();
+
+  /// Preserved legacy lifecycle value; current tracking uses isCompleted.
   TextColumn get status => text()();
+  BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get completedAt => dateTime().nullable()();
+  RealColumn get hoursPlayed => real().nullable()();
+  TextColumn get playedPlatformId =>
+      text().nullable().references(Platforms, #id)();
   IntColumn get personalRating => integer().nullable()();
   TextColumn get personalNotes => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();

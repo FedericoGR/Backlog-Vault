@@ -315,23 +315,19 @@ class _CompletionFields extends StatelessWidget {
   const _CompletionFields({
     required this.completedAt,
     required this.hoursController,
-    required this.rating,
     required this.platformId,
     required this.platforms,
     required this.twoColumns,
     required this.onDateChanged,
-    required this.onRatingChanged,
     required this.onPlatformChanged,
   });
 
-  final DateTime completedAt;
+  final DateTime? completedAt;
   final TextEditingController hoursController;
-  final int? rating;
   final String? platformId;
   final Map<String, String> platforms;
   final bool twoColumns;
   final ValueChanged<DateTime?> onDateChanged;
-  final ValueChanged<int?> onRatingChanged;
   final ValueChanged<String?> onPlatformChanged;
 
   @override
@@ -353,15 +349,8 @@ class _CompletionFields extends StatelessWidget {
           keyboardType: TextInputType.number,
           decoration: InputDecoration(labelText: context.l10n.gameHoursPlayed),
         ),
-        DropdownButtonFormField<int?>(
-          initialValue: rating,
-          decoration: InputDecoration(
-            labelText: context.l10n.gamePlaythroughRating,
-          ),
-          items: _ratingItems(context),
-          onChanged: onRatingChanged,
-        ),
         DropdownButtonFormField<String?>(
+          isExpanded: true,
           initialValue: safePlatformId,
           decoration: InputDecoration(labelText: context.l10n.gamePlatform),
           items: [

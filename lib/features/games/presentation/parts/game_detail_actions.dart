@@ -96,61 +96,6 @@ Future<void> _showCompletionDialog(
   );
 }
 
-Future<void> _showPlaythroughDialog(
-  BuildContext context,
-  WidgetRef ref,
-  LibraryGameDetails item, [
-  PlaythroughDetails? playthrough,
-]) async {
-  final result = await showDialog<PlaythroughFormModel>(
-    context: context,
-    builder:
-        (context) => _PlaythroughDialog(item: item, playthrough: playthrough),
-  );
-  if (result == null || !context.mounted) return;
-  await _runProgressAction(
-    context,
-    ref,
-    item,
-    () => ref.read(gameDetailViewModelProvider).savePlaythrough(result),
-  );
-}
-
-Future<void> _confirmDeletePlaythrough(
-  BuildContext context,
-  WidgetRef ref,
-  LibraryGameDetails item,
-  PlaythroughDetails playthrough,
-) async {
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder:
-        (context) => AlertDialog(
-          scrollable: true,
-          title: Text(context.l10n.gameDeletePlaythroughTitle),
-          content: Text(context.l10n.gameDeletePlaythroughMessage),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(context.l10n.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(context.l10n.delete),
-            ),
-          ],
-        ),
-  );
-  if (confirmed != true || !context.mounted) return;
-  await _runProgressAction(
-    context,
-    ref,
-    item,
-    () =>
-        ref.read(gameDetailViewModelProvider).deletePlaythrough(playthrough.id),
-  );
-}
-
 Future<void> _confirmDelete(
   BuildContext context,
   WidgetRef ref,

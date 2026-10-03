@@ -1,5 +1,7 @@
 # Backlog Vault library export format v1
 
+This documents the legacy format. Current exports use [version 2](library_export_format_v2.md).
+
 ## Purpose
 
 The library export is a readable, portable snapshot of Backlog Vault data. It

@@ -9,7 +9,8 @@ class _GameInfoPanel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final bv = BvThemeExtension.of(context);
-    final status = parseGameStatus(item.entry.status);
+    final status =
+        (item.entry.isCompleted ? GameStatus.completed : GameStatus.backlog);
     return BvPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,7 +205,9 @@ class _GameProgressSection extends StatelessWidget {
                 BvStatCard(
                   label: context.l10n.libraryStatus,
                   value: context.l10n.gameStatusLabel(
-                    parseGameStatus(item.entry.status),
+                    (item.entry.isCompleted
+                        ? GameStatus.completed
+                        : GameStatus.backlog),
                   ),
                   icon: Icons.flag_outlined,
                 ),
@@ -236,41 +239,12 @@ class _QuickProgressActions extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final current = parseGameStatus(item.entry.status);
+    final current =
+        (item.entry.isCompleted ? GameStatus.completed : GameStatus.backlog);
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 440;
         final actions = [
-          _ProgressAction(
-            label: context.l10n.gameMarkPlaying,
-            icon: Icons.play_arrow,
-            onPressed:
-                _can(current, GameStatus.playing)
-                    ? () => _runProgressAction(
-                      context,
-                      ref,
-                      item,
-                      () => ref
-                          .read(gameDetailViewModelProvider)
-                          .markPlaying(item.entry.id),
-                    )
-                    : null,
-          ),
-          _ProgressAction(
-            label: context.l10n.gamePause,
-            icon: Icons.pause,
-            onPressed:
-                _can(current, GameStatus.paused)
-                    ? () => _runProgressAction(
-                      context,
-                      ref,
-                      item,
-                      () => ref
-                          .read(gameDetailViewModelProvider)
-                          .markPaused(item.entry.id),
-                    )
-                    : null,
-          ),
           _ProgressAction(
             label: context.l10n.gameComplete,
             icon: Icons.check_circle_outline,
@@ -278,21 +252,6 @@ class _QuickProgressActions extends ConsumerWidget {
             onPressed:
                 _can(current, GameStatus.completed)
                     ? () => _showCompletionDialog(context, ref, item)
-                    : null,
-          ),
-          _ProgressAction(
-            label: context.l10n.gameDrop,
-            icon: Icons.cancel_outlined,
-            onPressed:
-                _can(current, GameStatus.dropped)
-                    ? () => _runProgressAction(
-                      context,
-                      ref,
-                      item,
-                      () => ref
-                          .read(gameDetailViewModelProvider)
-                          .markDropped(item.entry.id),
-                    )
                     : null,
           ),
           _ProgressAction(
@@ -342,25 +301,10 @@ class _PlaythroughSection extends ConsumerWidget {
       ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     return LayoutBuilder(
       builder: (context, constraints) {
-        final compact = constraints.maxWidth < 520;
         return BvPanel(
           child: BvSection(
             title: context.l10n.gamePlaythroughs,
             padding: EdgeInsets.zero,
-            trailing:
-                compact
-                    ? IconButton.filledTonal(
-                      tooltip: context.l10n.gameNewPlaythrough,
-                      onPressed:
-                          () => _showPlaythroughDialog(context, ref, item),
-                      icon: const Icon(Icons.add),
-                    )
-                    : FilledButton.icon(
-                      onPressed:
-                          () => _showPlaythroughDialog(context, ref, item),
-                      icon: const Icon(Icons.add),
-                      label: Text(context.l10n.gameNewPlaythrough),
-                    ),
             child:
                 playthroughs.isEmpty
                     ? BvEmptyState(
@@ -443,28 +387,6 @@ class _PlaythroughTile extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: BvSpacing.xs),
-            PopupMenuButton<String>(
-              tooltip: context.l10n.gamePlaythroughActions,
-              onSelected: (value) {
-                if (value == 'edit') {
-                  _showPlaythroughDialog(context, ref, item, playthrough);
-                }
-                if (value == 'delete') {
-                  _confirmDeletePlaythrough(context, ref, item, playthrough);
-                }
-              },
-              itemBuilder:
-                  (context) => [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Text(context.l10n.edit),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Text(context.l10n.delete),
-                    ),
-                  ],
-            ),
           ],
         ),
       ),

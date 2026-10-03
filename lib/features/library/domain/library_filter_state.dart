@@ -196,7 +196,11 @@ Set<String> _stringSet(Object? value) {
 
 Set<GameStatus> _statusSet(Object? value) {
   if (value is! List) return const {};
-  return value.whereType<String>().map(parseGameStatus).toSet();
+  return value
+      .whereType<String>()
+      .map(parseGameStatus)
+      .map(personalGameStatus)
+      .toSet();
 }
 
 int? _intOrNull(Object? value) {

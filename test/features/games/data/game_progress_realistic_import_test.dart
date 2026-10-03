@@ -53,8 +53,8 @@ void main() {
       final importedPlaying = rows.singleWhere(
         (row) => row.title == 'Playing Game',
       );
-      expect(importedPlaying.status, GameStatus.playing);
-      expect(importedPlaying.playthroughCount, 1);
+      expect(importedPlaying.status, GameStatus.backlog);
+      expect(importedPlaying.playthroughCount, 0);
 
       await gameRepository.completeGame(
         CompletionFormModel(
@@ -72,7 +72,7 @@ void main() {
       expect(completed.completedAt, DateTime(2026, 6, 10));
       expect(completed.hoursPlayed, 8.5);
       expect(completed.personalRating, 5);
-      expect(completed.playthroughCount, 1);
+      expect(completed.playthroughCount, 0);
     },
   );
 }

@@ -166,7 +166,6 @@ class _SummaryCards extends StatelessWidget {
       children: [
         _StatCard(label: l10n.games, value: stats.totalGames.toString()),
         _StatCard(label: l10n.backlog, value: stats.backlogCount.toString()),
-        _StatCard(label: l10n.playing, value: stats.playingCount.toString()),
         _StatCard(
           label: l10n.statisticsTotalCompleted,
           value: stats.completedCount.toString(),

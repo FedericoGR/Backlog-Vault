@@ -28,7 +28,6 @@ import '../../metadata/domain/external_game_details.dart';
 import '../../metadata/domain/metadata_field.dart';
 import '../../metadata/domain/metadata_provider.dart';
 import '../../metadata/domain/metadata_search_candidate.dart';
-import '../../playthroughs/application/completion_form_model.dart';
 import '../application/game_form_model.dart';
 import '../application/game_view_models.dart';
 import '../application/library_game_details.dart';
@@ -59,9 +58,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
   DateTime? _releaseDate;
   int? _rating;
   DateTime? _completedAt;
-  double? _completedHours;
   String? _completedPlatformId;
-  int? _completedRating;
   bool _loadedExisting = false;
   bool _saving = false;
   final _selectedPlatformIds = <String>{};
@@ -218,7 +215,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                                   labelText: context.l10n.libraryStatus,
                                 ),
                                 items: [
-                                  for (final status in GameStatus.values)
+                                  for (final status in personalGameStatuses)
                                     DropdownMenuItem(
                                       value: status,
                                       child: Text(
@@ -230,10 +227,6 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                                   if (value == null) return;
                                   setState(() {
                                     _status = value;
-                                    if (value == GameStatus.completed) {
-                                      _completedAt ??= DateTime.now();
-                                      _completedRating ??= _rating;
-                                    }
                                   });
                                 },
                               ),
@@ -331,36 +324,23 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                             ],
                           ),
                         );
-                        final completionSection =
-                            _status == GameStatus.completed
-                                ? _FormSection(
-                                  title: context.l10n.gameCompletionSection,
-                                  subtitle:
-                                      context
-                                          .l10n
-                                          .gameCompletionSectionSubtitle,
-                                  child: _CompletionFields(
-                                    completedAt: _completedAt ?? DateTime.now(),
-                                    hoursController: _completedHoursController,
-                                    rating: _completedRating,
-                                    platformId: _completedPlatformId,
-                                    platforms: platformMap,
-                                    twoColumns: twoColumns,
-                                    onDateChanged:
-                                        (value) => setState(
-                                          () => _completedAt = value,
-                                        ),
-                                    onRatingChanged:
-                                        (value) => setState(
-                                          () => _completedRating = value,
-                                        ),
-                                    onPlatformChanged:
-                                        (value) => setState(
-                                          () => _completedPlatformId = value,
-                                        ),
-                                  ),
-                                )
-                                : null;
+                        final completionSection = _FormSection(
+                          title: context.l10n.gameCompletionSection,
+                          subtitle: context.l10n.gameCompletionSectionSubtitle,
+                          child: _CompletionFields(
+                            completedAt: _completedAt,
+                            hoursController: _completedHoursController,
+                            platformId: _completedPlatformId,
+                            platforms: platformMap,
+                            twoColumns: twoColumns,
+                            onDateChanged:
+                                (value) => setState(() => _completedAt = value),
+                            onPlatformChanged:
+                                (value) => setState(
+                                  () => _completedPlatformId = value,
+                                ),
+                          ),
+                        );
 
                         return ListView(
                           padding: padding,
@@ -383,7 +363,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                                     child: Column(
                                       children: [
                                         catalogSection,
-                                        if (completionSection != null) ...[
+                                        ...[
                                           const SizedBox(height: BvSpacing.md),
                                           completionSection,
                                         ],
@@ -398,7 +378,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                               personalSection,
                               const SizedBox(height: BvSpacing.md),
                               catalogSection,
-                              if (completionSection != null) ...[
+                              ...[
                                 const SizedBox(height: BvSpacing.md),
                                 completionSection,
                               ],
@@ -440,13 +420,15 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
     _titleController.text = item.game.title;
     _releaseDate = item.game.releaseDate;
     _type = _gameTypeForForm(item.game.type);
-    _status = parseGameStatus(item.entry.status);
+    _status =
+        (item.entry.isCompleted ? GameStatus.completed : GameStatus.backlog);
     _rating = item.entry.personalRating;
     _notesController.text = item.entry.personalNotes ?? '';
     _selectedPlatformIds.addAll(item.platforms.map((platform) => platform.id));
     _selectedGenreIds.addAll(item.genres.map((genre) => genre.id));
-    _completedPlatformId =
-        item.platforms.isEmpty ? null : item.platforms.first.id;
+    _completedPlatformId = item.entry.playedPlatformId;
+    _completedAt = item.entry.completedAt;
+    _completedHoursController.text = item.entry.hoursPlayed?.toString() ?? '';
   }
 
   Future<void> _save(LibraryGameDetails? existing) async {
@@ -461,20 +443,18 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
         releaseDate: _releaseDate,
         type: _type ?? '',
         status: _status,
+        isCompleted: _status == GameStatus.completed,
+        completedAt: _completedAt,
+        hoursPlayed: double.tryParse(
+          _completedHoursController.text.trim().replaceAll(',', '.'),
+        ),
+        playedPlatformId: _completedPlatformId,
         personalRating: _rating,
         personalNotes: _notesController.text,
         platformIds: _selectedPlatformIds.toList(),
         genreIds: _selectedGenreIds.toList(),
       );
 
-      final wasCompleted =
-          existing != null &&
-          parseGameStatus(existing.entry.status) == GameStatus.completed;
-      if (_status == GameStatus.completed && !wasCompleted) {
-        _completedHours = double.tryParse(
-          _completedHoursController.text.trim().replaceAll(',', '.'),
-        );
-      }
       final entryId = await ref
           .read(gameFormViewModelProvider)
           .save(
@@ -482,17 +462,6 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
               model: model,
               pendingPlatformNames: _pendingPlatformNames,
               pendingGenreNames: _pendingGenreNames,
-              completion:
-                  _status == GameStatus.completed && !wasCompleted
-                      ? CompletionFormModel(
-                        libraryEntryId: existing?.entry.id ?? '',
-                        completedAt: _completedAt ?? DateTime.now(),
-                        platformId: _completedPlatformId,
-                        hoursPlayed: _completedHours,
-                        rating: _completedRating,
-                        notes: null,
-                      )
-                      : null,
               cover: _pendingCoverAsset,
             ),
           );
@@ -600,13 +569,8 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
     final nextPlatformIds =
         _selectedPlatformIds.where(platformIds.contains).toSet();
     final nextGenreIds = _selectedGenreIds.where(genreIds.contains).toSet();
-    final nextCompletedPlatformId = safeDropdownValue(_completedPlatformId, [
-      null,
-      ...platformIds,
-    ]);
     if (nextPlatformIds.length == _selectedPlatformIds.length &&
-        nextGenreIds.length == _selectedGenreIds.length &&
-        nextCompletedPlatformId == _completedPlatformId) {
+        nextGenreIds.length == _selectedGenreIds.length) {
       return;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -618,7 +582,6 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
         _selectedGenreIds
           ..clear()
           ..addAll(nextGenreIds);
-        _completedPlatformId = nextCompletedPlatformId;
       });
     });
   }

@@ -420,7 +420,7 @@ class AppLocalizationsEn extends AppLocalizations {
     Object playingCount,
     Object total,
   ) {
-    return '$total active games, $completedCount completed, and $playingCount in progress.';
+    return '$total games, $completedCount completed, and $playingCount pending.';
   }
 
   @override
@@ -932,7 +932,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get columnUpdatedAt => 'Updated';
 
   @override
-  String get columnPlaythroughs => 'Playthroughs';
+  String get columnPlaythroughs => 'Legacy playthroughs';
 
   @override
   String get gameCreateTitle => 'Create game';
@@ -981,11 +981,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gameAddGenre => 'Add genre';
 
   @override
-  String get gameCompletionSection => 'Completion / playthrough';
+  String get gameCompletionSection => 'Personal record';
 
   @override
   String get gameCompletionSectionSubtitle =>
-      'Initial details when marking the game as completed.';
+      'Completion date is optional. Hours and platform belong to this game.';
 
   @override
   String get gameImportMetadata => 'Import metadata';
@@ -1094,7 +1094,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gameLastCompleted => 'Last completed';
 
   @override
-  String get gamePlaythroughs => 'Playthroughs';
+  String get gamePlaythroughs => 'Legacy playthroughs';
 
   @override
   String get gameMarkPlaying => 'Playing';
@@ -1119,7 +1119,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gameNoPlaythroughsMessage =>
-      'Played or completed playthroughs will appear here.';
+      'Legacy playthrough history is preserved here. New tracking uses the personal record.';
 
   @override
   String get gamePlaythroughActions => 'Playthrough actions';

@@ -523,542 +523,6 @@ class GamesCompanion extends UpdateCompanion<Game> {
   }
 }
 
-class $LibraryEntriesTable extends LibraryEntries
-    with TableInfo<$LibraryEntriesTable, LibraryEntry> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $LibraryEntriesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _gameIdMeta = const VerificationMeta('gameId');
-  @override
-  late final GeneratedColumn<String> gameId = GeneratedColumn<String>(
-    'game_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES games (id)',
-    ),
-  );
-  static const VerificationMeta _statusMeta = const VerificationMeta('status');
-  @override
-  late final GeneratedColumn<String> status = GeneratedColumn<String>(
-    'status',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _personalRatingMeta = const VerificationMeta(
-    'personalRating',
-  );
-  @override
-  late final GeneratedColumn<int> personalRating = GeneratedColumn<int>(
-    'personal_rating',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _personalNotesMeta = const VerificationMeta(
-    'personalNotes',
-  );
-  @override
-  late final GeneratedColumn<String> personalNotes = GeneratedColumn<String>(
-    'personal_notes',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
-    'deletedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
-    'deleted_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    gameId,
-    status,
-    personalRating,
-    personalNotes,
-    createdAt,
-    updatedAt,
-    deletedAt,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'library_entries';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<LibraryEntry> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('game_id')) {
-      context.handle(
-        _gameIdMeta,
-        gameId.isAcceptableOrUnknown(data['game_id']!, _gameIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_gameIdMeta);
-    }
-    if (data.containsKey('status')) {
-      context.handle(
-        _statusMeta,
-        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_statusMeta);
-    }
-    if (data.containsKey('personal_rating')) {
-      context.handle(
-        _personalRatingMeta,
-        personalRating.isAcceptableOrUnknown(
-          data['personal_rating']!,
-          _personalRatingMeta,
-        ),
-      );
-    }
-    if (data.containsKey('personal_notes')) {
-      context.handle(
-        _personalNotesMeta,
-        personalNotes.isAcceptableOrUnknown(
-          data['personal_notes']!,
-          _personalNotesMeta,
-        ),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_updatedAtMeta);
-    }
-    if (data.containsKey('deleted_at')) {
-      context.handle(
-        _deletedAtMeta,
-        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  LibraryEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return LibraryEntry(
-      id:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}id'],
-          )!,
-      gameId:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}game_id'],
-          )!,
-      status:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}status'],
-          )!,
-      personalRating: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}personal_rating'],
-      ),
-      personalNotes: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}personal_notes'],
-      ),
-      createdAt:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.dateTime,
-            data['${effectivePrefix}created_at'],
-          )!,
-      updatedAt:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.dateTime,
-            data['${effectivePrefix}updated_at'],
-          )!,
-      deletedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}deleted_at'],
-      ),
-    );
-  }
-
-  @override
-  $LibraryEntriesTable createAlias(String alias) {
-    return $LibraryEntriesTable(attachedDatabase, alias);
-  }
-}
-
-class LibraryEntry extends DataClass implements Insertable<LibraryEntry> {
-  final String id;
-  final String gameId;
-  final String status;
-  final int? personalRating;
-  final String? personalNotes;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final DateTime? deletedAt;
-  const LibraryEntry({
-    required this.id,
-    required this.gameId,
-    required this.status,
-    this.personalRating,
-    this.personalNotes,
-    required this.createdAt,
-    required this.updatedAt,
-    this.deletedAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['game_id'] = Variable<String>(gameId);
-    map['status'] = Variable<String>(status);
-    if (!nullToAbsent || personalRating != null) {
-      map['personal_rating'] = Variable<int>(personalRating);
-    }
-    if (!nullToAbsent || personalNotes != null) {
-      map['personal_notes'] = Variable<String>(personalNotes);
-    }
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    if (!nullToAbsent || deletedAt != null) {
-      map['deleted_at'] = Variable<DateTime>(deletedAt);
-    }
-    return map;
-  }
-
-  LibraryEntriesCompanion toCompanion(bool nullToAbsent) {
-    return LibraryEntriesCompanion(
-      id: Value(id),
-      gameId: Value(gameId),
-      status: Value(status),
-      personalRating:
-          personalRating == null && nullToAbsent
-              ? const Value.absent()
-              : Value(personalRating),
-      personalNotes:
-          personalNotes == null && nullToAbsent
-              ? const Value.absent()
-              : Value(personalNotes),
-      createdAt: Value(createdAt),
-      updatedAt: Value(updatedAt),
-      deletedAt:
-          deletedAt == null && nullToAbsent
-              ? const Value.absent()
-              : Value(deletedAt),
-    );
-  }
-
-  factory LibraryEntry.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return LibraryEntry(
-      id: serializer.fromJson<String>(json['id']),
-      gameId: serializer.fromJson<String>(json['gameId']),
-      status: serializer.fromJson<String>(json['status']),
-      personalRating: serializer.fromJson<int?>(json['personalRating']),
-      personalNotes: serializer.fromJson<String?>(json['personalNotes']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'gameId': serializer.toJson<String>(gameId),
-      'status': serializer.toJson<String>(status),
-      'personalRating': serializer.toJson<int?>(personalRating),
-      'personalNotes': serializer.toJson<String?>(personalNotes),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
-    };
-  }
-
-  LibraryEntry copyWith({
-    String? id,
-    String? gameId,
-    String? status,
-    Value<int?> personalRating = const Value.absent(),
-    Value<String?> personalNotes = const Value.absent(),
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    Value<DateTime?> deletedAt = const Value.absent(),
-  }) => LibraryEntry(
-    id: id ?? this.id,
-    gameId: gameId ?? this.gameId,
-    status: status ?? this.status,
-    personalRating:
-        personalRating.present ? personalRating.value : this.personalRating,
-    personalNotes:
-        personalNotes.present ? personalNotes.value : this.personalNotes,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
-  );
-  LibraryEntry copyWithCompanion(LibraryEntriesCompanion data) {
-    return LibraryEntry(
-      id: data.id.present ? data.id.value : this.id,
-      gameId: data.gameId.present ? data.gameId.value : this.gameId,
-      status: data.status.present ? data.status.value : this.status,
-      personalRating:
-          data.personalRating.present
-              ? data.personalRating.value
-              : this.personalRating,
-      personalNotes:
-          data.personalNotes.present
-              ? data.personalNotes.value
-              : this.personalNotes,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('LibraryEntry(')
-          ..write('id: $id, ')
-          ..write('gameId: $gameId, ')
-          ..write('status: $status, ')
-          ..write('personalRating: $personalRating, ')
-          ..write('personalNotes: $personalNotes, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('deletedAt: $deletedAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    gameId,
-    status,
-    personalRating,
-    personalNotes,
-    createdAt,
-    updatedAt,
-    deletedAt,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is LibraryEntry &&
-          other.id == this.id &&
-          other.gameId == this.gameId &&
-          other.status == this.status &&
-          other.personalRating == this.personalRating &&
-          other.personalNotes == this.personalNotes &&
-          other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt &&
-          other.deletedAt == this.deletedAt);
-}
-
-class LibraryEntriesCompanion extends UpdateCompanion<LibraryEntry> {
-  final Value<String> id;
-  final Value<String> gameId;
-  final Value<String> status;
-  final Value<int?> personalRating;
-  final Value<String?> personalNotes;
-  final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
-  final Value<DateTime?> deletedAt;
-  final Value<int> rowid;
-  const LibraryEntriesCompanion({
-    this.id = const Value.absent(),
-    this.gameId = const Value.absent(),
-    this.status = const Value.absent(),
-    this.personalRating = const Value.absent(),
-    this.personalNotes = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.deletedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  LibraryEntriesCompanion.insert({
-    required String id,
-    required String gameId,
-    required String status,
-    this.personalRating = const Value.absent(),
-    this.personalNotes = const Value.absent(),
-    required DateTime createdAt,
-    required DateTime updatedAt,
-    this.deletedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       gameId = Value(gameId),
-       status = Value(status),
-       createdAt = Value(createdAt),
-       updatedAt = Value(updatedAt);
-  static Insertable<LibraryEntry> custom({
-    Expression<String>? id,
-    Expression<String>? gameId,
-    Expression<String>? status,
-    Expression<int>? personalRating,
-    Expression<String>? personalNotes,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? updatedAt,
-    Expression<DateTime>? deletedAt,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (gameId != null) 'game_id': gameId,
-      if (status != null) 'status': status,
-      if (personalRating != null) 'personal_rating': personalRating,
-      if (personalNotes != null) 'personal_notes': personalNotes,
-      if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (deletedAt != null) 'deleted_at': deletedAt,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  LibraryEntriesCompanion copyWith({
-    Value<String>? id,
-    Value<String>? gameId,
-    Value<String>? status,
-    Value<int?>? personalRating,
-    Value<String?>? personalNotes,
-    Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
-    Value<DateTime?>? deletedAt,
-    Value<int>? rowid,
-  }) {
-    return LibraryEntriesCompanion(
-      id: id ?? this.id,
-      gameId: gameId ?? this.gameId,
-      status: status ?? this.status,
-      personalRating: personalRating ?? this.personalRating,
-      personalNotes: personalNotes ?? this.personalNotes,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      deletedAt: deletedAt ?? this.deletedAt,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (gameId.present) {
-      map['game_id'] = Variable<String>(gameId.value);
-    }
-    if (status.present) {
-      map['status'] = Variable<String>(status.value);
-    }
-    if (personalRating.present) {
-      map['personal_rating'] = Variable<int>(personalRating.value);
-    }
-    if (personalNotes.present) {
-      map['personal_notes'] = Variable<String>(personalNotes.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (deletedAt.present) {
-      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('LibraryEntriesCompanion(')
-          ..write('id: $id, ')
-          ..write('gameId: $gameId, ')
-          ..write('status: $status, ')
-          ..write('personalRating: $personalRating, ')
-          ..write('personalNotes: $personalNotes, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('deletedAt: $deletedAt, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $PlatformsTable extends Platforms
     with TableInfo<$PlatformsTable, Platform> {
   @override
@@ -1466,6 +930,766 @@ class PlatformsCompanion extends UpdateCompanion<Platform> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('shortName: $shortName, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LibraryEntriesTable extends LibraryEntries
+    with TableInfo<$LibraryEntriesTable, LibraryEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LibraryEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _gameIdMeta = const VerificationMeta('gameId');
+  @override
+  late final GeneratedColumn<String> gameId = GeneratedColumn<String>(
+    'game_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES games (id)',
+    ),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isCompletedMeta = const VerificationMeta(
+    'isCompleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isCompleted = GeneratedColumn<bool>(
+    'is_completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_completed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _hoursPlayedMeta = const VerificationMeta(
+    'hoursPlayed',
+  );
+  @override
+  late final GeneratedColumn<double> hoursPlayed = GeneratedColumn<double>(
+    'hours_played',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _playedPlatformIdMeta = const VerificationMeta(
+    'playedPlatformId',
+  );
+  @override
+  late final GeneratedColumn<String> playedPlatformId = GeneratedColumn<String>(
+    'played_platform_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES platforms (id)',
+    ),
+  );
+  static const VerificationMeta _personalRatingMeta = const VerificationMeta(
+    'personalRating',
+  );
+  @override
+  late final GeneratedColumn<int> personalRating = GeneratedColumn<int>(
+    'personal_rating',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _personalNotesMeta = const VerificationMeta(
+    'personalNotes',
+  );
+  @override
+  late final GeneratedColumn<String> personalNotes = GeneratedColumn<String>(
+    'personal_notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    gameId,
+    status,
+    isCompleted,
+    completedAt,
+    hoursPlayed,
+    playedPlatformId,
+    personalRating,
+    personalNotes,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'library_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LibraryEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('game_id')) {
+      context.handle(
+        _gameIdMeta,
+        gameId.isAcceptableOrUnknown(data['game_id']!, _gameIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_gameIdMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('is_completed')) {
+      context.handle(
+        _isCompletedMeta,
+        isCompleted.isAcceptableOrUnknown(
+          data['is_completed']!,
+          _isCompletedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('hours_played')) {
+      context.handle(
+        _hoursPlayedMeta,
+        hoursPlayed.isAcceptableOrUnknown(
+          data['hours_played']!,
+          _hoursPlayedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('played_platform_id')) {
+      context.handle(
+        _playedPlatformIdMeta,
+        playedPlatformId.isAcceptableOrUnknown(
+          data['played_platform_id']!,
+          _playedPlatformIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('personal_rating')) {
+      context.handle(
+        _personalRatingMeta,
+        personalRating.isAcceptableOrUnknown(
+          data['personal_rating']!,
+          _personalRatingMeta,
+        ),
+      );
+    }
+    if (data.containsKey('personal_notes')) {
+      context.handle(
+        _personalNotesMeta,
+        personalNotes.isAcceptableOrUnknown(
+          data['personal_notes']!,
+          _personalNotesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LibraryEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LibraryEntry(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}id'],
+          )!,
+      gameId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}game_id'],
+          )!,
+      status:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}status'],
+          )!,
+      isCompleted:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_completed'],
+          )!,
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}completed_at'],
+      ),
+      hoursPlayed: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}hours_played'],
+      ),
+      playedPlatformId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}played_platform_id'],
+      ),
+      personalRating: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}personal_rating'],
+      ),
+      personalNotes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}personal_notes'],
+      ),
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $LibraryEntriesTable createAlias(String alias) {
+    return $LibraryEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class LibraryEntry extends DataClass implements Insertable<LibraryEntry> {
+  final String id;
+  final String gameId;
+  final String status;
+  final bool isCompleted;
+  final DateTime? completedAt;
+  final double? hoursPlayed;
+  final String? playedPlatformId;
+  final int? personalRating;
+  final String? personalNotes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const LibraryEntry({
+    required this.id,
+    required this.gameId,
+    required this.status,
+    required this.isCompleted,
+    this.completedAt,
+    this.hoursPlayed,
+    this.playedPlatformId,
+    this.personalRating,
+    this.personalNotes,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['game_id'] = Variable<String>(gameId);
+    map['status'] = Variable<String>(status);
+    map['is_completed'] = Variable<bool>(isCompleted);
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
+    }
+    if (!nullToAbsent || hoursPlayed != null) {
+      map['hours_played'] = Variable<double>(hoursPlayed);
+    }
+    if (!nullToAbsent || playedPlatformId != null) {
+      map['played_platform_id'] = Variable<String>(playedPlatformId);
+    }
+    if (!nullToAbsent || personalRating != null) {
+      map['personal_rating'] = Variable<int>(personalRating);
+    }
+    if (!nullToAbsent || personalNotes != null) {
+      map['personal_notes'] = Variable<String>(personalNotes);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  LibraryEntriesCompanion toCompanion(bool nullToAbsent) {
+    return LibraryEntriesCompanion(
+      id: Value(id),
+      gameId: Value(gameId),
+      status: Value(status),
+      isCompleted: Value(isCompleted),
+      completedAt:
+          completedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(completedAt),
+      hoursPlayed:
+          hoursPlayed == null && nullToAbsent
+              ? const Value.absent()
+              : Value(hoursPlayed),
+      playedPlatformId:
+          playedPlatformId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(playedPlatformId),
+      personalRating:
+          personalRating == null && nullToAbsent
+              ? const Value.absent()
+              : Value(personalRating),
+      personalNotes:
+          personalNotes == null && nullToAbsent
+              ? const Value.absent()
+              : Value(personalNotes),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt:
+          deletedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(deletedAt),
+    );
+  }
+
+  factory LibraryEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LibraryEntry(
+      id: serializer.fromJson<String>(json['id']),
+      gameId: serializer.fromJson<String>(json['gameId']),
+      status: serializer.fromJson<String>(json['status']),
+      isCompleted: serializer.fromJson<bool>(json['isCompleted']),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
+      hoursPlayed: serializer.fromJson<double?>(json['hoursPlayed']),
+      playedPlatformId: serializer.fromJson<String?>(json['playedPlatformId']),
+      personalRating: serializer.fromJson<int?>(json['personalRating']),
+      personalNotes: serializer.fromJson<String?>(json['personalNotes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'gameId': serializer.toJson<String>(gameId),
+      'status': serializer.toJson<String>(status),
+      'isCompleted': serializer.toJson<bool>(isCompleted),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
+      'hoursPlayed': serializer.toJson<double?>(hoursPlayed),
+      'playedPlatformId': serializer.toJson<String?>(playedPlatformId),
+      'personalRating': serializer.toJson<int?>(personalRating),
+      'personalNotes': serializer.toJson<String?>(personalNotes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  LibraryEntry copyWith({
+    String? id,
+    String? gameId,
+    String? status,
+    bool? isCompleted,
+    Value<DateTime?> completedAt = const Value.absent(),
+    Value<double?> hoursPlayed = const Value.absent(),
+    Value<String?> playedPlatformId = const Value.absent(),
+    Value<int?> personalRating = const Value.absent(),
+    Value<String?> personalNotes = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => LibraryEntry(
+    id: id ?? this.id,
+    gameId: gameId ?? this.gameId,
+    status: status ?? this.status,
+    isCompleted: isCompleted ?? this.isCompleted,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    hoursPlayed: hoursPlayed.present ? hoursPlayed.value : this.hoursPlayed,
+    playedPlatformId:
+        playedPlatformId.present
+            ? playedPlatformId.value
+            : this.playedPlatformId,
+    personalRating:
+        personalRating.present ? personalRating.value : this.personalRating,
+    personalNotes:
+        personalNotes.present ? personalNotes.value : this.personalNotes,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  LibraryEntry copyWithCompanion(LibraryEntriesCompanion data) {
+    return LibraryEntry(
+      id: data.id.present ? data.id.value : this.id,
+      gameId: data.gameId.present ? data.gameId.value : this.gameId,
+      status: data.status.present ? data.status.value : this.status,
+      isCompleted:
+          data.isCompleted.present ? data.isCompleted.value : this.isCompleted,
+      completedAt:
+          data.completedAt.present ? data.completedAt.value : this.completedAt,
+      hoursPlayed:
+          data.hoursPlayed.present ? data.hoursPlayed.value : this.hoursPlayed,
+      playedPlatformId:
+          data.playedPlatformId.present
+              ? data.playedPlatformId.value
+              : this.playedPlatformId,
+      personalRating:
+          data.personalRating.present
+              ? data.personalRating.value
+              : this.personalRating,
+      personalNotes:
+          data.personalNotes.present
+              ? data.personalNotes.value
+              : this.personalNotes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LibraryEntry(')
+          ..write('id: $id, ')
+          ..write('gameId: $gameId, ')
+          ..write('status: $status, ')
+          ..write('isCompleted: $isCompleted, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('hoursPlayed: $hoursPlayed, ')
+          ..write('playedPlatformId: $playedPlatformId, ')
+          ..write('personalRating: $personalRating, ')
+          ..write('personalNotes: $personalNotes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    gameId,
+    status,
+    isCompleted,
+    completedAt,
+    hoursPlayed,
+    playedPlatformId,
+    personalRating,
+    personalNotes,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LibraryEntry &&
+          other.id == this.id &&
+          other.gameId == this.gameId &&
+          other.status == this.status &&
+          other.isCompleted == this.isCompleted &&
+          other.completedAt == this.completedAt &&
+          other.hoursPlayed == this.hoursPlayed &&
+          other.playedPlatformId == this.playedPlatformId &&
+          other.personalRating == this.personalRating &&
+          other.personalNotes == this.personalNotes &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class LibraryEntriesCompanion extends UpdateCompanion<LibraryEntry> {
+  final Value<String> id;
+  final Value<String> gameId;
+  final Value<String> status;
+  final Value<bool> isCompleted;
+  final Value<DateTime?> completedAt;
+  final Value<double?> hoursPlayed;
+  final Value<String?> playedPlatformId;
+  final Value<int?> personalRating;
+  final Value<String?> personalNotes;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const LibraryEntriesCompanion({
+    this.id = const Value.absent(),
+    this.gameId = const Value.absent(),
+    this.status = const Value.absent(),
+    this.isCompleted = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.hoursPlayed = const Value.absent(),
+    this.playedPlatformId = const Value.absent(),
+    this.personalRating = const Value.absent(),
+    this.personalNotes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LibraryEntriesCompanion.insert({
+    required String id,
+    required String gameId,
+    required String status,
+    this.isCompleted = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.hoursPlayed = const Value.absent(),
+    this.playedPlatformId = const Value.absent(),
+    this.personalRating = const Value.absent(),
+    this.personalNotes = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       gameId = Value(gameId),
+       status = Value(status),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<LibraryEntry> custom({
+    Expression<String>? id,
+    Expression<String>? gameId,
+    Expression<String>? status,
+    Expression<bool>? isCompleted,
+    Expression<DateTime>? completedAt,
+    Expression<double>? hoursPlayed,
+    Expression<String>? playedPlatformId,
+    Expression<int>? personalRating,
+    Expression<String>? personalNotes,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (gameId != null) 'game_id': gameId,
+      if (status != null) 'status': status,
+      if (isCompleted != null) 'is_completed': isCompleted,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (hoursPlayed != null) 'hours_played': hoursPlayed,
+      if (playedPlatformId != null) 'played_platform_id': playedPlatformId,
+      if (personalRating != null) 'personal_rating': personalRating,
+      if (personalNotes != null) 'personal_notes': personalNotes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LibraryEntriesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? gameId,
+    Value<String>? status,
+    Value<bool>? isCompleted,
+    Value<DateTime?>? completedAt,
+    Value<double?>? hoursPlayed,
+    Value<String?>? playedPlatformId,
+    Value<int?>? personalRating,
+    Value<String?>? personalNotes,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return LibraryEntriesCompanion(
+      id: id ?? this.id,
+      gameId: gameId ?? this.gameId,
+      status: status ?? this.status,
+      isCompleted: isCompleted ?? this.isCompleted,
+      completedAt: completedAt ?? this.completedAt,
+      hoursPlayed: hoursPlayed ?? this.hoursPlayed,
+      playedPlatformId: playedPlatformId ?? this.playedPlatformId,
+      personalRating: personalRating ?? this.personalRating,
+      personalNotes: personalNotes ?? this.personalNotes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (gameId.present) {
+      map['game_id'] = Variable<String>(gameId.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (isCompleted.present) {
+      map['is_completed'] = Variable<bool>(isCompleted.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (hoursPlayed.present) {
+      map['hours_played'] = Variable<double>(hoursPlayed.value);
+    }
+    if (playedPlatformId.present) {
+      map['played_platform_id'] = Variable<String>(playedPlatformId.value);
+    }
+    if (personalRating.present) {
+      map['personal_rating'] = Variable<int>(personalRating.value);
+    }
+    if (personalNotes.present) {
+      map['personal_notes'] = Variable<String>(personalNotes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LibraryEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('gameId: $gameId, ')
+          ..write('status: $status, ')
+          ..write('isCompleted: $isCompleted, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('hoursPlayed: $hoursPlayed, ')
+          ..write('playedPlatformId: $playedPlatformId, ')
+          ..write('personalRating: $personalRating, ')
+          ..write('personalNotes: $personalNotes, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
@@ -5663,8 +5887,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $GamesTable games = $GamesTable(this);
-  late final $LibraryEntriesTable libraryEntries = $LibraryEntriesTable(this);
   late final $PlatformsTable platforms = $PlatformsTable(this);
+  late final $LibraryEntriesTable libraryEntries = $LibraryEntriesTable(this);
   late final $LibraryEntryPlatformsTable libraryEntryPlatforms =
       $LibraryEntryPlatformsTable(this);
   late final $GenresTable genres = $GenresTable(this);
@@ -5681,8 +5905,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     games,
-    libraryEntries,
     platforms,
+    libraryEntries,
     libraryEntryPlatforms,
     genres,
     gameGenres,
@@ -6333,608 +6557,6 @@ typedef $$GamesTableProcessedTableManager =
         bool mediaAssetsRefs,
       })
     >;
-typedef $$LibraryEntriesTableCreateCompanionBuilder =
-    LibraryEntriesCompanion Function({
-      required String id,
-      required String gameId,
-      required String status,
-      Value<int?> personalRating,
-      Value<String?> personalNotes,
-      required DateTime createdAt,
-      required DateTime updatedAt,
-      Value<DateTime?> deletedAt,
-      Value<int> rowid,
-    });
-typedef $$LibraryEntriesTableUpdateCompanionBuilder =
-    LibraryEntriesCompanion Function({
-      Value<String> id,
-      Value<String> gameId,
-      Value<String> status,
-      Value<int?> personalRating,
-      Value<String?> personalNotes,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<DateTime?> deletedAt,
-      Value<int> rowid,
-    });
-
-final class $$LibraryEntriesTableReferences
-    extends BaseReferences<_$AppDatabase, $LibraryEntriesTable, LibraryEntry> {
-  $$LibraryEntriesTableReferences(
-    super.$_db,
-    super.$_table,
-    super.$_typedResult,
-  );
-
-  static $GamesTable _gameIdTable(_$AppDatabase db) => db.games.createAlias(
-    $_aliasNameGenerator(db.libraryEntries.gameId, db.games.id),
-  );
-
-  $$GamesTableProcessedTableManager get gameId {
-    final $_column = $_itemColumn<String>('game_id')!;
-
-    final manager = $$GamesTableTableManager(
-      $_db,
-      $_db.games,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_gameIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-
-  static MultiTypedResultKey<
-    $LibraryEntryPlatformsTable,
-    List<LibraryEntryPlatform>
-  >
-  _libraryEntryPlatformsRefsTable(_$AppDatabase db) =>
-      MultiTypedResultKey.fromTable(
-        db.libraryEntryPlatforms,
-        aliasName: $_aliasNameGenerator(
-          db.libraryEntries.id,
-          db.libraryEntryPlatforms.libraryEntryId,
-        ),
-      );
-
-  $$LibraryEntryPlatformsTableProcessedTableManager
-  get libraryEntryPlatformsRefs {
-    final manager = $$LibraryEntryPlatformsTableTableManager(
-      $_db,
-      $_db.libraryEntryPlatforms,
-    ).filter((f) => f.libraryEntryId.id.sqlEquals($_itemColumn<String>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(
-      _libraryEntryPlatformsRefsTable($_db),
-    );
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$PlaythroughsTable, List<Playthrough>>
-  _playthroughsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.playthroughs,
-    aliasName: $_aliasNameGenerator(
-      db.libraryEntries.id,
-      db.playthroughs.libraryEntryId,
-    ),
-  );
-
-  $$PlaythroughsTableProcessedTableManager get playthroughsRefs {
-    final manager = $$PlaythroughsTableTableManager(
-      $_db,
-      $_db.playthroughs,
-    ).filter((f) => f.libraryEntryId.id.sqlEquals($_itemColumn<String>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_playthroughsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$LibraryEntriesTableFilterComposer
-    extends Composer<_$AppDatabase, $LibraryEntriesTable> {
-  $$LibraryEntriesTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get personalRating => $composableBuilder(
-    column: $table.personalRating,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get personalNotes => $composableBuilder(
-    column: $table.personalNotes,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $$GamesTableFilterComposer get gameId {
-    final $$GamesTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.gameId,
-      referencedTable: $db.games,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$GamesTableFilterComposer(
-            $db: $db,
-            $table: $db.games,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  Expression<bool> libraryEntryPlatformsRefs(
-    Expression<bool> Function($$LibraryEntryPlatformsTableFilterComposer f) f,
-  ) {
-    final $$LibraryEntryPlatformsTableFilterComposer composer =
-        $composerBuilder(
-          composer: this,
-          getCurrentColumn: (t) => t.id,
-          referencedTable: $db.libraryEntryPlatforms,
-          getReferencedColumn: (t) => t.libraryEntryId,
-          builder:
-              (
-                joinBuilder, {
-                $addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer,
-              }) => $$LibraryEntryPlatformsTableFilterComposer(
-                $db: $db,
-                $table: $db.libraryEntryPlatforms,
-                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                joinBuilder: joinBuilder,
-                $removeJoinBuilderFromRootComposer:
-                    $removeJoinBuilderFromRootComposer,
-              ),
-        );
-    return f(composer);
-  }
-
-  Expression<bool> playthroughsRefs(
-    Expression<bool> Function($$PlaythroughsTableFilterComposer f) f,
-  ) {
-    final $$PlaythroughsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.playthroughs,
-      getReferencedColumn: (t) => t.libraryEntryId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$PlaythroughsTableFilterComposer(
-            $db: $db,
-            $table: $db.playthroughs,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$LibraryEntriesTableOrderingComposer
-    extends Composer<_$AppDatabase, $LibraryEntriesTable> {
-  $$LibraryEntriesTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get personalRating => $composableBuilder(
-    column: $table.personalRating,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get personalNotes => $composableBuilder(
-    column: $table.personalNotes,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $$GamesTableOrderingComposer get gameId {
-    final $$GamesTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.gameId,
-      referencedTable: $db.games,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$GamesTableOrderingComposer(
-            $db: $db,
-            $table: $db.games,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$LibraryEntriesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $LibraryEntriesTable> {
-  $$LibraryEntriesTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get status =>
-      $composableBuilder(column: $table.status, builder: (column) => column);
-
-  GeneratedColumn<int> get personalRating => $composableBuilder(
-    column: $table.personalRating,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get personalNotes => $composableBuilder(
-    column: $table.personalNotes,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get deletedAt =>
-      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
-
-  $$GamesTableAnnotationComposer get gameId {
-    final $$GamesTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.gameId,
-      referencedTable: $db.games,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$GamesTableAnnotationComposer(
-            $db: $db,
-            $table: $db.games,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  Expression<T> libraryEntryPlatformsRefs<T extends Object>(
-    Expression<T> Function($$LibraryEntryPlatformsTableAnnotationComposer a) f,
-  ) {
-    final $$LibraryEntryPlatformsTableAnnotationComposer composer =
-        $composerBuilder(
-          composer: this,
-          getCurrentColumn: (t) => t.id,
-          referencedTable: $db.libraryEntryPlatforms,
-          getReferencedColumn: (t) => t.libraryEntryId,
-          builder:
-              (
-                joinBuilder, {
-                $addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer,
-              }) => $$LibraryEntryPlatformsTableAnnotationComposer(
-                $db: $db,
-                $table: $db.libraryEntryPlatforms,
-                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                joinBuilder: joinBuilder,
-                $removeJoinBuilderFromRootComposer:
-                    $removeJoinBuilderFromRootComposer,
-              ),
-        );
-    return f(composer);
-  }
-
-  Expression<T> playthroughsRefs<T extends Object>(
-    Expression<T> Function($$PlaythroughsTableAnnotationComposer a) f,
-  ) {
-    final $$PlaythroughsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.playthroughs,
-      getReferencedColumn: (t) => t.libraryEntryId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$PlaythroughsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.playthroughs,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$LibraryEntriesTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $LibraryEntriesTable,
-          LibraryEntry,
-          $$LibraryEntriesTableFilterComposer,
-          $$LibraryEntriesTableOrderingComposer,
-          $$LibraryEntriesTableAnnotationComposer,
-          $$LibraryEntriesTableCreateCompanionBuilder,
-          $$LibraryEntriesTableUpdateCompanionBuilder,
-          (LibraryEntry, $$LibraryEntriesTableReferences),
-          LibraryEntry,
-          PrefetchHooks Function({
-            bool gameId,
-            bool libraryEntryPlatformsRefs,
-            bool playthroughsRefs,
-          })
-        > {
-  $$LibraryEntriesTableTableManager(
-    _$AppDatabase db,
-    $LibraryEntriesTable table,
-  ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer:
-              () => $$LibraryEntriesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer:
-              () =>
-                  $$LibraryEntriesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer:
-              () => $$LibraryEntriesTableAnnotationComposer(
-                $db: db,
-                $table: table,
-              ),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> gameId = const Value.absent(),
-                Value<String> status = const Value.absent(),
-                Value<int?> personalRating = const Value.absent(),
-                Value<String?> personalNotes = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => LibraryEntriesCompanion(
-                id: id,
-                gameId: gameId,
-                status: status,
-                personalRating: personalRating,
-                personalNotes: personalNotes,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                deletedAt: deletedAt,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String gameId,
-                required String status,
-                Value<int?> personalRating = const Value.absent(),
-                Value<String?> personalNotes = const Value.absent(),
-                required DateTime createdAt,
-                required DateTime updatedAt,
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => LibraryEntriesCompanion.insert(
-                id: id,
-                gameId: gameId,
-                status: status,
-                personalRating: personalRating,
-                personalNotes: personalNotes,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                deletedAt: deletedAt,
-                rowid: rowid,
-              ),
-          withReferenceMapper:
-              (p0) =>
-                  p0
-                      .map(
-                        (e) => (
-                          e.readTable(table),
-                          $$LibraryEntriesTableReferences(db, table, e),
-                        ),
-                      )
-                      .toList(),
-          prefetchHooksCallback: ({
-            gameId = false,
-            libraryEntryPlatformsRefs = false,
-            playthroughsRefs = false,
-          }) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (libraryEntryPlatformsRefs) db.libraryEntryPlatforms,
-                if (playthroughsRefs) db.playthroughs,
-              ],
-              addJoins: <
-                T extends TableManagerState<
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic
-                >
-              >(state) {
-                if (gameId) {
-                  state =
-                      state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.gameId,
-                            referencedTable: $$LibraryEntriesTableReferences
-                                ._gameIdTable(db),
-                            referencedColumn:
-                                $$LibraryEntriesTableReferences
-                                    ._gameIdTable(db)
-                                    .id,
-                          )
-                          as T;
-                }
-
-                return state;
-              },
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (libraryEntryPlatformsRefs)
-                    await $_getPrefetchedData<
-                      LibraryEntry,
-                      $LibraryEntriesTable,
-                      LibraryEntryPlatform
-                    >(
-                      currentTable: table,
-                      referencedTable: $$LibraryEntriesTableReferences
-                          ._libraryEntryPlatformsRefsTable(db),
-                      managerFromTypedResult:
-                          (p0) =>
-                              $$LibraryEntriesTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).libraryEntryPlatformsRefs,
-                      referencedItemsForCurrentItem:
-                          (item, referencedItems) => referencedItems.where(
-                            (e) => e.libraryEntryId == item.id,
-                          ),
-                      typedResults: items,
-                    ),
-                  if (playthroughsRefs)
-                    await $_getPrefetchedData<
-                      LibraryEntry,
-                      $LibraryEntriesTable,
-                      Playthrough
-                    >(
-                      currentTable: table,
-                      referencedTable: $$LibraryEntriesTableReferences
-                          ._playthroughsRefsTable(db),
-                      managerFromTypedResult:
-                          (p0) =>
-                              $$LibraryEntriesTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).playthroughsRefs,
-                      referencedItemsForCurrentItem:
-                          (item, referencedItems) => referencedItems.where(
-                            (e) => e.libraryEntryId == item.id,
-                          ),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$LibraryEntriesTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $LibraryEntriesTable,
-      LibraryEntry,
-      $$LibraryEntriesTableFilterComposer,
-      $$LibraryEntriesTableOrderingComposer,
-      $$LibraryEntriesTableAnnotationComposer,
-      $$LibraryEntriesTableCreateCompanionBuilder,
-      $$LibraryEntriesTableUpdateCompanionBuilder,
-      (LibraryEntry, $$LibraryEntriesTableReferences),
-      LibraryEntry,
-      PrefetchHooks Function({
-        bool gameId,
-        bool libraryEntryPlatformsRefs,
-        bool playthroughsRefs,
-      })
-    >;
 typedef $$PlatformsTableCreateCompanionBuilder =
     PlatformsCompanion Function({
       required String id,
@@ -6959,6 +6581,29 @@ typedef $$PlatformsTableUpdateCompanionBuilder =
 final class $$PlatformsTableReferences
     extends BaseReferences<_$AppDatabase, $PlatformsTable, Platform> {
   $$PlatformsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$LibraryEntriesTable, List<LibraryEntry>>
+  _libraryEntriesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.libraryEntries,
+    aliasName: $_aliasNameGenerator(
+      db.platforms.id,
+      db.libraryEntries.playedPlatformId,
+    ),
+  );
+
+  $$LibraryEntriesTableProcessedTableManager get libraryEntriesRefs {
+    final manager = $$LibraryEntriesTableTableManager(
+      $_db,
+      $_db.libraryEntries,
+    ).filter(
+      (f) => f.playedPlatformId.id.sqlEquals($_itemColumn<String>('id')!),
+    );
+
+    final cache = $_typedResult.readTableOrNull(_libraryEntriesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 
   static MultiTypedResultKey<
     $LibraryEntryPlatformsTable,
@@ -7048,6 +6693,31 @@ class $$PlatformsTableFilterComposer
     column: $table.deletedAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> libraryEntriesRefs(
+    Expression<bool> Function($$LibraryEntriesTableFilterComposer f) f,
+  ) {
+    final $$LibraryEntriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.libraryEntries,
+      getReferencedColumn: (t) => t.playedPlatformId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LibraryEntriesTableFilterComposer(
+            $db: $db,
+            $table: $db.libraryEntries,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<bool> libraryEntryPlatformsRefs(
     Expression<bool> Function($$LibraryEntryPlatformsTableFilterComposer f) f,
@@ -7168,6 +6838,31 @@ class $$PlatformsTableAnnotationComposer
   GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
+  Expression<T> libraryEntriesRefs<T extends Object>(
+    Expression<T> Function($$LibraryEntriesTableAnnotationComposer a) f,
+  ) {
+    final $$LibraryEntriesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.libraryEntries,
+      getReferencedColumn: (t) => t.playedPlatformId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LibraryEntriesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.libraryEntries,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> libraryEntryPlatformsRefs<T extends Object>(
     Expression<T> Function($$LibraryEntryPlatformsTableAnnotationComposer a) f,
   ) {
@@ -7234,6 +6929,7 @@ class $$PlatformsTableTableManager
           (Platform, $$PlatformsTableReferences),
           Platform,
           PrefetchHooks Function({
+            bool libraryEntriesRefs,
             bool libraryEntryPlatformsRefs,
             bool playthroughsRefs,
           })
@@ -7296,18 +6992,42 @@ class $$PlatformsTableTableManager
                       )
                       .toList(),
           prefetchHooksCallback: ({
+            libraryEntriesRefs = false,
             libraryEntryPlatformsRefs = false,
             playthroughsRefs = false,
           }) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
+                if (libraryEntriesRefs) db.libraryEntries,
                 if (libraryEntryPlatformsRefs) db.libraryEntryPlatforms,
                 if (playthroughsRefs) db.playthroughs,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
+                  if (libraryEntriesRefs)
+                    await $_getPrefetchedData<
+                      Platform,
+                      $PlatformsTable,
+                      LibraryEntry
+                    >(
+                      currentTable: table,
+                      referencedTable: $$PlatformsTableReferences
+                          ._libraryEntriesRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$PlatformsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).libraryEntriesRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.playedPlatformId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                   if (libraryEntryPlatformsRefs)
                     await $_getPrefetchedData<
                       Platform,
@@ -7373,6 +7093,786 @@ typedef $$PlatformsTableProcessedTableManager =
       (Platform, $$PlatformsTableReferences),
       Platform,
       PrefetchHooks Function({
+        bool libraryEntriesRefs,
+        bool libraryEntryPlatformsRefs,
+        bool playthroughsRefs,
+      })
+    >;
+typedef $$LibraryEntriesTableCreateCompanionBuilder =
+    LibraryEntriesCompanion Function({
+      required String id,
+      required String gameId,
+      required String status,
+      Value<bool> isCompleted,
+      Value<DateTime?> completedAt,
+      Value<double?> hoursPlayed,
+      Value<String?> playedPlatformId,
+      Value<int?> personalRating,
+      Value<String?> personalNotes,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$LibraryEntriesTableUpdateCompanionBuilder =
+    LibraryEntriesCompanion Function({
+      Value<String> id,
+      Value<String> gameId,
+      Value<String> status,
+      Value<bool> isCompleted,
+      Value<DateTime?> completedAt,
+      Value<double?> hoursPlayed,
+      Value<String?> playedPlatformId,
+      Value<int?> personalRating,
+      Value<String?> personalNotes,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+final class $$LibraryEntriesTableReferences
+    extends BaseReferences<_$AppDatabase, $LibraryEntriesTable, LibraryEntry> {
+  $$LibraryEntriesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $GamesTable _gameIdTable(_$AppDatabase db) => db.games.createAlias(
+    $_aliasNameGenerator(db.libraryEntries.gameId, db.games.id),
+  );
+
+  $$GamesTableProcessedTableManager get gameId {
+    final $_column = $_itemColumn<String>('game_id')!;
+
+    final manager = $$GamesTableTableManager(
+      $_db,
+      $_db.games,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_gameIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $PlatformsTable _playedPlatformIdTable(_$AppDatabase db) =>
+      db.platforms.createAlias(
+        $_aliasNameGenerator(
+          db.libraryEntries.playedPlatformId,
+          db.platforms.id,
+        ),
+      );
+
+  $$PlatformsTableProcessedTableManager? get playedPlatformId {
+    final $_column = $_itemColumn<String>('played_platform_id');
+    if ($_column == null) return null;
+    final manager = $$PlatformsTableTableManager(
+      $_db,
+      $_db.platforms,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_playedPlatformIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $LibraryEntryPlatformsTable,
+    List<LibraryEntryPlatform>
+  >
+  _libraryEntryPlatformsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.libraryEntryPlatforms,
+        aliasName: $_aliasNameGenerator(
+          db.libraryEntries.id,
+          db.libraryEntryPlatforms.libraryEntryId,
+        ),
+      );
+
+  $$LibraryEntryPlatformsTableProcessedTableManager
+  get libraryEntryPlatformsRefs {
+    final manager = $$LibraryEntryPlatformsTableTableManager(
+      $_db,
+      $_db.libraryEntryPlatforms,
+    ).filter((f) => f.libraryEntryId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _libraryEntryPlatformsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$PlaythroughsTable, List<Playthrough>>
+  _playthroughsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.playthroughs,
+    aliasName: $_aliasNameGenerator(
+      db.libraryEntries.id,
+      db.playthroughs.libraryEntryId,
+    ),
+  );
+
+  $$PlaythroughsTableProcessedTableManager get playthroughsRefs {
+    final manager = $$PlaythroughsTableTableManager(
+      $_db,
+      $_db.playthroughs,
+    ).filter((f) => f.libraryEntryId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_playthroughsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$LibraryEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $LibraryEntriesTable> {
+  $$LibraryEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get hoursPlayed => $composableBuilder(
+    column: $table.hoursPlayed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get personalRating => $composableBuilder(
+    column: $table.personalRating,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get personalNotes => $composableBuilder(
+    column: $table.personalNotes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$GamesTableFilterComposer get gameId {
+    final $$GamesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gameId,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableFilterComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PlatformsTableFilterComposer get playedPlatformId {
+    final $$PlatformsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playedPlatformId,
+      referencedTable: $db.platforms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlatformsTableFilterComposer(
+            $db: $db,
+            $table: $db.platforms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> libraryEntryPlatformsRefs(
+    Expression<bool> Function($$LibraryEntryPlatformsTableFilterComposer f) f,
+  ) {
+    final $$LibraryEntryPlatformsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.libraryEntryPlatforms,
+          getReferencedColumn: (t) => t.libraryEntryId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$LibraryEntryPlatformsTableFilterComposer(
+                $db: $db,
+                $table: $db.libraryEntryPlatforms,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> playthroughsRefs(
+    Expression<bool> Function($$PlaythroughsTableFilterComposer f) f,
+  ) {
+    final $$PlaythroughsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.playthroughs,
+      getReferencedColumn: (t) => t.libraryEntryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlaythroughsTableFilterComposer(
+            $db: $db,
+            $table: $db.playthroughs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$LibraryEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LibraryEntriesTable> {
+  $$LibraryEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get hoursPlayed => $composableBuilder(
+    column: $table.hoursPlayed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get personalRating => $composableBuilder(
+    column: $table.personalRating,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get personalNotes => $composableBuilder(
+    column: $table.personalNotes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$GamesTableOrderingComposer get gameId {
+    final $$GamesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gameId,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableOrderingComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PlatformsTableOrderingComposer get playedPlatformId {
+    final $$PlatformsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playedPlatformId,
+      referencedTable: $db.platforms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlatformsTableOrderingComposer(
+            $db: $db,
+            $table: $db.platforms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LibraryEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LibraryEntriesTable> {
+  $$LibraryEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<bool> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get hoursPlayed => $composableBuilder(
+    column: $table.hoursPlayed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get personalRating => $composableBuilder(
+    column: $table.personalRating,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get personalNotes => $composableBuilder(
+    column: $table.personalNotes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$GamesTableAnnotationComposer get gameId {
+    final $$GamesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gameId,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PlatformsTableAnnotationComposer get playedPlatformId {
+    final $$PlatformsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playedPlatformId,
+      referencedTable: $db.platforms,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlatformsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.platforms,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> libraryEntryPlatformsRefs<T extends Object>(
+    Expression<T> Function($$LibraryEntryPlatformsTableAnnotationComposer a) f,
+  ) {
+    final $$LibraryEntryPlatformsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.libraryEntryPlatforms,
+          getReferencedColumn: (t) => t.libraryEntryId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$LibraryEntryPlatformsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.libraryEntryPlatforms,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> playthroughsRefs<T extends Object>(
+    Expression<T> Function($$PlaythroughsTableAnnotationComposer a) f,
+  ) {
+    final $$PlaythroughsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.playthroughs,
+      getReferencedColumn: (t) => t.libraryEntryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlaythroughsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.playthroughs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$LibraryEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LibraryEntriesTable,
+          LibraryEntry,
+          $$LibraryEntriesTableFilterComposer,
+          $$LibraryEntriesTableOrderingComposer,
+          $$LibraryEntriesTableAnnotationComposer,
+          $$LibraryEntriesTableCreateCompanionBuilder,
+          $$LibraryEntriesTableUpdateCompanionBuilder,
+          (LibraryEntry, $$LibraryEntriesTableReferences),
+          LibraryEntry,
+          PrefetchHooks Function({
+            bool gameId,
+            bool playedPlatformId,
+            bool libraryEntryPlatformsRefs,
+            bool playthroughsRefs,
+          })
+        > {
+  $$LibraryEntriesTableTableManager(
+    _$AppDatabase db,
+    $LibraryEntriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$LibraryEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () =>
+                  $$LibraryEntriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$LibraryEntriesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> gameId = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<bool> isCompleted = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<double?> hoursPlayed = const Value.absent(),
+                Value<String?> playedPlatformId = const Value.absent(),
+                Value<int?> personalRating = const Value.absent(),
+                Value<String?> personalNotes = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LibraryEntriesCompanion(
+                id: id,
+                gameId: gameId,
+                status: status,
+                isCompleted: isCompleted,
+                completedAt: completedAt,
+                hoursPlayed: hoursPlayed,
+                playedPlatformId: playedPlatformId,
+                personalRating: personalRating,
+                personalNotes: personalNotes,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String gameId,
+                required String status,
+                Value<bool> isCompleted = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<double?> hoursPlayed = const Value.absent(),
+                Value<String?> playedPlatformId = const Value.absent(),
+                Value<int?> personalRating = const Value.absent(),
+                Value<String?> personalNotes = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LibraryEntriesCompanion.insert(
+                id: id,
+                gameId: gameId,
+                status: status,
+                isCompleted: isCompleted,
+                completedAt: completedAt,
+                hoursPlayed: hoursPlayed,
+                playedPlatformId: playedPlatformId,
+                personalRating: personalRating,
+                personalNotes: personalNotes,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$LibraryEntriesTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({
+            gameId = false,
+            playedPlatformId = false,
+            libraryEntryPlatformsRefs = false,
+            playthroughsRefs = false,
+          }) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (libraryEntryPlatformsRefs) db.libraryEntryPlatforms,
+                if (playthroughsRefs) db.playthroughs,
+              ],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (gameId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.gameId,
+                            referencedTable: $$LibraryEntriesTableReferences
+                                ._gameIdTable(db),
+                            referencedColumn:
+                                $$LibraryEntriesTableReferences
+                                    ._gameIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+                if (playedPlatformId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.playedPlatformId,
+                            referencedTable: $$LibraryEntriesTableReferences
+                                ._playedPlatformIdTable(db),
+                            referencedColumn:
+                                $$LibraryEntriesTableReferences
+                                    ._playedPlatformIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (libraryEntryPlatformsRefs)
+                    await $_getPrefetchedData<
+                      LibraryEntry,
+                      $LibraryEntriesTable,
+                      LibraryEntryPlatform
+                    >(
+                      currentTable: table,
+                      referencedTable: $$LibraryEntriesTableReferences
+                          ._libraryEntryPlatformsRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$LibraryEntriesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).libraryEntryPlatformsRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.libraryEntryId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
+                  if (playthroughsRefs)
+                    await $_getPrefetchedData<
+                      LibraryEntry,
+                      $LibraryEntriesTable,
+                      Playthrough
+                    >(
+                      currentTable: table,
+                      referencedTable: $$LibraryEntriesTableReferences
+                          ._playthroughsRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$LibraryEntriesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).playthroughsRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.libraryEntryId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$LibraryEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LibraryEntriesTable,
+      LibraryEntry,
+      $$LibraryEntriesTableFilterComposer,
+      $$LibraryEntriesTableOrderingComposer,
+      $$LibraryEntriesTableAnnotationComposer,
+      $$LibraryEntriesTableCreateCompanionBuilder,
+      $$LibraryEntriesTableUpdateCompanionBuilder,
+      (LibraryEntry, $$LibraryEntriesTableReferences),
+      LibraryEntry,
+      PrefetchHooks Function({
+        bool gameId,
+        bool playedPlatformId,
         bool libraryEntryPlatformsRefs,
         bool playthroughsRefs,
       })
@@ -10419,10 +10919,10 @@ class $AppDatabaseManager {
   $AppDatabaseManager(this._db);
   $$GamesTableTableManager get games =>
       $$GamesTableTableManager(_db, _db.games);
-  $$LibraryEntriesTableTableManager get libraryEntries =>
-      $$LibraryEntriesTableTableManager(_db, _db.libraryEntries);
   $$PlatformsTableTableManager get platforms =>
       $$PlatformsTableTableManager(_db, _db.platforms);
+  $$LibraryEntriesTableTableManager get libraryEntries =>
+      $$LibraryEntriesTableTableManager(_db, _db.libraryEntries);
   $$LibraryEntryPlatformsTableTableManager get libraryEntryPlatforms =>
       $$LibraryEntryPlatformsTableTableManager(_db, _db.libraryEntryPlatforms);
   $$GenresTableTableManager get genres =>

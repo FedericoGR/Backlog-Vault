@@ -422,7 +422,7 @@ class AppLocalizationsEs extends AppLocalizations {
     Object playingCount,
     Object total,
   ) {
-    return '$total juegos activos, $completedCount completados y $playingCount en progreso.';
+    return '$total juegos, $completedCount completados y $playingCount pendientes.';
   }
 
   @override
@@ -984,11 +984,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gameAddGenre => 'Agregar género';
 
   @override
-  String get gameCompletionSection => 'Completado / partida';
+  String get gameCompletionSection => 'Registro personal';
 
   @override
   String get gameCompletionSectionSubtitle =>
-      'Datos iniciales al marcar como completado.';
+      'La fecha de finalización es opcional. Las horas y la plataforma pertenecen a este juego.';
 
   @override
   String get gameImportMetadata => 'Importar metadata';
@@ -1097,7 +1097,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gameLastCompleted => 'Último completado';
 
   @override
-  String get gamePlaythroughs => 'Partidas';
+  String get gamePlaythroughs => 'Partidas anteriores';
 
   @override
   String get gameMarkPlaying => 'Jugando';
@@ -1122,7 +1122,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get gameNoPlaythroughsMessage =>
-      'Cuando juegues o completes una partida aparecerá acá.';
+      'Acá se conserva el historial anterior de partidas. El seguimiento nuevo usa el registro personal.';
 
   @override
   String get gamePlaythroughActions => 'Acciones de partida';

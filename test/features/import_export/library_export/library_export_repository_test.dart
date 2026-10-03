@@ -30,7 +30,7 @@ void main() {
     final json = document.toJson();
 
     expect(json['format'], libraryExportFormat);
-    expect(json['formatVersion'], 1);
+    expect(json['formatVersion'], 2);
     expect(json['exportedAt'], '2026-07-17T18:30:45.000Z');
     expect(json['appVersion'], '1.0.0-rc1');
     expect(json['sourcePlatform'], 'windows');
@@ -78,6 +78,14 @@ void main() {
         document.libraryEntries.single['personalNotes'],
         'Línea uno\nLínea dos — 你好',
       );
+      expect(document.libraryEntries.single['isCompleted'], isTrue);
+      expect(
+        document.libraryEntries.single['completedAt'],
+        '2026-02-03T00:00:00.000Z',
+      );
+      expect(document.libraryEntries.single['hoursPlayed'], 42);
+      expect(document.libraryEntries.single['playedPlatformId'], 'platform-1');
+      expect(document.libraryEntries.single['status'], 'completed');
       expect(document.playthroughs.single['hoursPlayed'], 21.5);
       expect(document.playthroughs.single['rating'], 4);
       expect(document.playthroughs.single['startedAt'], isNotNull);
@@ -136,7 +144,7 @@ void main() {
 
     expect(text, contains('\n  "format":'));
     expect(text, contains('Línea dos — 你好'));
-    expect(parsed['formatVersion'], 1);
+    expect(parsed['formatVersion'], 2);
     expect(
       libraryExportFileName(document.exportedAt),
       'backlog-vault-library-20260717-183045.json',
@@ -237,6 +245,16 @@ Future<void> _insertComplexLibrary(AppDatabase db) async {
           name: 'PC',
           createdAt: now,
           updatedAt: now,
+        ),
+      );
+  await db
+      .update(db.libraryEntries)
+      .write(
+        LibraryEntriesCompanion(
+          isCompleted: const Value(true),
+          completedAt: Value(DateTime.utc(2026, 2, 3)),
+          hoursPlayed: const Value(42),
+          playedPlatformId: const Value('platform-1'),
         ),
       );
   await db

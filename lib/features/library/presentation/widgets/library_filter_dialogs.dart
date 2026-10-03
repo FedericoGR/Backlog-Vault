@@ -91,7 +91,7 @@ class _FiltersDialogState extends State<_FiltersDialog> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  for (final status in GameStatus.values)
+                  for (final status in personalGameStatuses)
                     FilterChip(
                       label: Text(context.l10n.gameStatusLabel(status)),
                       selected: _statuses.contains(status),

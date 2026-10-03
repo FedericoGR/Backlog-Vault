@@ -1,7 +1,7 @@
 class CompletionFormModel {
   const CompletionFormModel({
     required this.libraryEntryId,
-    required this.completedAt,
+    this.completedAt,
     this.platformId,
     this.hoursPlayed,
     this.rating,
@@ -9,7 +9,7 @@ class CompletionFormModel {
   });
 
   final String libraryEntryId;
-  final DateTime completedAt;
+  final DateTime? completedAt;
   final String? platformId;
   final double? hoursPlayed;
   final int? rating;
@@ -19,7 +19,7 @@ class CompletionFormModel {
     if (rating != null && (rating! < 1 || rating! > 5)) {
       throw ArgumentError('El puntaje debe estar entre 1 y 5.');
     }
-    if (hoursPlayed != null && hoursPlayed! < 0) {
+    if (hoursPlayed != null && (!hoursPlayed!.isFinite || hoursPlayed! < 0)) {
       throw ArgumentError('Las horas no pueden ser negativas.');
     }
   }

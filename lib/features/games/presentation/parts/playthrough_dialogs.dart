@@ -10,7 +10,7 @@ class _CompletionDialog extends StatefulWidget {
 }
 
 class _CompletionDialogState extends State<_CompletionDialog> {
-  DateTime _completedAt = DateTime.now();
+  DateTime? _completedAt;
   String? _platformId;
   int? _rating;
   final _hoursController = TextEditingController();
@@ -19,8 +19,10 @@ class _CompletionDialogState extends State<_CompletionDialog> {
   @override
   void initState() {
     super.initState();
-    _platformId =
-        widget.item.platforms.isEmpty ? null : widget.item.platforms.first.id;
+    _platformId = widget.item.entry.playedPlatformId;
+    _completedAt = widget.item.entry.completedAt;
+    _hoursController.text = widget.item.entry.hoursPlayed?.toString() ?? '';
+    _notesController.text = widget.item.entry.personalNotes ?? '';
     _rating = widget.item.entry.personalRating;
   }
 
@@ -43,9 +45,9 @@ class _CompletionDialogState extends State<_CompletionDialog> {
             _DatePickerTile(
               label: context.l10n.gameCompletionDate,
               value: _completedAt,
-              allowClear: false,
+              allowClear: true,
               onChanged: (value) {
-                if (value != null) setState(() => _completedAt = value);
+                setState(() => _completedAt = value);
               },
             ),
             TextField(
@@ -97,160 +99,6 @@ class _CompletionDialogState extends State<_CompletionDialog> {
                 ),
               ),
           child: Text(context.l10n.gameComplete),
-        ),
-      ],
-    );
-  }
-}
-
-class _PlaythroughDialog extends StatefulWidget {
-  const _PlaythroughDialog({required this.item, this.playthrough});
-
-  final LibraryGameDetails item;
-  final PlaythroughDetails? playthrough;
-
-  @override
-  State<_PlaythroughDialog> createState() => _PlaythroughDialogState();
-}
-
-class _PlaythroughDialogState extends State<_PlaythroughDialog> {
-  late PlaythroughStatus _status;
-  DateTime? _startedAt;
-  DateTime? _completedAt;
-  String? _platformId;
-  int? _rating;
-  late final TextEditingController _hoursController;
-  late final TextEditingController _notesController;
-
-  @override
-  void initState() {
-    super.initState();
-    final playthrough = widget.playthrough;
-    _status =
-        playthrough == null
-            ? PlaythroughStatus.active
-            : parsePlaythroughStatus(playthrough.status);
-    _startedAt = playthrough == null ? DateTime.now() : playthrough.startedAt;
-    _completedAt = playthrough?.completedAt;
-    _platformId =
-        playthrough?.platformId ??
-        (widget.item.platforms.isEmpty ? null : widget.item.platforms.first.id);
-    _rating = playthrough?.rating;
-    _hoursController = TextEditingController(
-      text: playthrough?.hoursPlayed?.toString() ?? '',
-    );
-    _notesController = TextEditingController(text: playthrough?.notes ?? '');
-  }
-
-  @override
-  void dispose() {
-    _hoursController.dispose();
-    _notesController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      scrollable: true,
-      title: Text(
-        widget.playthrough == null
-            ? context.l10n.gameRegisterPlaythrough
-            : context.l10n.gameEditPlaythrough,
-      ),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            DropdownButtonFormField<PlaythroughStatus>(
-              initialValue: _status,
-              decoration: InputDecoration(
-                labelText: context.l10n.libraryStatus,
-              ),
-              items: [
-                for (final status in PlaythroughStatus.values)
-                  DropdownMenuItem(
-                    value: status,
-                    child: Text(context.l10n.playthroughStatusLabel(status)),
-                  ),
-              ],
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() {
-                  _status = value;
-                  if (value == PlaythroughStatus.completed) {
-                    _completedAt ??= DateTime.now();
-                  }
-                });
-              },
-            ),
-            const SizedBox(height: 12),
-            _PlatformField(
-              platformId: _platformId,
-              platforms: widget.item.platforms,
-              onChanged: (value) => setState(() => _platformId = value),
-            ),
-            const SizedBox(height: 12),
-            _DatePickerTile(
-              label: context.l10n.gameStartDate,
-              value: _startedAt,
-              onChanged: (value) => setState(() => _startedAt = value),
-            ),
-            _DatePickerTile(
-              label: context.l10n.gameCompletionDate,
-              value: _completedAt,
-              onChanged: (value) => setState(() => _completedAt = value),
-            ),
-            TextField(
-              controller: _hoursController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: context.l10n.gameHoursPlayed,
-              ),
-            ),
-            const SizedBox(height: 12),
-            _RatingField(
-              value: _rating,
-              onChanged: (value) => setState(() => _rating = value),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _notesController,
-              minLines: 2,
-              maxLines: 4,
-              decoration: InputDecoration(labelText: context.l10n.gameNotes),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(context.l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: () {
-            final model = PlaythroughFormModel(
-              playthroughId: widget.playthrough?.id,
-              libraryEntryId: widget.item.entry.id,
-              platformId: _platformId,
-              status: _status,
-              startedAt: _startedAt,
-              completedAt: _completedAt,
-              hoursPlayed: double.tryParse(
-                _hoursController.text.trim().replaceAll(',', '.'),
-              ),
-              rating: _rating,
-              notes: _notesController.text,
-            );
-            try {
-              model.validate();
-              Navigator.pop(context, model);
-            } catch (error) {
-              BvFeedback.show(context, context.l10n.playthroughSaveFailed);
-            }
-          },
-          child: Text(context.l10n.save),
         ),
       ],
     );
@@ -346,6 +194,7 @@ class _PlatformField extends StatelessWidget {
             ? platformId
             : null;
     return DropdownButtonFormField<String?>(
+      isExpanded: true,
       initialValue: safePlatformId,
       decoration: InputDecoration(labelText: context.l10n.gamePlatform),
       items: [

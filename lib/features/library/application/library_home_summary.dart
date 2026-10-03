@@ -46,7 +46,7 @@ LibraryHomeData buildLibraryHomeData(
       rows.where((row) => row.status == GameStatus.backlog).toList()
         ..sort(_byUpdatedDesc);
   final recentlyCompleted =
-      rows.where((row) => row.completedAt != null).toList()
+      rows.where((row) => row.isCompleted && row.completedAt != null).toList()
         ..sort(_byCompletedDesc);
   final missingCover =
       rows

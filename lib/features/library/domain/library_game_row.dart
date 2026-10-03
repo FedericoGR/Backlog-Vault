@@ -25,6 +25,7 @@ class LibraryGameRow {
     this.releaseDate,
     this.completedAt,
     this.hoursPlayed,
+    this.playedPlatformId,
     this.personalRating,
     this.personalNotes,
   });
@@ -37,6 +38,8 @@ class LibraryGameRow {
   final String? selectedCoverProvider;
   final bool hasExternalMetadata;
   final GameStatus status;
+  bool get isCompleted => status == GameStatus.completed;
+  final String? playedPlatformId;
   final DateTime? releaseDate;
   final DateTime? completedAt;
   final double? hoursPlayed;

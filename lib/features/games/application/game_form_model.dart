@@ -9,12 +9,16 @@ class GameFormModel {
     this.sortTitle,
     this.releaseDate,
     this.type = 'game',
-    required this.status,
+    this.status = GameStatus.backlog,
+    bool? isCompleted,
+    this.completedAt,
+    this.hoursPlayed,
+    this.playedPlatformId,
     this.personalRating,
     this.personalNotes,
     this.platformIds = const [],
     this.genreIds = const [],
-  });
+  }) : isCompleted = isCompleted ?? (status == GameStatus.completed);
 
   final String? entryId;
   final String? gameId;
@@ -23,12 +27,19 @@ class GameFormModel {
   final DateTime? releaseDate;
   final String type;
   final GameStatus status;
+  final bool isCompleted;
+  final DateTime? completedAt;
+  final double? hoursPlayed;
+  final String? playedPlatformId;
   final int? personalRating;
   final String? personalNotes;
   final List<String> platformIds;
   final List<String> genreIds;
 
   void validate() {
+    if (hoursPlayed != null && (!hoursPlayed!.isFinite || hoursPlayed! < 0)) {
+      throw ArgumentError('Las horas deben ser un número no negativo.');
+    }
     if (title.trim().isEmpty) {
       throw ArgumentError('El nombre es obligatorio.');
     }

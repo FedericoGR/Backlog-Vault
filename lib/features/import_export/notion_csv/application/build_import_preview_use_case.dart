@@ -81,15 +81,6 @@ class BuildImportPreviewUseCase {
         _value(rawRow, mapping, ImportField.personalNotes),
       );
 
-      if (status == GameStatus.completed && completedAt == null) {
-        issues.add(
-          const ImportRowIssue(
-            severity: ImportIssueSeverity.warning,
-            field: 'completedAt',
-            message: 'Completado sin fecha de completado.',
-          ),
-        );
-      }
       if (completedAt != null && status != GameStatus.completed) {
         issues.add(
           const ImportRowIssue(
@@ -100,17 +91,6 @@ class BuildImportPreviewUseCase {
           ),
         );
       }
-      if (hoursPlayed != null &&
-          !_shouldCreatePlaythrough(status, completedAt, rating, notes)) {
-        issues.add(
-          const ImportRowIssue(
-            severity: ImportIssueSeverity.warning,
-            field: 'hoursPlayed',
-            message: 'Hay duración, pero no hay estado de partida claro.',
-          ),
-        );
-      }
-
       rows.add(
         NormalizedImportRow(
           rowNumber: rawRow.rowNumber,
@@ -145,32 +125,6 @@ String _value(RawCsvRow row, CsvColumnMapping mapping, ImportField field) {
 String? _blankToNull(String value) {
   final trimmed = value.trim();
   return trimmed.isEmpty ? null : trimmed;
-}
-
-bool _shouldCreatePlaythrough(
-  GameStatus status,
-  DateTime? completedAt,
-  int? rating,
-  String? notes,
-) {
-  if (completedAt != null) return true;
-  if (rating != null &&
-      status != GameStatus.wishlist &&
-      status != GameStatus.backlog) {
-    return true;
-  }
-  if (notes != null &&
-      status != GameStatus.wishlist &&
-      status != GameStatus.backlog) {
-    return true;
-  }
-  return switch (status) {
-    GameStatus.completed ||
-    GameStatus.playing ||
-    GameStatus.paused ||
-    GameStatus.dropped => true,
-    GameStatus.wishlist || GameStatus.backlog || GameStatus.retired => false,
-  };
 }
 
 PlaythroughStatus playthroughStatusForImport(NormalizedImportRow row) {

@@ -6,10 +6,8 @@ import '../../../core/database/database_providers.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/ids/id_generator.dart';
 import '../../../core/time/clock.dart';
-import '../../library/domain/game_status.dart';
 import '../../catalogs/domain/catalog_item.dart';
 import '../../playthroughs/application/completion_form_model.dart';
-import '../../playthroughs/domain/playthrough_status.dart';
 import '../application/game_form_model.dart';
 import '../application/library_game_details.dart';
 
@@ -81,6 +79,10 @@ class GameRepository {
               id: entryId,
               gameId: gameId,
               status: model.status.name,
+              isCompleted: Value(model.isCompleted),
+              completedAt: Value(model.completedAt),
+              hoursPlayed: Value(model.hoursPlayed),
+              playedPlatformId: Value(model.playedPlatformId),
               personalRating: Value(model.personalRating),
               personalNotes: Value(_blankToNull(model.personalNotes)),
               createdAt: now,
@@ -106,13 +108,6 @@ class GameRepository {
         throw const AppException('No se encontró el juego en la biblioteca.');
       }
 
-      final currentStatus = parseGameStatus(entry.status);
-      if (!canTransitionGameStatus(currentStatus, model.status)) {
-        throw AppException(
-          'No se puede pasar de ${currentStatus.label} a ${model.status.label}.',
-        );
-      }
-
       await (_db.update(_db.games)
         ..where((table) => table.id.equals(model.gameId!))).write(
         GamesCompanion(
@@ -127,7 +122,10 @@ class GameRepository {
       await (_db.update(_db.libraryEntries)
         ..where((table) => table.id.equals(model.entryId!))).write(
         LibraryEntriesCompanion(
-          status: Value(model.status.name),
+          isCompleted: Value(model.isCompleted),
+          completedAt: Value(model.completedAt),
+          hoursPlayed: Value(model.hoursPlayed),
+          playedPlatformId: Value(model.playedPlatformId),
           personalRating: Value(model.personalRating),
           personalNotes: Value(_blankToNull(model.personalNotes)),
           updatedAt: Value(now),
@@ -184,94 +182,21 @@ class GameRepository {
     });
   }
 
-  Future<void> markPlaying(String entryId) {
-    return _db.transaction(() async {
-      final now = _clock.now();
-      await _updateEntryStatus(entryId, GameStatus.playing, now);
-      final active = await _activeOrPausedPlaythrough(entryId);
-      if (active == null) {
-        await _db
-            .into(_db.playthroughs)
-            .insert(
-              PlaythroughsCompanion.insert(
-                id: _ids.newId(),
-                libraryEntryId: entryId,
-                platformId: Value(await _defaultPlatformId(entryId)),
-                status: PlaythroughStatus.active.name,
-                startedAt: Value(now),
-                createdAt: now,
-                updatedAt: now,
-              ),
-            );
-        return;
-      }
-      if (parsePlaythroughStatus(active.status) == PlaythroughStatus.paused) {
-        await (_db.update(_db.playthroughs)
-          ..where((table) => table.id.equals(active.id))).write(
-          PlaythroughsCompanion(
-            status: Value(PlaythroughStatus.active.name),
-            updatedAt: Value(now),
-          ),
-        );
-      }
-    });
-  }
+  // Compatibility entry points: all unfinished states now mean pending.
+  Future<void> markPlaying(String entryId) => markBacklog(entryId);
+  Future<void> markPaused(String entryId) => markBacklog(entryId);
+  Future<void> markDropped(String entryId) => markBacklog(entryId);
 
-  Future<void> markPaused(String entryId) {
-    return _db.transaction(() async {
-      final now = _clock.now();
-      await _updateEntryStatus(entryId, GameStatus.paused, now);
-      final active = await _activeOrPausedPlaythrough(entryId);
-      if (active == null) {
-        await _db
-            .into(_db.playthroughs)
-            .insert(
-              PlaythroughsCompanion.insert(
-                id: _ids.newId(),
-                libraryEntryId: entryId,
-                platformId: Value(await _defaultPlatformId(entryId)),
-                status: PlaythroughStatus.paused.name,
-                startedAt: Value(now),
-                createdAt: now,
-                updatedAt: now,
-              ),
-            );
-        return;
-      }
-      if (parsePlaythroughStatus(active.status) == PlaythroughStatus.active) {
-        await (_db.update(_db.playthroughs)
-          ..where((table) => table.id.equals(active.id))).write(
-          PlaythroughsCompanion(
-            status: Value(PlaythroughStatus.paused.name),
-            updatedAt: Value(now),
-          ),
-        );
-      }
-    });
-  }
-
-  Future<void> markDropped(String entryId) {
-    return _db.transaction(() async {
-      final now = _clock.now();
-      await _updateEntryStatus(entryId, GameStatus.dropped, now);
-      final active = await _activeOrPausedPlaythrough(entryId);
-      if (active == null) return;
-      await (_db.update(_db.playthroughs)
-        ..where((table) => table.id.equals(active.id))).write(
-        PlaythroughsCompanion(
-          status: Value(PlaythroughStatus.dropped.name),
-          updatedAt: Value(now),
-        ),
-      );
-    });
-  }
-
-  Future<void> markBacklog(String entryId) {
-    return _db.transaction(() async {
-      final now = _clock.now();
-      await _updateEntryStatus(entryId, GameStatus.backlog, now);
-    });
-  }
+  Future<void> markBacklog(String entryId) => _db.transaction(() async {
+    await _requireEntry(entryId);
+    await (_db.update(_db.libraryEntries)
+      ..where((table) => table.id.equals(entryId))).write(
+      LibraryEntriesCompanion(
+        isCompleted: const Value(false),
+        updatedAt: Value(_clock.now()),
+      ),
+    );
+  });
 
   Future<void> completeGame(CompletionFormModel model) {
     model.validate();
@@ -286,63 +211,17 @@ class GameRepository {
         throw const AppException('No se encontró el juego en la biblioteca.');
       }
 
-      final currentStatus = parseGameStatus(entry.status);
-      if (!canTransitionGameStatus(currentStatus, GameStatus.completed)) {
-        throw AppException(
-          'No se puede pasar de ${currentStatus.label} a Completado.',
-        );
-      }
-
-      final activePlaythrough =
-          await ((_db.select(_db.playthroughs)
-                ..where(
-                  (table) => table.libraryEntryId.equals(model.libraryEntryId),
-                )
-                ..where((table) => table.deletedAt.isNull())
-                ..where(
-                  (table) =>
-                      table.status.equals(PlaythroughStatus.active.name) |
-                      table.status.equals(PlaythroughStatus.paused.name),
-                )
-                ..limit(1))
-              .getSingleOrNull());
-
-      if (activePlaythrough == null) {
-        await _db
-            .into(_db.playthroughs)
-            .insert(
-              PlaythroughsCompanion.insert(
-                id: _ids.newId(),
-                libraryEntryId: model.libraryEntryId,
-                platformId: Value(model.platformId),
-                status: PlaythroughStatus.completed.name,
-                completedAt: Value(model.completedAt),
-                hoursPlayed: Value(model.hoursPlayed),
-                rating: Value(model.rating),
-                notes: Value(_blankToNull(model.notes)),
-                createdAt: now,
-                updatedAt: now,
-              ),
-            );
-      } else {
-        await (_db.update(_db.playthroughs)
-          ..where((table) => table.id.equals(activePlaythrough.id))).write(
-          PlaythroughsCompanion(
-            platformId: Value(model.platformId ?? activePlaythrough.platformId),
-            status: Value(PlaythroughStatus.completed.name),
-            completedAt: Value(model.completedAt),
-            hoursPlayed: Value(model.hoursPlayed),
-            rating: Value(model.rating),
-            notes: Value(_blankToNull(model.notes) ?? activePlaythrough.notes),
-            updatedAt: Value(now),
-          ),
-        );
-      }
-
       await (_db.update(_db.libraryEntries)
         ..where((table) => table.id.equals(model.libraryEntryId))).write(
         LibraryEntriesCompanion(
-          status: Value(GameStatus.completed.name),
+          isCompleted: const Value(true),
+          completedAt: Value(model.completedAt),
+          hoursPlayed: Value(model.hoursPlayed),
+          playedPlatformId: Value(model.platformId),
+          personalNotes:
+              model.notes == null
+                  ? const Value.absent()
+                  : Value(_blankToNull(model.notes)),
           personalRating:
               model.rating == null
                   ? const Value<int?>.absent()
@@ -397,6 +276,10 @@ class GameRepository {
             id: entry.id,
             gameId: entry.gameId,
             status: entry.status,
+            isCompleted: entry.isCompleted,
+            completedAt: entry.completedAt,
+            hoursPlayed: entry.hoursPlayed,
+            playedPlatformId: entry.playedPlatformId,
             personalRating: entry.personalRating,
             personalNotes: entry.personalNotes,
             createdAt: entry.createdAt,
@@ -553,60 +436,6 @@ class GameRepository {
       throw const AppException('No se encontró el juego en la biblioteca.');
     }
     return entry;
-  }
-
-  Future<void> _updateEntryStatus(
-    String entryId,
-    GameStatus targetStatus,
-    DateTime now,
-  ) async {
-    final entry = await _requireEntry(entryId);
-    final currentStatus = parseGameStatus(entry.status);
-    if (!canTransitionGameStatus(currentStatus, targetStatus)) {
-      throw AppException(
-        'No se puede pasar de ${currentStatus.label} a ${targetStatus.label}.',
-      );
-    }
-    await (_db.update(_db.libraryEntries)
-      ..where((table) => table.id.equals(entryId))).write(
-      LibraryEntriesCompanion(
-        status: Value(targetStatus.name),
-        updatedAt: Value(now),
-      ),
-    );
-  }
-
-  Future<Playthrough?> _activeOrPausedPlaythrough(String entryId) {
-    return ((_db.select(_db.playthroughs)
-          ..where((table) => table.libraryEntryId.equals(entryId))
-          ..where((table) => table.deletedAt.isNull())
-          ..where(
-            (table) =>
-                table.status.equals(PlaythroughStatus.active.name) |
-                table.status.equals(PlaythroughStatus.paused.name),
-          )
-          ..orderBy([(table) => OrderingTerm.desc(table.updatedAt)])
-          ..limit(1))
-        .getSingleOrNull());
-  }
-
-  Future<String?> _defaultPlatformId(String entryId) async {
-    final primary =
-        await ((_db.select(_db.libraryEntryPlatforms)
-              ..where((table) => table.libraryEntryId.equals(entryId))
-              ..where((table) => table.deletedAt.isNull())
-              ..where((table) => table.isPrimary.equals(true))
-              ..limit(1))
-            .getSingleOrNull());
-    if (primary != null) return primary.platformId;
-
-    final first =
-        await ((_db.select(_db.libraryEntryPlatforms)
-              ..where((table) => table.libraryEntryId.equals(entryId))
-              ..where((table) => table.deletedAt.isNull())
-              ..limit(1))
-            .getSingleOrNull());
-    return first?.platformId;
   }
 }
 

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 const libraryExportFormat = 'backlog-vault-library-export';
-const libraryExportFormatVersion = 1;
+const libraryExportFormatVersion = 2;
 
 class LibraryExportSummary {
   const LibraryExportSummary({
