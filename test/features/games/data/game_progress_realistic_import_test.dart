@@ -8,7 +8,7 @@ import 'package:backlog_vault/features/import_export/notion_csv/data/csv_parser.
 import 'package:backlog_vault/features/import_export/notion_csv/data/notion_csv_import_repository.dart';
 import 'package:backlog_vault/features/library/data/library_query_repository.dart';
 import 'package:backlog_vault/features/library/domain/game_status.dart';
-import 'package:backlog_vault/features/playthroughs/application/completion_form_model.dart';
+import 'package:backlog_vault/features/games/application/game_form_model.dart';
 import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
@@ -53,16 +53,18 @@ void main() {
       final importedPlaying = rows.singleWhere(
         (row) => row.title == 'Playing Game',
       );
-      expect(importedPlaying.status, GameStatus.backlog);
-      expect(importedPlaying.playthroughCount, 0);
+      expect(importedPlaying.status, GameStatus.pending);
 
-      await gameRepository.completeGame(
-        CompletionFormModel(
-          libraryEntryId: importedPlaying.libraryEntryId,
+      await gameRepository.save(
+        GameFormModel(
+          entryId: importedPlaying.libraryEntryId,
+          gameId: importedPlaying.gameId,
+          title: importedPlaying.title,
+          isCompleted: true,
           completedAt: DateTime(2026, 6, 10),
           hoursPlayed: 8.5,
-          rating: 5,
-          notes: 'Cierre validado desde fixture realista',
+          personalRating: 5,
+          personalNotes: 'Cierre validado desde fixture realista',
         ),
       );
 
@@ -72,7 +74,6 @@ void main() {
       expect(completed.completedAt, DateTime(2026, 6, 10));
       expect(completed.hoursPlayed, 8.5);
       expect(completed.personalRating, 5);
-      expect(completed.playthroughCount, 0);
     },
   );
 }

@@ -1,9 +1,5 @@
 import 'package:backlog_vault/features/library/application/library_providers.dart';
-import 'package:backlog_vault/features/statistics/application/statistics_providers.dart';
-import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/library/domain/library_game_row.dart';
-import 'package:backlog_vault/features/playthroughs/domain/playthrough_status.dart';
-import 'package:backlog_vault/features/statistics/domain/statistics_models.dart';
 import 'package:backlog_vault/features/statistics/presentation/statistics_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,9 +18,6 @@ void main() {
       ProviderScope(
         overrides: [
           libraryRowsProvider.overrideWith((ref) => Stream.value(_rows)),
-          statisticsPlaythroughsProvider.overrideWith(
-            (ref) => Stream.value(_playthroughs),
-          ),
         ],
         child: const MaterialApp(home: StatisticsPage()),
       ),
@@ -60,9 +53,6 @@ void main() {
           libraryRowsProvider.overrideWith(
             (ref) => Stream.value(_rowsWithLongTitle),
           ),
-          statisticsPlaythroughsProvider.overrideWith(
-            (ref) => Stream.value(_playthroughs),
-          ),
         ],
         child: const MaterialApp(home: StatisticsPage()),
       ),
@@ -89,9 +79,6 @@ void main() {
       ProviderScope(
         overrides: [
           libraryRowsProvider.overrideWith((ref) => Stream.value(const [])),
-          statisticsPlaythroughsProvider.overrideWith(
-            (ref) => Stream.value(const []),
-          ),
         ],
         child: const MaterialApp(home: StatisticsPage()),
       ),
@@ -114,23 +101,23 @@ final _rows = [
     title: 'Hades',
     selectedCoverLocalPath: 'media/games/g1/cover.png',
     hasExternalMetadata: true,
-    status: GameStatus.completed,
+    isCompleted: true,
     personalRating: 5,
     type: 'game',
     platforms: const [LibraryCatalogItem(id: 'pc', name: 'PC')],
     genres: const [LibraryCatalogItem(id: 'roguelite', name: 'Roguelite')],
-    playthroughCount: 1,
+
     updatedAt: DateTime(2026, 6, 1),
   ),
   LibraryGameRow(
     gameId: 'g2',
     libraryEntryId: 'e2',
     title: 'Celeste',
-    status: GameStatus.backlog,
+    isCompleted: false,
     type: 'game',
     platforms: const [],
     genres: const [],
-    playthroughCount: 0,
+
     updatedAt: DateTime(2026, 6, 2),
   ),
 ];
@@ -143,7 +130,7 @@ final _rowsWithLongTitle = [
         'The Legend of Heroes: Trails into Reverie Deluxe Complete Edition With A Very Long Subtitle',
     selectedCoverLocalPath: 'media/games/g1/cover.png',
     hasExternalMetadata: true,
-    status: GameStatus.completed,
+    isCompleted: true,
     personalRating: 5,
     type: 'game',
     platforms: const [
@@ -157,38 +144,29 @@ final _rowsWithLongTitle = [
       LibraryCatalogItem(id: 'jrpg', name: 'Japanese Role-Playing Game'),
       LibraryCatalogItem(id: 'story', name: 'Story Rich Adventure'),
     ],
-    playthroughCount: 1,
+
     updatedAt: DateTime(2026, 6, 1),
   ),
   LibraryGameRow(
     gameId: 'g2',
     libraryEntryId: 'e2',
     title: 'Celeste',
-    status: GameStatus.paused,
+    isCompleted: false,
     type: 'game',
     platforms: const [],
     genres: const [],
-    playthroughCount: 0,
+
     updatedAt: DateTime(2026, 6, 2),
   ),
   LibraryGameRow(
     gameId: 'g3',
     libraryEntryId: 'e3',
     title: 'Retired Game',
-    status: GameStatus.retired,
+    isCompleted: false,
     type: 'game',
     platforms: const [],
     genres: const [],
-    playthroughCount: 0,
-    updatedAt: DateTime(2026, 6, 3),
-  ),
-];
 
-final _playthroughs = [
-  StatisticsPlaythrough(
-    libraryEntryId: 'e1',
-    status: PlaythroughStatus.completed,
-    completedAt: DateTime(2026, 1, 1),
-    hoursPlayed: 12,
+    updatedAt: DateTime(2026, 6, 3),
   ),
 ];

@@ -980,7 +980,7 @@ void main() {
         expect(savedCovers.single.providerId, 'igdb');
         expect(game.releaseDate, DateTime(2020, 9, 17));
         expect(game.title, 'Hades');
-        expect(entry.status, GameStatus.playing.name);
+        expect(entry.status, GameStatus.pending.name);
         expect(entry.personalRating, 5);
         expect(entry.personalNotes, 'Manual note');
         expect(externalIds.single.provider, 'igdb');
@@ -1286,12 +1286,12 @@ LibraryGameRow _row({
     selectedCoverLocalPath: selectedCoverLocalPath,
     selectedCoverProvider: selectedCoverProvider,
     hasExternalMetadata: hasExternalMetadata,
-    status: GameStatus.backlog,
+    isCompleted: false,
     releaseDate: releaseDate,
     type: 'game',
     platforms: platforms,
     genres: genres,
-    playthroughCount: 0,
+
     updatedAt: DateTime(2026, 6, 13),
   );
 }
@@ -1418,7 +1418,7 @@ Future<void> _seedGame(AppDatabase db) async {
         LibraryEntriesCompanion.insert(
           id: 'entry-1',
           gameId: 'game-1',
-          status: GameStatus.playing.name,
+          status: GameStatus.pending.name,
           personalRating: const Value(5),
           personalNotes: const Value('Manual note'),
           createdAt: now,

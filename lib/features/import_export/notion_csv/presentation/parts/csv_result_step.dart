@@ -40,11 +40,6 @@ class _ImportResultStep extends StatelessWidget {
               BvChip(
                 label: context.l10n.csvGenresCreated(result.genresCreated),
               ),
-              BvChip(
-                label: context.l10n.csvPlaythroughsCreated(
-                  result.playthroughsCreated,
-                ),
-              ),
             ],
           ),
           const SizedBox(height: BvSpacing.md),

@@ -38,7 +38,6 @@ void main() {
       expect(result.importedGames, 1);
       expect(result.platformsCreated, 1);
       expect(result.genresCreated, 1);
-      expect(result.playthroughsCreated, 0);
 
       final games = await db.select(db.games).get();
       final entries = await db.select(db.libraryEntries).get();

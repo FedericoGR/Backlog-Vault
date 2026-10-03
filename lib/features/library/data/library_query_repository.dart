@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_providers.dart';
 import '../../../core/time/clock.dart';
-import '../domain/game_status.dart';
 import '../domain/library_game_row.dart';
 
 final libraryQueryRepositoryProvider = Provider<LibraryQueryRepository>((ref) {
@@ -73,7 +72,12 @@ class LibraryQueryRepository {
 
     final platformsByEntryId = await _loadPlatformsByEntryId(entryIds);
     final genresByGameId = await _loadGenresByGameId(gameIds);
-    final playthroughsByEntryId = await _loadPlaythroughsByEntryId(entryIds);
+    final playedPlatformIds =
+        entries.map((e) => e.playedPlatformId).whereType<String>().toSet();
+    final playedPlatforms =
+        await (_db.select(_db.platforms)
+          ..where((p) => p.id.isIn(playedPlatformIds))).get();
+    final playedPlatformNames = {for (final p in playedPlatforms) p.id: p.name};
     final selectedCoverByGameId = await _loadSelectedCoverByGameId(gameIds);
     final gamesWithExternalMetadata = await _loadGamesWithExternalMetadata(
       gameIds,
@@ -87,7 +91,7 @@ class LibraryQueryRepository {
             game: game,
             platforms: platformsByEntryId[entry.id] ?? const [],
             genres: genresByGameId[game.id] ?? const [],
-            playthroughs: playthroughsByEntryId[entry.id] ?? const [],
+            playedPlatformName: playedPlatformNames[entry.playedPlatformId],
             selectedCover: selectedCoverByGameId[game.id],
             hasExternalMetadata: gamesWithExternalMetadata.contains(game.id),
           ),
@@ -162,23 +166,6 @@ class LibraryQueryRepository {
     return result;
   }
 
-  Future<Map<String, List<Playthrough>>> _loadPlaythroughsByEntryId(
-    List<String> entryIds,
-  ) async {
-    if (entryIds.isEmpty) return const {};
-    final playthroughs =
-        await ((_db.select(_db.playthroughs)
-              ..where((table) => table.libraryEntryId.isIn(entryIds))
-              ..where((table) => table.deletedAt.isNull()))
-            .get());
-
-    final result = <String, List<Playthrough>>{};
-    for (final playthrough in playthroughs) {
-      result.putIfAbsent(playthrough.libraryEntryId, () => []).add(playthrough);
-    }
-    return result;
-  }
-
   Future<Map<String, MediaAsset>> _loadSelectedCoverByGameId(
     List<String> gameIds,
   ) async {
@@ -210,7 +197,7 @@ class LibraryQueryRepository {
     required Game game,
     required List<LibraryCatalogItem> platforms,
     required List<LibraryCatalogItem> genres,
-    required List<Playthrough> playthroughs,
+    required String? playedPlatformName,
     required MediaAsset? selectedCover,
     required bool hasExternalMetadata,
   }) {
@@ -222,7 +209,7 @@ class LibraryQueryRepository {
       selectedCoverLocalPath: selectedCover?.localPath,
       selectedCoverProvider: selectedCover?.provider ?? selectedCover?.source,
       hasExternalMetadata: hasExternalMetadata,
-      status: entry.isCompleted ? GameStatus.completed : GameStatus.backlog,
+      isCompleted: entry.isCompleted,
       releaseDate: game.releaseDate,
       completedAt: entry.completedAt,
       hoursPlayed: entry.hoursPlayed,
@@ -232,7 +219,7 @@ class LibraryQueryRepository {
       type: game.type,
       platforms: platforms,
       genres: genres,
-      playthroughCount: playthroughs.length,
+      playedPlatformName: playedPlatformName,
       updatedAt: entry.updatedAt,
     );
   }

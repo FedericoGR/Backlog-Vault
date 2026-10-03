@@ -197,7 +197,7 @@ final _rows = [
     gameId: 'game-1',
     libraryEntryId: 'entry-1',
     title: 'Hades',
-    status: GameStatus.completed,
+    isCompleted: true,
     type: 'game',
     platforms: const [LibraryCatalogItem(id: 'pc', name: 'PC')],
     genres: const [LibraryCatalogItem(id: 'rpg', name: 'Roguelike')],
@@ -205,7 +205,7 @@ final _rows = [
     hoursPlayed: 24,
     releaseDate: DateTime(2020, 9, 17),
     completedAt: DateTime(2026, 1, 1),
-    playthroughCount: 1,
+
     updatedAt: DateTime(2026, 6, 13),
   ),
   LibraryGameRow(
@@ -213,11 +213,11 @@ final _rows = [
     libraryEntryId: 'entry-2',
     title:
         'A Very Long Game Title That Should Wrap Cleanly Without Overflowing',
-    status: GameStatus.backlog,
+    isCompleted: false,
     type: 'game',
     platforms: const [],
     genres: const [],
-    playthroughCount: 0,
+
     updatedAt: DateTime(2026, 6, 13),
   ),
 ];
@@ -227,7 +227,7 @@ final _denseRow = LibraryGameRow(
   libraryEntryId: 'entry-dense',
   title:
       'Extremely Long Tactical Role Playing Game Definitive Remastered Edition',
-  status: GameStatus.playing,
+  isCompleted: false,
   type: 'game',
   platforms: const [
     LibraryCatalogItem(id: 'pc', name: 'PC'),
@@ -245,6 +245,6 @@ final _denseRow = LibraryGameRow(
   hoursPlayed: 123.5,
   releaseDate: DateTime(2021, 11, 11),
   completedAt: DateTime(2026, 5, 8),
-  playthroughCount: 3,
+
   updatedAt: DateTime(2026, 6, 13),
 );

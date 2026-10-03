@@ -7,7 +7,6 @@ import '../../../core/errors/app_exception.dart';
 import '../../../core/ids/id_generator.dart';
 import '../../../core/time/clock.dart';
 import '../../catalogs/domain/catalog_item.dart';
-import '../../playthroughs/application/completion_form_model.dart';
 import '../application/game_form_model.dart';
 import '../application/library_game_details.dart';
 
@@ -78,7 +77,7 @@ class GameRepository {
             LibraryEntriesCompanion.insert(
               id: entryId,
               gameId: gameId,
-              status: model.status.name,
+              status: model.isCompleted ? 'completed' : 'backlog',
               isCompleted: Value(model.isCompleted),
               completedAt: Value(model.completedAt),
               hoursPlayed: Value(model.hoursPlayed),
@@ -182,56 +181,6 @@ class GameRepository {
     });
   }
 
-  // Compatibility entry points: all unfinished states now mean pending.
-  Future<void> markPlaying(String entryId) => markBacklog(entryId);
-  Future<void> markPaused(String entryId) => markBacklog(entryId);
-  Future<void> markDropped(String entryId) => markBacklog(entryId);
-
-  Future<void> markBacklog(String entryId) => _db.transaction(() async {
-    await _requireEntry(entryId);
-    await (_db.update(_db.libraryEntries)
-      ..where((table) => table.id.equals(entryId))).write(
-      LibraryEntriesCompanion(
-        isCompleted: const Value(false),
-        updatedAt: Value(_clock.now()),
-      ),
-    );
-  });
-
-  Future<void> completeGame(CompletionFormModel model) {
-    model.validate();
-    return _db.transaction(() async {
-      final now = _clock.now();
-      final entry =
-          await ((_db.select(_db.libraryEntries)
-                ..where((table) => table.id.equals(model.libraryEntryId))
-                ..where((table) => table.deletedAt.isNull()))
-              .getSingleOrNull());
-      if (entry == null) {
-        throw const AppException('No se encontró el juego en la biblioteca.');
-      }
-
-      await (_db.update(_db.libraryEntries)
-        ..where((table) => table.id.equals(model.libraryEntryId))).write(
-        LibraryEntriesCompanion(
-          isCompleted: const Value(true),
-          completedAt: Value(model.completedAt),
-          hoursPlayed: Value(model.hoursPlayed),
-          playedPlatformId: Value(model.platformId),
-          personalNotes:
-              model.notes == null
-                  ? const Value.absent()
-                  : Value(_blankToNull(model.notes)),
-          personalRating:
-              model.rating == null
-                  ? const Value<int?>.absent()
-                  : Value(model.rating),
-          updatedAt: Value(now),
-        ),
-      );
-    });
-  }
-
   Future<List<LibraryGameDetails>> _loadDetailsForEntries(
     List<LibraryEntry> entries,
   ) async {
@@ -246,12 +195,12 @@ class GameRepository {
 
       final platforms = await _platformsForEntry(entry.id);
       final genres = await _genresForGame(game.id);
-      final playthroughs =
-          await ((_db.select(_db.playthroughs)
-                ..where((table) => table.libraryEntryId.equals(entry.id))
-                ..where((table) => table.deletedAt.isNull())
-                ..orderBy([(table) => OrderingTerm.desc(table.updatedAt)]))
-              .get());
+      final playedPlatform =
+          entry.playedPlatformId == null
+              ? null
+              : await (_db.select(_db.platforms)..where(
+                (p) => p.id.equals(entry.playedPlatformId!),
+              )).getSingleOrNull();
       final selectedCover =
           await ((_db.select(_db.mediaAssets)
                 ..where((table) => table.gameId.equals(game.id))
@@ -275,7 +224,6 @@ class GameRepository {
           entry: LibraryEntryDetails(
             id: entry.id,
             gameId: entry.gameId,
-            status: entry.status,
             isCompleted: entry.isCompleted,
             completedAt: entry.completedAt,
             hoursPlayed: entry.hoursPlayed,
@@ -297,22 +245,14 @@ class GameRepository {
             for (final genre in genres)
               CatalogItem(id: genre.id, name: genre.name),
           ],
-          playthroughs: [
-            for (final playthrough in playthroughs)
-              PlaythroughDetails(
-                id: playthrough.id,
-                libraryEntryId: playthrough.libraryEntryId,
-                platformId: playthrough.platformId,
-                status: playthrough.status,
-                startedAt: playthrough.startedAt,
-                completedAt: playthrough.completedAt,
-                hoursPlayed: playthrough.hoursPlayed,
-                rating: playthrough.rating,
-                notes: playthrough.notes,
-                createdAt: playthrough.createdAt,
-                updatedAt: playthrough.updatedAt,
-              ),
-          ],
+          playedPlatform:
+              playedPlatform == null
+                  ? null
+                  : CatalogItem(
+                    id: playedPlatform.id,
+                    name: playedPlatform.name,
+                    deletedAt: playedPlatform.deletedAt,
+                  ),
           selectedCover:
               selectedCover == null
                   ? null
@@ -424,18 +364,6 @@ class GameRepository {
             ),
           );
     }
-  }
-
-  Future<LibraryEntry> _requireEntry(String entryId) async {
-    final entry =
-        await ((_db.select(_db.libraryEntries)
-              ..where((table) => table.id.equals(entryId))
-              ..where((table) => table.deletedAt.isNull()))
-            .getSingleOrNull());
-    if (entry == null) {
-      throw const AppException('No se encontró el juego en la biblioteca.');
-    }
-    return entry;
   }
 }
 

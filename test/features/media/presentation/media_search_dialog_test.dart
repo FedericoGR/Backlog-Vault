@@ -1,6 +1,5 @@
 import 'package:backlog_vault/app/theme/app_theme.dart';
 import 'package:backlog_vault/features/games/application/library_game_details.dart';
-import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/media/application/media_providers.dart';
 import 'package:backlog_vault/features/media/domain/media_asset_models.dart';
 import 'package:backlog_vault/features/media/domain/media_provider.dart';
@@ -146,7 +145,7 @@ LibraryGameDetails _details() {
     entry: LibraryEntryDetails(
       id: 'entry-1',
       gameId: 'game-1',
-      status: GameStatus.backlog.name,
+      isCompleted: false,
       personalRating: null,
       personalNotes: null,
       createdAt: _now,
@@ -155,7 +154,6 @@ LibraryGameDetails _details() {
     ),
     platforms: const [],
     genres: const [],
-    playthroughs: const [],
   );
 }
 

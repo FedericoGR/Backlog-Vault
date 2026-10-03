@@ -103,7 +103,10 @@ class NotionCsvImportRepository {
               LibraryEntriesCompanion.insert(
                 id: entryId,
                 gameId: gameId,
-                status: row.status.name,
+                status:
+                    row.status == GameStatus.completed
+                        ? 'completed'
+                        : 'backlog',
                 isCompleted: Value(row.status == GameStatus.completed),
                 completedAt: Value(row.completedAt),
                 hoursPlayed: Value(row.hoursPlayed),
@@ -176,7 +179,6 @@ class NotionCsvImportRepository {
         duplicatesSkipped: duplicatesSkipped,
         platformsCreated: platformsCreated,
         genresCreated: genresCreated,
-        playthroughsCreated: 0,
       );
     });
   }

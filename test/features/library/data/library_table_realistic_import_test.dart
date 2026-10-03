@@ -125,7 +125,7 @@ void main() {
           processor,
           rows,
           LibraryFilterState(
-            statuses: const {GameStatus.backlog},
+            statuses: const {GameStatus.pending},
             platformIds: {_idForPlatform(rows, 'PC')},
             genreIds: {_idForGenre(rows, 'RPG')},
             maxHours: 5,

@@ -17,7 +17,7 @@ List<SavedLibraryView> buildDefaultLibraryViews({
     _view(
       id: 'default:pending',
       name: 'Pendientes',
-      filter: const LibraryFilterState(statuses: {GameStatus.backlog}),
+      filter: const LibraryFilterState(statuses: {GameStatus.pending}),
     ),
     _view(
       id: 'default:completed',

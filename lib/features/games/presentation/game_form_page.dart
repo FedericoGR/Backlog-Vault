@@ -20,7 +20,6 @@ import '../../../l10n/domain_localizations.dart';
 import '../../../l10n/l10n.dart';
 import '../../catalogs/application/catalog_controller.dart';
 import '../../catalogs/domain/catalog_item.dart';
-import '../../library/domain/game_status.dart';
 import '../../media/domain/igdb_cover_mapper.dart';
 import '../../media/domain/media_asset_models.dart';
 import '../../metadata/application/metadata_providers.dart';
@@ -53,7 +52,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
   final _newGenreController = TextEditingController();
   final _completedHoursController = TextEditingController();
 
-  GameStatus _status = GameStatus.backlog;
+  bool _isCompleted = false;
   String? _type;
   DateTime? _releaseDate;
   int? _rating;
@@ -110,7 +109,9 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                     platformSnapshot.data ?? [],
                   );
                   final genreItems = _dedupeGenres(genreSnapshot.data ?? []);
-                  _sanitizeSelections(platformItems, genreItems);
+                  if (platformSnapshot.hasData && genreSnapshot.hasData) {
+                    _sanitizeSelections(platformItems, genreItems);
+                  }
                   final platformMap = {
                     for (final platform in platformItems)
                       platform.id: platform.name,
@@ -209,26 +210,15 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                           child: _FormFieldGrid(
                             twoColumns: twoColumns,
                             children: [
-                              DropdownButtonFormField<GameStatus>(
-                                initialValue: _status,
-                                decoration: InputDecoration(
-                                  labelText: context.l10n.libraryStatus,
+                              Material(
+                                type: MaterialType.transparency,
+                                child: SwitchListTile(
+                                  title: Text(context.l10n.statusCompleted),
+                                  value: _isCompleted,
+                                  onChanged:
+                                      (value) =>
+                                          setState(() => _isCompleted = value),
                                 ),
-                                items: [
-                                  for (final status in personalGameStatuses)
-                                    DropdownMenuItem(
-                                      value: status,
-                                      child: Text(
-                                        context.l10n.gameStatusLabel(status),
-                                      ),
-                                    ),
-                                ],
-                                onChanged: (value) {
-                                  if (value == null) return;
-                                  setState(() {
-                                    _status = value;
-                                  });
-                                },
                               ),
                               DropdownButtonFormField<int?>(
                                 initialValue: _rating,
@@ -327,11 +317,20 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                         final completionSection = _FormSection(
                           title: context.l10n.gameCompletionSection,
                           subtitle: context.l10n.gameCompletionSectionSubtitle,
-                          child: _CompletionFields(
+                          child: _PersonalTrackingFields(
                             completedAt: _completedAt,
                             hoursController: _completedHoursController,
                             platformId: _completedPlatformId,
-                            platforms: platformMap,
+                            platforms: {
+                              ...platformMap,
+                              if (_completedPlatformId != null &&
+                                  !platformMap.containsKey(
+                                    _completedPlatformId,
+                                  ))
+                                _completedPlatformId!:
+                                    item?.playedPlatform?.name ??
+                                    _completedPlatformId!,
+                            },
                             twoColumns: twoColumns,
                             onDateChanged:
                                 (value) => setState(() => _completedAt = value),
@@ -420,8 +419,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
     _titleController.text = item.game.title;
     _releaseDate = item.game.releaseDate;
     _type = _gameTypeForForm(item.game.type);
-    _status =
-        (item.entry.isCompleted ? GameStatus.completed : GameStatus.backlog);
+    _isCompleted = item.entry.isCompleted;
     _rating = item.entry.personalRating;
     _notesController.text = item.entry.personalNotes ?? '';
     _selectedPlatformIds.addAll(item.platforms.map((platform) => platform.id));
@@ -442,8 +440,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
         title: _titleController.text,
         releaseDate: _releaseDate,
         type: _type ?? '',
-        status: _status,
-        isCompleted: _status == GameStatus.completed,
+        isCompleted: _isCompleted,
         completedAt: _completedAt,
         hoursPlayed: double.tryParse(
           _completedHoursController.text.trim().replaceAll(',', '.'),

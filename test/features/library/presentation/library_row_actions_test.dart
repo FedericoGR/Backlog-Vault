@@ -1,4 +1,3 @@
-import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/library/domain/library_game_row.dart';
 import 'package:backlog_vault/features/library/presentation/game_list_page.dart';
 import 'package:flutter/material.dart';
@@ -55,10 +54,10 @@ final _row = LibraryGameRow(
   gameId: 'game-1',
   libraryEntryId: 'entry-1',
   title: 'Hades',
-  status: GameStatus.backlog,
+  isCompleted: false,
   type: 'game',
   platforms: const [],
   genres: const [],
-  playthroughCount: 0,
+
   updatedAt: DateTime(2026, 6, 13),
 );

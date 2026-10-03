@@ -61,7 +61,7 @@ void main() {
     final result = processor.apply(
       rows: _rows,
       filter: const LibraryFilterState(
-        statuses: {GameStatus.backlog, GameStatus.playing},
+        statuses: {GameStatus.pending},
         platformIds: {'switch', 'pc'},
       ),
       sort: const LibrarySortState(field: LibrarySortField.title),
@@ -222,7 +222,7 @@ void main() {
     ]);
     expect(
       views.singleWhere((view) => view.name == 'Pendientes').filter.statuses,
-      {GameStatus.backlog},
+      {GameStatus.pending},
     );
     expect(
       views.singleWhere((view) => view.name == 'Completados').filter.statuses,
@@ -248,7 +248,7 @@ final _rows = [
     libraryEntryId: 'e1',
     title: 'Hades',
     sortTitle: 'hades',
-    status: GameStatus.completed,
+    isCompleted: true,
     releaseDate: DateTime(2020, 9, 17),
     completedAt: DateTime(2026, 1, 2),
     hoursPlayed: 40,
@@ -260,7 +260,7 @@ final _rows = [
       LibraryCatalogItem(id: 'switch', name: 'Nintendo Switch'),
     ],
     genres: const [LibraryCatalogItem(id: 'roguelite', name: 'Roguelite')],
-    playthroughCount: 1,
+
     updatedAt: DateTime(2026, 6, 9),
   ),
   LibraryGameRow(
@@ -268,25 +268,25 @@ final _rows = [
     libraryEntryId: 'e2',
     title: 'Baldur\'s Gate 3',
     sortTitle: 'baldurs gate 3',
-    status: GameStatus.playing,
+    isCompleted: false,
     releaseDate: DateTime(2023, 8, 3),
     hoursPlayed: 120,
     personalRating: 4,
     type: 'game',
     platforms: const [LibraryCatalogItem(id: 'pc', name: 'PC')],
     genres: const [LibraryCatalogItem(id: 'rpg', name: 'RPG')],
-    playthroughCount: 1,
+
     updatedAt: DateTime(2026, 5, 1),
   ),
   LibraryGameRow(
     gameId: 'g3',
     libraryEntryId: 'e3',
     title: 'Celeste',
-    status: GameStatus.backlog,
+    isCompleted: false,
     type: 'game',
     platforms: const [],
     genres: const [],
-    playthroughCount: 0,
+
     updatedAt: DateTime(2026, 1, 1),
   ),
 ];

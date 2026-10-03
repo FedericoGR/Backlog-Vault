@@ -11,7 +11,7 @@ enum LibraryColumnKey {
   type,
   notes,
   updatedAt,
-  playthroughs,
+  playedPlatform,
 }
 
 extension LibraryColumnKeyLabels on LibraryColumnKey {
@@ -28,7 +28,7 @@ extension LibraryColumnKeyLabels on LibraryColumnKey {
     LibraryColumnKey.type => 'Tipo',
     LibraryColumnKey.notes => 'Notas',
     LibraryColumnKey.updatedAt => 'Actualizado',
-    LibraryColumnKey.playthroughs => 'Playthroughs',
+    LibraryColumnKey.playedPlatform => 'Jugado en',
   };
 }
 
@@ -77,7 +77,7 @@ class LibraryColumnConfig {
     LibraryColumnKey.type,
     LibraryColumnKey.notes,
     LibraryColumnKey.updatedAt,
-    LibraryColumnKey.playthroughs,
+    LibraryColumnKey.playedPlatform,
   ];
 
   final List<LibraryColumnKey> visibleColumns;

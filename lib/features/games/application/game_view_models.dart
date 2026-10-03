@@ -4,7 +4,6 @@ import '../../catalogs/application/catalog_controller.dart';
 import '../../media/application/media_providers.dart';
 import '../../media/application/media_use_cases.dart';
 import '../../media/domain/media_asset_models.dart';
-import '../../playthroughs/application/completion_form_model.dart';
 import '../data/game_repository.dart';
 import 'game_form_model.dart';
 import 'library_game_details.dart';
@@ -58,8 +57,6 @@ class GameFormViewModel {
           for (final name in request.pendingGenreNames)
             await _catalogs.createGenre(name),
         }.toList();
-    request.completion?.validate();
-    final completion = request.completion;
     final model = GameFormModel(
       entryId: request.model.entryId,
       gameId: request.model.gameId,
@@ -67,22 +64,12 @@ class GameFormViewModel {
       sortTitle: request.model.sortTitle,
       releaseDate: request.model.releaseDate,
       type: request.model.type,
-      status: request.model.status,
-      isCompleted: completion != null || request.model.isCompleted,
-      completedAt:
-          completion != null
-              ? completion.completedAt
-              : request.model.completedAt,
-      hoursPlayed:
-          completion != null
-              ? completion.hoursPlayed
-              : request.model.hoursPlayed,
-      playedPlatformId:
-          completion != null
-              ? completion.platformId
-              : request.model.playedPlatformId,
-      personalRating: completion?.rating ?? request.model.personalRating,
-      personalNotes: completion?.notes ?? request.model.personalNotes,
+      isCompleted: request.model.isCompleted,
+      completedAt: request.model.completedAt,
+      hoursPlayed: request.model.hoursPlayed,
+      playedPlatformId: request.model.playedPlatformId,
+      personalRating: request.model.personalRating,
+      personalNotes: request.model.personalNotes,
       platformIds: platformIds,
       genreIds: genreIds,
     );
@@ -103,29 +90,21 @@ class GameFormSaveRequest {
     required this.model,
     this.pendingPlatformNames = const {},
     this.pendingGenreNames = const {},
-    this.completion,
     this.cover,
   });
 
   final GameFormModel model;
   final Set<String> pendingPlatformNames;
   final Set<String> pendingGenreNames;
-  final CompletionFormModel? completion;
   final ExternalMediaAsset? cover;
 }
 
-/// Coordinates game progress and playthrough actions outside presentation.
+/// Coordinates game deletion outside presentation.
 class GameDetailViewModel {
   const GameDetailViewModel({required GameRepository games}) : _games = games;
 
   final GameRepository _games;
 
-  Future<void> markPlaying(String entryId) => _games.markPlaying(entryId);
-  Future<void> markPaused(String entryId) => _games.markPaused(entryId);
-  Future<void> markDropped(String entryId) => _games.markDropped(entryId);
-  Future<void> markBacklog(String entryId) => _games.markBacklog(entryId);
-  Future<void> complete(CompletionFormModel model) =>
-      _games.completeGame(model);
   Future<void> deleteGame(String entryId) => _games.softDelete(entryId);
   Future<void> deleteGames(Iterable<String> entryIds) =>
       _games.softDeleteMany(entryIds);

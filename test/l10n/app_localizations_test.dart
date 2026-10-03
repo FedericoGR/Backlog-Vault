@@ -40,7 +40,6 @@ void main() {
           catalog.unexpectedErrorMessage,
           catalog.gameLoadError,
           catalog.gameSaveFailed,
-          catalog.playthroughSaveFailed,
           catalog.csvOperationFailed,
           catalog.bulkOperationFailed,
           catalog.metadataCoverSaveFailed,

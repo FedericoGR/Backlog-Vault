@@ -96,16 +96,16 @@ void main() {
 
       expect(
         normalizer.parseStatus('lista de deseos', issues),
-        GameStatus.wishlist,
+        GameStatus.pending,
       );
-      expect(normalizer.parseStatus('pendiente', issues), GameStatus.backlog);
-      expect(normalizer.parseStatus('en curso', issues), GameStatus.playing);
+      expect(normalizer.parseStatus('pendiente', issues), GameStatus.pending);
+      expect(normalizer.parseStatus('en curso', issues), GameStatus.pending);
       expect(
         normalizer.parseStatus('Jugando Actualmente', issues),
-        GameStatus.playing,
+        GameStatus.pending,
       );
       expect(normalizer.parseStatus('finished', issues), GameStatus.completed);
-      expect(normalizer.parseStatus('???', issues), GameStatus.backlog);
+      expect(normalizer.parseStatus('???', issues), GameStatus.pending);
       expect(issues.single.isWarning, isTrue);
     });
 

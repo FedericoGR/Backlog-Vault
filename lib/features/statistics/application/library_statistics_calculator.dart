@@ -5,19 +5,16 @@ import '../domain/statistics_models.dart';
 class LibraryStatisticsCalculator {
   const LibraryStatisticsCalculator();
 
-  LibraryStatistics calculate({
-    required List<LibraryGameRow> rows,
-    List<StatisticsPlaythrough> playthroughs = const [],
-  }) {
+  LibraryStatistics calculate({required List<LibraryGameRow> rows}) {
     final completedRows = rows.where(
       (row) => row.isCompleted && row.completedAt != null,
     );
 
     final statusCounts = <GameStatus, int>{
-      for (final status in personalGameStatuses) status: 0,
+      for (final status in GameStatus.values) status: 0,
     };
     for (final row in rows) {
-      final status = personalGameStatus(row.status);
+      final status = row.status;
       statusCounts[status] = (statusCounts[status] ?? 0) + 1;
     }
 
@@ -79,9 +76,7 @@ class LibraryStatisticsCalculator {
     return LibraryStatistics(
       totalGames: rows.length,
       statusCounts: statusCounts,
-      backlogCount: statusCounts[GameStatus.backlog] ?? 0,
-      playingCount: statusCounts[GameStatus.playing] ?? 0,
-      pausedCount: statusCounts[GameStatus.paused] ?? 0,
+      backlogCount: statusCounts[GameStatus.pending] ?? 0,
       completedCount: statusCounts[GameStatus.completed] ?? 0,
       completedByYear: Map.unmodifiable(completedByYear),
       hoursByYear: Map.unmodifiable(hoursByYear),
@@ -89,7 +84,8 @@ class LibraryStatisticsCalculator {
       ratingDistribution: ratingDistribution,
       platformBreakdown: _buildBreakdown(
         rows: rows,
-        itemsForRow: (row) => row.platforms,
+        itemsForRow:
+            (row) => [if (row.playedPlatform case final platform?) platform],
       ),
       genreBreakdown: _buildBreakdown(
         rows: rows,
@@ -106,7 +102,8 @@ class LibraryStatisticsCalculator {
                 .length,
         missingMetadata: rows.where((row) => !row.hasExternalMetadata).length,
         missingRating: rows.where((row) => row.personalRating == null).length,
-        missingPlatform: rows.where((row) => row.platforms.isEmpty).length,
+        missingPlatform:
+            rows.where((row) => row.playedPlatformId == null).length,
         missingGenre: rows.where((row) => row.genres.isEmpty).length,
         completedWithoutDate:
             rows

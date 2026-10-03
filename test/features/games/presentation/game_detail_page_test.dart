@@ -6,8 +6,6 @@ import 'package:backlog_vault/features/games/application/library_game_details.da
 import 'package:backlog_vault/features/games/data/game_repository.dart';
 import 'package:backlog_vault/features/games/presentation/game_detail_page.dart';
 import 'package:backlog_vault/features/media/data/media_repository.dart';
-import 'package:backlog_vault/features/library/domain/game_status.dart';
-import 'package:backlog_vault/features/playthroughs/application/completion_form_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,39 +25,6 @@ void main() {
     when(
       () => mediaRepository.resolveLocalFile(any()),
     ).thenAnswer((_) async => File('Z:/backlog-vault-test/missing-cover.png'));
-  });
-
-  testWidgets('completion dialog can save without a date', (tester) async {
-    registerFallbackValue(const CompletionFormModel(libraryEntryId: ''));
-    when(
-      () => gameRepository.getByEntryId('entry-2'),
-    ).thenAnswer((_) async => _details(withCover: false));
-    when(() => gameRepository.completeGame(any())).thenAnswer((_) async {});
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          gameRepositoryProvider.overrideWith((ref) => gameRepository),
-          mediaRepositoryProvider.overrideWith((ref) => mediaRepository),
-        ],
-        child: MaterialApp(
-          theme: buildBacklogVaultDarkTheme(),
-          home: const GameDetailPage(entryId: 'entry-2'),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    final button = find.widgetWithText(FilledButton, 'Completar');
-    await tester.ensureVisible(button);
-    await tester.tap(button);
-    await tester.pumpAndSettle();
-    final date = find.widgetWithText(ListTile, 'Fecha de completado');
-    expect(find.descendant(of: date, matching: find.text('-')), findsOneWidget);
-    await tester.tap(find.widgetWithText(FilledButton, 'Completar').last);
-    await tester.pumpAndSettle();
-    final saved =
-        verify(() => gameRepository.completeGame(captureAny())).captured.single
-            as CompletionFormModel;
-    expect(saved.completedAt, isNull);
   });
 
   testWidgets('GameDetailPage renders with cover and without overflow', (
@@ -155,13 +120,13 @@ void main() {
       );
 
       expect(find.text('Notas personales'), findsOneWidget);
-      expect(find.text('Plataformas'), findsOneWidget);
+      expect(find.text('Jugado en'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
 
   testWidgets(
-    'legacy playthrough history is visible without mutation controls',
+    'detail displays only the personal record without history or lifecycle controls',
     (tester) async {
       tester.view.physicalSize = const Size(432, 960);
       tester.view.devicePixelRatio = 1;
@@ -193,6 +158,19 @@ void main() {
       );
       expect(find.byTooltip('Acciones de partida'), findsNothing);
       expect(find.text('Nueva partida'), findsNothing);
+      for (final label in [
+        'Partidas',
+        'Partidas anteriores',
+        'Jugando',
+        'Pausar',
+        'Abandonar',
+        'Retirado',
+        'Completar',
+        'Puntaje de partida',
+      ]) {
+        expect(find.textContaining(label), findsNothing);
+      }
+      expect(find.text('Jugado en'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
@@ -223,7 +201,9 @@ LibraryGameDetails _details({
     entry: LibraryEntryDetails(
       id: withCover ? 'entry-1' : 'entry-2',
       gameId: 'game-1',
-      status: GameStatus.completed.name,
+      isCompleted: true,
+      completedAt: DateTime(2026, 1, 20),
+      hoursPlayed: 24,
       personalRating: 5,
       personalNotes: 'Escape attempt notes.',
       createdAt: _now,
@@ -272,22 +252,6 @@ LibraryGameDetails _details({
                 deletedAt: null,
               ),
             ],
-    playthroughs: [
-      PlaythroughDetails(
-        id: 'pt-1',
-        libraryEntryId: withCover ? 'entry-1' : 'entry-2',
-        platformId: 'pc',
-        status: 'completed',
-        startedAt: missingPlaythroughStart ? null : DateTime(2026, 1, 1),
-        completedAt: DateTime(2026, 1, 20),
-        hoursPlayed: 24,
-        rating: 5,
-        notes: 'Clean clear.',
-        createdAt: _now,
-        updatedAt: _now,
-        deletedAt: null,
-      ),
-    ],
     selectedCover:
         withCover
             ? GameCoverDetails(

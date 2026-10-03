@@ -112,9 +112,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gameSaveFailed => 'No se pudo guardar el juego.';
 
   @override
-  String get playthroughSaveFailed => 'No se pudo guardar la partida.';
-
-  @override
   String get csvOperationFailed => 'No se pudo completar la operación del CSV.';
 
   @override
@@ -283,40 +280,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsPending => 'Pendiente';
 
   @override
-  String get statusWishlist => 'Lista de deseos';
-
-  @override
   String get statusBacklog => 'Pendiente';
 
   @override
-  String get statusPlaying => 'Jugando';
-
-  @override
-  String get statusPaused => 'Pausado';
-
-  @override
   String get statusCompleted => 'Completado';
-
-  @override
-  String get statusDropped => 'Abandonado';
-
-  @override
-  String get statusRetired => 'Retirado';
-
-  @override
-  String get playthroughPlanned => 'Planeada';
-
-  @override
-  String get playthroughActive => 'Activa';
-
-  @override
-  String get playthroughPaused => 'Pausada';
-
-  @override
-  String get playthroughCompleted => 'Completada';
-
-  @override
-  String get playthroughDropped => 'Abandonada';
 
   @override
   String get gameTypeUndefined => 'Sin definir';
@@ -337,9 +304,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get backlog => 'Backlog';
 
   @override
-  String get playing => 'Jugando';
-
-  @override
   String get completed => 'Completados';
 
   @override
@@ -356,16 +320,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get missingGenre => 'Sin género';
-
-  @override
-  String get homeNowPlaying => 'Jugando ahora';
-
-  @override
-  String get homeNowPlayingDescription =>
-      'Lo más activo de tu biblioteca personal.';
-
-  @override
-  String get homeNowPlayingEmpty => 'No hay juegos en progreso.';
 
   @override
   String get homeBacklogDescription => 'Pendientes listos para volver a mirar.';
@@ -405,7 +359,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeRecentlyUpdatedDescription =>
-      'Movimiento reciente en estados, notas y partidas.';
+      'Cambios recientes en los registros personales.';
 
   @override
   String get homeRecentlyUpdatedEmpty => 'No hay actividad reciente.';
@@ -419,10 +373,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String homeLibrarySummary(
     Object completedCount,
-    Object playingCount,
+    Object pendingCount,
     Object total,
   ) {
-    return '$total juegos, $completedCount completados y $playingCount pendientes.';
+    return '$total juegos, $completedCount completados y $pendingCount pendientes.';
   }
 
   @override
@@ -492,7 +446,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get statisticsAnnualProgressSubtitle =>
-      'Playthroughs completados con fecha, más horas registradas por período.';
+      'Juegos completados con fecha y horas personales por período.';
 
   @override
   String get statisticsTopPlatforms => 'Plataformas más usadas';
@@ -550,7 +504,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get statisticsNoAnnualProgressMessage =>
-      'Cuando completes partidas con fecha, este panel las resume por año y mes.';
+      'Los juegos completados con fecha aparecen por año y mes.';
 
   @override
   String statisticsMonthsOf(Object year) {
@@ -591,7 +545,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get statisticsNoCompletedMessage =>
-      'Registrá una fecha de cierre en tus partidas para verlas acá.';
+      'Agregá una fecha opcional de completado para ver el juego acá.';
 
   @override
   String get statisticsEmptyTitle =>
@@ -599,7 +553,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get statisticsEmptyMessage =>
-      'Cuando cargues juegos y partidas, este panel te va a resumir progreso, ratings y calidad de metadata.';
+      'Agregá juegos para ver completados, horas, puntajes y calidad de datos.';
 
   @override
   String get statisticsGoToLibrary => 'Ir a biblioteca';
@@ -936,9 +890,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get columnUpdatedAt => 'Actualizado';
 
   @override
-  String get columnPlaythroughs => 'Playthroughs';
-
-  @override
   String get gameCreateTitle => 'Crear juego';
 
   @override
@@ -1055,9 +1006,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gameHoursPlayed => 'Horas jugadas';
 
   @override
-  String get gamePlaythroughRating => 'Puntaje de partida';
-
-  @override
   String get gamePlatform => 'Plataforma';
 
   @override
@@ -1094,38 +1042,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gameSummaryProgress => 'Resumen y progreso';
 
   @override
-  String get gameLastCompleted => 'Último completado';
-
-  @override
-  String get gamePlaythroughs => 'Partidas anteriores';
-
-  @override
-  String get gameMarkPlaying => 'Jugando';
-
-  @override
-  String get gamePause => 'Pausar';
-
-  @override
-  String get gameComplete => 'Completar';
-
-  @override
-  String get gameDrop => 'Abandonar';
-
-  @override
-  String get gameMoveToBacklog => 'Pendiente';
-
-  @override
-  String get gameNewPlaythrough => 'Nueva partida';
-
-  @override
-  String get gameNoPlaythroughs => 'Sin partidas registradas';
-
-  @override
-  String get gameNoPlaythroughsMessage =>
-      'Acá se conserva el historial anterior de partidas. El seguimiento nuevo usa el registro personal.';
-
-  @override
-  String get gamePlaythroughActions => 'Acciones de partida';
+  String get gameLastCompleted => 'Fecha de completado';
 
   @override
   String get metadataApplied => 'Metadata aplicada.';
@@ -1147,39 +1064,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get coverRemoved => 'Portada quitada.';
 
   @override
-  String get gameDeletePlaythroughTitle => 'Eliminar partida';
-
-  @override
-  String get gameDeletePlaythroughMessage =>
-      'La partida se ocultará del historial.';
-
-  @override
-  String get gameMarkCompletedTitle => 'Marcar como completado';
-
-  @override
   String get gameNote => 'Nota';
-
-  @override
-  String get gameRegisterPlaythrough => 'Registrar partida';
-
-  @override
-  String get gameEditPlaythrough => 'Editar partida';
 
   @override
   String get gameStartDate => 'Fecha de inicio';
 
   @override
   String get gameNotes => 'Notas';
-
-  @override
-  String gamePlaythroughStart(Object date) {
-    return 'Inicio $date';
-  }
-
-  @override
-  String gamePlaythroughEnd(Object date) {
-    return 'Fin $date';
-  }
 
   @override
   String get metadataDialogTitle => 'Buscar metadata';
@@ -1476,11 +1367,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String csvGenresCreated(Object count) {
     return 'Géneros $count';
-  }
-
-  @override
-  String csvPlaythroughsCreated(Object count) {
-    return 'Partidas $count';
   }
 
   @override
@@ -1921,4 +1807,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String bulkReplacesCover(Object cover) {
     return 'reemplaza $cover';
   }
+
+  @override
+  String get gamePlayedPlatform => 'Jugado en';
+
+  @override
+  String get gameHoursInvalid => 'Ingresá un número mayor o igual a cero.';
 }

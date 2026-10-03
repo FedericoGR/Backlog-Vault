@@ -1,6 +1,5 @@
 import '../../../library/domain/game_status.dart';
 import '../../../catalogs/domain/catalog_normalizer.dart';
-import '../../../playthroughs/domain/playthrough_status.dart';
 import '../domain/csv_column_mapping.dart';
 import '../domain/csv_document.dart';
 import '../domain/existing_game_summary.dart';
@@ -125,43 +124,4 @@ String _value(RawCsvRow row, CsvColumnMapping mapping, ImportField field) {
 String? _blankToNull(String value) {
   final trimmed = value.trim();
   return trimmed.isEmpty ? null : trimmed;
-}
-
-PlaythroughStatus playthroughStatusForImport(NormalizedImportRow row) {
-  if (row.completedAt != null || row.status == GameStatus.completed) {
-    return PlaythroughStatus.completed;
-  }
-  return switch (row.status) {
-    GameStatus.playing => PlaythroughStatus.active,
-    GameStatus.paused => PlaythroughStatus.paused,
-    GameStatus.dropped => PlaythroughStatus.dropped,
-    GameStatus.wishlist ||
-    GameStatus.backlog ||
-    GameStatus.retired => PlaythroughStatus.planned,
-    GameStatus.completed => PlaythroughStatus.completed,
-  };
-}
-
-bool shouldCreatePlaythroughForImport(NormalizedImportRow row) {
-  if (row.completedAt != null) return true;
-  if (row.status == GameStatus.completed) {
-    return row.hoursPlayed != null ||
-        row.personalRating != null ||
-        (row.personalNotes?.trim().isNotEmpty ?? false);
-  }
-  if (row.hoursPlayed != null) {
-    return row.status == GameStatus.playing ||
-        row.status == GameStatus.completed ||
-        row.status == GameStatus.paused ||
-        row.status == GameStatus.dropped;
-  }
-  if (row.personalRating != null) {
-    return row.status == GameStatus.playing ||
-        row.status == GameStatus.completed ||
-        row.status == GameStatus.paused ||
-        row.status == GameStatus.dropped;
-  }
-  return row.status == GameStatus.playing ||
-      row.status == GameStatus.paused ||
-      row.status == GameStatus.dropped;
 }

@@ -283,7 +283,7 @@ Widget _tableCell(
           ? '-'
           : row.personalNotes!.trim(),
     LibraryColumnKey.updatedAt => formatVisibleDate(row.updatedAt),
-    LibraryColumnKey.playthroughs => row.playthroughCount.toString(),
+    LibraryColumnKey.playedPlatform => row.playedPlatform?.name ?? '-',
     LibraryColumnKey.cover => '',
   };
 
@@ -343,7 +343,7 @@ LibrarySortField? _sortFieldForColumn(LibraryColumnKey column) {
     LibraryColumnKey.genres ||
     LibraryColumnKey.type ||
     LibraryColumnKey.notes ||
-    LibraryColumnKey.playthroughs => null,
+    LibraryColumnKey.playedPlatform => null,
   };
 }
 

@@ -5,10 +5,8 @@ class LibraryHomeData {
   const LibraryHomeData({
     required this.totalGames,
     required this.backlogCount,
-    required this.playingCount,
     required this.completedCount,
     required this.missingCoverCount,
-    required this.playingNow,
     required this.backlog,
     required this.recentlyCompleted,
     required this.missingCover,
@@ -18,10 +16,8 @@ class LibraryHomeData {
 
   final int totalGames;
   final int backlogCount;
-  final int playingCount;
   final int completedCount;
   final int missingCoverCount;
-  final List<LibraryGameRow> playingNow;
   final List<LibraryGameRow> backlog;
   final List<LibraryGameRow> recentlyCompleted;
   final List<LibraryGameRow> missingCover;
@@ -33,17 +29,8 @@ LibraryHomeData buildLibraryHomeData(
   List<LibraryGameRow> rows, {
   int sectionLimit = 6,
 }) {
-  final playingNow =
-      rows
-          .where(
-            (row) =>
-                row.status == GameStatus.playing ||
-                row.status == GameStatus.paused,
-          )
-          .toList()
-        ..sort(_byUpdatedDesc);
   final backlog =
-      rows.where((row) => row.status == GameStatus.backlog).toList()
+      rows.where((row) => row.status == GameStatus.pending).toList()
         ..sort(_byUpdatedDesc);
   final recentlyCompleted =
       rows.where((row) => row.isCompleted && row.completedAt != null).toList()
@@ -64,12 +51,10 @@ LibraryHomeData buildLibraryHomeData(
 
   return LibraryHomeData(
     totalGames: rows.length,
-    backlogCount: rows.where((row) => row.status == GameStatus.backlog).length,
-    playingCount: rows.where((row) => row.status == GameStatus.playing).length,
+    backlogCount: rows.where((row) => row.status == GameStatus.pending).length,
     completedCount:
         rows.where((row) => row.status == GameStatus.completed).length,
     missingCoverCount: missingCover.length,
-    playingNow: _take(playingNow, sectionLimit),
     backlog: _take(backlog, sectionLimit),
     recentlyCompleted: _take(recentlyCompleted, sectionLimit),
     missingCover: _take(missingCover, sectionLimit),

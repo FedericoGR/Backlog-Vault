@@ -4,26 +4,12 @@ import '../features/library/domain/game_status.dart';
 import '../features/library/domain/library_column_config.dart';
 import '../features/library/domain/library_layout_mode.dart';
 import '../features/metadata/domain/metadata_field.dart';
-import '../features/playthroughs/domain/playthrough_status.dart';
 import 'app_localizations.dart';
 
 extension DomainLocalizations on AppLocalizations {
   String gameStatusLabel(GameStatus status) => switch (status) {
-    GameStatus.wishlist => statusWishlist,
-    GameStatus.backlog => statusBacklog,
-    GameStatus.playing => statusPlaying,
-    GameStatus.paused => statusPaused,
+    GameStatus.pending => statusBacklog,
     GameStatus.completed => statusCompleted,
-    GameStatus.dropped => statusDropped,
-    GameStatus.retired => statusRetired,
-  };
-
-  String playthroughStatusLabel(PlaythroughStatus status) => switch (status) {
-    PlaythroughStatus.planned => playthroughPlanned,
-    PlaythroughStatus.active => playthroughActive,
-    PlaythroughStatus.paused => playthroughPaused,
-    PlaythroughStatus.completed => playthroughCompleted,
-    PlaythroughStatus.dropped => playthroughDropped,
   };
 
   String monthLabel(int month) => switch (month) {
@@ -55,7 +41,7 @@ extension DomainLocalizations on AppLocalizations {
     LibraryColumnKey.type => columnType,
     LibraryColumnKey.notes => columnNotes,
     LibraryColumnKey.updatedAt => columnUpdatedAt,
-    LibraryColumnKey.playthroughs => columnPlaythroughs,
+    LibraryColumnKey.playedPlatform => gamePlayedPlatform,
   };
 
   String libraryLayoutLabel(LibraryLayoutMode mode) => switch (mode) {

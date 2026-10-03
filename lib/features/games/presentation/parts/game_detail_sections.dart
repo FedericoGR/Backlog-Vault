@@ -8,9 +8,8 @@ class _GameInfoPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final bv = BvThemeExtension.of(context);
     final status =
-        (item.entry.isCompleted ? GameStatus.completed : GameStatus.backlog);
+        (item.entry.isCompleted ? GameStatus.completed : GameStatus.pending);
     return BvPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,10 +100,6 @@ class _GameInfoPanel extends ConsumerWidget {
             icon: Icons.category_outlined,
             values: item.genres.map((genre) => genre.name),
           ),
-          const SizedBox(height: BvSpacing.md),
-          Divider(color: bv.border),
-          const SizedBox(height: BvSpacing.sm),
-          _QuickProgressActions(item: item),
         ],
       ),
     );
@@ -165,10 +160,9 @@ class _GameCoverPanel extends ConsumerWidget {
 }
 
 class _GameProgressSection extends StatelessWidget {
-  const _GameProgressSection({required this.item, required this.summary});
+  const _GameProgressSection({required this.item});
 
   final LibraryGameDetails item;
-  final GameProgressSummary summary;
 
   @override
   Widget build(BuildContext context) {
@@ -187,35 +181,31 @@ class _GameProgressSection extends StatelessWidget {
                 BvStatCard(
                   label: context.l10n.libraryHours,
                   value:
-                      summary.totalHours == null
+                      item.entry.hoursPlayed == null
                           ? '-'
-                          : summary.totalHours!.toStringAsFixed(1),
+                          : item.entry.hoursPlayed!.toStringAsFixed(1),
                   icon: Icons.timer_outlined,
                 ),
                 BvStatCard(
                   label: context.l10n.gameLastCompleted,
-                  value: formatVisibleDate(summary.latestCompletedAt),
+                  value: formatVisibleDate(item.entry.completedAt),
                   icon: Icons.emoji_events_outlined,
-                ),
-                BvStatCard(
-                  label: context.l10n.gamePlaythroughs,
-                  value: summary.playthroughCount.toString(),
-                  icon: Icons.history_outlined,
                 ),
                 BvStatCard(
                   label: context.l10n.libraryStatus,
                   value: context.l10n.gameStatusLabel(
                     (item.entry.isCompleted
                         ? GameStatus.completed
-                        : GameStatus.backlog),
+                        : GameStatus.pending),
                   ),
                   icon: Icons.flag_outlined,
                 ),
                 BvStatCard(
-                  label: context.l10n.libraryPlatforms,
-                  value: _names(
-                    item.platforms.map((platform) => platform.name),
-                  ),
+                  label: context.l10n.gamePlayedPlatform,
+                  value:
+                      item.playedPlatform?.name ??
+                      item.entry.playedPlatformId ??
+                      '-',
                   icon: Icons.sports_esports_outlined,
                 ),
                 BvStatCard(
@@ -228,198 +218,6 @@ class _GameProgressSection extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _QuickProgressActions extends ConsumerWidget {
-  const _QuickProgressActions({required this.item});
-
-  final LibraryGameDetails item;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final current =
-        (item.entry.isCompleted ? GameStatus.completed : GameStatus.backlog);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < 440;
-        final actions = [
-          _ProgressAction(
-            label: context.l10n.gameComplete,
-            icon: Icons.check_circle_outline,
-            prominent: true,
-            onPressed:
-                _can(current, GameStatus.completed)
-                    ? () => _showCompletionDialog(context, ref, item)
-                    : null,
-          ),
-          _ProgressAction(
-            label: context.l10n.gameMoveToBacklog,
-            icon: Icons.assignment_return_outlined,
-            onPressed:
-                _can(current, GameStatus.backlog)
-                    ? () => _runProgressAction(
-                      context,
-                      ref,
-                      item,
-                      () => ref
-                          .read(gameDetailViewModelProvider)
-                          .markBacklog(item.entry.id),
-                    )
-                    : null,
-          ),
-        ];
-        return Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final action in actions)
-              SizedBox(
-                width: compact ? constraints.maxWidth : null,
-                child: action,
-              ),
-          ],
-        );
-      },
-    );
-  }
-
-  bool _can(GameStatus from, GameStatus to) {
-    return from != to && canTransitionGameStatus(from, to);
-  }
-}
-
-class _PlaythroughSection extends ConsumerWidget {
-  const _PlaythroughSection({required this.item});
-
-  final LibraryGameDetails item;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final playthroughs = [...item.playthroughs]
-      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return BvPanel(
-          child: BvSection(
-            title: context.l10n.gamePlaythroughs,
-            padding: EdgeInsets.zero,
-            child:
-                playthroughs.isEmpty
-                    ? BvEmptyState(
-                      title: context.l10n.gameNoPlaythroughs,
-                      message: context.l10n.gameNoPlaythroughsMessage,
-                      icon: Icons.history_outlined,
-                    )
-                    : Column(
-                      children: [
-                        for (final playthrough in playthroughs)
-                          _PlaythroughTile(
-                            item: item,
-                            playthrough: playthrough,
-                          ),
-                      ],
-                    ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _PlaythroughTile extends ConsumerWidget {
-  const _PlaythroughTile({required this.item, required this.playthrough});
-
-  final LibraryGameDetails item;
-  final PlaythroughDetails playthrough;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final status = parsePlaythroughStatus(playthrough.status);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: BvSpacing.xs),
-      child: BvSurface(
-        padding: const EdgeInsets.symmetric(
-          horizontal: BvSpacing.sm,
-          vertical: BvSpacing.xs,
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 6),
-              child: Icon(Icons.sports_esports_outlined, size: 18),
-            ),
-            const SizedBox(width: BvSpacing.sm),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 6,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      BvChip(
-                        label: context.l10n.playthroughStatusLabel(status),
-                        tone:
-                            status == PlaythroughStatus.completed
-                                ? BvChipTone.primary
-                                : BvChipTone.neutral,
-                      ),
-                      BvChip(
-                        label: _platformName(
-                          item.platforms,
-                          playthrough.platformId,
-                        ),
-                        icon: Icons.videogame_asset_outlined,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: BvSpacing.xxs),
-                  Text(
-                    _playthroughSubtitle(context, playthrough, item.platforms),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: BvSpacing.xs),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ProgressAction extends StatelessWidget {
-  const _ProgressAction({
-    required this.label,
-    required this.icon,
-    required this.onPressed,
-    this.prominent = false,
-  });
-
-  final String label;
-  final IconData icon;
-  final VoidCallback? onPressed;
-  final bool prominent;
-
-  @override
-  Widget build(BuildContext context) {
-    if (prominent) {
-      return FilledButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon),
-        label: Text(label),
-      );
-    }
-    return FilledButton.tonalIcon(
-      onPressed: onPressed,
-      icon: Icon(icon),
-      label: Text(label),
     );
   }
 }
@@ -492,3 +290,9 @@ class _NotesSection extends StatelessWidget {
     );
   }
 }
+
+BvChipTone _statusTone(GameStatus status) =>
+    status == GameStatus.completed ? BvChipTone.primary : BvChipTone.neutral;
+
+String _names(Iterable<String> values) =>
+    values.isEmpty ? '-' : values.join(', ');

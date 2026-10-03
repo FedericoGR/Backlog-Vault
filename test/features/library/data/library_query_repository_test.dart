@@ -1,7 +1,6 @@
 import 'package:backlog_vault/core/database/app_database.dart';
 import 'package:backlog_vault/features/library/data/library_query_repository.dart';
 import 'package:backlog_vault/features/library/domain/game_status.dart';
-import 'package:backlog_vault/features/playthroughs/domain/playthrough_status.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:test/test.dart';
@@ -99,7 +98,7 @@ void main() {
             PlaythroughsCompanion.insert(
               id: 'playthrough-1',
               libraryEntryId: 'entry-1',
-              status: PlaythroughStatus.completed.name,
+              status: 'completed',
               completedAt: Value(DateTime(2026, 1, 2)),
               hoursPlayed: const Value(10),
               createdAt: now,
@@ -112,7 +111,7 @@ void main() {
             PlaythroughsCompanion.insert(
               id: 'playthrough-2',
               libraryEntryId: 'entry-1',
-              status: PlaythroughStatus.completed.name,
+              status: 'completed',
               completedAt: Value(DateTime(2026, 2, 2)),
               hoursPlayed: const Value(20),
               createdAt: now,
@@ -152,7 +151,7 @@ void main() {
             LibraryEntriesCompanion.insert(
               id: 'entry-2',
               gameId: 'game-2',
-              status: GameStatus.backlog.name,
+              status: GameStatus.pending.name,
               createdAt: now,
               updatedAt: now,
             ),
@@ -212,7 +211,7 @@ void main() {
             LibraryEntriesCompanion.insert(
               id: 'deleted-entry',
               gameId: 'deleted-game',
-              status: GameStatus.backlog.name,
+              status: GameStatus.pending.name,
               createdAt: now,
               updatedAt: now,
               deletedAt: Value(now),
@@ -228,7 +227,6 @@ void main() {
       expect(hades.genres.single.name, 'Roguelite');
       expect(hades.completedAt, DateTime(2026, 2, 2));
       expect(hades.hoursPlayed, 30);
-      expect(hades.playthroughCount, 2);
       expect(hades.updatedAt, now);
       expect(hades.selectedCoverLocalPath, 'media/games/game-1/cover-1.png');
       expect(hades.selectedCoverProvider, 'igdb');

@@ -12,11 +12,10 @@ class LibraryGameRow {
     required this.gameId,
     required this.libraryEntryId,
     required this.title,
-    required this.status,
+    required this.isCompleted,
     required this.type,
     required this.platforms,
     required this.genres,
-    required this.playthroughCount,
     required this.updatedAt,
     this.sortTitle,
     this.selectedCoverLocalPath,
@@ -26,6 +25,7 @@ class LibraryGameRow {
     this.completedAt,
     this.hoursPlayed,
     this.playedPlatformId,
+    this.playedPlatformName,
     this.personalRating,
     this.personalNotes,
   });
@@ -37,8 +37,17 @@ class LibraryGameRow {
   final String? selectedCoverLocalPath;
   final String? selectedCoverProvider;
   final bool hasExternalMetadata;
-  final GameStatus status;
-  bool get isCompleted => status == GameStatus.completed;
+  final bool isCompleted;
+  GameStatus get status =>
+      isCompleted ? GameStatus.completed : GameStatus.pending;
+  final String? playedPlatformName;
+  LibraryCatalogItem? get playedPlatform =>
+      playedPlatformId == null
+          ? null
+          : LibraryCatalogItem(
+            id: playedPlatformId!,
+            name: playedPlatformName ?? playedPlatformId!,
+          );
   final String? playedPlatformId;
   final DateTime? releaseDate;
   final DateTime? completedAt;
@@ -48,6 +57,5 @@ class LibraryGameRow {
   final String type;
   final List<LibraryCatalogItem> platforms;
   final List<LibraryCatalogItem> genres;
-  final int playthroughCount;
   final DateTime updatedAt;
 }

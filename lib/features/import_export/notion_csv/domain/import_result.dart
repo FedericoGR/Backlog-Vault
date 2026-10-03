@@ -5,7 +5,6 @@ class ImportResult {
     required this.duplicatesSkipped,
     required this.platformsCreated,
     required this.genresCreated,
-    required this.playthroughsCreated,
   });
 
   final int importedGames;
@@ -13,5 +12,4 @@ class ImportResult {
   final int duplicatesSkipped;
   final int platformsCreated;
   final int genresCreated;
-  final int playthroughsCreated;
 }

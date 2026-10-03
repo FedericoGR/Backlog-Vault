@@ -302,12 +302,6 @@ abstract class AppLocalizations {
   /// **'The game could not be saved.'**
   String get gameSaveFailed;
 
-  /// No description provided for @playthroughSaveFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'The playthrough could not be saved.'**
-  String get playthroughSaveFailed;
-
   /// No description provided for @csvOperationFailed.
   ///
   /// In en, this message translates to:
@@ -614,77 +608,17 @@ abstract class AppLocalizations {
   /// **'Pending'**
   String get settingsPending;
 
-  /// No description provided for @statusWishlist.
-  ///
-  /// In en, this message translates to:
-  /// **'Wishlist'**
-  String get statusWishlist;
-
   /// No description provided for @statusBacklog.
   ///
   /// In en, this message translates to:
   /// **'Backlog'**
   String get statusBacklog;
 
-  /// No description provided for @statusPlaying.
-  ///
-  /// In en, this message translates to:
-  /// **'Playing'**
-  String get statusPlaying;
-
-  /// No description provided for @statusPaused.
-  ///
-  /// In en, this message translates to:
-  /// **'Paused'**
-  String get statusPaused;
-
   /// No description provided for @statusCompleted.
   ///
   /// In en, this message translates to:
   /// **'Completed'**
   String get statusCompleted;
-
-  /// No description provided for @statusDropped.
-  ///
-  /// In en, this message translates to:
-  /// **'Dropped'**
-  String get statusDropped;
-
-  /// No description provided for @statusRetired.
-  ///
-  /// In en, this message translates to:
-  /// **'Retired'**
-  String get statusRetired;
-
-  /// No description provided for @playthroughPlanned.
-  ///
-  /// In en, this message translates to:
-  /// **'Planned'**
-  String get playthroughPlanned;
-
-  /// No description provided for @playthroughActive.
-  ///
-  /// In en, this message translates to:
-  /// **'Active'**
-  String get playthroughActive;
-
-  /// No description provided for @playthroughPaused.
-  ///
-  /// In en, this message translates to:
-  /// **'Paused'**
-  String get playthroughPaused;
-
-  /// No description provided for @playthroughCompleted.
-  ///
-  /// In en, this message translates to:
-  /// **'Completed'**
-  String get playthroughCompleted;
-
-  /// No description provided for @playthroughDropped.
-  ///
-  /// In en, this message translates to:
-  /// **'Dropped'**
-  String get playthroughDropped;
 
   /// No description provided for @gameTypeUndefined.
   ///
@@ -722,12 +656,6 @@ abstract class AppLocalizations {
   /// **'Backlog'**
   String get backlog;
 
-  /// No description provided for @playing.
-  ///
-  /// In en, this message translates to:
-  /// **'Playing'**
-  String get playing;
-
   /// No description provided for @completed.
   ///
   /// In en, this message translates to:
@@ -763,24 +691,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Missing genre'**
   String get missingGenre;
-
-  /// No description provided for @homeNowPlaying.
-  ///
-  /// In en, this message translates to:
-  /// **'Playing now'**
-  String get homeNowPlaying;
-
-  /// No description provided for @homeNowPlayingDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'The most active games in your personal library.'**
-  String get homeNowPlayingDescription;
-
-  /// No description provided for @homeNowPlayingEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No games are currently in progress.'**
-  String get homeNowPlayingEmpty;
 
   /// No description provided for @homeBacklogDescription.
   ///
@@ -845,7 +755,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeRecentlyUpdatedDescription.
   ///
   /// In en, this message translates to:
-  /// **'Recent changes to statuses, notes, and playthroughs.'**
+  /// **'Recent changes to personal records.'**
   String get homeRecentlyUpdatedDescription;
 
   /// No description provided for @homeRecentlyUpdatedEmpty.
@@ -869,10 +779,10 @@ abstract class AppLocalizations {
   /// No description provided for @homeLibrarySummary.
   ///
   /// In en, this message translates to:
-  /// **'{total} games, {completedCount} completed, and {playingCount} pending.'**
+  /// **'{total} games, {completedCount} completed, and {pendingCount} pending.'**
   String homeLibrarySummary(
     Object completedCount,
-    Object playingCount,
+    Object pendingCount,
     Object total,
   );
 
@@ -999,7 +909,7 @@ abstract class AppLocalizations {
   /// No description provided for @statisticsAnnualProgressSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Completed playthroughs with dates and logged hours by period.'**
+  /// **'Completed games with dates and personal hours by period.'**
   String get statisticsAnnualProgressSubtitle;
 
   /// No description provided for @statisticsTopPlatforms.
@@ -1101,7 +1011,7 @@ abstract class AppLocalizations {
   /// No description provided for @statisticsNoAnnualProgressMessage.
   ///
   /// In en, this message translates to:
-  /// **'Once you complete dated playthroughs, this panel will summarize them by year and month.'**
+  /// **'Completed games with a date appear by year and month.'**
   String get statisticsNoAnnualProgressMessage;
 
   /// No description provided for @statisticsMonthsOf.
@@ -1155,7 +1065,7 @@ abstract class AppLocalizations {
   /// No description provided for @statisticsNoCompletedMessage.
   ///
   /// In en, this message translates to:
-  /// **'Record a completion date in your playthroughs to see them here.'**
+  /// **'Add an optional completion date to see a completed game here.'**
   String get statisticsNoCompletedMessage;
 
   /// No description provided for @statisticsEmptyTitle.
@@ -1167,7 +1077,7 @@ abstract class AppLocalizations {
   /// No description provided for @statisticsEmptyMessage.
   ///
   /// In en, this message translates to:
-  /// **'Once you add games and playthroughs, this dashboard will summarize progress, ratings, and metadata quality.'**
+  /// **'Add games to see completion, hours, ratings, and data quality.'**
   String get statisticsEmptyMessage;
 
   /// No description provided for @statisticsGoToLibrary.
@@ -1782,12 +1692,6 @@ abstract class AppLocalizations {
   /// **'Updated'**
   String get columnUpdatedAt;
 
-  /// No description provided for @columnPlaythroughs.
-  ///
-  /// In en, this message translates to:
-  /// **'Legacy playthroughs'**
-  String get columnPlaythroughs;
-
   /// No description provided for @gameCreateTitle.
   ///
   /// In en, this message translates to:
@@ -1998,12 +1902,6 @@ abstract class AppLocalizations {
   /// **'Hours played'**
   String get gameHoursPlayed;
 
-  /// No description provided for @gamePlaythroughRating.
-  ///
-  /// In en, this message translates to:
-  /// **'Playthrough rating'**
-  String get gamePlaythroughRating;
-
   /// No description provided for @gamePlatform.
   ///
   /// In en, this message translates to:
@@ -2079,68 +1977,8 @@ abstract class AppLocalizations {
   /// No description provided for @gameLastCompleted.
   ///
   /// In en, this message translates to:
-  /// **'Last completed'**
+  /// **'Completion date'**
   String get gameLastCompleted;
-
-  /// No description provided for @gamePlaythroughs.
-  ///
-  /// In en, this message translates to:
-  /// **'Legacy playthroughs'**
-  String get gamePlaythroughs;
-
-  /// No description provided for @gameMarkPlaying.
-  ///
-  /// In en, this message translates to:
-  /// **'Playing'**
-  String get gameMarkPlaying;
-
-  /// No description provided for @gamePause.
-  ///
-  /// In en, this message translates to:
-  /// **'Pause'**
-  String get gamePause;
-
-  /// No description provided for @gameComplete.
-  ///
-  /// In en, this message translates to:
-  /// **'Complete'**
-  String get gameComplete;
-
-  /// No description provided for @gameDrop.
-  ///
-  /// In en, this message translates to:
-  /// **'Drop'**
-  String get gameDrop;
-
-  /// No description provided for @gameMoveToBacklog.
-  ///
-  /// In en, this message translates to:
-  /// **'Backlog'**
-  String get gameMoveToBacklog;
-
-  /// No description provided for @gameNewPlaythrough.
-  ///
-  /// In en, this message translates to:
-  /// **'New playthrough'**
-  String get gameNewPlaythrough;
-
-  /// No description provided for @gameNoPlaythroughs.
-  ///
-  /// In en, this message translates to:
-  /// **'No playthroughs recorded'**
-  String get gameNoPlaythroughs;
-
-  /// No description provided for @gameNoPlaythroughsMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Legacy playthrough history is preserved here. New tracking uses the personal record.'**
-  String get gameNoPlaythroughsMessage;
-
-  /// No description provided for @gamePlaythroughActions.
-  ///
-  /// In en, this message translates to:
-  /// **'Playthrough actions'**
-  String get gamePlaythroughActions;
 
   /// No description provided for @metadataApplied.
   ///
@@ -2178,41 +2016,11 @@ abstract class AppLocalizations {
   /// **'Cover removed.'**
   String get coverRemoved;
 
-  /// No description provided for @gameDeletePlaythroughTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete playthrough'**
-  String get gameDeletePlaythroughTitle;
-
-  /// No description provided for @gameDeletePlaythroughMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'The playthrough will be hidden from history.'**
-  String get gameDeletePlaythroughMessage;
-
-  /// No description provided for @gameMarkCompletedTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Mark as completed'**
-  String get gameMarkCompletedTitle;
-
   /// No description provided for @gameNote.
   ///
   /// In en, this message translates to:
   /// **'Note'**
   String get gameNote;
-
-  /// No description provided for @gameRegisterPlaythrough.
-  ///
-  /// In en, this message translates to:
-  /// **'Register playthrough'**
-  String get gameRegisterPlaythrough;
-
-  /// No description provided for @gameEditPlaythrough.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit playthrough'**
-  String get gameEditPlaythrough;
 
   /// No description provided for @gameStartDate.
   ///
@@ -2225,18 +2033,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Notes'**
   String get gameNotes;
-
-  /// No description provided for @gamePlaythroughStart.
-  ///
-  /// In en, this message translates to:
-  /// **'Start {date}'**
-  String gamePlaythroughStart(Object date);
-
-  /// No description provided for @gamePlaythroughEnd.
-  ///
-  /// In en, this message translates to:
-  /// **'End {date}'**
-  String gamePlaythroughEnd(Object date);
 
   /// No description provided for @metadataDialogTitle.
   ///
@@ -2709,12 +2505,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Genres {count}'**
   String csvGenresCreated(Object count);
-
-  /// No description provided for @csvPlaythroughsCreated.
-  ///
-  /// In en, this message translates to:
-  /// **'Playthroughs {count}'**
-  String csvPlaythroughsCreated(Object count);
 
   /// No description provided for @csvBackToLibrary.
   ///
@@ -3519,6 +3309,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'replaces {cover}'**
   String bulkReplacesCover(Object cover);
+
+  /// No description provided for @gamePlayedPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Played on'**
+  String get gamePlayedPlatform;
+
+  /// No description provided for @gameHoursInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a non-negative number.'**
+  String get gameHoursInvalid;
 }
 
 class _AppLocalizationsDelegate

@@ -111,7 +111,7 @@ void main() {
       'PC',
       'Xbox Series X|S',
     ]);
-    expect(preview.rows.last.status, GameStatus.playing);
+    expect(preview.rows.last.status, GameStatus.pending);
     expect(preview.rows.last.personalRating, 3);
     expect(preview.rows.last.personalNotes, contains('Linea dos'));
   });

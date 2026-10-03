@@ -10,7 +10,7 @@ class _StatusBreakdown extends StatelessWidget {
     final maxCount = _maxInt(stats.statusCounts.values);
     return Column(
       children: [
-        for (final status in personalGameStatuses)
+        for (final status in GameStatus.values)
           _StatBar(
             label: context.l10n.gameStatusLabel(status),
             value: stats.statusCounts[status] ?? 0,

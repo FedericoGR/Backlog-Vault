@@ -63,39 +63,6 @@ Future<void> _confirmDeleteCover(
   BvFeedback.show(context, context.l10n.coverRemoved);
 }
 
-Future<void> _runProgressAction(
-  BuildContext context,
-  WidgetRef ref,
-  LibraryGameDetails item,
-  Future<void> Function() action,
-) async {
-  try {
-    await action();
-    ref.invalidate(libraryGameProvider(item.entry.id));
-  } catch (error) {
-    if (!context.mounted) return;
-    BvFeedback.show(context, context.l10n.gameSaveFailed);
-  }
-}
-
-Future<void> _showCompletionDialog(
-  BuildContext context,
-  WidgetRef ref,
-  LibraryGameDetails item,
-) async {
-  final result = await showDialog<CompletionFormModel>(
-    context: context,
-    builder: (context) => _CompletionDialog(item: item),
-  );
-  if (result == null || !context.mounted) return;
-  await _runProgressAction(
-    context,
-    ref,
-    item,
-    () => ref.read(gameDetailViewModelProvider).complete(result),
-  );
-}
-
 Future<void> _confirmDelete(
   BuildContext context,
   WidgetRef ref,

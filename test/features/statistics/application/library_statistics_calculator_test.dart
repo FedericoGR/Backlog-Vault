@@ -1,25 +1,16 @@
-import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/library/domain/library_game_row.dart';
-import 'package:backlog_vault/features/playthroughs/domain/playthrough_status.dart';
 import 'package:backlog_vault/features/statistics/application/library_statistics_calculator.dart';
-import 'package:backlog_vault/features/statistics/domain/statistics_models.dart';
 import 'package:test/test.dart';
 
 void main() {
   const calculator = LibraryStatisticsCalculator();
 
   test('calculates global, yearly, monthly and quality statistics', () {
-    final stats = calculator.calculate(
-      rows: _rows,
-      playthroughs: _playthroughs,
-    );
+    final stats = calculator.calculate(rows: _rows);
 
     expect(stats.totalGames, 5);
     expect(stats.backlogCount, 2);
-    expect(stats.playingCount, 0);
-    expect(stats.pausedCount, 0);
     expect(stats.completedCount, 3);
-    expect(stats.statusCounts[GameStatus.dropped], isNull);
     expect(stats.completedByYear[2026], 2);
     expect(stats.completedByYear[2025], isNull);
     expect(stats.hoursByYear[2026], 77);
@@ -48,16 +39,13 @@ void main() {
     expect(stats.qualityStats.missingCover, 2);
     expect(stats.qualityStats.missingMetadata, 3);
     expect(stats.qualityStats.missingRating, 2);
-    expect(stats.qualityStats.missingPlatform, 1);
+    expect(stats.qualityStats.missingPlatform, 2);
     expect(stats.qualityStats.missingGenre, 1);
     expect(stats.qualityStats.completedWithoutDate, 1);
   });
 
   test('builds latest completions without duplicating the same game', () {
-    final stats = calculator.calculate(
-      rows: _rows,
-      playthroughs: _playthroughs,
-    );
+    final stats = calculator.calculate(rows: _rows);
 
     expect(stats.latestCompleted.map((item) => item.row.title), [
       'Baldur\'s Gate 3',
@@ -67,51 +55,8 @@ void main() {
     expect(stats.latestCompleted.last.completedAt, DateTime(2026, 2, 2));
   });
 
-  test(
-    'ignores legacy playthroughs when calculating personal record statistics',
-    () {
-      final stats = calculator.calculate(
-        rows: [
-          ..._rows,
-          LibraryGameRow(
-            gameId: 'g6',
-            libraryEntryId: 'e6',
-            title: 'Retired Game',
-            status: GameStatus.retired,
-            type: 'game',
-            platforms: const [],
-            genres: const [],
-            playthroughCount: 1,
-            updatedAt: DateTime(2026, 6, 6),
-          ),
-        ],
-        playthroughs: [
-          ..._playthroughs,
-          StatisticsPlaythrough(
-            libraryEntryId: 'e5',
-            status: PlaythroughStatus.dropped,
-            completedAt: DateTime(2026, 5, 1),
-            hoursPlayed: 7,
-          ),
-          StatisticsPlaythrough(
-            libraryEntryId: 'e6',
-            status: PlaythroughStatus.completed,
-            hoursPlayed: 11,
-          ),
-        ],
-      );
-
-      expect(stats.completedCount, 3);
-      expect(stats.statusCounts[GameStatus.retired], isNull);
-      expect(stats.completedByYear[2026], 2);
-      expect(stats.hoursByYear[2026], 77);
-      expect(stats.totalHours, 77);
-      expect(stats.qualityStats.completedWithoutDate, 1);
-    },
-  );
-
   test('handles an empty library without ugly values', () {
-    final stats = calculator.calculate(rows: const [], playthroughs: const []);
+    final stats = calculator.calculate(rows: const []);
 
     expect(stats.totalGames, 0);
     expect(stats.totalHours, 0);
@@ -131,9 +76,11 @@ final _rows = [
     title: 'Hades',
     selectedCoverLocalPath: 'media/games/g1/cover.png',
     hasExternalMetadata: true,
-    status: GameStatus.completed,
+    isCompleted: true,
     completedAt: DateTime(2026, 2, 2),
     hoursPlayed: 35,
+    playedPlatformId: 'pc',
+    playedPlatformName: 'PC',
     personalRating: 5,
     type: 'game',
     platforms: const [
@@ -141,32 +88,34 @@ final _rows = [
       LibraryCatalogItem(id: 'switch', name: 'Nintendo Switch'),
     ],
     genres: const [LibraryCatalogItem(id: 'roguelite', name: 'Roguelite')],
-    playthroughCount: 3,
+
     updatedAt: DateTime(2026, 6, 1),
   ),
   LibraryGameRow(
     gameId: 'g2',
     libraryEntryId: 'e2',
     title: 'Baldur\'s Gate 3',
-    status: GameStatus.completed,
+    isCompleted: true,
     completedAt: DateTime(2026, 3, 10),
     hoursPlayed: 42,
+    playedPlatformId: 'pc',
+    playedPlatformName: 'PC',
     personalRating: 4,
     type: 'game',
     platforms: const [LibraryCatalogItem(id: 'pc', name: 'PC')],
     genres: const [LibraryCatalogItem(id: 'rpg', name: 'RPG')],
-    playthroughCount: 2,
+
     updatedAt: DateTime(2026, 6, 2),
   ),
   LibraryGameRow(
     gameId: 'g3',
     libraryEntryId: 'e3',
     title: 'Celeste',
-    status: GameStatus.backlog,
+    isCompleted: false,
     type: 'game',
     platforms: const [],
     genres: const [],
-    playthroughCount: 0,
+
     updatedAt: DateTime(2026, 6, 3),
   ),
   LibraryGameRow(
@@ -174,12 +123,14 @@ final _rows = [
     libraryEntryId: 'e4',
     title: 'Silent Hill 3',
     selectedCoverLocalPath: 'media/games/g4/cover.png',
-    status: GameStatus.completed,
+    isCompleted: true,
+    playedPlatformId: 'ps2',
+    playedPlatformName: 'PlayStation 2',
     personalRating: 2,
     type: 'game',
     platforms: const [LibraryCatalogItem(id: 'ps2', name: 'PlayStation 2')],
     genres: const [LibraryCatalogItem(id: 'horror', name: 'Horror')],
-    playthroughCount: 0,
+
     updatedAt: DateTime(2026, 6, 4),
   ),
   LibraryGameRow(
@@ -188,51 +139,13 @@ final _rows = [
     title: 'Dropped Game',
     selectedCoverLocalPath: 'media/games/g5/cover.png',
     hasExternalMetadata: true,
-    status: GameStatus.dropped,
+    isCompleted: false,
     type: 'game',
     platforms: const [
       LibraryCatalogItem(id: 'switch', name: 'Nintendo Switch'),
     ],
     genres: const [LibraryCatalogItem(id: 'strategy', name: 'Strategy')],
-    playthroughCount: 1,
-    updatedAt: DateTime(2026, 6, 5),
-  ),
-];
 
-final _playthroughs = [
-  StatisticsPlaythrough(
-    libraryEntryId: 'e1',
-    status: PlaythroughStatus.completed,
-    completedAt: DateTime(2026, 1, 2),
-    hoursPlayed: 10,
-  ),
-  StatisticsPlaythrough(
-    libraryEntryId: 'e1',
-    status: PlaythroughStatus.completed,
-    completedAt: DateTime(2026, 2, 2),
-    hoursPlayed: 20,
-  ),
-  StatisticsPlaythrough(
-    libraryEntryId: 'e1',
-    status: PlaythroughStatus.completed,
-    completedAt: DateTime(2025, 12, 30),
-    hoursPlayed: 5,
-  ),
-  StatisticsPlaythrough(
-    libraryEntryId: 'e2',
-    status: PlaythroughStatus.active,
-    hoursPlayed: 12,
-  ),
-  StatisticsPlaythrough(
-    libraryEntryId: 'e2',
-    status: PlaythroughStatus.completed,
-    completedAt: DateTime(2026, 3, 10),
-    hoursPlayed: 30,
-  ),
-  StatisticsPlaythrough(
-    libraryEntryId: 'deleted-entry',
-    status: PlaythroughStatus.completed,
-    completedAt: DateTime(2026, 4, 1),
-    hoursPlayed: 999,
+    updatedAt: DateTime(2026, 6, 5),
   ),
 ];

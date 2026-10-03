@@ -6,7 +6,7 @@ class LibraryGameDetails {
     required this.entry,
     required this.platforms,
     required this.genres,
-    required this.playthroughs,
+    this.playedPlatform,
     this.selectedCover,
   });
 
@@ -14,7 +14,9 @@ class LibraryGameDetails {
   final LibraryEntryDetails entry;
   final List<CatalogItem> platforms;
   final List<CatalogItem> genres;
-  final List<PlaythroughDetails> playthroughs;
+
+  /// Personal platform, distinct from the catalog platforms above.
+  final CatalogItem? playedPlatform;
   final GameCoverDetails? selectedCover;
 }
 
@@ -46,7 +48,6 @@ class LibraryEntryDetails {
   const LibraryEntryDetails({
     required this.id,
     required this.gameId,
-    required this.status,
     required this.createdAt,
     required this.updatedAt,
     this.isCompleted = false,
@@ -60,44 +61,12 @@ class LibraryEntryDetails {
 
   final String id;
   final String gameId;
-  final String status;
   final bool isCompleted;
   final DateTime? completedAt;
   final double? hoursPlayed;
   final String? playedPlatformId;
   final int? personalRating;
   final String? personalNotes;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final DateTime? deletedAt;
-}
-
-/// Read model for one concrete play experience.
-class PlaythroughDetails {
-  const PlaythroughDetails({
-    required this.id,
-    required this.libraryEntryId,
-    required this.status,
-    required this.createdAt,
-    required this.updatedAt,
-    this.platformId,
-    this.startedAt,
-    this.completedAt,
-    this.hoursPlayed,
-    this.rating,
-    this.notes,
-    this.deletedAt,
-  });
-
-  final String id;
-  final String libraryEntryId;
-  final String? platformId;
-  final String status;
-  final DateTime? startedAt;
-  final DateTime? completedAt;
-  final double? hoursPlayed;
-  final int? rating;
-  final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;

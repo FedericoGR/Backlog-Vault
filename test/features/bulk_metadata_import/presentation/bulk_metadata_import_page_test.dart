@@ -2,7 +2,6 @@ import 'package:backlog_vault/features/bulk_metadata_import/application/apply_bu
 import 'package:backlog_vault/features/bulk_metadata_import/application/bulk_metadata_import_providers.dart';
 import 'package:backlog_vault/features/bulk_metadata_import/presentation/bulk_metadata_import_page.dart';
 import 'package:backlog_vault/features/library/application/library_providers.dart';
-import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/library/domain/library_game_row.dart';
 import 'package:backlog_vault/features/media/application/media_providers.dart';
 import 'package:backlog_vault/features/media/domain/media_asset_models.dart';
@@ -182,11 +181,11 @@ final _rows = [
     gameId: 'game-1',
     libraryEntryId: 'entry-1',
     title: 'Final Fantasy XIII-2 Collector Edition With A Long Title',
-    status: GameStatus.backlog,
+    isCompleted: false,
     type: 'game',
     platforms: const [LibraryCatalogItem(id: 'pc', name: 'PC')],
     genres: const [LibraryCatalogItem(id: 'jrpg', name: 'JRPG')],
-    playthroughCount: 0,
+
     updatedAt: DateTime(2026, 6, 14),
   ),
 ];

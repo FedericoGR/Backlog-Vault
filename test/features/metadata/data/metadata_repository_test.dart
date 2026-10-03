@@ -5,7 +5,6 @@ import 'package:backlog_vault/features/metadata/domain/apply_metadata_request.da
 import 'package:backlog_vault/features/metadata/domain/external_game_details.dart';
 import 'package:backlog_vault/features/metadata/domain/metadata_exception.dart';
 import 'package:backlog_vault/features/metadata/domain/metadata_field.dart';
-import 'package:backlog_vault/features/playthroughs/domain/playthrough_status.dart';
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:test/test.dart';
@@ -51,10 +50,10 @@ void main() {
 
       expect(game.title, 'Local Title');
       expect(game.releaseDate, DateTime(2013, 9, 17));
-      expect(entry.status, GameStatus.playing.name);
+      expect(entry.status, GameStatus.pending.name);
       expect(entry.personalRating, 4);
       expect(entry.personalNotes, 'Manual note');
-      expect(playthrough.status, PlaythroughStatus.active.name);
+      expect(playthrough.status, 'active');
       expect(externalIds.single.provider, 'rawg');
       expect(externalIds.single.externalId, '3498');
       expect(
@@ -192,10 +191,10 @@ void main() {
       expect(externalIds.single.externalId, '123');
       expect(externalIds.single.externalSlug, 'hades');
       expect(mediaAssets, isEmpty);
-      expect(entry.status, GameStatus.playing.name);
+      expect(entry.status, GameStatus.pending.name);
       expect(entry.personalRating, 4);
       expect(entry.personalNotes, 'Manual note');
-      expect(playthrough.status, PlaythroughStatus.active.name);
+      expect(playthrough.status, 'active');
     },
   );
 
@@ -226,7 +225,7 @@ void main() {
           await ((db.select(db.gameGenres)
             ..where((table) => table.deletedAt.isNotNull())).get());
 
-      expect(entry.status, GameStatus.playing.name);
+      expect(entry.status, GameStatus.pending.name);
       expect(entry.personalRating, 4);
       expect(entry.personalNotes, 'Manual note');
       expect(activePlatformLinks, hasLength(2));
@@ -270,7 +269,7 @@ Future<void> _seedGame(AppDatabase db) async {
         LibraryEntriesCompanion.insert(
           id: 'entry-1',
           gameId: 'game-1',
-          status: GameStatus.playing.name,
+          status: GameStatus.pending.name,
           personalRating: const Value(4),
           personalNotes: const Value('Manual note'),
           createdAt: _now,
@@ -327,7 +326,7 @@ Future<void> _seedGame(AppDatabase db) async {
           id: 'playthrough-1',
           libraryEntryId: 'entry-1',
           platformId: const Value('platform-pc'),
-          status: PlaythroughStatus.active.name,
+          status: 'active',
           startedAt: Value(DateTime(2026, 6, 1)),
           createdAt: _now,
           updatedAt: _now,

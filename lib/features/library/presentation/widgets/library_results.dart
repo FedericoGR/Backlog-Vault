@@ -175,7 +175,7 @@ class _LibraryDataTable extends ConsumerWidget {
         LibraryColumnKey.completedDate ||
         LibraryColumnKey.hours ||
         LibraryColumnKey.type ||
-        LibraryColumnKey.playthroughs => 120,
+        LibraryColumnKey.playedPlatform => 120,
         LibraryColumnKey.notes || LibraryColumnKey.updatedAt => 150,
       };
     }

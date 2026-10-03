@@ -1,335 +1,246 @@
 import 'package:backlog_vault/core/database/app_database.dart';
-import 'package:backlog_vault/core/time/clock.dart';
 import 'package:backlog_vault/features/games/application/game_form_model.dart';
-import 'package:backlog_vault/features/games/application/game_progress_summary.dart';
 import 'package:backlog_vault/features/games/data/game_repository.dart';
 import 'package:backlog_vault/features/library/data/library_query_repository.dart';
 import 'package:backlog_vault/features/library/domain/game_status.dart';
-import 'package:backlog_vault/features/playthroughs/application/completion_form_model.dart';
-import 'package:backlog_vault/features/playthroughs/data/playthrough_repository.dart';
-import 'package:backlog_vault/features/playthroughs/domain/playthrough_status.dart';
+import 'package:backlog_vault/features/statistics/application/library_statistics_calculator.dart';
+import 'package:backlog_vault/features/import_export/library_export/data/library_export_repository.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
 void main() {
   late AppDatabase db;
-  late GameRepository repository;
-  late LibraryQueryRepository queryRepository;
-  setUp(() {
+  late GameRepository games;
+  late LibraryQueryRepository library;
+  final date = DateTime(2026, 8, 20);
+  setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
-    repository = GameRepository(db, clock: const _FixedClock());
-    queryRepository = LibraryQueryRepository(db);
+    games = GameRepository(db);
+    library = LibraryQueryRepository(db);
+    for (final id in ['catalog-pc', 'played-switch']) {
+      await db
+          .into(db.platforms)
+          .insert(
+            PlatformsCompanion.insert(
+              id: id,
+              name: id == 'catalog-pc' ? 'PC' : 'Switch',
+              createdAt: date,
+              updatedAt: date,
+            ),
+          );
+    }
   });
   tearDown(() => db.close());
 
+  Future<String> create({bool completed = false}) => games.save(
+    GameFormModel(
+      title: 'Game',
+      isCompleted: completed,
+      platformIds: const ['catalog-pc'],
+    ),
+  );
+  Future<void> edit(
+    String id, {
+    bool completed = true,
+    DateTime? completedAt,
+    double? hours = 7.5,
+    String? platform = 'played-switch',
+    int? rating = 4,
+    String? notes = 'Personal notes',
+  }) async {
+    final details = (await games.getByEntryId(id))!;
+    await games.save(
+      GameFormModel(
+        entryId: id,
+        gameId: details.game.id,
+        title: details.game.title,
+        isCompleted: completed,
+        completedAt: completedAt,
+        hoursPlayed: hours,
+        playedPlatformId: platform,
+        personalRating: rating,
+        personalNotes: notes,
+        platformIds: const ['catalog-pc'],
+      ),
+    );
+  }
+
+  Future<void> history(String id) async {
+    for (var i = 0; i < 3; i++) {
+      await db
+          .into(db.playthroughs)
+          .insert(
+            PlaythroughsCompanion.insert(
+              id: 'legacy-$i',
+              libraryEntryId: id,
+              status: 'completed',
+              completedAt: Value(DateTime(2040)),
+              hoursPlayed: const Value(999),
+              rating: const Value(1),
+              notes: const Value('Historical notes'),
+              platformId: const Value('catalog-pc'),
+              createdAt: date,
+              updatedAt: date,
+              deletedAt: Value(i == 2 ? date : null),
+            ),
+          );
+    }
+  }
+
+  for (final completed in [false, true]) {
+    test(
+      'creates ${completed ? "completed" : "pending"} without requiring a date or playthrough',
+      () async {
+        final id = await create(completed: completed);
+        final details = (await games.getByEntryId(id))!;
+        expect(details.entry.isCompleted, completed);
+        expect(details.entry.completedAt, isNull);
+        expect(details.entry.hoursPlayed, isNull);
+        expect(details.entry.playedPlatformId, isNull);
+        expect(await db.select(db.playthroughs).get(), isEmpty);
+        expect(await library.watchRows().first, hasLength(1));
+      },
+    );
+  }
   test(
-    'completion without a date writes one record and no playthrough',
+    'pending to completed to pending uses one record and preserves personal values',
     () async {
-      await _seedGame(db, status: GameStatus.backlog);
-      await repository.completeGame(
-        const CompletionFormModel(
-          libraryEntryId: 'entry-1',
-          hoursPlayed: 12.5,
-          rating: 4,
-          platformId: 'pc',
-        ),
-      );
-      final entry = await _entry(db);
-      expect(entry.isCompleted, isTrue);
-      expect(entry.completedAt, isNull);
-      expect(entry.hoursPlayed, 12.5);
-      expect(entry.playedPlatformId, 'pc');
-      expect(entry.personalRating, 4);
-      expect(entry.status, 'backlog');
+      final id = await create();
+      await edit(id, completedAt: date);
+      expect((await games.getByEntryId(id))!.entry.isCompleted, isTrue);
+      await edit(id, completed: false, completedAt: date);
+      final entry = (await games.getByEntryId(id))!.entry;
+      expect(entry.isCompleted, isFalse);
+      expect(entry.completedAt, date);
+      expect(entry.hoursPlayed, 7.5);
+      expect(await db.select(db.libraryEntries).get(), hasLength(1));
       expect(await db.select(db.playthroughs).get(), isEmpty);
     },
   );
-
-  test('completion and reopening preserve every legacy playthrough', () async {
-    await _seedGame(db, status: GameStatus.playing);
-    await _seedPlaythrough(
-      db,
-      status: PlaythroughStatus.active,
-      hoursPlayed: 99,
-    );
-    final history = await PlaythroughRepository(db).history('entry-1');
-    await repository.completeGame(
-      CompletionFormModel(
-        libraryEntryId: 'entry-1',
-        completedAt: _now,
-        hoursPlayed: 7.5,
-      ),
-    );
-    await repository.markBacklog('entry-1');
-    final entry = await _entry(db);
-    expect(entry.isCompleted, isFalse);
-    expect(entry.completedAt, _now);
-    expect(entry.hoursPlayed, 7.5);
-    expect(entry.status, 'playing');
-    expect(await PlaythroughRepository(db).history('entry-1'), history);
-  });
-
   test(
-    'library, details and summaries ignore conflicting legacy totals/status',
+    'edits and clears date, hours, platform, rating and notes independently of history',
     () async {
-      await _seedGame(db, status: GameStatus.completed);
-      await _seedPlaythrough(
-        db,
-        status: PlaythroughStatus.completed,
-        completedAt: DateTime(2040),
-        hoursPlayed: 999,
+      final id = await create(completed: true);
+      await history(id);
+      final before = await db.select(db.playthroughs).get();
+      await edit(id, completedAt: date);
+      final editedDate = DateTime(2026, 9, 21);
+      await edit(
+        id,
+        completedAt: editedDate,
+        hours: 11,
+        platform: 'catalog-pc',
+        rating: 5,
+        notes: 'Updated notes',
       );
-      await (db.update(db.libraryEntries)).write(
-        LibraryEntriesCompanion(
-          isCompleted: const Value(false),
-          completedAt: Value(_now),
-          hoursPlayed: const Value(4),
-          playedPlatformId: const Value('pc'),
-        ),
-      );
-      final row = (await queryRepository.watchRows().first).single;
-      final details = (await repository.getByEntryId('entry-1'))!;
-      final summary = GameProgressSummary.fromDetails(details);
-      expect(row.isCompleted, isFalse);
-      expect(row.status, GameStatus.backlog);
-      expect(row.hoursPlayed, 4);
-      expect(row.completedAt, _now);
-      expect(row.playedPlatformId, 'pc');
-      expect(details.entry.isCompleted, isFalse);
-      expect(details.entry.hoursPlayed, 4);
-      expect(summary.totalHours, 4);
-      expect(summary.latestCompletedAt, _now);
-      expect(summary.playthroughCount, 1);
-    },
-  );
-
-  test(
-    'saving edits and clearing optional fields never changes history',
-    () async {
-      await _seedGame(db, status: GameStatus.completed);
-      await _seedPlaythrough(
-        db,
-        status: PlaythroughStatus.completed,
-        hoursPlayed: 20,
-      );
-      final history = await PlaythroughRepository(db).history('entry-1');
-      await repository.save(
-        GameFormModel(
-          entryId: 'entry-1',
-          gameId: 'game-1',
-          title: 'Edited',
-          isCompleted: true,
-          completedAt: _now,
-          hoursPlayed: 8,
-          playedPlatformId: 'pc',
-          personalRating: 5,
-          personalNotes: 'Notes',
-        ),
-      );
-      var entry = await _entry(db);
-      expect(entry.isCompleted, isTrue);
-      expect(entry.hoursPlayed, 8);
-      expect(entry.personalNotes, 'Notes');
-      await repository.save(
-        const GameFormModel(
-          entryId: 'entry-1',
-          gameId: 'game-1',
-          title: 'Edited',
-          isCompleted: true,
-        ),
-      );
-      entry = await _entry(db);
+      var entry = (await games.getByEntryId(id))!.entry;
+      expect(entry.completedAt, editedDate);
+      expect(entry.hoursPlayed, 11);
+      expect(entry.playedPlatformId, 'catalog-pc');
+      expect(entry.personalRating, 5);
+      expect(entry.personalNotes, 'Updated notes');
+      await edit(id, hours: null, platform: null, rating: null, notes: null);
+      entry = (await games.getByEntryId(id))!.entry;
       expect(entry.isCompleted, isTrue);
       expect(entry.completedAt, isNull);
       expect(entry.hoursPlayed, isNull);
       expect(entry.playedPlatformId, isNull);
       expect(entry.personalRating, isNull);
-      expect(await PlaythroughRepository(db).history('entry-1'), history);
+      expect(entry.personalNotes, isNull);
+      expect(await db.select(db.playthroughs).get(), before);
     },
   );
-
-  test('creating a personal record supports completed without date', () async {
-    final id = await repository.save(
-      const GameFormModel(title: 'New', isCompleted: true, hoursPlayed: 0),
-    );
-    final details = (await repository.getByEntryId(id))!;
-    expect(details.entry.isCompleted, isTrue);
-    expect(details.entry.hoursPlayed, 0);
-    expect(details.entry.completedAt, isNull);
-    expect(details.playthroughs, isEmpty);
-  });
-
-  test('invalid platform rolls back all completion changes', () async {
-    await _seedGame(db, status: GameStatus.backlog);
-    final before = await _entry(db);
-    await expectLater(
-      repository.completeGame(
-        const CompletionFormModel(
-          libraryEntryId: 'entry-1',
-          platformId: 'missing',
-          hoursPlayed: 4,
-        ),
-      ),
-      throwsA(anything),
-    );
-    expect(await _entry(db), before);
-  });
-
-  test('entry stream reflects authoritative changes', () async {
-    await _seedGame(db, status: GameStatus.backlog);
-    final rows = queryRepository.watchRows();
-    final emitted = <bool>[];
-    final subscription = rows.listen(
-      (rows) => emitted.add(rows.single.isCompleted),
-    );
-    await rows.first;
-    await repository.completeGame(
-      const CompletionFormModel(libraryEntryId: 'entry-1'),
-    );
-    await rows.firstWhere((rows) => rows.single.isCompleted);
-    expect(emitted, contains(true));
-    await subscription.cancel();
-  });
-
-  test('deleting game keeps legacy history for export', () async {
-    await _seedGame(db, status: GameStatus.completed);
-    await _seedPlaythrough(db, status: PlaythroughStatus.completed);
-    final history = await PlaythroughRepository(db).history('entry-1');
-    await repository.softDelete('entry-1');
-    expect(await repository.getByEntryId('entry-1'), isNull);
-    expect(await queryRepository.watchRows().first, isEmpty);
-    expect(await PlaythroughRepository(db).history('entry-1'), history);
-  });
-
-  test('details include selected IGDB cover asset', () async {
-    await _seedGame(db, status: GameStatus.backlog);
-    await db
-        .into(db.mediaAssets)
-        .insert(
-          MediaAssetsCompanion.insert(
-            id: 'igdb-cover-1',
-            gameId: 'game-1',
-            kind: 'cover',
-            source: 'igdb',
-            provider: const Value('igdb'),
-            externalId: const Value('456'),
-            localPath: 'media/games/game-1/igdb-cover-1.jpg',
-            fileName: 'igdb-cover-1.jpg',
-            isSelected: const Value(true),
-            createdAt: _now,
-            updatedAt: _now,
-          ),
-        );
-
-    final detail = await repository.getByEntryId('entry-1');
-
-    expect(detail, isNotNull);
-    expect(detail!.selectedCover, isNotNull);
-    expect(detail.selectedCover!.provider, 'igdb');
-    expect(detail.selectedCover!.source, 'igdb');
-    expect(
-      detail.selectedCover!.localPath,
-      'media/games/game-1/igdb-cover-1.jpg',
-    );
-  });
-}
-
-final _now = DateTime(2026, 6, 10, 12);
-
-class _FixedClock extends Clock {
-  const _FixedClock();
-
-  @override
-  DateTime now() => _now;
-}
-
-Future<void> _seedGame(AppDatabase db, {required GameStatus status}) async {
-  await db
-      .into(db.games)
-      .insert(
-        GamesCompanion.insert(
-          id: 'game-1',
-          title: 'Hades',
-          createdAt: _now,
-          updatedAt: _now,
-        ),
+  for (final legacy in [
+    'playing',
+    'paused',
+    'dropped',
+    'retired',
+    'wishlist',
+    'backlog',
+    'completed',
+  ]) {
+    for (final completed in [false, true]) {
+      test(
+        'legacy $legacy with isCompleted=$completed is interpreted only through boolean',
+        () async {
+          final id = await create(completed: completed);
+          await db
+              .update(db.libraryEntries)
+              .write(LibraryEntriesCompanion(status: Value(legacy)));
+          final row = (await library.watchRows().first).single;
+          expect(
+            row.status,
+            completed ? GameStatus.completed : GameStatus.pending,
+          );
+          expect((await games.getByEntryId(id))!.entry.isCompleted, completed);
+          await edit(id, completed: completed);
+          expect(
+            (await db.select(db.libraryEntries).getSingle()).status,
+            legacy,
+          );
+        },
       );
-  await db
-      .into(db.libraryEntries)
-      .insert(
-        LibraryEntriesCompanion.insert(
-          id: 'entry-1',
-          gameId: 'game-1',
-          status: status.name,
-          isCompleted: Value(status == GameStatus.completed),
-          createdAt: _now,
-          updatedAt: _now,
-        ),
-      );
-  await db
-      .into(db.platforms)
-      .insert(
-        PlatformsCompanion.insert(
-          id: 'pc',
-          name: 'PC',
-          createdAt: _now,
-          updatedAt: _now,
-        ),
-      );
-  await db
-      .into(db.libraryEntryPlatforms)
-      .insert(
-        LibraryEntryPlatformsCompanion.insert(
-          id: 'entry-platform-1',
-          libraryEntryId: 'entry-1',
-          platformId: 'pc',
-          isPrimary: const Value(true),
-          createdAt: _now,
-          updatedAt: _now,
-        ),
-      );
-}
-
-Future<void> _seedPlaythrough(
-  AppDatabase db, {
-  required PlaythroughStatus status,
-  DateTime? completedAt,
-  double? hoursPlayed,
-}) async {
-  await _insertPlaythrough(
-    db,
-    id: 'playthrough-1',
-    status: status,
-    completedAt: completedAt,
-    hoursPlayed: hoursPlayed,
+    }
+  }
+  test(
+    'multiple legacy rows never duplicate game or personal statistics and still export',
+    () async {
+      final id = await create();
+      await history(id);
+      final before = await db.select(db.playthroughs).get();
+      await edit(id, completedAt: date);
+      final rows = await library.watchRows().first;
+      expect(rows, hasLength(1));
+      expect(rows.single.personalNotes, 'Personal notes');
+      expect(rows.single.platforms.single.id, 'catalog-pc');
+      expect(rows.single.playedPlatformId, 'played-switch');
+      final stats = const LibraryStatisticsCalculator().calculate(rows: rows);
+      expect(stats.totalGames, 1);
+      expect(stats.completedByYear, {2026: 1});
+      expect(stats.totalHours, 7.5);
+      expect(stats.averageRating, 4);
+      expect(stats.platformBreakdown.single.id, 'played-switch');
+      expect(stats.platformBreakdown.single.name, 'Switch');
+      expect(stats.latestCompleted.single.completedAt, date);
+      final export =
+          await LibraryExportRepository(
+            db,
+            sourcePlatform: 'windows',
+          ).createDocument();
+      expect(export.playthroughs, hasLength(3));
+      expect(export.libraryEntries.single['personalRating'], 4);
+      expect(export.libraryEntries.single['personalNotes'], 'Personal notes');
+      expect(await db.select(db.playthroughs).get(), before);
+      await games.softDelete(id);
+      expect(await library.watchRows().first, isEmpty);
+      expect(await db.select(db.playthroughs).get(), before);
+    },
   );
-}
-
-Future<void> _insertPlaythrough(
-  AppDatabase db, {
-  required String id,
-  required PlaythroughStatus status,
-  DateTime? completedAt,
-  double? hoursPlayed,
-}) async {
-  await db
-      .into(db.playthroughs)
-      .insert(
-        PlaythroughsCompanion.insert(
-          id: id,
-          libraryEntryId: 'entry-1',
-          platformId: const Value('pc'),
-          status: status.name,
-          startedAt: Value(DateTime(2026, 6, 1)),
-          completedAt: Value(completedAt),
-          hoursPlayed: Value(hoursPlayed),
-          createdAt: _now,
-          updatedAt: _now,
-        ),
+  test(
+    'archived personal platform resolves separately from catalog links',
+    () async {
+      final id = await create();
+      await edit(id);
+      await (db.update(db.platforms)..where(
+        (p) => p.id.equals('played-switch'),
+      )).write(PlatformsCompanion(deletedAt: Value(date)));
+      final details = (await games.getByEntryId(id))!;
+      expect(details.platforms.single.name, 'PC');
+      expect(details.playedPlatform!.name, 'Switch');
+      expect(
+        (await library.watchRows().first).single.playedPlatform!.name,
+        'Switch',
       );
-}
-
-Future<LibraryEntry> _entry(AppDatabase db) {
-  return db.select(db.libraryEntries).getSingle();
+    },
+  );
+  test(
+    'invalid personal platform rolls back entry and catalog edits',
+    () async {
+      final id = await create();
+      final before = await db.select(db.libraryEntries).getSingle();
+      await expectLater(edit(id, platform: 'missing'), throwsA(anything));
+      expect(await db.select(db.libraryEntries).getSingle(), before);
+    },
+  );
 }

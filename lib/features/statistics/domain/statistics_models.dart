@@ -1,20 +1,5 @@
 import '../../library/domain/game_status.dart';
 import '../../library/domain/library_game_row.dart';
-import '../../playthroughs/domain/playthrough_status.dart';
-
-class StatisticsPlaythrough {
-  const StatisticsPlaythrough({
-    required this.libraryEntryId,
-    required this.status,
-    this.completedAt,
-    this.hoursPlayed,
-  });
-
-  final String libraryEntryId;
-  final PlaythroughStatus status;
-  final DateTime? completedAt;
-  final double? hoursPlayed;
-}
 
 class MonthlyCompletionStats {
   const MonthlyCompletionStats({
@@ -105,8 +90,6 @@ class LibraryStatistics {
     required this.totalGames,
     required this.statusCounts,
     required this.backlogCount,
-    required this.playingCount,
-    required this.pausedCount,
     required this.completedCount,
     required this.completedByYear,
     required this.hoursByYear,
@@ -123,8 +106,6 @@ class LibraryStatistics {
   final int totalGames;
   final Map<GameStatus, int> statusCounts;
   final int backlogCount;
-  final int playingCount;
-  final int pausedCount;
   final int completedCount;
   final Map<int, int> completedByYear;
   final Map<int, double> hoursByYear;

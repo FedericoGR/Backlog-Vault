@@ -2,7 +2,6 @@ import 'package:backlog_vault/app/theme/app_theme.dart';
 import 'package:backlog_vault/features/catalogs/application/catalog_controller.dart';
 import 'package:backlog_vault/features/catalogs/domain/catalog_item.dart';
 import 'package:backlog_vault/features/library/application/library_providers.dart';
-import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/library/domain/library_game_row.dart';
 import 'package:backlog_vault/features/library/presentation/game_list_page.dart';
 import 'package:data_table_2/data_table_2.dart';
@@ -186,7 +185,7 @@ final _rows = [
     libraryEntryId: 'e1',
     title:
         'Final Fantasy XIII-2 Collector Edition With A Very Long Title For Responsive QA',
-    status: GameStatus.completed,
+    isCompleted: true,
     personalRating: 3,
     hoursPlayed: 18.2,
     releaseDate: DateTime(2011, 12, 15),
@@ -202,14 +201,14 @@ final _rows = [
       LibraryCatalogItem(id: 'fantasy', name: 'Fantasy'),
       LibraryCatalogItem(id: 'rpg', name: 'RPG'),
     ],
-    playthroughCount: 1,
+
     updatedAt: _now,
   ),
   LibraryGameRow(
     gameId: 'g2',
     libraryEntryId: 'e2',
     title: 'Pragmata',
-    status: GameStatus.completed,
+    isCompleted: true,
     personalRating: 4,
     hoursPlayed: 16.4,
     releaseDate: DateTime(2026, 4, 17),
@@ -223,7 +222,7 @@ final _rows = [
       LibraryCatalogItem(id: 'action', name: 'Acción'),
       LibraryCatalogItem(id: 'scifi', name: 'Sci-Fi'),
     ],
-    playthroughCount: 1,
+
     updatedAt: _now.subtract(const Duration(days: 2)),
   ),
 ];

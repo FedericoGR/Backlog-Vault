@@ -2,7 +2,6 @@ import 'package:backlog_vault/features/catalogs/application/catalog_controller.d
 import 'package:backlog_vault/features/games/application/game_form_model.dart';
 import 'package:backlog_vault/features/games/application/game_view_models.dart';
 import 'package:backlog_vault/features/games/data/game_repository.dart';
-import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/media/application/media_use_cases.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -20,7 +19,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(
-      const GameFormModel(title: 'fallback', status: GameStatus.backlog),
+      const GameFormModel(title: 'fallback', isCompleted: false),
     );
   });
 
@@ -47,7 +46,7 @@ void main() {
       const GameFormSaveRequest(
         model: GameFormModel(
           title: 'Hades',
-          status: GameStatus.backlog,
+          isCompleted: false,
           platformIds: ['pc'],
         ),
         pendingPlatformNames: {'Steam Deck'},
@@ -71,7 +70,7 @@ void main() {
     expect(
       viewModel.save(
         const GameFormSaveRequest(
-          model: GameFormModel(title: 'Hades', status: GameStatus.backlog),
+          model: GameFormModel(title: 'Hades', isCompleted: false),
         ),
       ),
       throwsStateError,

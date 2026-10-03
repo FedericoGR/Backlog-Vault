@@ -1,4 +1,3 @@
-import '../../library/domain/game_status.dart';
 import '../../library/domain/rating.dart';
 
 class GameFormModel {
@@ -9,8 +8,7 @@ class GameFormModel {
     this.sortTitle,
     this.releaseDate,
     this.type = 'game',
-    this.status = GameStatus.backlog,
-    bool? isCompleted,
+    this.isCompleted = false,
     this.completedAt,
     this.hoursPlayed,
     this.playedPlatformId,
@@ -18,7 +16,7 @@ class GameFormModel {
     this.personalNotes,
     this.platformIds = const [],
     this.genreIds = const [],
-  }) : isCompleted = isCompleted ?? (status == GameStatus.completed);
+  });
 
   final String? entryId;
   final String? gameId;
@@ -26,7 +24,6 @@ class GameFormModel {
   final String? sortTitle;
   final DateTime? releaseDate;
   final String type;
-  final GameStatus status;
   final bool isCompleted;
   final DateTime? completedAt;
   final double? hoursPlayed;

@@ -25,19 +25,44 @@ void main() {
     () async {
       await repository.create(
         name: 'Legacy playing',
-        filter: const LibraryFilterState(
-          statuses: {GameStatus.playing, GameStatus.paused},
-        ),
+        filter: const LibraryFilterState(statuses: {GameStatus.pending}),
         sort: const LibrarySortState(field: LibrarySortField.title),
         columnConfig: LibraryColumnConfig(
           visibleColumns: const [LibraryColumnKey.title],
         ),
       );
+      await db.customStatement(
+        """UPDATE saved_views SET filter_json = '{"statuses":["playing","paused"]}'""",
+      );
       final view = (await repository.watchCustomViews().first).single;
-      expect(view.filter.statuses, {GameStatus.backlog});
+      expect(view.filter.statuses, {GameStatus.pending});
       final raw = (await db.select(db.savedViews).get()).single;
       expect(raw.filterJson, contains('playing'));
       expect(raw.filterJson, contains('paused'));
+    },
+  );
+
+  test(
+    'legacy playthrough column is ignored and personal platform stays distinct',
+    () {
+      final config = LibraryColumnConfig.fromJson({
+        'version': 1,
+        'visibleColumns': [
+          'title',
+          'playthroughs',
+          'platforms',
+          'playedPlatform',
+        ],
+      });
+      expect(config.visibleColumns, [
+        LibraryColumnKey.title,
+        LibraryColumnKey.platforms,
+        LibraryColumnKey.playedPlatform,
+      ]);
+      expect(
+        LibraryColumnConfig.allColumns.map((c) => c.name),
+        isNot(contains('playthroughs')),
+      );
     },
   );
 
@@ -45,7 +70,7 @@ void main() {
     final id = await repository.create(
       name: 'Mi backlog PC',
       filter: const LibraryFilterState(
-        statuses: {GameStatus.backlog},
+        statuses: {GameStatus.pending},
         platformIds: {'pc'},
       ),
       sort: const LibrarySortState(field: LibrarySortField.title),
@@ -61,7 +86,7 @@ void main() {
     var views = await repository.watchCustomViews().first;
     expect(views.single.id, id);
     expect(views.single.name, 'Mi backlog PC');
-    expect(views.single.filter.statuses, {GameStatus.backlog});
+    expect(views.single.filter.statuses, {GameStatus.pending});
     expect(views.single.sort.field, LibrarySortField.title);
     expect(
       views.single.columnConfig.isVisible(LibraryColumnKey.platforms),

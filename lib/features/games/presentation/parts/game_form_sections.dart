@@ -311,8 +311,8 @@ class _CatalogSelector extends StatelessWidget {
   }
 }
 
-class _CompletionFields extends StatelessWidget {
-  const _CompletionFields({
+class _PersonalTrackingFields extends StatelessWidget {
+  const _PersonalTrackingFields({
     required this.completedAt,
     required this.hoursController,
     required this.platformId,
@@ -346,13 +346,22 @@ class _CompletionFields extends StatelessWidget {
         ),
         TextFormField(
           controller: hoursController,
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) return null;
+            final hours = double.tryParse(value.trim().replaceAll(',', '.'));
+            return hours == null || !hours.isFinite || hours < 0
+                ? context.l10n.gameHoursInvalid
+                : null;
+          },
           keyboardType: TextInputType.number,
           decoration: InputDecoration(labelText: context.l10n.gameHoursPlayed),
         ),
         DropdownButtonFormField<String?>(
           isExpanded: true,
           initialValue: safePlatformId,
-          decoration: InputDecoration(labelText: context.l10n.gamePlatform),
+          decoration: InputDecoration(
+            labelText: context.l10n.gamePlayedPlatform,
+          ),
           items: [
             DropdownMenuItem(
               value: null,

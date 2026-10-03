@@ -1,5 +1,4 @@
 import 'package:backlog_vault/features/library/application/library_providers.dart';
-import 'package:backlog_vault/features/library/domain/game_status.dart';
 import 'package:backlog_vault/features/library/domain/library_game_row.dart';
 import 'package:backlog_vault/features/library/presentation/home_page.dart';
 import 'package:flutter/material.dart';
@@ -78,12 +77,12 @@ final _emptyRows = [
     libraryEntryId: 'e1',
     title: 'Hades',
     hasExternalMetadata: true,
-    status: GameStatus.completed,
+    isCompleted: true,
     completedAt: DateTime(2026, 1, 1),
     type: 'game',
     platforms: const [],
     genres: const [],
-    playthroughCount: 1,
+
     updatedAt: DateTime(2026, 1, 2),
   ),
 ];
@@ -94,7 +93,7 @@ final _longRows = [
     libraryEntryId: 'e2',
     title:
         'Final Fantasy XIII-2 Collector Edition With An Extremely Long Title',
-    status: GameStatus.playing,
+    isCompleted: false,
     personalRating: 5,
     hoursPlayed: 123.5,
     type: 'game',
@@ -106,7 +105,7 @@ final _longRows = [
       LibraryCatalogItem(id: 'jrpg', name: 'JRPG'),
       LibraryCatalogItem(id: 'adventure', name: 'Adventure'),
     ],
-    playthroughCount: 1,
+
     updatedAt: DateTime(2026, 6, 10),
   ),
   LibraryGameRow(
@@ -114,12 +113,12 @@ final _longRows = [
     libraryEntryId: 'e3',
     title: 'A Short Hike',
     hasExternalMetadata: true,
-    status: GameStatus.backlog,
+    isCompleted: false,
     personalRating: 4,
     type: 'game',
     platforms: const [LibraryCatalogItem(id: 'pc', name: 'PC')],
     genres: const [LibraryCatalogItem(id: 'cozy', name: 'Cozy')],
-    playthroughCount: 0,
+
     updatedAt: DateTime(2026, 6, 1),
   ),
 ];

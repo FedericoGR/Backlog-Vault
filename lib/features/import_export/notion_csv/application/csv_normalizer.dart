@@ -154,7 +154,7 @@ class CsvNormalizer {
           ),
         );
       }
-      return GameStatus.backlog;
+      return GameStatus.pending;
     }
 
     final status = _statusByToken[normalized];
@@ -167,7 +167,7 @@ class CsvNormalizer {
         message: 'Estado desconocido "$value"; se usó Pendiente.',
       ),
     );
-    return GameStatus.backlog;
+    return GameStatus.pending;
   }
 
   List<String> splitMultiValue(String value) {
@@ -226,26 +226,26 @@ class CsvNormalizer {
 }
 
 final _statusByToken = <String, GameStatus>{
-  'wishlist': GameStatus.wishlist,
-  'lista de deseos': GameStatus.wishlist,
-  'deseado': GameStatus.wishlist,
-  'backlog': GameStatus.backlog,
-  'pendiente': GameStatus.backlog,
-  'playing': GameStatus.playing,
-  'jugando': GameStatus.playing,
-  'en curso': GameStatus.playing,
-  'jugando actualmente': GameStatus.playing,
-  'actualmente jugando': GameStatus.playing,
-  'paused': GameStatus.paused,
-  'pausado': GameStatus.paused,
+  'wishlist': GameStatus.pending,
+  'lista de deseos': GameStatus.pending,
+  'deseado': GameStatus.pending,
+  'backlog': GameStatus.pending,
+  'pendiente': GameStatus.pending,
+  'playing': GameStatus.pending,
+  'jugando': GameStatus.pending,
+  'en curso': GameStatus.pending,
+  'jugando actualmente': GameStatus.pending,
+  'actualmente jugando': GameStatus.pending,
+  'paused': GameStatus.pending,
+  'pausado': GameStatus.pending,
   'completed': GameStatus.completed,
   'completado': GameStatus.completed,
   'finished': GameStatus.completed,
   'terminado': GameStatus.completed,
-  'dropped': GameStatus.dropped,
-  'abandonado': GameStatus.dropped,
-  'retired': GameStatus.retired,
-  'retirado': GameStatus.retired,
+  'dropped': GameStatus.pending,
+  'abandonado': GameStatus.pending,
+  'retired': GameStatus.pending,
+  'retirado': GameStatus.pending,
 };
 
 const _englishMonths = <String, int>{

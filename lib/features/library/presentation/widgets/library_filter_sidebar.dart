@@ -53,7 +53,7 @@ class LibraryFilterSidebar extends StatelessWidget {
             _SidebarSection(
               title: context.l10n.libraryStatus,
               children: [
-                for (final status in personalGameStatuses)
+                for (final status in GameStatus.values)
                   Material(
                     color: Colors.transparent,
                     child: CheckboxListTile(
@@ -253,17 +253,8 @@ class _InlineMetadata extends StatelessWidget {
   }
 }
 
-BvChipTone _statusTone(GameStatus status) {
-  return switch (status) {
-    GameStatus.completed => BvChipTone.primary,
-    GameStatus.dropped => BvChipTone.warning,
-    GameStatus.wishlist ||
-    GameStatus.backlog ||
-    GameStatus.playing ||
-    GameStatus.paused ||
-    GameStatus.retired => BvChipTone.neutral,
-  };
-}
+BvChipTone _statusTone(GameStatus status) =>
+    status == GameStatus.completed ? BvChipTone.primary : BvChipTone.neutral;
 
 String _limitedNames(Iterable<String> values, {int limit = 2}) {
   final list = values.toList();
