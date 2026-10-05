@@ -47,6 +47,7 @@ void main() {
         model: GameFormModel(
           title: 'Hades',
           isCompleted: false,
+          playedYear: 2026,
           platformIds: ['pc'],
         ),
         pendingPlatformNames: {'Steam Deck'},
@@ -62,6 +63,7 @@ void main() {
       containsAll(['pc', 'platform-steam-deck']),
     );
     expect(saved.genreIds, ['genre-rpg']);
+    expect(saved.playedYear, 2026);
   });
 
   test('save propagates persistence errors as a controlled failed future', () {

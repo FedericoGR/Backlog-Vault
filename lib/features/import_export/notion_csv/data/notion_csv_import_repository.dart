@@ -109,6 +109,7 @@ class NotionCsvImportRepository {
                         : 'backlog',
                 isCompleted: Value(row.status == GameStatus.completed),
                 completedAt: Value(row.completedAt),
+                playedYear: Value(row.completedAt?.year),
                 hoursPlayed: Value(row.hoursPlayed),
                 personalRating: Value(row.personalRating),
                 personalNotes: Value(_blankToNull(row.personalNotes)),

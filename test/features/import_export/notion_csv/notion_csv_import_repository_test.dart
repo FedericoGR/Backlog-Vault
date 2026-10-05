@@ -47,6 +47,7 @@ void main() {
 
       expect(playthroughs, isEmpty);
       expect(entries.single.isCompleted, isTrue);
+      expect(entries.single.playedYear, 2026);
       expect(entries.single.playedPlatformId, platforms.single.id);
       expect(games.single.title, 'Hades');
       expect(entries.single.status, GameStatus.completed.name);

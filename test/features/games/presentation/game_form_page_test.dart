@@ -120,6 +120,7 @@ void main() {
         verify(() => gameRepository.save(captureAny())).captured.single
             as GameFormModel;
     expect(saved.isCompleted, isTrue);
+    expect(saved.playedYear, 2025);
     expect(saved.completedAt, DateTime(2026, 8, 20));
     expect(saved.hoursPlayed, 42.5);
     expect(saved.playedPlatformId, 'ps4');
@@ -319,6 +320,7 @@ LibraryGameDetails _details() {
       gameId: 'game-1',
       isCompleted: true,
       completedAt: DateTime(2026, 8, 20),
+      playedYear: 2025,
       hoursPlayed: 42.5,
       playedPlatformId: 'ps4',
       personalRating: 3,

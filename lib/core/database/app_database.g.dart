@@ -1001,6 +1001,17 @@ class $LibraryEntriesTable extends LibraryEntries
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _playedYearMeta = const VerificationMeta(
+    'playedYear',
+  );
+  @override
+  late final GeneratedColumn<int> playedYear = GeneratedColumn<int>(
+    'played_year',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _hoursPlayedMeta = const VerificationMeta(
     'hoursPlayed',
   );
@@ -1088,6 +1099,7 @@ class $LibraryEntriesTable extends LibraryEntries
     status,
     isCompleted,
     completedAt,
+    playedYear,
     hoursPlayed,
     playedPlatformId,
     personalRating,
@@ -1145,6 +1157,12 @@ class $LibraryEntriesTable extends LibraryEntries
           data['completed_at']!,
           _completedAtMeta,
         ),
+      );
+    }
+    if (data.containsKey('played_year')) {
+      context.handle(
+        _playedYearMeta,
+        playedYear.isAcceptableOrUnknown(data['played_year']!, _playedYearMeta),
       );
     }
     if (data.containsKey('hours_played')) {
@@ -1238,6 +1256,10 @@ class $LibraryEntriesTable extends LibraryEntries
         DriftSqlType.dateTime,
         data['${effectivePrefix}completed_at'],
       ),
+      playedYear: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}played_year'],
+      ),
       hoursPlayed: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}hours_played'],
@@ -1280,9 +1302,14 @@ class $LibraryEntriesTable extends LibraryEntries
 class LibraryEntry extends DataClass implements Insertable<LibraryEntry> {
   final String id;
   final String gameId;
+
+  /// Preserved legacy lifecycle value; current tracking uses isCompleted.
   final String status;
   final bool isCompleted;
   final DateTime? completedAt;
+
+  /// Year of the personal game log, independent of completion and release.
+  final int? playedYear;
   final double? hoursPlayed;
   final String? playedPlatformId;
   final int? personalRating;
@@ -1296,6 +1323,7 @@ class LibraryEntry extends DataClass implements Insertable<LibraryEntry> {
     required this.status,
     required this.isCompleted,
     this.completedAt,
+    this.playedYear,
     this.hoursPlayed,
     this.playedPlatformId,
     this.personalRating,
@@ -1313,6 +1341,9 @@ class LibraryEntry extends DataClass implements Insertable<LibraryEntry> {
     map['is_completed'] = Variable<bool>(isCompleted);
     if (!nullToAbsent || completedAt != null) {
       map['completed_at'] = Variable<DateTime>(completedAt);
+    }
+    if (!nullToAbsent || playedYear != null) {
+      map['played_year'] = Variable<int>(playedYear);
     }
     if (!nullToAbsent || hoursPlayed != null) {
       map['hours_played'] = Variable<double>(hoursPlayed);
@@ -1344,6 +1375,10 @@ class LibraryEntry extends DataClass implements Insertable<LibraryEntry> {
           completedAt == null && nullToAbsent
               ? const Value.absent()
               : Value(completedAt),
+      playedYear:
+          playedYear == null && nullToAbsent
+              ? const Value.absent()
+              : Value(playedYear),
       hoursPlayed:
           hoursPlayed == null && nullToAbsent
               ? const Value.absent()
@@ -1380,6 +1415,7 @@ class LibraryEntry extends DataClass implements Insertable<LibraryEntry> {
       status: serializer.fromJson<String>(json['status']),
       isCompleted: serializer.fromJson<bool>(json['isCompleted']),
       completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
+      playedYear: serializer.fromJson<int?>(json['playedYear']),
       hoursPlayed: serializer.fromJson<double?>(json['hoursPlayed']),
       playedPlatformId: serializer.fromJson<String?>(json['playedPlatformId']),
       personalRating: serializer.fromJson<int?>(json['personalRating']),
@@ -1398,6 +1434,7 @@ class LibraryEntry extends DataClass implements Insertable<LibraryEntry> {
       'status': serializer.toJson<String>(status),
       'isCompleted': serializer.toJson<bool>(isCompleted),
       'completedAt': serializer.toJson<DateTime?>(completedAt),
+      'playedYear': serializer.toJson<int?>(playedYear),
       'hoursPlayed': serializer.toJson<double?>(hoursPlayed),
       'playedPlatformId': serializer.toJson<String?>(playedPlatformId),
       'personalRating': serializer.toJson<int?>(personalRating),
@@ -1414,6 +1451,7 @@ class LibraryEntry extends DataClass implements Insertable<LibraryEntry> {
     String? status,
     bool? isCompleted,
     Value<DateTime?> completedAt = const Value.absent(),
+    Value<int?> playedYear = const Value.absent(),
     Value<double?> hoursPlayed = const Value.absent(),
     Value<String?> playedPlatformId = const Value.absent(),
     Value<int?> personalRating = const Value.absent(),
@@ -1427,6 +1465,7 @@ class LibraryEntry extends DataClass implements Insertable<LibraryEntry> {
     status: status ?? this.status,
     isCompleted: isCompleted ?? this.isCompleted,
     completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    playedYear: playedYear.present ? playedYear.value : this.playedYear,
     hoursPlayed: hoursPlayed.present ? hoursPlayed.value : this.hoursPlayed,
     playedPlatformId:
         playedPlatformId.present
@@ -1449,6 +1488,8 @@ class LibraryEntry extends DataClass implements Insertable<LibraryEntry> {
           data.isCompleted.present ? data.isCompleted.value : this.isCompleted,
       completedAt:
           data.completedAt.present ? data.completedAt.value : this.completedAt,
+      playedYear:
+          data.playedYear.present ? data.playedYear.value : this.playedYear,
       hoursPlayed:
           data.hoursPlayed.present ? data.hoursPlayed.value : this.hoursPlayed,
       playedPlatformId:
@@ -1477,6 +1518,7 @@ class LibraryEntry extends DataClass implements Insertable<LibraryEntry> {
           ..write('status: $status, ')
           ..write('isCompleted: $isCompleted, ')
           ..write('completedAt: $completedAt, ')
+          ..write('playedYear: $playedYear, ')
           ..write('hoursPlayed: $hoursPlayed, ')
           ..write('playedPlatformId: $playedPlatformId, ')
           ..write('personalRating: $personalRating, ')
@@ -1495,6 +1537,7 @@ class LibraryEntry extends DataClass implements Insertable<LibraryEntry> {
     status,
     isCompleted,
     completedAt,
+    playedYear,
     hoursPlayed,
     playedPlatformId,
     personalRating,
@@ -1512,6 +1555,7 @@ class LibraryEntry extends DataClass implements Insertable<LibraryEntry> {
           other.status == this.status &&
           other.isCompleted == this.isCompleted &&
           other.completedAt == this.completedAt &&
+          other.playedYear == this.playedYear &&
           other.hoursPlayed == this.hoursPlayed &&
           other.playedPlatformId == this.playedPlatformId &&
           other.personalRating == this.personalRating &&
@@ -1527,6 +1571,7 @@ class LibraryEntriesCompanion extends UpdateCompanion<LibraryEntry> {
   final Value<String> status;
   final Value<bool> isCompleted;
   final Value<DateTime?> completedAt;
+  final Value<int?> playedYear;
   final Value<double?> hoursPlayed;
   final Value<String?> playedPlatformId;
   final Value<int?> personalRating;
@@ -1541,6 +1586,7 @@ class LibraryEntriesCompanion extends UpdateCompanion<LibraryEntry> {
     this.status = const Value.absent(),
     this.isCompleted = const Value.absent(),
     this.completedAt = const Value.absent(),
+    this.playedYear = const Value.absent(),
     this.hoursPlayed = const Value.absent(),
     this.playedPlatformId = const Value.absent(),
     this.personalRating = const Value.absent(),
@@ -1556,6 +1602,7 @@ class LibraryEntriesCompanion extends UpdateCompanion<LibraryEntry> {
     required String status,
     this.isCompleted = const Value.absent(),
     this.completedAt = const Value.absent(),
+    this.playedYear = const Value.absent(),
     this.hoursPlayed = const Value.absent(),
     this.playedPlatformId = const Value.absent(),
     this.personalRating = const Value.absent(),
@@ -1575,6 +1622,7 @@ class LibraryEntriesCompanion extends UpdateCompanion<LibraryEntry> {
     Expression<String>? status,
     Expression<bool>? isCompleted,
     Expression<DateTime>? completedAt,
+    Expression<int>? playedYear,
     Expression<double>? hoursPlayed,
     Expression<String>? playedPlatformId,
     Expression<int>? personalRating,
@@ -1590,6 +1638,7 @@ class LibraryEntriesCompanion extends UpdateCompanion<LibraryEntry> {
       if (status != null) 'status': status,
       if (isCompleted != null) 'is_completed': isCompleted,
       if (completedAt != null) 'completed_at': completedAt,
+      if (playedYear != null) 'played_year': playedYear,
       if (hoursPlayed != null) 'hours_played': hoursPlayed,
       if (playedPlatformId != null) 'played_platform_id': playedPlatformId,
       if (personalRating != null) 'personal_rating': personalRating,
@@ -1607,6 +1656,7 @@ class LibraryEntriesCompanion extends UpdateCompanion<LibraryEntry> {
     Value<String>? status,
     Value<bool>? isCompleted,
     Value<DateTime?>? completedAt,
+    Value<int?>? playedYear,
     Value<double?>? hoursPlayed,
     Value<String?>? playedPlatformId,
     Value<int?>? personalRating,
@@ -1622,6 +1672,7 @@ class LibraryEntriesCompanion extends UpdateCompanion<LibraryEntry> {
       status: status ?? this.status,
       isCompleted: isCompleted ?? this.isCompleted,
       completedAt: completedAt ?? this.completedAt,
+      playedYear: playedYear ?? this.playedYear,
       hoursPlayed: hoursPlayed ?? this.hoursPlayed,
       playedPlatformId: playedPlatformId ?? this.playedPlatformId,
       personalRating: personalRating ?? this.personalRating,
@@ -1650,6 +1701,9 @@ class LibraryEntriesCompanion extends UpdateCompanion<LibraryEntry> {
     }
     if (completedAt.present) {
       map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (playedYear.present) {
+      map['played_year'] = Variable<int>(playedYear.value);
     }
     if (hoursPlayed.present) {
       map['hours_played'] = Variable<double>(hoursPlayed.value);
@@ -1686,6 +1740,7 @@ class LibraryEntriesCompanion extends UpdateCompanion<LibraryEntry> {
           ..write('status: $status, ')
           ..write('isCompleted: $isCompleted, ')
           ..write('completedAt: $completedAt, ')
+          ..write('playedYear: $playedYear, ')
           ..write('hoursPlayed: $hoursPlayed, ')
           ..write('playedPlatformId: $playedPlatformId, ')
           ..write('personalRating: $personalRating, ')
@@ -7105,6 +7160,7 @@ typedef $$LibraryEntriesTableCreateCompanionBuilder =
       required String status,
       Value<bool> isCompleted,
       Value<DateTime?> completedAt,
+      Value<int?> playedYear,
       Value<double?> hoursPlayed,
       Value<String?> playedPlatformId,
       Value<int?> personalRating,
@@ -7121,6 +7177,7 @@ typedef $$LibraryEntriesTableUpdateCompanionBuilder =
       Value<String> status,
       Value<bool> isCompleted,
       Value<DateTime?> completedAt,
+      Value<int?> playedYear,
       Value<double?> hoursPlayed,
       Value<String?> playedPlatformId,
       Value<int?> personalRating,
@@ -7255,6 +7312,11 @@ class $$LibraryEntriesTableFilterComposer
 
   ColumnFilters<DateTime> get completedAt => $composableBuilder(
     column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get playedYear => $composableBuilder(
+    column: $table.playedYear,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7415,6 +7477,11 @@ class $$LibraryEntriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get playedYear => $composableBuilder(
+    column: $table.playedYear,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get hoursPlayed => $composableBuilder(
     column: $table.hoursPlayed,
     builder: (column) => ColumnOrderings(column),
@@ -7514,6 +7581,11 @@ class $$LibraryEntriesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get completedAt => $composableBuilder(
     column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get playedYear => $composableBuilder(
+    column: $table.playedYear,
     builder: (column) => column,
   );
 
@@ -7683,6 +7755,7 @@ class $$LibraryEntriesTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<bool> isCompleted = const Value.absent(),
                 Value<DateTime?> completedAt = const Value.absent(),
+                Value<int?> playedYear = const Value.absent(),
                 Value<double?> hoursPlayed = const Value.absent(),
                 Value<String?> playedPlatformId = const Value.absent(),
                 Value<int?> personalRating = const Value.absent(),
@@ -7697,6 +7770,7 @@ class $$LibraryEntriesTableTableManager
                 status: status,
                 isCompleted: isCompleted,
                 completedAt: completedAt,
+                playedYear: playedYear,
                 hoursPlayed: hoursPlayed,
                 playedPlatformId: playedPlatformId,
                 personalRating: personalRating,
@@ -7713,6 +7787,7 @@ class $$LibraryEntriesTableTableManager
                 required String status,
                 Value<bool> isCompleted = const Value.absent(),
                 Value<DateTime?> completedAt = const Value.absent(),
+                Value<int?> playedYear = const Value.absent(),
                 Value<double?> hoursPlayed = const Value.absent(),
                 Value<String?> playedPlatformId = const Value.absent(),
                 Value<int?> personalRating = const Value.absent(),
@@ -7727,6 +7802,7 @@ class $$LibraryEntriesTableTableManager
                 status: status,
                 isCompleted: isCompleted,
                 completedAt: completedAt,
+                playedYear: playedYear,
                 hoursPlayed: hoursPlayed,
                 playedPlatformId: playedPlatformId,
                 personalRating: personalRating,

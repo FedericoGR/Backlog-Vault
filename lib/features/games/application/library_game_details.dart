@@ -52,6 +52,7 @@ class LibraryEntryDetails {
     required this.updatedAt,
     this.isCompleted = false,
     this.completedAt,
+    this.playedYear,
     this.hoursPlayed,
     this.playedPlatformId,
     this.personalRating,
@@ -63,6 +64,7 @@ class LibraryEntryDetails {
   final String gameId;
   final bool isCompleted;
   final DateTime? completedAt;
+  final int? playedYear;
   final double? hoursPlayed;
   final String? playedPlatformId;
   final int? personalRating;

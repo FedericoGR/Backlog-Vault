@@ -36,9 +36,16 @@ part 'parts/game_form_sections.dart';
 
 /// Creates or edits a game while delegating all persistence to its view model.
 class GameFormPage extends ConsumerStatefulWidget {
-  const GameFormPage({this.entryId, super.key});
+  const GameFormPage({
+    this.entryId,
+    this.initialPlayedYear,
+    this.initialYearUnknown = false,
+    super.key,
+  });
 
   final String? entryId;
+  final int? initialPlayedYear;
+  final bool initialYearUnknown;
 
   @override
   ConsumerState<GameFormPage> createState() => _GameFormPageState();
@@ -51,6 +58,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
   final _newPlatformController = TextEditingController();
   final _newGenreController = TextEditingController();
   final _completedHoursController = TextEditingController();
+  final _playedYearController = TextEditingController();
 
   bool _isCompleted = false;
   String? _type;
@@ -67,12 +75,22 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
   ExternalMediaAsset? _pendingCoverAsset;
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.entryId == null && !widget.initialYearUnknown) {
+      _playedYearController.text =
+          (widget.initialPlayedYear ?? DateTime.now().year).toString();
+    }
+  }
+
+  @override
   void dispose() {
     _titleController.dispose();
     _notesController.dispose();
     _newPlatformController.dispose();
     _newGenreController.dispose();
     _completedHoursController.dispose();
+    _playedYearController.dispose();
     super.dispose();
   }
 
@@ -219,6 +237,24 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                                       (value) =>
                                           setState(() => _isCompleted = value),
                                 ),
+                              ),
+                              TextFormField(
+                                key: const ValueKey('played-year-field'),
+                                controller: _playedYearController,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  labelText: context.l10n.logPlayedYear,
+                                  hintText: context.l10n.logUnknownYear,
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return null;
+                                  }
+                                  final year = int.tryParse(value.trim());
+                                  return year == null || year < 1 || year > 9999
+                                      ? context.l10n.logInvalidYear
+                                      : null;
+                                },
                               ),
                               DropdownButtonFormField<int?>(
                                 initialValue: _rating,
@@ -426,6 +462,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
     _selectedGenreIds.addAll(item.genres.map((genre) => genre.id));
     _completedPlatformId = item.entry.playedPlatformId;
     _completedAt = item.entry.completedAt;
+    _playedYearController.text = item.entry.playedYear?.toString() ?? '';
     _completedHoursController.text = item.entry.hoursPlayed?.toString() ?? '';
   }
 
@@ -442,6 +479,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
         type: _type ?? '',
         isCompleted: _isCompleted,
         completedAt: _completedAt,
+        playedYear: int.tryParse(_playedYearController.text.trim()),
         hoursPlayed: double.tryParse(
           _completedHoursController.text.trim().replaceAll(',', '.'),
         ),

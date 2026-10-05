@@ -15,13 +15,11 @@ class AppShell extends StatelessWidget {
     final l10n = context.l10n;
     final location = GoRouterState.of(context).uri.path;
     final selectedIndex =
-        location.startsWith('/home')
-            ? 0
-            : location.startsWith('/statistics')
-            ? 2
+        location.startsWith('/statistics')
+            ? 1
             : location.startsWith('/settings')
-            ? 3
-            : 1;
+            ? 2
+            : 0;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -35,18 +33,12 @@ class AppShell extends StatelessWidget {
                     labelType: NavigationRailLabelType.all,
                     onDestinationSelected: (index) {
                       context.go(switch (index) {
-                        0 => '/home',
-                        1 => '/',
-                        2 => '/statistics',
+                        0 => '/',
+                        1 => '/statistics',
                         _ => '/settings',
                       });
                     },
                     destinations: [
-                      NavigationRailDestination(
-                        icon: const Icon(Icons.home_outlined),
-                        selectedIcon: const Icon(Icons.home),
-                        label: Text(l10n.navigationHome),
-                      ),
                       NavigationRailDestination(
                         icon: const Icon(Icons.library_books_outlined),
                         selectedIcon: const Icon(Icons.library_books),
@@ -78,18 +70,12 @@ class AppShell extends StatelessWidget {
             selectedIndex: selectedIndex,
             onDestinationSelected: (index) {
               context.go(switch (index) {
-                0 => '/home',
-                1 => '/',
-                2 => '/statistics',
+                0 => '/',
+                1 => '/statistics',
                 _ => '/settings',
               });
             },
             destinations: [
-              NavigationDestination(
-                icon: const Icon(Icons.home_outlined),
-                selectedIcon: const Icon(Icons.home),
-                label: l10n.navigationHome,
-              ),
               NavigationDestination(
                 icon: const Icon(Icons.library_books_outlined),
                 selectedIcon: const Icon(Icons.library_books),

@@ -23,6 +23,7 @@ class LibraryGameRow {
     this.hasExternalMetadata = false,
     this.releaseDate,
     this.completedAt,
+    this.playedYear,
     this.hoursPlayed,
     this.playedPlatformId,
     this.playedPlatformName,
@@ -51,6 +52,7 @@ class LibraryGameRow {
   final String? playedPlatformId;
   final DateTime? releaseDate;
   final DateTime? completedAt;
+  final int? playedYear;
   final double? hoursPlayed;
   final int? personalRating;
   final String? personalNotes;

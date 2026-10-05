@@ -32,20 +32,23 @@ import '../domain/saved_library_view.dart';
 import 'widgets/library_catalog_widgets.dart';
 import 'widgets/library_cover_thumbnail.dart';
 
+export 'annual_game_log_page.dart' show GameListPage;
+
 part 'widgets/library_results.dart';
 part 'widgets/library_toolbar.dart';
 part 'widgets/library_filter_dialogs.dart';
 part 'widgets/library_actions.dart';
 
-/// Responsive library workspace backed by the single [LibraryViewModel] state.
-class GameListPage extends ConsumerStatefulWidget {
-  const GameListPage({super.key});
+/// Dormant database-style workspace, retained until the final UI cleanup.
+/// The router uses the annual [GameListPage] exported above.
+class LegacyLibraryPage extends ConsumerStatefulWidget {
+  const LegacyLibraryPage({super.key});
 
   @override
-  ConsumerState<GameListPage> createState() => _GameListPageState();
+  ConsumerState<LegacyLibraryPage> createState() => _GameListPageState();
 }
 
-class _GameListPageState extends ConsumerState<GameListPage> {
+class _GameListPageState extends ConsumerState<LegacyLibraryPage> {
   bool _selectionMode = false;
   bool _filtersVisible = true;
   final _selectedEntryIds = <String>{};

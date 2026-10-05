@@ -80,6 +80,7 @@ class GameRepository {
               status: model.isCompleted ? 'completed' : 'backlog',
               isCompleted: Value(model.isCompleted),
               completedAt: Value(model.completedAt),
+              playedYear: Value(model.playedYear),
               hoursPlayed: Value(model.hoursPlayed),
               playedPlatformId: Value(model.playedPlatformId),
               personalRating: Value(model.personalRating),
@@ -123,6 +124,7 @@ class GameRepository {
         LibraryEntriesCompanion(
           isCompleted: Value(model.isCompleted),
           completedAt: Value(model.completedAt),
+          playedYear: Value(model.playedYear),
           hoursPlayed: Value(model.hoursPlayed),
           playedPlatformId: Value(model.playedPlatformId),
           personalRating: Value(model.personalRating),
@@ -226,6 +228,7 @@ class GameRepository {
             gameId: entry.gameId,
             isCompleted: entry.isCompleted,
             completedAt: entry.completedAt,
+            playedYear: entry.playedYear,
             hoursPlayed: entry.hoursPlayed,
             playedPlatformId: entry.playedPlatformId,
             personalRating: entry.personalRating,

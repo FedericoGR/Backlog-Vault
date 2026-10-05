@@ -48,12 +48,33 @@ class AppDatabase extends _$AppDatabase {
         if (from < 7) {
           await _migratePersonalRecord7(migrator);
         }
+        if (from < 8) {
+          await _migratePlayedYear8(migrator);
+        }
       });
     },
     beforeOpen: (_) async {
       await customStatement('PRAGMA foreign_keys = ON');
     },
   );
+
+  Future<void> _migratePlayedYear8(Migrator migrator) async {
+    await migrator.addColumn(libraryEntries, libraryEntries.playedYear);
+    // Use Drift's date decoding, just as the application does. Release dates,
+    // creation timestamps and undated legacy history cannot establish a year.
+    final datedEntries =
+        await customSelect(
+          'SELECT id, completed_at FROM library_entries WHERE completed_at IS NOT NULL',
+        ).get();
+    for (final entry in datedEntries) {
+      final year = entry.read<DateTime>('completed_at').year;
+      await customStatement(
+        'UPDATE library_entries SET played_year = ? WHERE id = ?',
+        [year, entry.read<String>('id')],
+      );
+    }
+    await _requireForeignKeyIntegrity();
+  }
 
   Future<void> _migratePersonalRecord7(Migrator migrator) async {
     await migrator.addColumn(libraryEntries, libraryEntries.isCompleted);

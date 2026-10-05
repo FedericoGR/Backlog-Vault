@@ -10,6 +10,7 @@ class GameFormModel {
     this.type = 'game',
     this.isCompleted = false,
     this.completedAt,
+    this.playedYear,
     this.hoursPlayed,
     this.playedPlatformId,
     this.personalRating,
@@ -26,6 +27,7 @@ class GameFormModel {
   final String type;
   final bool isCompleted;
   final DateTime? completedAt;
+  final int? playedYear;
   final double? hoursPlayed;
   final String? playedPlatformId;
   final int? personalRating;
@@ -34,6 +36,9 @@ class GameFormModel {
   final List<String> genreIds;
 
   void validate() {
+    if (playedYear != null && (playedYear! < 1 || playedYear! > 9999)) {
+      throw ArgumentError('El año debe estar entre 1 y 9999.');
+    }
     if (hoursPlayed != null && (!hoursPlayed!.isFinite || hoursPlayed! < 0)) {
       throw ArgumentError('Las horas deben ser un número no negativo.');
     }

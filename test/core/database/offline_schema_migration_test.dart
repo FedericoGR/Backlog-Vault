@@ -10,7 +10,7 @@ import '../../fixtures/schema_v5_fixture.dart';
 
 void main() {
   test(
-    'migrates the complete synthetic schema 5 fixture to personal record 7',
+    'migrates the complete synthetic schema 5 fixture to annual log 8',
     () async {
       final directory = await Directory.systemTemp.createTemp(
         'backlog_vault_v5_',
@@ -22,15 +22,15 @@ void main() {
         NativeDatabase(file, setup: createSchemaV5Fixture),
       );
 
-      expect(databaseSchemaVersion, 7);
-      expect(db.schemaVersion, 7);
-      expect(await _userVersion(db), 7);
+      expect(databaseSchemaVersion, 8);
+      expect(db.schemaVersion, 8);
+      expect(await _userVersion(db), 8);
 
       for (final entry in schemaV5FunctionalCounts.entries) {
         expect(
           await _count(db, entry.key),
           entry.value,
-          reason: '${entry.key} count must survive 5→7',
+          reason: '${entry.key} count must survive 5→8',
         );
       }
       for (final table in functionalTableNames) {
@@ -81,7 +81,7 @@ void main() {
       await db.close();
 
       final reopened = AppDatabase(NativeDatabase(file));
-      expect(await _userVersion(reopened), 7);
+      expect(await _userVersion(reopened), 8);
       expect(await _count(reopened, 'games'), 3);
       expect(await _foreignKeyViolations(reopened), isEmpty);
       await reopened.close();

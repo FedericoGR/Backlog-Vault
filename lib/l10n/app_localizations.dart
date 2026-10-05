@@ -113,7 +113,7 @@ abstract class AppLocalizations {
   /// No description provided for @navigationLibrary.
   ///
   /// In en, this message translates to:
-  /// **'Library'**
+  /// **'Games'**
   String get navigationLibrary;
 
   /// No description provided for @navigationStatistics.
@@ -611,13 +611,13 @@ abstract class AppLocalizations {
   /// No description provided for @statusBacklog.
   ///
   /// In en, this message translates to:
-  /// **'Backlog'**
+  /// **'Not finished'**
   String get statusBacklog;
 
   /// No description provided for @statusCompleted.
   ///
   /// In en, this message translates to:
-  /// **'Completed'**
+  /// **'Finished'**
   String get statusCompleted;
 
   /// No description provided for @gameTypeUndefined.
@@ -3321,6 +3321,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter a non-negative number.'**
   String get gameHoursInvalid;
+
+  /// No description provided for @logPreviousYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous year'**
+  String get logPreviousYear;
+
+  /// No description provided for @logNextYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Next year'**
+  String get logNextYear;
+
+  /// No description provided for @logUnknownYear.
+  ///
+  /// In en, this message translates to:
+  /// **'No year'**
+  String get logUnknownYear;
+
+  /// No description provided for @logPlayedYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Played year (optional)'**
+  String get logPlayedYear;
+
+  /// No description provided for @logInvalidYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a year between 1 and 9999.'**
+  String get logInvalidYear;
+
+  /// No description provided for @logAddGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Add game'**
+  String get logAddGame;
+
+  /// No description provided for @logEmptyYear.
+  ///
+  /// In en, this message translates to:
+  /// **'No games here yet'**
+  String get logEmptyYear;
+
+  /// No description provided for @logEmptyYearHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a game or choose another year. Undated records are under No year.'**
+  String get logEmptyYearHint;
+
+  /// No description provided for @logNoSearchResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching games'**
+  String get logNoSearchResults;
+
+  /// No description provided for @logSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another title or choose another year.'**
+  String get logSearchHint;
 }
 
 class _AppLocalizationsDelegate

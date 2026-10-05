@@ -7,7 +7,7 @@ void main() {
     final english = AppLocalizationsEn();
     final spanish = AppLocalizationsEs();
 
-    expect(english.navigationLibrary, 'Library');
+    expect(english.navigationLibrary, 'Games');
     expect(english.settingsTitle, 'Settings');
     expect(english.settingsLibraryData, 'Library data');
     expect(english.settingsExportLibrary, 'Export library');
@@ -18,7 +18,7 @@ void main() {
     expect(english.settingsIgdbSubtitle, contains('renewed locally'));
     expect(english.settingsSteamGridDbSubtitle, contains('cover search'));
 
-    expect(spanish.navigationLibrary, 'Biblioteca');
+    expect(spanish.navigationLibrary, 'Juegos');
     expect(spanish.settingsTitle, 'Ajustes');
     expect(spanish.settingsLibraryData, 'Datos de la biblioteca');
     expect(spanish.settingsExportLibrary, 'Exportar biblioteca');

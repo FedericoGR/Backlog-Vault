@@ -23,7 +23,7 @@ class LibraryCatalogGrid extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 238,
-        mainAxisExtent: 444,
+        mainAxisExtent: 366,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
       ),
@@ -144,15 +144,14 @@ class LibraryCatalogCard extends StatelessWidget {
                     spacing: 6,
                     runSpacing: 6,
                     children: [
-                      BvChip(
-                        label: context.l10n.gameStatusLabel(row.status),
-                        tone: _statusTone(row.status),
-                      ),
                       if (row.personalRating != null)
-                        BvChip(label: formatStarRating(row.personalRating)),
+                        Semantics(
+                          label: context.l10n.gamePersonalRating,
+                          child: Text(formatStarRating(row.personalRating)),
+                        ),
                       if (row.hoursPlayed != null)
-                        BvChip(
-                          label: context.l10n.hoursShort(
+                        Text(
+                          context.l10n.hoursShort(
                             row.hoursPlayed!.toStringAsFixed(1),
                           ),
                         ),
@@ -160,24 +159,19 @@ class LibraryCatalogCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   _MetadataLine(
-                    icon: Icons.sports_esports_outlined,
-                    text: _limitedNames(
-                      row.platforms.map((platform) => platform.name),
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  _MetadataLine(
-                    icon: Icons.category_outlined,
-                    text: _limitedNames(row.genres.map((genre) => genre.name)),
-                  ),
-                  const SizedBox(height: 6),
-                  _MetadataLine(
                     icon:
-                        row.completedAt == null
-                            ? Icons.event_outlined
-                            : Icons.emoji_events_outlined,
-                    text: formatVisibleDate(row.completedAt ?? row.releaseDate),
+                        row.isCompleted
+                            ? Icons.check_circle_outline
+                            : Icons.circle_outlined,
+                    text: context.l10n.gameStatusLabel(row.status),
                   ),
+                  if (row.playedPlatform != null) ...[
+                    const SizedBox(height: 3),
+                    _MetadataLine(
+                      icon: Icons.sports_esports_outlined,
+                      text: row.playedPlatform!.name,
+                    ),
+                  ],
                 ],
               ),
             ),

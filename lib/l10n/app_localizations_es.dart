@@ -15,7 +15,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navigationHome => 'Inicio';
 
   @override
-  String get navigationLibrary => 'Biblioteca';
+  String get navigationLibrary => 'Juegos';
 
   @override
   String get navigationStatistics => 'Estadísticas';
@@ -280,10 +280,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsPending => 'Pendiente';
 
   @override
-  String get statusBacklog => 'Pendiente';
+  String get statusBacklog => 'No terminado';
 
   @override
-  String get statusCompleted => 'Completado';
+  String get statusCompleted => 'Terminado';
 
   @override
   String get gameTypeUndefined => 'Sin definir';
@@ -1813,4 +1813,35 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get gameHoursInvalid => 'Ingresá un número mayor o igual a cero.';
+
+  @override
+  String get logPreviousYear => 'Año anterior';
+
+  @override
+  String get logNextYear => 'Año siguiente';
+
+  @override
+  String get logUnknownYear => 'Sin año';
+
+  @override
+  String get logPlayedYear => 'Año jugado (opcional)';
+
+  @override
+  String get logInvalidYear => 'Ingresá un año entre 1 y 9999.';
+
+  @override
+  String get logAddGame => 'Agregar juego';
+
+  @override
+  String get logEmptyYear => 'Todavía no hay juegos acá';
+
+  @override
+  String get logEmptyYearHint =>
+      'Agregá un juego o elegí otro año. Los registros sin fecha están en Sin año.';
+
+  @override
+  String get logNoSearchResults => 'No encontramos ese juego';
+
+  @override
+  String get logSearchHint => 'Probá con otro título o elegí otro año.';
 }

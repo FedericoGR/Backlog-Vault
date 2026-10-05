@@ -93,12 +93,12 @@ void main() {
     final db = AppDatabase(NativeDatabase(File(path)));
     try {
       final result = await db.select(db.libraryEntries).getSingle();
-      expect(db.schemaVersion, 7);
+      expect(db.schemaVersion, 8);
       expect(
         (await db.customSelect('PRAGMA user_version').getSingle()).read<int>(
           'user_version',
         ),
-        7,
+        8,
       );
       expect(await db.customSelect('PRAGMA foreign_key_check').get(), isEmpty);
       expect(

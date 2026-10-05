@@ -66,6 +66,7 @@ class GameFormViewModel {
       type: request.model.type,
       isCompleted: request.model.isCompleted,
       completedAt: request.model.completedAt,
+      playedYear: request.model.playedYear,
       hoursPlayed: request.model.hoursPlayed,
       playedPlatformId: request.model.playedPlatformId,
       personalRating: request.model.personalRating,

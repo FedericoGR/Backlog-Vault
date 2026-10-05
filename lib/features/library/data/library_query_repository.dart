@@ -212,6 +212,7 @@ class LibraryQueryRepository {
       isCompleted: entry.isCompleted,
       releaseDate: game.releaseDate,
       completedAt: entry.completedAt,
+      playedYear: entry.playedYear,
       hoursPlayed: entry.hoursPlayed,
       playedPlatformId: entry.playedPlatformId,
       personalRating: entry.personalRating,

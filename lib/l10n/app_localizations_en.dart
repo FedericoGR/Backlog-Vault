@@ -15,7 +15,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navigationHome => 'Home';
 
   @override
-  String get navigationLibrary => 'Library';
+  String get navigationLibrary => 'Games';
 
   @override
   String get navigationStatistics => 'Statistics';
@@ -279,10 +279,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsPending => 'Pending';
 
   @override
-  String get statusBacklog => 'Backlog';
+  String get statusBacklog => 'Not finished';
 
   @override
-  String get statusCompleted => 'Completed';
+  String get statusCompleted => 'Finished';
 
   @override
   String get gameTypeUndefined => 'Not specified';
@@ -1808,4 +1808,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gameHoursInvalid => 'Enter a non-negative number.';
+
+  @override
+  String get logPreviousYear => 'Previous year';
+
+  @override
+  String get logNextYear => 'Next year';
+
+  @override
+  String get logUnknownYear => 'No year';
+
+  @override
+  String get logPlayedYear => 'Played year (optional)';
+
+  @override
+  String get logInvalidYear => 'Enter a year between 1 and 9999.';
+
+  @override
+  String get logAddGame => 'Add game';
+
+  @override
+  String get logEmptyYear => 'No games here yet';
+
+  @override
+  String get logEmptyYearHint =>
+      'Add a game or choose another year. Undated records are under No year.';
+
+  @override
+  String get logNoSearchResults => 'No matching games';
+
+  @override
+  String get logSearchHint => 'Try another title or choose another year.';
 }

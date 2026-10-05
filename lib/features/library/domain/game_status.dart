@@ -2,7 +2,8 @@
 enum GameStatus { pending, completed }
 
 extension GameStatusLabels on GameStatus {
-  String get label => this == GameStatus.completed ? 'Completado' : 'Pendiente';
+  String get label =>
+      this == GameStatus.completed ? 'Terminado' : 'No terminado';
 }
 
 /// Backward-compatible interpretation of persisted filters and external values.

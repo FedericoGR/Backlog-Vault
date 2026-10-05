@@ -79,6 +79,7 @@ void main() {
         'Línea uno\nLínea dos — 你好',
       );
       expect(document.libraryEntries.single['isCompleted'], isTrue);
+      expect(document.libraryEntries.single['playedYear'], 2026);
       expect(
         document.libraryEntries.single['completedAt'],
         '2026-02-03T00:00:00.000Z',
@@ -252,6 +253,7 @@ Future<void> _insertComplexLibrary(AppDatabase db) async {
       .write(
         LibraryEntriesCompanion(
           isCompleted: const Value(true),
+          playedYear: const Value(2026),
           completedAt: Value(DateTime.utc(2026, 2, 3)),
           hoursPlayed: const Value(42),
           playedPlatformId: const Value('platform-1'),

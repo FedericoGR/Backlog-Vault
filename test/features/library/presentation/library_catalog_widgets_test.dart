@@ -53,7 +53,7 @@ void main() {
     );
 
     expect(find.text('Hades'), findsOneWidget);
-    expect(find.text('Completado'), findsWidgets);
+    expect(find.text('Terminado'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 

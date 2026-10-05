@@ -1,228 +1,271 @@
+import 'package:backlog_vault/app/routing/app_router.dart';
 import 'package:backlog_vault/app/theme/app_theme.dart';
+import 'package:backlog_vault/core/time/clock.dart';
 import 'package:backlog_vault/features/catalogs/application/catalog_controller.dart';
-import 'package:backlog_vault/features/catalogs/domain/catalog_item.dart';
+import 'package:backlog_vault/features/library/application/annual_game_log.dart';
 import 'package:backlog_vault/features/library/application/library_providers.dart';
+import 'package:backlog_vault/features/library/application/library_view_model.dart';
+import 'package:backlog_vault/features/library/domain/library_filter_state.dart';
 import 'package:backlog_vault/features/library/domain/library_game_row.dart';
 import 'package:backlog_vault/features/library/presentation/game_list_page.dart';
-import 'package:data_table_2/data_table_2.dart';
+import 'package:backlog_vault/features/library/presentation/widgets/library_catalog_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class _MockCatalogController extends Mock implements CatalogController {}
+class _Catalog extends Mock implements CatalogController {}
+
+class _Clock extends Clock {
+  const _Clock();
+  @override
+  DateTime now() => DateTime(2026, 10, 5);
+}
 
 void main() {
-  late _MockCatalogController catalogRepository;
+  late ProviderContainer container;
+  late _Catalog catalog;
 
   setUp(() {
-    catalogRepository = _MockCatalogController();
-    when(
-      () => catalogRepository.seedDefaultsIfEmpty(),
-    ).thenAnswer((_) async {});
+    catalog = _Catalog();
+    when(() => catalog.seedDefaultsIfEmpty()).thenAnswer((_) async {});
+    container = ProviderContainer(
+      overrides: [
+        catalogControllerProvider.overrideWith((ref) => catalog),
+        annualLogClockProvider.overrideWithValue(const _Clock()),
+        libraryRowsProvider.overrideWith((ref) => Stream.value(_rows)),
+        // The annual gallery must not load any saved-view configuration.
+        customLibraryViewsProvider.overrideWith(
+          (ref) => throw StateError('Dormant provider read'),
+        ),
+      ],
+    );
   });
+  tearDown(() => container.dispose());
 
-  testWidgets('library table keeps sidebar visible on wide desktop', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(1440, 900);
+  Future<void> pump(
+    WidgetTester tester, {
+    bool router = false,
+    double width = 1000,
+  }) async {
+    tester.view.physicalSize = Size(width, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-
-    await tester.pumpWidget(_buildLibraryApp(catalogRepository));
+    final config = router ? container.read(appRouterProvider) : null;
+    if (config != null) addTearDown(config.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child:
+            config == null
+                ? MaterialApp(
+                  theme: buildBacklogVaultDarkTheme(),
+                  home: const GameListPage(),
+                )
+                : MaterialApp.router(
+                  theme: buildBacklogVaultDarkTheme(),
+                  routerConfig: config,
+                ),
+      ),
+    );
     await tester.pumpAndSettle();
-
-    expect(find.text('Backlog Vault'), findsOneWidget);
-    expect(find.text('Filtros'), findsWidgets);
-    expect(find.byType(DataTable2), findsOneWidget);
-    expect(find.text('Columnas'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+  }
 
   testWidgets(
-    'library switches between table gallery and list on medium desktop',
+    'app opens Games directly, with only Games Statistics Settings navigation',
     (tester) async {
-      tester.view.physicalSize = const Size(1366, 900);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      await tester.pumpWidget(_buildLibraryApp(catalogRepository));
+      await pump(tester, router: true);
+      expect(
+        container
+            .read(appRouterProvider)
+            .routeInformationProvider
+            .value
+            .uri
+            .path,
+        '/',
+      );
+      expect(find.byType(GameListPage), findsOneWidget);
+      final nav = tester.widget<NavigationRail>(find.byType(NavigationRail));
+      expect(nav.selectedIndex, 0);
+      expect(nav.destinations.map((d) => (d.label as Text).data), [
+        'Juegos',
+        'Estadísticas',
+        'Ajustes',
+      ]);
+      expect(find.text('Inicio'), findsNothing);
+      container.read(appRouterProvider).go('/home');
       await tester.pumpAndSettle();
+      expect(
+        container
+            .read(appRouterProvider)
+            .routeInformationProvider
+            .value
+            .uri
+            .path,
+        '/',
+      );
+    },
+  );
 
-      expect(find.byType(DataTable2), findsOneWidget);
-      expect(find.text('Filtros'), findsNothing);
-
-      await tester.tap(find.text('Galería'));
-      await tester.pumpAndSettle();
+  testWidgets(
+    'gallery defaults to current year and ignores legacy filter/layout state',
+    (tester) async {
+      final legacy = container.read(libraryViewModelProvider).table;
+      container
+          .read(libraryViewModelProvider.notifier)
+          .setTableState(
+            legacy.copyWith(
+              filter: const LibraryFilterState(
+                textQuery: 'invisible legacy filter',
+              ),
+            ),
+          );
+      await pump(tester);
+      expect(container.read(annualGameLogProvider).year, 2026);
       expect(find.byType(GridView), findsOneWidget);
-      expect(find.textContaining('Collector Edition'), findsWidgets);
-
-      await tester.tap(find.text('Lista'));
-      await tester.pumpAndSettle();
-      expect(find.byType(ListView), findsWidgets);
-      expect(find.text('Completado'), findsWidgets);
+      expect(find.text('Current finished'), findsOneWidget);
+      expect(find.text('Current unfinished'), findsOneWidget);
+      expect(find.text('Previous finished'), findsNothing);
+      expect(find.text('Unknown old game'), findsNothing);
+      for (final label in [
+        'Tabla',
+        'Lista',
+        'Galería',
+        'Guardar vista',
+        'Columnas',
+        'Filtros',
+        'Partidas',
+        'Nueva partida',
+        'Jugando',
+        'Pausar',
+        'Retirado',
+      ]) {
+        expect(find.textContaining(label), findsNothing, reason: label);
+      }
+      expect(find.byTooltip('Seleccionar varios'), findsNothing);
+      expect(find.byType(Checkbox), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
 
   testWidgets(
-    'library stays stable on android sized viewport and opens filters modal',
+    'year navigation and search intersect; unknown release-dated records stay accessible',
     (tester) async {
-      tester.view.physicalSize = const Size(390, 844);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      await tester.pumpWidget(_buildLibraryApp(catalogRepository));
+      await pump(tester);
+      await tester.enterText(
+        find.byKey(const ValueKey('annual-search')),
+        'finished',
+      );
+      await tester.tap(find.byKey(const ValueKey('previous-year')));
       await tester.pumpAndSettle();
-
-      expect(find.text('Backlog Vault'), findsOneWidget);
-      expect(find.text('Crear juego'), findsOneWidget);
-      expect(find.byType(DataTable2), findsNothing);
-      expect(find.text('Filtros'), findsNothing);
-
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Filtros (0)'));
+      expect(find.text('Previous finished'), findsOneWidget);
+      expect(find.text('Current finished'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('next-year')));
       await tester.pumpAndSettle();
-
-      expect(find.text('Filtros'), findsWidgets);
-      expect(find.text('Aplicar'), findsOneWidget);
+      expect(find.text('Current finished'), findsOneWidget);
+      expect(find.text('Previous finished'), findsNothing);
+      await tester.enterText(find.byKey(const ValueKey('annual-search')), '');
+      await tester.tap(find.byKey(const ValueKey('selected-year')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sin año').last);
+      await tester.pumpAndSettle();
+      expect(container.read(annualGameLogProvider).year, isNull);
+      expect(find.text('Unknown old game'), findsOneWidget);
+      expect(find.text('Current finished'), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
 
-  testWidgets('library selection bar stays accessible with long titles', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(1366, 900);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets(
+    'cards prioritize rating hours completion and personally played platform',
+    (tester) async {
+      await pump(tester);
+      final card = find.byWidgetPredicate(
+        (w) => w is LibraryCatalogCard && w.row.libraryEntryId == 'current',
+      );
+      Finder textInCard(String text) =>
+          find.descendant(of: card, matching: find.text(text));
+      expect(textInCard('18.0 h'), findsOneWidget);
+      expect(textInCard('⭐⭐⭐⭐'), findsOneWidget);
+      expect(textInCard('Terminado'), findsOneWidget);
+      expect(textInCard('Played Switch'), findsOneWidget);
+      expect(find.text('No terminado'), findsOneWidget);
+      expect(find.text('Catalog PC'), findsNothing);
+      expect(find.text('Catalog RPG'), findsNothing);
+      expect(find.text('01-01-1999'), findsNothing);
+    },
+  );
 
-    await tester.pumpWidget(_buildLibraryApp(catalogRepository));
+  testWidgets(
+    'mobile retains gallery and three destinations without overflow',
+    (tester) async {
+      await pump(tester, router: true, width: 390);
+      final nav = tester.widget<NavigationBar>(find.byType(NavigationBar));
+      expect(nav.destinations, hasLength(3));
+      expect(find.byType(GridView), findsOneWidget);
+      expect(find.text('Agregar juego'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('add carries selected year and card opens game', (tester) async {
+    when(() => catalog.watchPlatforms()).thenAnswer((_) => Stream.value([]));
+    when(() => catalog.watchGenres()).thenAnswer((_) => Stream.value([]));
+    await pump(tester, router: true);
+    await tester.tap(find.byKey(const ValueKey('previous-year')));
     await tester.pumpAndSettle();
-
-    await tester.tap(find.byTooltip('Seleccionar varios'));
+    await tester.tap(find.byKey(const ValueKey('add-game')));
     await tester.pumpAndSettle();
-
-    expect(find.textContaining('seleccionados'), findsOneWidget);
-    expect(find.textContaining('Seleccionar visibles'), findsOneWidget);
-    expect(find.text('Eliminar'), findsWidgets);
-    expect(tester.takeException(), isNull);
+    expect(
+      container
+          .read(appRouterProvider)
+          .routeInformationProvider
+          .value
+          .uri
+          .queryParameters['year'],
+      '2025',
+    );
+    final field = tester.widget<TextFormField>(
+      find.byKey(const ValueKey('played-year-field')),
+    );
+    expect(field.controller!.text, '2025');
+    container.read(appRouterProvider).go('/');
+    await tester.pumpAndSettle();
+    // Do not build Detail here: routing to it is sufficient, its own tests cover rendering.
+    await tester.tap(find.text('Previous finished'));
+    expect(
+      container.read(appRouterProvider).routeInformationProvider.value.uri.path,
+      '/games/previous',
+    );
   });
 }
 
-Widget _buildLibraryApp(_MockCatalogController catalogRepository) {
-  return ProviderScope(
-    overrides: [
-      catalogControllerProvider.overrideWith((ref) => catalogRepository),
-      libraryRowsProvider.overrideWith((ref) => Stream.value(_rows)),
-      platformCatalogProvider.overrideWith((ref) => Stream.value(_platforms)),
-      genreCatalogProvider.overrideWith((ref) => Stream.value(_genres)),
-      customLibraryViewsProvider.overrideWith((ref) => Stream.value(const [])),
-    ],
-    child: MaterialApp(
-      theme: buildBacklogVaultDarkTheme(),
-      home: const GameListPage(),
-    ),
-  );
-}
-
-final _now = DateTime(2026, 6, 18);
-
-final _platforms = [
-  CatalogItem(
-    id: 'pc',
-    name: 'PC',
-    createdAt: _now,
-    updatedAt: _now,
-    deletedAt: null,
-  ),
-  CatalogItem(
-    id: 'switch',
-    name: 'Nintendo Switch',
-    createdAt: _now,
-    updatedAt: _now,
-    deletedAt: null,
-  ),
-  CatalogItem(
-    id: 'ps5',
-    name: 'PS5',
-    createdAt: _now,
-    updatedAt: _now,
-    deletedAt: null,
-  ),
-];
-
-final _genres = [
-  CatalogItem(
-    id: 'jrpg',
-    name: 'JRPG',
-    createdAt: _now,
-    updatedAt: _now,
-    deletedAt: null,
-  ),
-  CatalogItem(
-    id: 'action',
-    name: 'Acción',
-    createdAt: _now,
-    updatedAt: _now,
-    deletedAt: null,
-  ),
-  CatalogItem(
-    id: 'adventure',
-    name: 'Aventura',
-    createdAt: _now,
-    updatedAt: _now,
-    deletedAt: null,
-  ),
-];
-
+LibraryGameRow _row(
+  String id,
+  String title,
+  int? year, {
+  bool completed = false,
+}) => LibraryGameRow(
+  gameId: id,
+  libraryEntryId: id,
+  title: title,
+  playedYear: year,
+  isCompleted: completed,
+  completedAt: completed ? DateTime(2026, 5, 1) : null,
+  hoursPlayed: 18,
+  personalRating: 4,
+  playedPlatformId: 'switch',
+  playedPlatformName: 'Played Switch',
+  releaseDate: DateTime(1999),
+  type: 'game',
+  updatedAt: DateTime(2026),
+  platforms: const [LibraryCatalogItem(id: 'pc', name: 'Catalog PC')],
+  genres: const [LibraryCatalogItem(id: 'rpg', name: 'Catalog RPG')],
+);
 final _rows = [
-  LibraryGameRow(
-    gameId: 'g1',
-    libraryEntryId: 'e1',
-    title:
-        'Final Fantasy XIII-2 Collector Edition With A Very Long Title For Responsive QA',
-    isCompleted: true,
-    personalRating: 3,
-    hoursPlayed: 18.2,
-    releaseDate: DateTime(2011, 12, 15),
-    completedAt: DateTime(2026, 5, 27),
-    type: 'Un jugador',
-    platforms: const [
-      LibraryCatalogItem(id: 'pc', name: 'PC'),
-      LibraryCatalogItem(id: 'ps3', name: 'PS3'),
-      LibraryCatalogItem(id: 'xbox360', name: 'Xbox 360'),
-    ],
-    genres: const [
-      LibraryCatalogItem(id: 'adventure', name: 'Aventura'),
-      LibraryCatalogItem(id: 'fantasy', name: 'Fantasy'),
-      LibraryCatalogItem(id: 'rpg', name: 'RPG'),
-    ],
-
-    updatedAt: _now,
-  ),
-  LibraryGameRow(
-    gameId: 'g2',
-    libraryEntryId: 'e2',
-    title: 'Pragmata',
-    isCompleted: true,
-    personalRating: 4,
-    hoursPlayed: 16.4,
-    releaseDate: DateTime(2026, 4, 17),
-    completedAt: DateTime(2026, 5, 8),
-    type: 'Un jugador',
-    platforms: const [
-      LibraryCatalogItem(id: 'switch2', name: 'Nintendo Switch 2'),
-      LibraryCatalogItem(id: 'pc', name: 'PC'),
-    ],
-    genres: const [
-      LibraryCatalogItem(id: 'action', name: 'Acción'),
-      LibraryCatalogItem(id: 'scifi', name: 'Sci-Fi'),
-    ],
-
-    updatedAt: _now.subtract(const Duration(days: 2)),
-  ),
+  _row('current', 'Current finished', 2026, completed: true),
+  _row('unfinished', 'Current unfinished', 2026),
+  _row('previous', 'Previous finished', 2025, completed: true),
+  _row('unknown', 'Unknown old game', null),
 ];

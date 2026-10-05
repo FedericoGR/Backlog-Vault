@@ -18,6 +18,23 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(NavigationRail), findsOneWidget);
+    expect(
+      tester.widget<NavigationRail>(find.byType(NavigationRail)).selectedIndex,
+      1,
+    );
+    expect(find.text('Inicio'), findsNothing);
+    await tester.tap(find.text('Ajustes'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<NavigationRail>(find.byType(NavigationRail)).selectedIndex,
+      2,
+    );
+    await tester.tap(find.text('Juegos'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<NavigationRail>(find.byType(NavigationRail)).selectedIndex,
+      0,
+    );
     expect(find.byType(NavigationBar), findsNothing);
     expect(find.text('Shell body'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -32,11 +49,22 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      MaterialApp.router(routerConfig: _router(initialLocation: '/home')),
+      MaterialApp.router(routerConfig: _router(initialLocation: '/')),
     );
     await tester.pumpAndSettle();
 
     expect(find.byType(NavigationBar), findsOneWidget);
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      0,
+    );
+    expect(find.text('Inicio'), findsNothing);
+    await tester.tap(find.text('Estadísticas'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      1,
+    );
     expect(find.byType(NavigationRail), findsNothing);
     expect(find.text('Shell body'), findsOneWidget);
     expect(tester.takeException(), isNull);

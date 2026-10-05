@@ -4,8 +4,8 @@ import 'package:test/test.dart';
 void main() {
   test('only pending and completed are product states', () {
     expect(GameStatus.values, [GameStatus.pending, GameStatus.completed]);
-    expect(GameStatus.pending.label, 'Pendiente');
-    expect(GameStatus.completed.label, 'Completado');
+    expect(GameStatus.pending.label, 'No terminado');
+    expect(GameStatus.completed.label, 'Terminado');
   });
   test('legacy saved filters normalize at the compatibility boundary', () {
     for (final legacy in [

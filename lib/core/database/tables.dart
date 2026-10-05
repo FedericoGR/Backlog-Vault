@@ -22,6 +22,9 @@ class LibraryEntries extends Table {
   TextColumn get status => text()();
   BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
   DateTimeColumn get completedAt => dateTime().nullable()();
+
+  /// Year of the personal game log, independent of completion and release.
+  IntColumn get playedYear => integer().nullable()();
   RealColumn get hoursPlayed => real().nullable()();
   TextColumn get playedPlatformId =>
       text().nullable().references(Platforms, #id)();
