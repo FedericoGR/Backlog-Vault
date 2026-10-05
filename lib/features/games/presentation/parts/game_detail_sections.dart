@@ -1,106 +1,150 @@
 part of '../game_detail_page.dart';
 
-class _GameInfoPanel extends ConsumerWidget {
+class _GameInfoPanel extends StatelessWidget {
   const _GameInfoPanel({required this.item});
 
   final LibraryGameDetails item;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+  Widget build(BuildContext context) {
+    final entry = item.entry;
     final status =
-        (item.entry.isCompleted ? GameStatus.completed : GameStatus.pending);
+        entry.isCompleted ? GameStatus.completed : GameStatus.pending;
+    final platform = item.playedPlatform?.name ?? entry.playedPlatformId;
     return BvPanel(
+      key: const ValueKey('detail-personal-record'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  item.game.title,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+          Text(
+            item.game.title,
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          if (entry.personalRating != null) ...[
+            const SizedBox(height: BvSpacing.sm),
+            Semantics(
+              label: context.l10n.ratingStars(entry.personalRating!),
+              child: Text(
+                formatStarRating(entry.personalRating),
+                key: const ValueKey('detail-rating'),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
-              const SizedBox(width: BvSpacing.sm),
-              PopupMenuButton<String>(
-                tooltip: context.l10n.gameActions,
-                onSelected: (value) {
-                  if (value == 'cover') _showMediaDialog(context, ref, item);
-                  if (value == 'metadata') {
-                    _showMetadataDialog(context, ref, item);
-                  }
-                  if (value == 'edit') {
-                    context.go('/games/${item.entry.id}/edit');
-                  }
-                  if (value == 'delete') _confirmDelete(context, ref, item);
-                },
-                itemBuilder:
-                    (context) => [
-                      PopupMenuItem(
-                        value: 'cover',
-                        child: Text(context.l10n.coverChange),
-                      ),
-                      PopupMenuItem(
-                        value: 'metadata',
-                        child: Text(context.l10n.metadataSearch),
-                      ),
-                      PopupMenuItem(
-                        value: 'edit',
-                        child: Text(context.l10n.edit),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Text(context.l10n.delete),
-                      ),
-                    ],
-              ),
+            ),
+          ],
+          const SizedBox(height: BvSpacing.md),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              if (entry.hoursPlayed != null)
+                BvChip(
+                  label: '${entry.hoursPlayed} h',
+                  icon: Icons.timer_outlined,
+                ),
+              if (platform != null)
+                Semantics(
+                  label: context.l10n.gamePlayedPlatform,
+                  child: BvChip(
+                    label: platform,
+                    icon: Icons.sports_esports_outlined,
+                  ),
+                ),
             ],
           ),
-          const SizedBox(height: BvSpacing.xs),
+          const SizedBox(height: BvSpacing.sm),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
               BvChip(
                 label: context.l10n.gameStatusLabel(status),
-                icon: Icons.bookmark_outline,
+                icon:
+                    entry.isCompleted
+                        ? Icons.check_circle_outline
+                        : Icons.circle_outlined,
                 tone: _statusTone(status),
                 selected: true,
               ),
               BvChip(
-                label: formatStarRating(item.entry.personalRating),
-                icon: Icons.star_border,
-              ),
-              if (item.game.releaseDate != null)
-                BvChip(
-                  label: formatVisibleDate(item.game.releaseDate),
-                  icon: Icons.event_outlined,
-                ),
-              BvChip(
-                label: context.l10n.displayGameType(item.game.type),
-                icon: Icons.extension_outlined,
+                label:
+                    entry.playedYear?.toString() ?? context.l10n.logUnknownYear,
+                icon: Icons.calendar_today_outlined,
               ),
             ],
           ),
-          const SizedBox(height: BvSpacing.md),
-          _MetadataWrap(
-            title: context.l10n.libraryPlatforms,
-            icon: Icons.sports_esports_outlined,
-            values: item.platforms.map((platform) => platform.name),
-          ),
-          const SizedBox(height: BvSpacing.sm),
-          _MetadataWrap(
-            title: context.l10n.libraryGenres,
-            icon: Icons.category_outlined,
-            values: item.genres.map((genre) => genre.name),
-          ),
+          if (entry.isCompleted && entry.completedAt != null) ...[
+            const SizedBox(height: BvSpacing.sm),
+            Text(
+              '${context.l10n.gameCompletionDate}: ${formatVisibleDate(entry.completedAt)}',
+              key: const ValueKey('detail-completion-date'),
+            ),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+class _GameCatalogPanel extends ConsumerWidget {
+  const _GameCatalogPanel({required this.item});
+
+  final LibraryGameDetails item;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return BvPanel(
+      child: Material(
+        type: MaterialType.transparency,
+        child: ExpansionTile(
+          key: const ValueKey('detail-game-information'),
+          title: Text(context.l10n.gameInformation),
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if (item.game.releaseDate != null)
+                    BvChip(
+                      label:
+                          '${context.l10n.gameReleaseDate}: ${formatVisibleDate(item.game.releaseDate)}',
+                      icon: Icons.event_outlined,
+                    ),
+                  BvChip(
+                    label: context.l10n.displayGameType(item.game.type),
+                    icon: Icons.extension_outlined,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: BvSpacing.md),
+            _MetadataWrap(
+              title: context.l10n.libraryPlatforms,
+              icon: Icons.sports_esports_outlined,
+              values: item.platforms.map((platform) => platform.name),
+            ),
+            const SizedBox(height: BvSpacing.md),
+            _MetadataWrap(
+              title: context.l10n.libraryGenres,
+              icon: Icons.category_outlined,
+              values: item.genres.map((genre) => genre.name),
+            ),
+            const SizedBox(height: BvSpacing.md),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                onPressed: () => _showMetadataDialog(context, ref, item),
+                icon: const Icon(Icons.travel_explore_outlined),
+                label: Text(context.l10n.metadataSearch),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -154,69 +198,6 @@ class _GameCoverPanel extends ConsumerWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _GameProgressSection extends StatelessWidget {
-  const _GameProgressSection({required this.item});
-
-  final LibraryGameDetails item;
-
-  @override
-  Widget build(BuildContext context) {
-    return BvPanel(
-      dense: true,
-      child: BvSection(
-        title: context.l10n.gameSummaryProgress,
-        padding: EdgeInsets.zero,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                BvStatCard(
-                  label: context.l10n.libraryHours,
-                  value:
-                      item.entry.hoursPlayed == null
-                          ? '-'
-                          : item.entry.hoursPlayed!.toStringAsFixed(1),
-                  icon: Icons.timer_outlined,
-                ),
-                BvStatCard(
-                  label: context.l10n.gameLastCompleted,
-                  value: formatVisibleDate(item.entry.completedAt),
-                  icon: Icons.emoji_events_outlined,
-                ),
-                BvStatCard(
-                  label: context.l10n.libraryStatus,
-                  value: context.l10n.gameStatusLabel(
-                    (item.entry.isCompleted
-                        ? GameStatus.completed
-                        : GameStatus.pending),
-                  ),
-                  icon: Icons.flag_outlined,
-                ),
-                BvStatCard(
-                  label: context.l10n.gamePlayedPlatform,
-                  value:
-                      item.playedPlatform?.name ??
-                      item.entry.playedPlatformId ??
-                      '-',
-                  icon: Icons.sports_esports_outlined,
-                ),
-                BvStatCard(
-                  label: context.l10n.libraryGenres,
-                  value: _names(item.genres.map((genre) => genre.name)),
-                  icon: Icons.category_outlined,
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -293,6 +274,3 @@ class _NotesSection extends StatelessWidget {
 
 BvChipTone _statusTone(GameStatus status) =>
     status == GameStatus.completed ? BvChipTone.primary : BvChipTone.neutral;
-
-String _names(Iterable<String> values) =>
-    values.isEmpty ? '-' : values.join(', ');

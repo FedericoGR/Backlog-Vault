@@ -30,6 +30,7 @@ import '../../metadata/domain/metadata_search_candidate.dart';
 import '../application/game_form_model.dart';
 import '../application/game_view_models.dart';
 import '../application/library_game_details.dart';
+import 'widgets/personal_rating_field.dart';
 
 part 'parts/game_form_metadata.dart';
 part 'parts/game_form_sections.dart';
@@ -123,13 +124,14 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
               return StreamBuilder(
                 stream: genres,
                 builder: (context, genreSnapshot) {
-                  final platformItems = _dedupePlatforms(
-                    platformSnapshot.data ?? [],
-                  );
-                  final genreItems = _dedupeGenres(genreSnapshot.data ?? []);
-                  if (platformSnapshot.hasData && genreSnapshot.hasData) {
-                    _sanitizeSelections(platformItems, genreItems);
-                  }
+                  final platformItems = _dedupePlatforms([
+                    ...platformSnapshot.data ?? [],
+                    ...item?.platforms ?? [],
+                  ]);
+                  final genreItems = _dedupeGenres([
+                    ...genreSnapshot.data ?? [],
+                    ...item?.genres ?? [],
+                  ]);
                   final platformMap = {
                     for (final platform in platformItems)
                       platform.id: platform.name,
@@ -149,8 +151,8 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                         final padding =
                             compact ? BvSpacing.pageCompact : BvSpacing.page;
                         final identitySection = _FormSection(
-                          title: context.l10n.gameIdentity,
-                          subtitle: context.l10n.gameIdentitySubtitle,
+                          title: context.l10n.gameName,
+                          subtitle: context.l10n.gameIdentifyHint,
                           child: _FormFieldGrid(
                             twoColumns: twoColumns,
                             children: [
@@ -180,92 +182,85 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                                       () => _pendingCoverAsset = null,
                                     ),
                               ),
-                              _DateField(
-                                label: context.l10n.gameReleaseDate,
-                                value: _releaseDate,
-                                onChanged:
-                                    (value) =>
-                                        setState(() => _releaseDate = value),
-                              ),
-                              DropdownButtonFormField<String?>(
-                                initialValue: _type,
-                                decoration: InputDecoration(
-                                  labelText: context.l10n.libraryType,
-                                ),
-                                items: [
-                                  DropdownMenuItem(
-                                    value: null,
-                                    child: Text(context.l10n.gameTypeUndefined),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'Un jugador',
-                                    child: Text(
-                                      context.l10n.gameTypeSinglePlayer,
-                                    ),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'Multijugador',
-                                    child: Text(
-                                      context.l10n.gameTypeMultiplayer,
-                                    ),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'Cooperativo',
-                                    child: Text(
-                                      context.l10n.gameTypeCooperative,
-                                    ),
-                                  ),
-                                ],
-                                onChanged:
-                                    (value) => setState(() => _type = value),
-                              ),
                             ],
                           ),
                         );
                         final personalSection = _FormSection(
-                          title: context.l10n.gamePersonalLibrary,
-                          subtitle: context.l10n.gamePersonalLibrarySubtitle,
-                          child: _FormFieldGrid(
-                            twoColumns: twoColumns,
+                          title: context.l10n.gameMyRecord,
+                          subtitle: context.l10n.gameMyRecordHint,
+                          child: Column(
                             children: [
-                              Material(
-                                type: MaterialType.transparency,
-                                child: SwitchListTile(
-                                  title: Text(context.l10n.statusCompleted),
-                                  value: _isCompleted,
-                                  onChanged:
-                                      (value) =>
-                                          setState(() => _isCompleted = value),
-                                ),
+                              _FormFieldGrid(
+                                twoColumns: twoColumns,
+                                children: [
+                                  Material(
+                                    type: MaterialType.transparency,
+                                    child: SwitchListTile(
+                                      title: Text(context.l10n.statusCompleted),
+                                      value: _isCompleted,
+                                      onChanged:
+                                          (value) => setState(
+                                            () => _isCompleted = value,
+                                          ),
+                                    ),
+                                  ),
+                                  TextFormField(
+                                    key: const ValueKey('played-year-field'),
+                                    controller: _playedYearController,
+                                    keyboardType: TextInputType.number,
+                                    decoration: InputDecoration(
+                                      labelText: context.l10n.logPlayedYear,
+                                      hintText: context.l10n.logUnknownYear,
+                                    ),
+                                    validator: (value) {
+                                      if (value == null ||
+                                          value.trim().isEmpty) {
+                                        return null;
+                                      }
+                                      final year = int.tryParse(value.trim());
+                                      return year == null ||
+                                              year < 1 ||
+                                              year > 9999
+                                          ? context.l10n.logInvalidYear
+                                          : null;
+                                    },
+                                  ),
+                                ],
                               ),
-                              TextFormField(
-                                key: const ValueKey('played-year-field'),
-                                controller: _playedYearController,
-                                keyboardType: TextInputType.number,
-                                decoration: InputDecoration(
-                                  labelText: context.l10n.logPlayedYear,
-                                  hintText: context.l10n.logUnknownYear,
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return null;
-                                  }
-                                  final year = int.tryParse(value.trim());
-                                  return year == null || year < 1 || year > 9999
-                                      ? context.l10n.logInvalidYear
-                                      : null;
+                              const SizedBox(height: BvSpacing.md),
+                              _PersonalTrackingFields(
+                                isCompleted: _isCompleted,
+                                completedAt: _completedAt,
+                                hoursController: _completedHoursController,
+                                platformId: _completedPlatformId,
+                                platforms: {
+                                  ...platformMap,
+                                  if (_completedPlatformId != null &&
+                                      !platformMap.containsKey(
+                                        _completedPlatformId,
+                                      ))
+                                    _completedPlatformId!:
+                                        item?.playedPlatform?.name ??
+                                        _completedPlatformId!,
                                 },
+                                twoColumns: twoColumns,
+                                onDateChanged:
+                                    (value) =>
+                                        setState(() => _completedAt = value),
+                                onPlatformChanged:
+                                    (value) => setState(
+                                      () => _completedPlatformId = value,
+                                    ),
                               ),
-                              DropdownButtonFormField<int?>(
-                                initialValue: _rating,
-                                decoration: InputDecoration(
-                                  labelText: context.l10n.gamePersonalRating,
-                                ),
-                                items: _ratingItems(context),
+                              const SizedBox(height: BvSpacing.md),
+                              PersonalRatingField(
+                                value: _rating,
                                 onChanged:
                                     (value) => setState(() => _rating = value),
                               ),
+                              const SizedBox(height: BvSpacing.md),
                               TextFormField(
+                                key: const ValueKey('notes-field'),
                                 controller: _notesController,
                                 minLines: 4,
                                 maxLines: 7,
@@ -277,152 +272,158 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                             ],
                           ),
                         );
-                        final catalogSection = _FormSection(
-                          title: context.l10n.gameCatalogs,
-                          subtitle: context.l10n.gameCatalogsSubtitle,
-                          child: Column(
-                            children: [
-                              _CatalogSelector(
-                                title: context.l10n.libraryPlatforms,
-                                addLabel: context.l10n.gameAddPlatform,
-                                controller: _newPlatformController,
-                                items: platformMap,
-                                selectedIds: _selectedPlatformIds,
-                                pendingNames: _pendingPlatformNames,
-                                onToggle: (id, selected) {
-                                  setState(() {
-                                    if (selected) {
-                                      _selectedPlatformIds.add(id);
-                                      _completedPlatformId ??= id;
-                                    } else {
-                                      _selectedPlatformIds.remove(id);
-                                    }
-                                  });
-                                },
-                                onCreate: () async {
-                                  final id = await ref
-                                      .read(catalogControllerProvider)
-                                      .createPlatform(
-                                        _newPlatformController.text,
-                                      );
-                                  setState(() {
-                                    _selectedPlatformIds.add(id);
-                                    _completedPlatformId ??= id;
-                                    _newPlatformController.clear();
-                                  });
-                                },
-                                onRemovePending:
-                                    (name) => setState(
-                                      () => _pendingPlatformNames.remove(name),
+                        final catalogSection = BvPanel(
+                          child: Material(
+                            type: MaterialType.transparency,
+                            child: ExpansionTile(
+                              key: const ValueKey('game-information'),
+                              title: Text(context.l10n.gameInformation),
+                              subtitle: Text(context.l10n.gameInformationHint),
+                              children: [
+                                _FormFieldGrid(
+                                  twoColumns: twoColumns,
+                                  children: [
+                                    _DateField(
+                                      label: context.l10n.gameReleaseDate,
+                                      value: _releaseDate,
+                                      onChanged:
+                                          (value) => setState(
+                                            () => _releaseDate = value,
+                                          ),
                                     ),
-                              ),
-                              const SizedBox(height: BvSpacing.lg),
-                              _CatalogSelector(
-                                title: context.l10n.libraryGenres,
-                                addLabel: context.l10n.gameAddGenre,
-                                controller: _newGenreController,
-                                items: genreMap,
-                                selectedIds: _selectedGenreIds,
-                                pendingNames: _pendingGenreNames,
-                                onToggle: (id, selected) {
-                                  setState(() {
-                                    if (selected) {
-                                      _selectedGenreIds.add(id);
-                                    } else {
-                                      _selectedGenreIds.remove(id);
-                                    }
-                                  });
-                                },
-                                onCreate: () async {
-                                  final id = await ref
-                                      .read(catalogControllerProvider)
-                                      .createGenre(_newGenreController.text);
-                                  setState(() {
-                                    _selectedGenreIds.add(id);
-                                    _newGenreController.clear();
-                                  });
-                                },
-                                onRemovePending:
-                                    (name) => setState(
-                                      () => _pendingGenreNames.remove(name),
+                                    DropdownButtonFormField<String?>(
+                                      initialValue: _type,
+                                      decoration: InputDecoration(
+                                        labelText: context.l10n.libraryType,
+                                      ),
+                                      items: [
+                                        DropdownMenuItem(
+                                          value: null,
+                                          child: Text(
+                                            context.l10n.gameTypeUndefined,
+                                          ),
+                                        ),
+                                        if (_type != null &&
+                                            ![
+                                              'Un jugador',
+                                              'Multijugador',
+                                              'Cooperativo',
+                                            ].contains(_type))
+                                          DropdownMenuItem(
+                                            value: _type,
+                                            child: Text(
+                                              context.l10n.displayGameType(
+                                                _type!,
+                                              ),
+                                            ),
+                                          ),
+                                        DropdownMenuItem(
+                                          value: 'Un jugador',
+                                          child: Text(
+                                            context.l10n.gameTypeSinglePlayer,
+                                          ),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'Multijugador',
+                                          child: Text(
+                                            context.l10n.gameTypeMultiplayer,
+                                          ),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'Cooperativo',
+                                          child: Text(
+                                            context.l10n.gameTypeCooperative,
+                                          ),
+                                        ),
+                                      ],
+                                      onChanged:
+                                          (value) =>
+                                              setState(() => _type = value),
                                     ),
-                              ),
-                            ],
-                          ),
-                        );
-                        final completionSection = _FormSection(
-                          title: context.l10n.gameCompletionSection,
-                          subtitle: context.l10n.gameCompletionSectionSubtitle,
-                          child: _PersonalTrackingFields(
-                            completedAt: _completedAt,
-                            hoursController: _completedHoursController,
-                            platformId: _completedPlatformId,
-                            platforms: {
-                              ...platformMap,
-                              if (_completedPlatformId != null &&
-                                  !platformMap.containsKey(
-                                    _completedPlatformId,
-                                  ))
-                                _completedPlatformId!:
-                                    item?.playedPlatform?.name ??
-                                    _completedPlatformId!,
-                            },
-                            twoColumns: twoColumns,
-                            onDateChanged:
-                                (value) => setState(() => _completedAt = value),
-                            onPlatformChanged:
-                                (value) => setState(
-                                  () => _completedPlatformId = value,
+                                  ],
                                 ),
+                                const SizedBox(height: BvSpacing.lg),
+                                _CatalogSelector(
+                                  title: context.l10n.libraryPlatforms,
+                                  addLabel: context.l10n.gameAddPlatform,
+                                  controller: _newPlatformController,
+                                  items: platformMap,
+                                  selectedIds: _selectedPlatformIds,
+                                  pendingNames: _pendingPlatformNames,
+                                  onToggle: (id, selected) {
+                                    setState(() {
+                                      if (selected) {
+                                        _selectedPlatformIds.add(id);
+                                      } else {
+                                        _selectedPlatformIds.remove(id);
+                                      }
+                                    });
+                                  },
+                                  onCreate: () async {
+                                    final id = await ref
+                                        .read(catalogControllerProvider)
+                                        .createPlatform(
+                                          _newPlatformController.text,
+                                        );
+                                    setState(() {
+                                      _selectedPlatformIds.add(id);
+                                      _newPlatformController.clear();
+                                    });
+                                  },
+                                  onRemovePending:
+                                      (name) => setState(
+                                        () =>
+                                            _pendingPlatformNames.remove(name),
+                                      ),
+                                ),
+                                const SizedBox(height: BvSpacing.lg),
+                                _CatalogSelector(
+                                  title: context.l10n.libraryGenres,
+                                  addLabel: context.l10n.gameAddGenre,
+                                  controller: _newGenreController,
+                                  items: genreMap,
+                                  selectedIds: _selectedGenreIds,
+                                  pendingNames: _pendingGenreNames,
+                                  onToggle: (id, selected) {
+                                    setState(() {
+                                      if (selected) {
+                                        _selectedGenreIds.add(id);
+                                      } else {
+                                        _selectedGenreIds.remove(id);
+                                      }
+                                    });
+                                  },
+                                  onCreate: () async {
+                                    final id = await ref
+                                        .read(catalogControllerProvider)
+                                        .createGenre(_newGenreController.text);
+                                    setState(() {
+                                      _selectedGenreIds.add(id);
+                                      _newGenreController.clear();
+                                    });
+                                  },
+                                  onRemovePending:
+                                      (name) => setState(
+                                        () => _pendingGenreNames.remove(name),
+                                      ),
+                                ),
+                              ],
+                            ),
                           ),
                         );
-
                         return ListView(
                           padding: padding,
                           children: [
-                            if (twoColumns)
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        identitySection,
-                                        const SizedBox(height: BvSpacing.md),
-                                        personalSection,
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: BvSpacing.md),
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        catalogSection,
-                                        ...[
-                                          const SizedBox(height: BvSpacing.md),
-                                          completionSection,
-                                        ],
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              )
-                            else ...[
-                              identitySection,
-                              const SizedBox(height: BvSpacing.md),
-                              personalSection,
-                              const SizedBox(height: BvSpacing.md),
-                              catalogSection,
-                              ...[
-                                const SizedBox(height: BvSpacing.md),
-                                completionSection,
-                              ],
-                            ],
+                            identitySection,
+                            const SizedBox(height: BvSpacing.md),
+                            personalSection,
                             const SizedBox(height: BvSpacing.lg),
                             _SaveActionBar(
                               saving: _saving,
                               onSave: () => _save(item),
                             ),
+                            const SizedBox(height: BvSpacing.md),
+                            catalogSection,
                             const SizedBox(height: 80),
                           ],
                         );
@@ -454,7 +455,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
     _loadedExisting = true;
     _titleController.text = item.game.title;
     _releaseDate = item.game.releaseDate;
-    _type = _gameTypeForForm(item.game.type);
+    _type = item.game.type.isEmpty ? null : item.game.type;
     _isCompleted = item.entry.isCompleted;
     _rating = item.entry.personalRating;
     _notesController.text = item.entry.personalNotes ?? '';
@@ -475,6 +476,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
         entryId: existing?.entry.id,
         gameId: existing?.game.id,
         title: _titleController.text,
+        sortTitle: existing?.game.sortTitle,
         releaseDate: _releaseDate,
         type: _type ?? '',
         isCompleted: _isCompleted,
@@ -549,7 +551,7 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
         _releaseDate = details.releaseDate;
       }
       if (result.selectedFields.contains(MetadataField.type)) {
-        _type = _gameTypeForForm(details.type) ?? _type;
+        _type = details.type.isEmpty ? _type : details.type;
       }
       if (result.selectedFields.contains(MetadataField.platforms)) {
         _applyCatalogPrefill(
@@ -595,32 +597,6 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
     }
   }
 
-  void _sanitizeSelections(
-    List<CatalogItem> platforms,
-    List<CatalogItem> genres,
-  ) {
-    final platformIds = platforms.map((platform) => platform.id).toSet();
-    final genreIds = genres.map((genre) => genre.id).toSet();
-    final nextPlatformIds =
-        _selectedPlatformIds.where(platformIds.contains).toSet();
-    final nextGenreIds = _selectedGenreIds.where(genreIds.contains).toSet();
-    if (nextPlatformIds.length == _selectedPlatformIds.length &&
-        nextGenreIds.length == _selectedGenreIds.length) {
-      return;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      setState(() {
-        _selectedPlatformIds
-          ..clear()
-          ..addAll(nextPlatformIds);
-        _selectedGenreIds
-          ..clear()
-          ..addAll(nextGenreIds);
-      });
-    });
-  }
-
   List<CatalogItem> _dedupePlatforms(List<CatalogItem> values) {
     final seen = <String>{};
     final result = <CatalogItem>[];
@@ -642,14 +618,4 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
 
 String _normalizeName(String value) {
   return value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
-}
-
-String? _gameTypeForForm(String value) {
-  final normalized = value.trim().toLowerCase();
-  return switch (normalized) {
-    'un jugador' || 'single player' || 'single_player' => 'Un jugador',
-    'multijugador' || 'multiplayer' => 'Multijugador',
-    'cooperativo' || 'co-op' || 'coop' || 'cooperative' => 'Cooperativo',
-    _ => null,
-  };
 }

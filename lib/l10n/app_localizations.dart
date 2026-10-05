@@ -1734,6 +1734,54 @@ abstract class AppLocalizations {
   /// **'Release date'**
   String get gameReleaseDate;
 
+  /// No description provided for @gameMyRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'My record'**
+  String get gameMyRecord;
+
+  /// No description provided for @gameMyRecordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your experience with the game. All fields are optional.'**
+  String get gameMyRecordHint;
+
+  /// No description provided for @gameInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Game information'**
+  String get gameInformation;
+
+  /// No description provided for @gameInformationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Release date, type, genres, and catalog platforms.'**
+  String get gameInformationHint;
+
+  /// No description provided for @gameFindGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Find game'**
+  String get gameFindGame;
+
+  /// No description provided for @gameIdentifyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a game or enter its name to add it manually.'**
+  String get gameIdentifyHint;
+
+  /// No description provided for @gameFinishDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion date (optional)'**
+  String get gameFinishDate;
+
+  /// No description provided for @gameRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get gameRating;
+
   /// No description provided for @gamePersonalLibrary.
   ///
   /// In en, this message translates to:

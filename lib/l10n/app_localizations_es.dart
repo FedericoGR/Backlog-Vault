@@ -911,6 +911,33 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gameReleaseDate => 'Fecha de salida';
 
   @override
+  String get gameMyRecord => 'Mi registro';
+
+  @override
+  String get gameMyRecordHint =>
+      'Tu experiencia con el juego. Todos los datos son opcionales.';
+
+  @override
+  String get gameInformation => 'Información del juego';
+
+  @override
+  String get gameInformationHint =>
+      'Lanzamiento, tipo, géneros y plataformas del catálogo.';
+
+  @override
+  String get gameFindGame => 'Buscar juego';
+
+  @override
+  String get gameIdentifyHint =>
+      'Buscá un juego o escribí su nombre para agregarlo manualmente.';
+
+  @override
+  String get gameFinishDate => 'Fecha de finalización (opcional)';
+
+  @override
+  String get gameRating => 'Puntaje';
+
+  @override
   String get gamePersonalLibrary => 'Biblioteca personal';
 
   @override

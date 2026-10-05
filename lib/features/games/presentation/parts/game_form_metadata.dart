@@ -331,6 +331,8 @@ class _GameFormMetadataDialogState
 
   Set<MetadataField> _defaultSelectedFields(ExternalGameDetails details) {
     return {
+      if (widget.currentTitle.trim().isEmpty && details.title.trim().isNotEmpty)
+        MetadataField.title,
       if (widget.currentReleaseDate == null && details.releaseDate != null)
         MetadataField.releaseDate,
       if (widget.currentType.trim().isEmpty && details.type.trim().isNotEmpty)

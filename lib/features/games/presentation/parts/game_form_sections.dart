@@ -84,7 +84,7 @@ class _MetadataSearchButton extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: saving ? null : onSearch,
             icon: const Icon(Icons.auto_fix_high_outlined),
-            label: Text(context.l10n.gameSearchMetadata),
+            label: Text(context.l10n.gameFindGame),
           ),
           if (pendingCoverAsset != null) ...[
             const SizedBox(height: BvSpacing.xs),
@@ -134,18 +134,6 @@ String _joinNames(Iterable<String> values) {
   final list = values.where((value) => value.trim().isNotEmpty).toList();
   if (list.isEmpty) return '-';
   return list.join(', ');
-}
-
-List<DropdownMenuItem<int?>> _ratingItems(BuildContext context) {
-  return [
-    DropdownMenuItem(value: null, child: Text(context.l10n.ratingNone)),
-    DropdownMenuItem(value: 1, child: Text(context.l10n.ratingOneStar)),
-    for (var rating = 2; rating <= 5; rating++)
-      DropdownMenuItem(
-        value: rating,
-        child: Text(context.l10n.ratingStars(rating)),
-      ),
-  ];
 }
 
 class _DateField extends StatelessWidget {
@@ -313,6 +301,7 @@ class _CatalogSelector extends StatelessWidget {
 
 class _PersonalTrackingFields extends StatelessWidget {
   const _PersonalTrackingFields({
+    required this.isCompleted,
     required this.completedAt,
     required this.hoursController,
     required this.platformId,
@@ -322,6 +311,7 @@ class _PersonalTrackingFields extends StatelessWidget {
     required this.onPlatformChanged,
   });
 
+  final bool isCompleted;
   final DateTime? completedAt;
   final TextEditingController hoursController;
   final String? platformId;
@@ -339,12 +329,14 @@ class _PersonalTrackingFields extends StatelessWidget {
     return _FormFieldGrid(
       twoColumns: twoColumns,
       children: [
-        _DateField(
-          label: context.l10n.gameCompletionDate,
-          value: completedAt,
-          onChanged: onDateChanged,
-        ),
+        if (isCompleted)
+          _DateField(
+            label: context.l10n.gameFinishDate,
+            value: completedAt,
+            onChanged: onDateChanged,
+          ),
         TextFormField(
+          key: const ValueKey('hours-field'),
           controller: hoursController,
           validator: (value) {
             if (value == null || value.trim().isEmpty) return null;
@@ -357,6 +349,7 @@ class _PersonalTrackingFields extends StatelessWidget {
           decoration: InputDecoration(labelText: context.l10n.gameHoursPlayed),
         ),
         DropdownButtonFormField<String?>(
+          key: const ValueKey('played-platform-field'),
           isExpanded: true,
           initialValue: safePlatformId,
           decoration: InputDecoration(

@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:backlog_vault/features/games/presentation/widgets/personal_rating_field.dart';
 import 'package:backlog_vault/features/games/application/game_form_model.dart';
 import 'package:backlog_vault/app/theme/app_theme.dart';
 import 'package:backlog_vault/features/catalogs/application/catalog_controller.dart';
@@ -10,49 +11,56 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:backlog_vault/features/metadata/application/metadata_providers.dart';
+import 'package:backlog_vault/features/metadata/domain/metadata_provider.dart';
+import 'package:backlog_vault/features/metadata/domain/metadata_search_candidate.dart';
+import 'package:backlog_vault/features/metadata/domain/external_game_details.dart';
 
 class _MockCatalogController extends Mock implements CatalogController {}
 
 class _MockGameRepository extends Mock implements GameRepository {}
 
+class _MockMetadataProvider extends Mock implements MetadataProvider {}
+
 void main() {
-  late _MockCatalogController catalogRepository;
-  late _MockGameRepository gameRepository;
-
+  late _MockCatalogController catalogs;
+  late _MockGameRepository games;
   setUpAll(() => registerFallbackValue(const GameFormModel(title: 'fallback')));
-
   setUp(() {
-    catalogRepository = _MockCatalogController();
-    gameRepository = _MockGameRepository();
+    catalogs = _MockCatalogController();
+    games = _MockGameRepository();
     when(
-      () => catalogRepository.watchPlatforms(),
+      () => catalogs.watchPlatforms(),
     ).thenAnswer((_) => Stream.value(_platforms));
-    when(
-      () => catalogRepository.watchGenres(),
-    ).thenAnswer((_) => Stream.value(_genres));
+    when(() => catalogs.watchGenres()).thenAnswer((_) => Stream.value(_genres));
+    when(() => games.save(any())).thenAnswer((_) async => 'entry-1');
   });
 
-  testWidgets('completed edit preloads and saves exactly one personal record', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(1500, 2000);
+  Future<void> open(
+    WidgetTester tester, {
+    bool? completed,
+    MetadataProvider? metadata,
+    Size size = const Size(1500, 1800),
+  }) async {
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    when(
-      () => gameRepository.getByEntryId('entry-1'),
-    ).thenAnswer((_) async => _details());
-    // Persisted PS4 remains selected even when removed from the active catalog.
-    when(
-      () => catalogRepository.watchPlatforms(),
-    ).thenAnswer((_) => Stream.value([_platforms.first]));
-    when(() => gameRepository.save(any())).thenAnswer((_) async => 'entry-1');
+    if (completed != null) {
+      when(
+        () => games.getByEntryId('entry-1'),
+      ).thenAnswer((_) async => _details(completed: completed));
+    }
     final router = GoRouter(
-      initialLocation: '/games/entry-1/edit',
+      initialLocation: '/form',
       routes: [
         GoRoute(
-          path: '/games/:id/edit',
-          builder: (_, _) => const GameFormPage(entryId: 'entry-1'),
+          path: '/form',
+          builder:
+              (_, _) => GameFormPage(
+                entryId: completed == null ? null : 'entry-1',
+                initialPlayedYear: 2026,
+              ),
         ),
         GoRoute(
           path: '/games/:id',
@@ -64,8 +72,10 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          catalogControllerProvider.overrideWith((ref) => catalogRepository),
-          gameRepositoryProvider.overrideWith((ref) => gameRepository),
+          catalogControllerProvider.overrideWith((ref) => catalogs),
+          gameRepositoryProvider.overrideWith((ref) => games),
+          if (metadata != null)
+            metadataProviderListProvider.overrideWithValue([metadata]),
         ],
         child: MaterialApp.router(
           theme: buildBacklogVaultDarkTheme(),
@@ -74,175 +84,330 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(
-      tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
-      isTrue,
-    );
-    expect(find.text('Fecha de completado'), findsOneWidget);
-    expect(find.text('Horas jugadas'), findsOneWidget);
-    expect(find.text('Jugado en'), findsOneWidget);
-    expect(find.byType(DropdownButtonFormField<int?>), findsOneWidget);
-    expect(
-      tester
-          .widget<DropdownButtonFormField<int?>>(
-            find.byType(DropdownButtonFormField<int?>),
-          )
-          .initialValue,
-      3,
-    );
-    final played = find.ancestor(
-      of: find.text('Jugado en'),
-      matching: find.byType(DropdownButtonFormField<String?>),
-    );
-    expect(
-      tester.widget<DropdownButtonFormField<String?>>(played).initialValue,
-      'ps4',
-    );
-    final hours = find.ancestor(
-      of: find.text('Horas jugadas'),
-      matching: find.byType(TextFormField),
-    );
-    expect(tester.widget<TextFormField>(hours).controller!.text, '42.5');
-    expect(find.text('20-08-2026'), findsOneWidget);
-    expect(find.text('Strong DLC.'), findsOneWidget);
-    for (final label in [
-      'Puntaje de partida',
-      'Nueva partida',
-      'Editar partida',
-      'Jugando',
-      'Pausar',
-    ]) {
-      expect(find.textContaining(label), findsNothing);
-    }
+  }
+
+  Finder field(String key) => find.byKey(ValueKey(key));
+  String value(WidgetTester tester, String key) =>
+      tester.widget<TextFormField>(field(key)).controller!.text;
+  Future<GameFormModel> save(WidgetTester tester) async {
+    await tester.ensureVisible(find.text('Guardar'));
     await tester.tap(find.text('Guardar'));
     await tester.pumpAndSettle();
-    final saved =
-        verify(() => gameRepository.save(captureAny())).captured.single
-            as GameFormModel;
-    expect(saved.isCompleted, isTrue);
-    expect(saved.playedYear, 2025);
-    expect(saved.completedAt, DateTime(2026, 8, 20));
-    expect(saved.hoursPlayed, 42.5);
-    expect(saved.playedPlatformId, 'ps4');
-    expect(saved.personalRating, 3);
-    expect(saved.personalNotes, 'Strong DLC.');
-    expect(saved.platformIds, ['pc']);
     expect(find.text('Saved'), findsOneWidget);
     expect(tester.takeException(), isNull);
-  });
+    return verify(() => games.save(captureAny())).captured.single
+        as GameFormModel;
+  }
 
-  testWidgets('GameFormPage renders create sections without overflow', (
+  Future<void> selectPlatform(WidgetTester tester, String name) async {
+    await tester.ensureVisible(field('played-platform-field'));
+    await tester.tap(field('played-platform-field'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(name).last);
+    await tester.pumpAndSettle();
+  }
+
+  for (final completed in [false, true]) {
+    testWidgets(
+      'edit isCompleted=$completed preloads and preserves every personal field',
+      (tester) async {
+        // Archived played platform must stay selected even outside the active catalog.
+        when(
+          () => catalogs.watchPlatforms(),
+        ).thenAnswer((_) => Stream.value([_platforms.first]));
+        await open(tester, completed: completed);
+        expect(
+          tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+          completed,
+        );
+        expect(value(tester, 'played-year-field'), '2025');
+        expect(value(tester, 'hours-field'), '42.5');
+        expect(value(tester, 'notes-field'), 'Strong DLC.');
+        expect(
+          tester
+              .widget<PersonalRatingField>(find.byType(PersonalRatingField))
+              .value,
+          3,
+        );
+        expect(
+          tester
+              .widget<DropdownButtonFormField<String?>>(
+                field('played-platform-field'),
+              )
+              .initialValue,
+          'ps4',
+        );
+        expect(
+          find.text('20-08-2026'),
+          completed ? findsOneWidget : findsNothing,
+        );
+        expect(find.text('Mi registro'), findsOneWidget);
+        expect(find.byType(PersonalRatingField), findsOneWidget);
+        expect(find.text('Biblioteca personal'), findsNothing);
+        expect(find.text('Registro personal'), findsNothing);
+        expect(find.text('Plataformas'), findsNothing);
+        for (final label in [
+          'Nueva partida',
+          'Partidas',
+          'Jugando',
+          'Pausar',
+          'Abandonar',
+          'Retirado',
+          'Pendiente',
+          'Puntaje de partida',
+        ]) {
+          expect(find.textContaining(label), findsNothing);
+        }
+        final saved = await save(tester);
+        expect(saved.isCompleted, completed);
+        expect(saved.playedYear, 2025);
+        expect(saved.completedAt, DateTime(2026, 8, 20));
+        expect(saved.hoursPlayed, 42.5);
+        expect(saved.playedPlatformId, 'ps4');
+        expect(saved.personalRating, 3);
+        expect(saved.personalNotes, 'Strong DLC.');
+        expect(saved.platformIds, ['pc']);
+        expect(saved.genreIds, ['action', 'adventure']);
+        expect(saved.releaseDate, DateTime(2014, 2, 14));
+        expect(saved.type, 'single_player');
+        expect(saved.sortTitle, 'Last of Us');
+      },
+    );
+
+    testWidgets(
+      'creates isCompleted=$completed with optional date and all other personal fields',
+      (tester) async {
+        await open(tester);
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Nombre'),
+          'My game',
+        );
+        await tester.enterText(field('played-year-field'), '2024');
+        await tester.enterText(field('hours-field'), '18.5');
+        await selectPlatform(tester, 'PS4');
+        await tester.tap(field('rating-4'));
+        await tester.enterText(field('notes-field'), 'My own notes');
+        if (completed) await tester.tap(find.byType(SwitchListTile));
+        await tester.pumpAndSettle();
+        final saved = await save(tester);
+        expect(saved.isCompleted, completed);
+        expect(saved.playedYear, 2024);
+        expect(saved.completedAt, isNull);
+        expect(saved.hoursPlayed, 18.5);
+        expect(saved.playedPlatformId, 'ps4');
+        expect(saved.personalRating, 4);
+        expect(saved.personalNotes, 'My own notes');
+        expect(saved.platformIds, isEmpty);
+      },
+    );
+
+    testWidgets(
+      'toggling from isCompleted=$completed keeps completion data through repeated changes',
+      (tester) async {
+        await open(tester, completed: completed);
+        for (var i = 0; i < 3; i++) {
+          await tester.tap(find.byType(SwitchListTile));
+          await tester.pumpAndSettle();
+        }
+        expect(
+          find.text('20-08-2026'),
+          completed ? findsNothing : findsOneWidget,
+        );
+        final saved = await save(tester);
+        expect(saved.isCompleted, !completed);
+        expect(saved.completedAt, DateTime(2026, 8, 20));
+        expect(saved.playedYear, 2025);
+        expect(saved.hoursPlayed, 42.5);
+        expect(saved.playedPlatformId, 'ps4');
+        expect(saved.personalRating, 3);
+        expect(saved.personalNotes, 'Strong DLC.');
+      },
+    );
+  }
+
+  testWidgets(
+    'edits year, hours, personal platform, rating and notes independently of catalog',
+    (tester) async {
+      await open(tester, completed: false);
+      await tester.enterText(field('played-year-field'), '2023');
+      await tester.enterText(field('hours-field'), '19,5');
+      await selectPlatform(tester, 'PC');
+      await tester.tap(field('rating-5'));
+      await tester.enterText(field('notes-field'), 'Updated notes');
+      final saved = await save(tester);
+      expect(saved.isCompleted, isFalse);
+      expect(saved.playedYear, 2023);
+      expect(saved.hoursPlayed, 19.5);
+      expect(saved.playedPlatformId, 'pc');
+      expect(saved.personalRating, 5);
+      expect(saved.personalNotes, 'Updated notes');
+      expect(saved.platformIds, ['pc']);
+      expect(saved.completedAt, DateTime(2026, 8, 20));
+    },
+  );
+
+  testWidgets('rating can be changed and cleared without a secondary source', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          catalogControllerProvider.overrideWith((ref) => catalogRepository),
-          gameRepositoryProvider.overrideWith((ref) => gameRepository),
-        ],
-        child: MaterialApp(
-          theme: buildBacklogVaultDarkTheme(),
-          home: const GameFormPage(),
-        ),
-      ),
-    );
+    await open(tester, completed: true);
+    await tester.tap(field('rating-1'));
     await tester.pumpAndSettle();
-
-    await tester.scrollUntilVisible(
-      find.text('Guardar'),
-      300,
-      scrollable: find.byType(Scrollable).first,
+    expect(
+      tester
+          .widget<PersonalRatingField>(find.byType(PersonalRatingField))
+          .value,
+      1,
     );
-
-    expect(find.byType(GameFormPage), findsOneWidget);
-    expect(find.byType(Scrollable), findsWidgets);
-    expect(find.text('Guardar'), findsOneWidget);
-    expect(tester.takeException(), isNull);
+    await tester.tap(field('clear-rating'));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<PersonalRatingField>(find.byType(PersonalRatingField))
+          .value,
+      isNull,
+    );
+    expect(find.byIcon(Icons.star_border), findsNWidgets(5));
+    expect((await save(tester)).personalRating, isNull);
   });
 
-  testWidgets('GameFormPage renders edit mode on small viewport', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    when(
-      () => gameRepository.getByEntryId('entry-1'),
-    ).thenAnswer((_) async => _details());
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          catalogControllerProvider.overrideWith((ref) => catalogRepository),
-          gameRepositoryProvider.overrideWith((ref) => gameRepository),
-        ],
-        child: MaterialApp(
-          theme: buildBacklogVaultDarkTheme(),
-          home: const GameFormPage(entryId: 'entry-1'),
-        ),
-      ),
-    );
+  testWidgets('completion date can be edited', (tester) async {
+    await open(tester, completed: true);
+    await tester.tap(find.text('Elegir'));
     await tester.pumpAndSettle();
-
-    await tester.scrollUntilVisible(
-      find.text('Registro personal'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-
-    expect(find.text('Registro personal'), findsOneWidget);
-    expect(find.textContaining('Portada pendiente'), findsNothing);
-    expect(find.text('Editar juego'), findsOneWidget);
-    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('21'));
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect((await save(tester)).completedAt, DateTime(2026, 8, 21));
   });
 
   testWidgets(
-    'GameFormPage handles many platforms and genres on android viewport',
+    'search fills catalog and title while personal fields remain independent',
     (tester) async {
-      tester.view.physicalSize = const Size(390, 844);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      when(
-        () => catalogRepository.watchPlatforms(),
-      ).thenAnswer((_) => Stream.value(_densePlatforms));
-      when(
-        () => catalogRepository.watchGenres(),
-      ).thenAnswer((_) => Stream.value(_denseGenres));
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            catalogControllerProvider.overrideWith((ref) => catalogRepository),
-            gameRepositoryProvider.overrideWith((ref) => gameRepository),
-          ],
-          child: MaterialApp(
-            theme: buildBacklogVaultDarkTheme(),
-            home: const GameFormPage(),
+      final provider = _MockMetadataProvider();
+      when(() => provider.providerId).thenReturn('igdb');
+      when(() => provider.displayName).thenReturn('IGDB');
+      when(() => provider.requiresApiKey).thenReturn(false);
+      when(() => provider.searchGames('hades')).thenAnswer(
+        (_) async => [
+          const MetadataSearchCandidate(
+            providerId: 'igdb',
+            providerName: 'IGDB',
+            externalId: '1',
+            title: 'Hades',
           ),
+        ],
+      );
+      when(() => provider.getGameDetails('1')).thenAnswer(
+        (_) async => ExternalGameDetails(
+          providerId: 'igdb',
+          providerName: 'IGDB',
+          externalId: '1',
+          title: 'Hades',
+          releaseDate: DateTime(2020, 9, 17),
+          type: 'game',
+          platforms: const ['PC'],
+          genres: const ['Acción'],
         ),
       );
+      await open(tester, metadata: provider);
+      await tester.enterText(field('hours-field'), '18');
+      await tester.enterText(field('notes-field'), 'My experience');
+      await tester.tap(field('rating-4'));
+      await tester.tap(find.text('Buscar juego'));
       await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Buscar por título'),
+        'hades',
+      );
+      await tester.tap(find.byTooltip('Buscar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Hades'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Aplicar al formulario'));
+      await tester.pumpAndSettle();
+      expect(find.text('Hades'), findsOneWidget);
+      expect(find.text('Plataformas'), findsNothing);
+      final saved = await save(tester);
+      expect(saved.title, 'Hades');
+      expect(saved.releaseDate, DateTime(2020, 9, 17));
+      expect(saved.type, 'game');
+      expect(saved.platformIds, ['pc']);
+      expect(saved.genreIds, ['action']);
+      expect(saved.playedPlatformId, isNull);
+      expect(saved.playedYear, 2026);
+      expect(saved.hoursPlayed, 18);
+      expect(saved.personalRating, 4);
+      expect(saved.personalNotes, 'My experience');
+      expect(saved.isCompleted, isFalse);
+    },
+  );
 
+  testWidgets(
+    'selecting catalog platform does not set personally played platform',
+    (tester) async {
+      await open(tester);
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Nombre'),
+        'Manual game',
+      );
+      await tester.ensureVisible(find.text('Información del juego'));
+      await tester.tap(find.text('Información del juego'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.widgetWithText(FilterChip, 'PC'));
+      await tester.tap(find.widgetWithText(FilterChip, 'PC'));
+      await tester.pumpAndSettle();
+      final saved = await save(tester);
+      expect(saved.platformIds, ['pc']);
+      expect(saved.playedPlatformId, isNull);
+      expect(saved.personalRating, isNull);
+    },
+  );
+
+  testWidgets(
+    'mobile edit keeps one personal section and secondary catalog accessible',
+    (tester) async {
+      await open(tester, completed: true, size: const Size(390, 844));
       await tester.scrollUntilVisible(
-        find.text('Géneros'),
+        find.text('Mi registro'),
         300,
         scrollable: find.byType(Scrollable).first,
       );
+      expect(find.text('Mi registro'), findsOneWidget);
       await tester.scrollUntilVisible(
         find.text('Guardar'),
         300,
         scrollable: find.byType(Scrollable).first,
       );
-
-      expect(find.text('Plataformas'), findsOneWidget);
-      expect(find.text('Géneros'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('dense catalog remains editable on a narrow viewport', (
+    tester,
+  ) async {
+    when(
+      () => catalogs.watchPlatforms(),
+    ).thenAnswer((_) => Stream.value(_densePlatforms));
+    when(
+      () => catalogs.watchGenres(),
+    ).thenAnswer((_) => Stream.value(_denseGenres));
+    await open(tester, size: const Size(390, 844));
+    await tester.scrollUntilVisible(
+      find.text('Información del juego'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Información del juego'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Géneros'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Géneros'), findsOneWidget);
+    expect(find.byType(FilterChip), findsNWidgets(32));
+    expect(tester.takeException(), isNull);
+  });
 }
 
 final _now = DateTime(2026, 6, 16);
@@ -303,12 +468,12 @@ final _denseGenres = List.generate(
   ),
 );
 
-LibraryGameDetails _details() {
+LibraryGameDetails _details({bool completed = true}) {
   return LibraryGameDetails(
     game: GameDetails(
       id: 'game-1',
       title: 'The Last of Us: Left Behind',
-      sortTitle: null,
+      sortTitle: 'Last of Us',
       releaseDate: DateTime(2014, 2, 14),
       type: 'single_player',
       createdAt: _now,
@@ -318,7 +483,7 @@ LibraryGameDetails _details() {
     entry: LibraryEntryDetails(
       id: 'entry-1',
       gameId: 'game-1',
-      isCompleted: true,
+      isCompleted: completed,
       completedAt: DateTime(2026, 8, 20),
       playedYear: 2025,
       hoursPlayed: 42.5,

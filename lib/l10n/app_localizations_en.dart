@@ -907,6 +907,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gameReleaseDate => 'Release date';
 
   @override
+  String get gameMyRecord => 'My record';
+
+  @override
+  String get gameMyRecordHint =>
+      'Your experience with the game. All fields are optional.';
+
+  @override
+  String get gameInformation => 'Game information';
+
+  @override
+  String get gameInformationHint =>
+      'Release date, type, genres, and catalog platforms.';
+
+  @override
+  String get gameFindGame => 'Find game';
+
+  @override
+  String get gameIdentifyHint =>
+      'Find a game or enter its name to add it manually.';
+
+  @override
+  String get gameFinishDate => 'Completion date (optional)';
+
+  @override
+  String get gameRating => 'Rating';
+
+  @override
   String get gamePersonalLibrary => 'Personal library';
 
   @override

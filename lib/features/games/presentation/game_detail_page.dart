@@ -10,7 +10,6 @@ import '../../../core/design_system/bv_loading_state.dart';
 import '../../../core/design_system/bv_panel.dart';
 import '../../../core/design_system/bv_section.dart';
 import '../../../core/design_system/bv_spacing.dart';
-import '../../../core/design_system/bv_stat_card.dart';
 import '../../../core/design_system/bv_theme_extension.dart';
 import '../../../core/design_system/bv_tokens.dart';
 import '../../../core/formatting/date_formatters.dart';
@@ -50,30 +49,23 @@ class GameDetailPage extends ConsumerWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(item.game.title),
+            title: Text(context.l10n.gameMyRecord),
             actions: [
-              IconButton(
-                tooltip:
-                    item.selectedCover == null
-                        ? context.l10n.coverSearch
-                        : context.l10n.coverChange,
-                onPressed: () => _showMediaDialog(context, ref, item),
-                icon: const Icon(Icons.image_search_outlined),
-              ),
-              IconButton(
-                tooltip: context.l10n.metadataSearch,
-                onPressed: () => _showMetadataDialog(context, ref, item),
-                icon: const Icon(Icons.travel_explore_outlined),
-              ),
-              IconButton(
-                tooltip: context.l10n.gameEditTitle,
+              TextButton.icon(
                 onPressed: () => context.go('/games/${item.entry.id}/edit'),
                 icon: const Icon(Icons.edit_outlined),
+                label: Text(context.l10n.edit),
               ),
-              IconButton(
-                tooltip: context.l10n.gameDeleteTooltip,
-                onPressed: () => _confirmDelete(context, ref, item),
-                icon: const Icon(Icons.delete_outline),
+              PopupMenuButton<String>(
+                tooltip: context.l10n.gameActions,
+                onSelected: (_) => _confirmDelete(context, ref, item),
+                itemBuilder:
+                    (_) => [
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Text(context.l10n.delete),
+                      ),
+                    ],
               ),
             ],
           ),
@@ -84,8 +76,12 @@ class GameDetailPage extends ConsumerWidget {
               final padding = compact ? BvSpacing.pageCompact : BvSpacing.page;
               final coverPanel = _GameCoverPanel(item: item);
               final infoPanel = _GameInfoPanel(item: item);
-              final progress = _GameProgressSection(item: item);
-              final notes = _NotesSection(item: item);
+              final notes = [
+                if (item.entry.personalNotes?.trim().isNotEmpty ?? false) ...[
+                  const SizedBox(height: BvSpacing.md),
+                  _NotesSection(item: item),
+                ],
+              ];
 
               return ListView(
                 padding: padding,
@@ -94,27 +90,13 @@ class GameDetailPage extends ConsumerWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          width: 300,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              coverPanel,
-                              const SizedBox(height: 16),
-                              progress,
-                            ],
-                          ),
-                        ),
+                        SizedBox(width: 300, child: coverPanel),
                         const SizedBox(width: 20),
                         Expanded(
                           flex: 3,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              infoPanel,
-                              const SizedBox(height: 16),
-                              notes,
-                            ],
+                            children: [infoPanel, ...notes],
                           ),
                         ),
                       ],
@@ -122,12 +104,12 @@ class GameDetailPage extends ConsumerWidget {
                   else ...[
                     infoPanel,
                     const SizedBox(height: 16),
-                    coverPanel,
-                    const SizedBox(height: 16),
-                    progress,
-                    const SizedBox(height: 16),
-                    notes,
+                    ...notes,
+                    const SizedBox(height: BvSpacing.md),
+                    Center(child: SizedBox(width: 300, child: coverPanel)),
                   ],
+                  const SizedBox(height: BvSpacing.md),
+                  _GameCatalogPanel(item: item),
                   const SizedBox(height: 80),
                 ],
               );
