@@ -4,10 +4,8 @@ import 'package:backlog_vault/core/time/clock.dart';
 import 'package:backlog_vault/features/catalogs/application/catalog_controller.dart';
 import 'package:backlog_vault/features/library/application/annual_game_log.dart';
 import 'package:backlog_vault/features/library/application/library_providers.dart';
-import 'package:backlog_vault/features/library/application/library_view_model.dart';
-import 'package:backlog_vault/features/library/domain/library_filter_state.dart';
 import 'package:backlog_vault/features/library/domain/library_game_row.dart';
-import 'package:backlog_vault/features/library/presentation/game_list_page.dart';
+import 'package:backlog_vault/features/library/presentation/annual_game_log_page.dart';
 import 'package:backlog_vault/features/library/presentation/widgets/library_catalog_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,10 +32,6 @@ void main() {
         catalogControllerProvider.overrideWith((ref) => catalog),
         annualLogClockProvider.overrideWithValue(const _Clock()),
         libraryRowsProvider.overrideWith((ref) => Stream.value(_rows)),
-        // The annual gallery must not load any saved-view configuration.
-        customLibraryViewsProvider.overrideWith(
-          (ref) => throw StateError('Dormant provider read'),
-        ),
       ],
     );
   });
@@ -109,18 +103,8 @@ void main() {
   );
 
   testWidgets(
-    'gallery defaults to current year and ignores legacy filter/layout state',
+    'gallery defaults to current year without configuration controls',
     (tester) async {
-      final legacy = container.read(libraryViewModelProvider).table;
-      container
-          .read(libraryViewModelProvider.notifier)
-          .setTableState(
-            legacy.copyWith(
-              filter: const LibraryFilterState(
-                textQuery: 'invisible legacy filter',
-              ),
-            ),
-          );
       await pump(tester);
       expect(container.read(annualGameLogProvider).year, 2026);
       expect(find.byType(GridView), findsOneWidget);

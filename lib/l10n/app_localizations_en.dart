@@ -12,9 +12,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Backlog Vault';
 
   @override
-  String get navigationHome => 'Home';
-
-  @override
   String get navigationLibrary => 'Games';
 
   @override
@@ -300,9 +297,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get games => 'Games';
 
   @override
-  String get backlog => 'Backlog';
-
-  @override
   String get completed => 'Completed';
 
   @override
@@ -312,290 +306,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get missingMetadata => 'Missing metadata';
 
   @override
-  String get missingRating => 'Missing rating';
-
-  @override
-  String get missingPlatform => 'Missing platform';
-
-  @override
   String get missingGenre => 'Missing genre';
-
-  @override
-  String get homeBacklogDescription => 'Pending games ready for another look.';
-
-  @override
-  String get homeBacklogEmpty => 'There are no pending backlog games.';
-
-  @override
-  String get homeRecentCompleted => 'Recently completed';
-
-  @override
-  String get homeRecentCompletedDescription =>
-      'Your latest games with a recorded completion date.';
-
-  @override
-  String get homeRecentCompletedEmpty =>
-      'No completed games have a recorded date.';
-
-  @override
-  String get homeMissingCoverDescription =>
-      'Entries that still need a visual selection.';
-
-  @override
-  String get homeMissingCoverEmpty => 'Every visible game has a cover.';
-
-  @override
-  String get homeMissingMetadataDescription =>
-      'Games worth enriching before organizing further.';
-
-  @override
-  String get homeMissingMetadataEmpty =>
-      'Every visible game has external metadata.';
-
-  @override
-  String get homeRecentlyUpdated => 'Recently updated';
-
-  @override
-  String get homeRecentlyUpdatedDescription =>
-      'Recent changes to personal records.';
-
-  @override
-  String get homeRecentlyUpdatedEmpty => 'There is no recent activity.';
-
-  @override
-  String get homeLoading => 'Loading home';
-
-  @override
-  String get homeLoadError => 'Home could not be loaded';
-
-  @override
-  String homeLibrarySummary(
-    Object completedCount,
-    Object pendingCount,
-    Object total,
-  ) {
-    return '$total games, $completedCount completed, and $pendingCount pending.';
-  }
-
-  @override
-  String get homeOpenLibrary => 'Open library';
-
-  @override
-  String get homeQuickPanel => 'Quick actions';
-
-  @override
-  String get homeQuickPanelDescription =>
-      'Jump to statistics or review games still missing covers or metadata.';
-
-  @override
-  String get homeViewStatistics => 'View statistics';
-
-  @override
-  String get homeCreateGame => 'Create game';
-
-  @override
-  String get homeViewLibrary => 'View library';
-
-  @override
-  String get homeEmptyTitle => 'Your library is still empty.';
-
-  @override
-  String get homeEmptyMessage =>
-      'Once you add your first games, this dashboard will show activity, pending games, and data quality.';
-
-  @override
-  String get homeCreateFirstGame => 'Create first game';
 
   @override
   String get statisticsLibraryLoading => 'Loading library';
 
   @override
-  String get statisticsProgressLoading => 'Loading progress';
-
-  @override
-  String get statisticsLoadProgressError => 'Progress could not be loaded';
-
-  @override
   String get statisticsLoadError => 'Statistics could not be loaded';
-
-  @override
-  String get statisticsLibraryByStatus => 'Library by status';
-
-  @override
-  String get statisticsLibraryByStatusSubtitle =>
-      'A quick distribution of your current backlog.';
-
-  @override
-  String get statisticsRatings => 'Ratings';
-
-  @override
-  String get statisticsRatingsSubtitle =>
-      'How your personal scores are distributed across rated games.';
-
-  @override
-  String get statisticsDataQuality => 'Data quality';
-
-  @override
-  String get statisticsDataQualitySubtitle =>
-      'Metadata gaps that are still worth reviewing.';
-
-  @override
-  String get statisticsAnnualProgress => 'Annual progress';
-
-  @override
-  String get statisticsAnnualProgressSubtitle =>
-      'Completed games with dates and personal hours by period.';
-
-  @override
-  String get statisticsTopPlatforms => 'Most-used platforms';
-
-  @override
-  String get statisticsTopPlatformsSubtitle =>
-      'Where most of your play activity is concentrated.';
-
-  @override
-  String get statisticsNoPlatforms => 'No platforms have been recorded.';
-
-  @override
-  String get statisticsTopGenres => 'Most-used genres';
-
-  @override
-  String get statisticsTopGenresSubtitle =>
-      'The styles that dominate your personal library.';
-
-  @override
-  String get statisticsNoGenres => 'No genres have been recorded.';
-
-  @override
-  String get statisticsRecentCompleted => 'Recently completed';
-
-  @override
-  String get statisticsRecentCompletedSubtitle =>
-      'Your latest completions with a recorded date.';
-
-  @override
-  String get statisticsPulse => 'Library pulse';
-
-  @override
-  String get statisticsPulseSubtitle =>
-      'A quick look at backlog, progress, and data quality from the same catalog.';
-
-  @override
-  String statisticsCompletedHours(Object completedCount, Object hours) {
-    return '$completedCount completed · $hours hours';
-  }
-
-  @override
-  String get statisticsTotalCompleted => 'Total completed';
-
-  @override
-  String get statisticsLoggedHours => 'Logged hours';
 
   @override
   String get statisticsAverageRating => 'Average rating';
 
   @override
-  String get statisticsYear => 'Year';
-
-  @override
-  String get statisticsNoAnnualProgress => 'No annual progress yet';
-
-  @override
-  String get statisticsNoAnnualProgressMessage =>
-      'Completed games with a date appear by year and month.';
-
-  @override
-  String statisticsMonthsOf(Object year) {
-    return 'Months of $year';
-  }
-
-  @override
-  String get statisticsNoRatings => 'No ratings yet';
-
-  @override
-  String get statisticsNoRatingsMessage =>
-      'Once you start rating games, this section will show how your scores are distributed.';
-
-  @override
-  String statisticsStars(num count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count stars',
-      one: '1 star',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String statisticsUnrated(Object count) {
-    return 'Unrated: $count';
-  }
-
-  @override
-  String get statisticsNoData => 'No data yet';
-
-  @override
-  String get statisticsCompletedWithoutDate => 'Completed without date';
-
-  @override
-  String get statisticsNoCompleted => 'No completed games yet';
-
-  @override
-  String get statisticsNoCompletedMessage =>
-      'Add an optional completion date to see a completed game here.';
-
-  @override
-  String get statisticsEmptyTitle =>
-      'There is not enough data to calculate statistics yet.';
-
-  @override
-  String get statisticsEmptyMessage =>
-      'Add games to see completion, hours, ratings, and data quality.';
-
-  @override
-  String get statisticsGoToLibrary => 'Go to library';
-
-  @override
   String hoursShort(Object value) {
     return '$value h';
   }
-
-  @override
-  String get monthJanuary => 'January';
-
-  @override
-  String get monthFebruary => 'February';
-
-  @override
-  String get monthMarch => 'March';
-
-  @override
-  String get monthApril => 'April';
-
-  @override
-  String get monthMay => 'May';
-
-  @override
-  String get monthJune => 'June';
-
-  @override
-  String get monthJuly => 'July';
-
-  @override
-  String get monthAugust => 'August';
-
-  @override
-  String get monthSeptember => 'September';
-
-  @override
-  String get monthOctober => 'October';
-
-  @override
-  String get monthNovember => 'November';
-
-  @override
-  String get monthDecember => 'December';
 
   @override
   String get apply => 'Apply';
@@ -607,34 +332,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get view => 'View';
 
   @override
-  String get filters => 'Filters';
-
-  @override
-  String get table => 'Table';
-
-  @override
-  String get gallery => 'Gallery';
-
-  @override
-  String get list => 'List';
-
-  @override
-  String get columns => 'Columns';
-
-  @override
-  String get saveView => 'Save view';
-
-  @override
   String get importCsv => 'Import CSV';
 
   @override
   String get importMetadata => 'Import metadata';
-
-  @override
-  String get libraryExitSelection => 'Exit selection';
-
-  @override
-  String get librarySelectMultiple => 'Select multiple';
 
   @override
   String get libraryLoading => 'Loading library';
@@ -643,82 +344,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryLoadError => 'Library could not be loaded';
 
   @override
-  String get libraryDeleteSelectedTitle => 'Delete selected games';
-
-  @override
-  String libraryDeleteSelectedMessage(Object count) {
-    return '$count games will be marked as deleted. They will not be physically removed.';
-  }
-
-  @override
-  String get libraryTypeDeleteConfirmation => 'Type DELETE to confirm.';
-
-  @override
-  String get libraryDeleteKeyword => 'DELETE';
-
-  @override
   String get libraryConfirmation => 'Confirmation';
-
-  @override
-  String get libraryDeleteSelected => 'Delete selected';
-
-  @override
-  String libraryFiltersCount(Object count) {
-    return 'Filters ($count)';
-  }
-
-  @override
-  String get libraryActions => 'Library actions';
-
-  @override
-  String get libraryUpdateView => 'Update view';
-
-  @override
-  String get libraryRenameView => 'Rename view';
-
-  @override
-  String get libraryDeleteView => 'Delete view';
-
-  @override
-  String get libraryYear => 'Year';
-
-  @override
-  String libraryFilterStatus(Object value) {
-    return 'Status: $value';
-  }
-
-  @override
-  String libraryFilterPlatform(Object value) {
-    return 'Platform: $value';
-  }
-
-  @override
-  String libraryFilterGenre(Object value) {
-    return 'Genre: $value';
-  }
-
-  @override
-  String libraryFilterSearch(Object value) {
-    return 'Search: $value';
-  }
-
-  @override
-  String get libraryMissingCompletedDate => 'Missing completion date';
-
-  @override
-  String get libraryOpenDetails => 'Open details';
-
-  @override
-  String get libraryActionsTooltip => 'Actions';
-
-  @override
-  String get libraryAdvancedFilters => 'Advanced filters';
-
-  @override
-  String get libraryClearFilters => 'Clear filters';
-
-  @override
-  String get libraryStatus => 'Status';
 
   @override
   String get libraryPlatforms => 'Platforms';
@@ -727,77 +353,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryGenres => 'Genres';
 
   @override
-  String get libraryMinimumRating => 'Minimum rating';
-
-  @override
-  String get libraryMaximumRating => 'Maximum rating';
-
-  @override
-  String get libraryMinimumHours => 'Minimum hours';
-
-  @override
-  String get libraryMaximumHours => 'Maximum hours';
-
-  @override
   String get libraryType => 'Type';
-
-  @override
-  String get libraryReleaseFrom => 'Released from';
-
-  @override
-  String get libraryReleaseTo => 'Released through';
-
-  @override
-  String get libraryCompletedFrom => 'Completed from';
-
-  @override
-  String get libraryCompletedTo => 'Completed through';
-
-  @override
-  String get libraryWithRating => 'With rating';
-
-  @override
-  String get libraryWithPlatform => 'With platform';
-
-  @override
-  String get libraryWithGenre => 'With genre';
-
-  @override
-  String get libraryWithCompletedDate => 'With completion date';
-
-  @override
-  String get libraryNoOptions => 'No options available.';
-
-  @override
-  String get libraryClearDate => 'Clear date';
-
-  @override
-  String get libraryChooseDate => 'Choose date';
-
-  @override
-  String get libraryVisibleColumns => 'Visible columns';
-
-  @override
-  String get libraryEmptyTitle => 'There are no games in your library yet.';
-
-  @override
-  String get libraryEmptyMessage =>
-      'Once you add the first one, the catalog will start taking shape.';
-
-  @override
-  String get libraryEmptyFilteredTitle => 'No games match the current view.';
-
-  @override
-  String get libraryEmptyFilteredMessage =>
-      'Try relaxing filters, changing the saved view, or clearing the search.';
-
-  @override
-  String get libraryViewUpdated => 'View updated.';
-
-  @override
-  String libraryDeleteViewMessage(Object name) {
-    return 'The view “$name” will be deleted.';
-  }
 
   @override
   String get libraryDeleteGameTitle => 'Delete game';
@@ -808,94 +364,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get libraryNoLimit => 'No limit';
-
-  @override
-  String get libraryDefaultAll => 'All games';
-
-  @override
-  String get libraryDefaultPending => 'Pending';
-
-  @override
-  String get libraryDefaultCompleted => 'Completed';
-
-  @override
-  String get libraryDefaultByYear => 'Filter by year';
-
-  @override
-  String librarySelectedCount(Object count) {
-    return '$count selected';
-  }
-
-  @override
-  String librarySelectVisible(Object count) {
-    return 'Select visible ($count)';
-  }
-
-  @override
-  String librarySelectAll(Object count) {
-    return 'Select all ($count)';
-  }
-
-  @override
-  String get libraryClearSelection => 'Clear selection';
-
-  @override
-  String get libraryAverage => 'Average';
-
-  @override
   String get libraryHours => 'Hours';
-
-  @override
-  String get libraryNoOptionsShort => 'No options';
-
-  @override
-  String get columnCover => 'Cover';
-
-  @override
-  String get columnTitle => 'Title';
-
-  @override
-  String get columnStatus => 'Status';
-
-  @override
-  String get columnPlatforms => 'Platforms';
-
-  @override
-  String get columnGenres => 'Genres';
-
-  @override
-  String get columnRating => 'Rating';
-
-  @override
-  String get columnReleaseDate => 'Release date';
-
-  @override
-  String get columnCompletedDate => 'Completion date';
-
-  @override
-  String get columnHours => 'Hours';
-
-  @override
-  String get columnType => 'Type';
-
-  @override
-  String get columnNotes => 'Notes';
-
-  @override
-  String get columnUpdatedAt => 'Updated';
 
   @override
   String get gameCreateTitle => 'Create game';
 
   @override
   String get gameEditTitle => 'Edit game';
-
-  @override
-  String get gameIdentity => 'Identity';
-
-  @override
-  String get gameIdentitySubtitle => 'Game information and external metadata.';
 
   @override
   String get gameName => 'Name';
@@ -934,36 +409,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gameRating => 'Rating';
 
   @override
-  String get gamePersonalLibrary => 'Personal library';
-
-  @override
-  String get gamePersonalLibrarySubtitle =>
-      'Status, rating, and private notes.';
-
-  @override
   String get gamePersonalRating => 'Personal rating';
 
   @override
   String get gamePersonalNotes => 'Personal notes';
 
   @override
-  String get gameCatalogs => 'Catalogs';
-
-  @override
-  String get gameCatalogsSubtitle => 'Associated platforms and genres.';
-
-  @override
   String get gameAddPlatform => 'Add platform';
 
   @override
   String get gameAddGenre => 'Add genre';
-
-  @override
-  String get gameCompletionSection => 'Personal record';
-
-  @override
-  String get gameCompletionSectionSubtitle =>
-      'Completion date is optional. Hours and platform belong to this game.';
 
   @override
   String get gameImportMetadata => 'Import metadata';
@@ -1002,15 +457,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'The cover will be stored locally after the game is saved.';
 
   @override
-  String get gameSearchMetadata => 'Search metadata';
-
-  @override
   String gamePendingCover(Object provider) {
     return 'Pending cover: $provider';
   }
-
-  @override
-  String get ratingNone => 'No rating';
 
   @override
   String get ratingOneStar => '1 star';
@@ -1063,12 +512,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gameRemoveCover => 'Remove cover';
 
   @override
-  String get gameSummaryProgress => 'Summary and progress';
-
-  @override
-  String get gameLastCompleted => 'Completion date';
-
-  @override
   String get metadataApplied => 'Metadata applied.';
 
   @override
@@ -1089,9 +532,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gameNote => 'Note';
-
-  @override
-  String get gameStartDate => 'Start date';
 
   @override
   String get gameNotes => 'Notes';
@@ -1866,4 +1306,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logSearchHint => 'Try another title or choose another year.';
+
+  @override
+  String get statisticsFinished => 'Finished';
+
+  @override
+  String get statisticsUnavailable => 'No data';
+
+  @override
+  String get statisticsEmptyYear => 'No games this year';
+
+  @override
+  String get statisticsEmptyYearHint =>
+      'Games without a year remain available in Games → No year.';
+
+  @override
+  String get statisticsFavorites => 'Favorites';
+
+  @override
+  String get statisticsNoRatedGames => 'No rated games this year yet.';
+
+  @override
+  String get statisticsPlayedPlatforms => 'Where I played';
+
+  @override
+  String get statisticsPlayedPlatformsHint =>
+      'Games by recorded played platform.';
+
+  @override
+  String get statisticsNoPlayedPlatforms =>
+      'No played platforms recorded this year yet.';
+
+  @override
+  String get columnTitle => 'Title';
 }

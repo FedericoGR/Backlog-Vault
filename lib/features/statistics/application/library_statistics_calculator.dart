@@ -1,194 +1,65 @@
-import '../../library/domain/game_status.dart';
 import '../../library/domain/library_game_row.dart';
 import '../domain/statistics_models.dart';
 
 class LibraryStatisticsCalculator {
   const LibraryStatisticsCalculator();
 
-  LibraryStatistics calculate({required List<LibraryGameRow> rows}) {
-    final completedRows = rows.where(
-      (row) => row.isCompleted && row.completedAt != null,
-    );
-
-    final statusCounts = <GameStatus, int>{
-      for (final status in GameStatus.values) status: 0,
-    };
-    for (final row in rows) {
-      final status = row.status;
-      statusCounts[status] = (statusCounts[status] ?? 0) + 1;
-    }
-
-    final totalHours = rows.fold(
-      0.0,
-      (sum, row) => sum + (row.hoursPlayed ?? 0),
-    );
-    final ratingDistribution = _buildRatingDistribution(rows);
-    final completedByYear = <int, int>{};
-    final hoursByYear = <int, double>{};
-    final monthlyByYear = <int, Map<int, _MutableMonthStats>>{};
-    final latestByEntryId = <String, LatestCompletedGame>{};
-
-    for (final row in completedRows) {
-      final completedAt = row.completedAt!;
-      final year = completedAt.year;
-      final month = completedAt.month;
-      completedByYear[year] = (completedByYear[year] ?? 0) + 1;
-      final hours = row.hoursPlayed ?? 0;
-      hoursByYear[year] = (hoursByYear[year] ?? 0) + hours;
-      final monthStats = monthlyByYear
-          .putIfAbsent(year, () => {})
-          .putIfAbsent(month, () => _MutableMonthStats(month));
-      monthStats.completedCount++;
-      monthStats.hours += hours;
-      latestByEntryId[row.libraryEntryId] = LatestCompletedGame(
-        row: row,
-        completedAt: completedAt,
-        hoursPlayed: row.hoursPlayed,
-      );
-    }
-
-    final yearlyStatistics =
-        completedByYear.keys.map((year) {
-            final monthly = monthlyByYear[year] ?? const {};
-            return YearlyStatistics(
-              year: year,
-              completedCount: completedByYear[year] ?? 0,
-              hours: hoursByYear[year] ?? 0,
-              monthlyCompletions: [
-                for (var month = 1; month <= 12; month++)
-                  MonthlyCompletionStats(
-                    month: month,
-                    completedCount: monthly[month]?.completedCount ?? 0,
-                    hours: monthly[month]?.hours ?? 0,
-                  ),
-              ],
-            );
-          }).toList()
-          ..sort((a, b) => b.year.compareTo(a.year));
-
-    final completedEntriesWithDate = {
-      for (final row in completedRows) row.libraryEntryId,
-    };
-    final latestCompleted =
-        latestByEntryId.values.toList()
-          ..sort((a, b) => b.completedAt.compareTo(a.completedAt));
-
-    return LibraryStatistics(
-      totalGames: rows.length,
-      statusCounts: statusCounts,
-      backlogCount: statusCounts[GameStatus.pending] ?? 0,
-      completedCount: statusCounts[GameStatus.completed] ?? 0,
-      completedByYear: Map.unmodifiable(completedByYear),
-      hoursByYear: Map.unmodifiable(hoursByYear),
-      totalHours: totalHours,
-      ratingDistribution: ratingDistribution,
-      platformBreakdown: _buildBreakdown(
-        rows: rows,
-        itemsForRow:
-            (row) => [if (row.playedPlatform case final platform?) platform],
-      ),
-      genreBreakdown: _buildBreakdown(
-        rows: rows,
-        itemsForRow: (row) => row.genres,
-      ),
-      qualityStats: LibraryQualityStats(
-        missingCover:
-            rows
-                .where(
-                  (row) =>
-                      row.selectedCoverLocalPath == null ||
-                      row.selectedCoverLocalPath!.trim().isEmpty,
-                )
-                .length,
-        missingMetadata: rows.where((row) => !row.hasExternalMetadata).length,
-        missingRating: rows.where((row) => row.personalRating == null).length,
-        missingPlatform:
-            rows.where((row) => row.playedPlatformId == null).length,
-        missingGenre: rows.where((row) => row.genres.isEmpty).length,
-        completedWithoutDate:
-            rows
-                .where(
-                  (row) =>
-                      row.status == GameStatus.completed &&
-                      !completedEntriesWithDate.contains(row.libraryEntryId),
-                )
-                .length,
-      ),
-      yearlyStatistics: yearlyStatistics,
-      latestCompleted: latestCompleted.take(8).toList(growable: false),
-      availableYears:
-          completedByYear.keys.toList()..sort((a, b) => b.compareTo(a)),
-    );
-  }
-
-  RatingDistribution _buildRatingDistribution(List<LibraryGameRow> rows) {
-    final countByRating = {
-      for (var rating = 1; rating <= 5; rating++) rating: 0,
-    };
-    var ratingTotal = 0;
-    var ratedCount = 0;
-    for (final row in rows) {
-      final rating = row.personalRating;
-      if (rating == null || rating < 1 || rating > 5) continue;
-      countByRating[rating] = (countByRating[rating] ?? 0) + 1;
-      ratingTotal += rating;
-      ratedCount++;
-    }
-    return RatingDistribution(
-      countByRating: Map.unmodifiable(countByRating),
-      ratedCount: ratedCount,
-      unratedCount: rows.length - ratedCount,
-      average: ratedCount == 0 ? null : ratingTotal / ratedCount,
-    );
-  }
-
-  List<CategoryBreakdown> _buildBreakdown({
+  LibraryStatistics calculate({
     required List<LibraryGameRow> rows,
-    required List<LibraryCatalogItem> Function(LibraryGameRow row) itemsForRow,
+    required int year,
   }) {
-    final counts = <String, _MutableCategoryStats>{};
+    // Membership never depends on catalog dates or legacy playthrough history.
+    final entries = <String, LibraryGameRow>{};
     for (final row in rows) {
-      for (final item in itemsForRow(row)) {
-        counts
-            .putIfAbsent(
-              item.id,
-              () => _MutableCategoryStats(id: item.id, name: item.name),
-            )
-            .count++;
+      if (row.playedYear == year) {
+        entries.putIfAbsent(row.libraryEntryId, () => row);
       }
     }
-    final total = rows.isEmpty ? 1 : rows.length;
-    final breakdown =
-        counts.values
-            .map(
-              (item) => CategoryBreakdown(
-                id: item.id,
-                name: item.name,
-                count: item.count,
-                percentage: item.count / total,
-              ),
-            )
-            .toList()
+    final personalRecords = entries.values.toList();
+    final hours =
+        personalRecords
+            .map((row) => row.hoursPlayed)
+            .whereType<double>()
+            .toList();
+    final rated =
+        personalRecords.where((row) => row.personalRating != null).toList()
           ..sort((a, b) {
-            final countResult = b.count.compareTo(a.count);
-            return countResult == 0 ? a.name.compareTo(b.name) : countResult;
+            final rating = b.personalRating!.compareTo(a.personalRating!);
+            if (rating != 0) return rating;
+            final title = a.title.toLowerCase().compareTo(
+              b.title.toLowerCase(),
+            );
+            return title != 0
+                ? title
+                : a.libraryEntryId.compareTo(b.libraryEntryId);
           });
-    return breakdown;
+    final platforms = <String, CategoryBreakdown>{};
+    for (final row in personalRecords) {
+      if (row.playedPlatform case final platform?) {
+        platforms[platform.id] = CategoryBreakdown(
+          id: platform.id,
+          name: platform.name,
+          count: (platforms[platform.id]?.count ?? 0) + 1,
+        );
+      }
+    }
+    final breakdown =
+        platforms.values.toList()..sort((a, b) {
+          final count = b.count.compareTo(a.count);
+          return count != 0 ? count : a.name.compareTo(b.name);
+        });
+    return LibraryStatistics(
+      year: year,
+      totalGames: personalRecords.length,
+      completedCount: personalRecords.where((row) => row.isCompleted).length,
+      totalHours: hours.isEmpty ? null : hours.reduce((a, b) => a + b),
+      averageRating:
+          rated.isEmpty
+              ? null
+              : rated.fold(0, (sum, row) => sum + row.personalRating!) /
+                  rated.length,
+      favorites: List.unmodifiable(rated.take(5)),
+      platformBreakdown: List.unmodifiable(breakdown),
+    );
   }
-}
-
-class _MutableMonthStats {
-  _MutableMonthStats(this.month);
-
-  final int month;
-  var completedCount = 0;
-  var hours = 0.0;
-}
-
-class _MutableCategoryStats {
-  _MutableCategoryStats({required this.id, required this.name});
-
-  final String id;
-  final String name;
-  var count = 0;
 }

@@ -104,12 +104,6 @@ abstract class AppLocalizations {
   /// **'Backlog Vault'**
   String get appTitle;
 
-  /// No description provided for @navigationHome.
-  ///
-  /// In en, this message translates to:
-  /// **'Home'**
-  String get navigationHome;
-
   /// No description provided for @navigationLibrary.
   ///
   /// In en, this message translates to:
@@ -650,12 +644,6 @@ abstract class AppLocalizations {
   /// **'Games'**
   String get games;
 
-  /// No description provided for @backlog.
-  ///
-  /// In en, this message translates to:
-  /// **'Backlog'**
-  String get backlog;
-
   /// No description provided for @completed.
   ///
   /// In en, this message translates to:
@@ -674,171 +662,11 @@ abstract class AppLocalizations {
   /// **'Missing metadata'**
   String get missingMetadata;
 
-  /// No description provided for @missingRating.
-  ///
-  /// In en, this message translates to:
-  /// **'Missing rating'**
-  String get missingRating;
-
-  /// No description provided for @missingPlatform.
-  ///
-  /// In en, this message translates to:
-  /// **'Missing platform'**
-  String get missingPlatform;
-
   /// No description provided for @missingGenre.
   ///
   /// In en, this message translates to:
   /// **'Missing genre'**
   String get missingGenre;
-
-  /// No description provided for @homeBacklogDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Pending games ready for another look.'**
-  String get homeBacklogDescription;
-
-  /// No description provided for @homeBacklogEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'There are no pending backlog games.'**
-  String get homeBacklogEmpty;
-
-  /// No description provided for @homeRecentCompleted.
-  ///
-  /// In en, this message translates to:
-  /// **'Recently completed'**
-  String get homeRecentCompleted;
-
-  /// No description provided for @homeRecentCompletedDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Your latest games with a recorded completion date.'**
-  String get homeRecentCompletedDescription;
-
-  /// No description provided for @homeRecentCompletedEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No completed games have a recorded date.'**
-  String get homeRecentCompletedEmpty;
-
-  /// No description provided for @homeMissingCoverDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Entries that still need a visual selection.'**
-  String get homeMissingCoverDescription;
-
-  /// No description provided for @homeMissingCoverEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'Every visible game has a cover.'**
-  String get homeMissingCoverEmpty;
-
-  /// No description provided for @homeMissingMetadataDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Games worth enriching before organizing further.'**
-  String get homeMissingMetadataDescription;
-
-  /// No description provided for @homeMissingMetadataEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'Every visible game has external metadata.'**
-  String get homeMissingMetadataEmpty;
-
-  /// No description provided for @homeRecentlyUpdated.
-  ///
-  /// In en, this message translates to:
-  /// **'Recently updated'**
-  String get homeRecentlyUpdated;
-
-  /// No description provided for @homeRecentlyUpdatedDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Recent changes to personal records.'**
-  String get homeRecentlyUpdatedDescription;
-
-  /// No description provided for @homeRecentlyUpdatedEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'There is no recent activity.'**
-  String get homeRecentlyUpdatedEmpty;
-
-  /// No description provided for @homeLoading.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading home'**
-  String get homeLoading;
-
-  /// No description provided for @homeLoadError.
-  ///
-  /// In en, this message translates to:
-  /// **'Home could not be loaded'**
-  String get homeLoadError;
-
-  /// No description provided for @homeLibrarySummary.
-  ///
-  /// In en, this message translates to:
-  /// **'{total} games, {completedCount} completed, and {pendingCount} pending.'**
-  String homeLibrarySummary(
-    Object completedCount,
-    Object pendingCount,
-    Object total,
-  );
-
-  /// No description provided for @homeOpenLibrary.
-  ///
-  /// In en, this message translates to:
-  /// **'Open library'**
-  String get homeOpenLibrary;
-
-  /// No description provided for @homeQuickPanel.
-  ///
-  /// In en, this message translates to:
-  /// **'Quick actions'**
-  String get homeQuickPanel;
-
-  /// No description provided for @homeQuickPanelDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Jump to statistics or review games still missing covers or metadata.'**
-  String get homeQuickPanelDescription;
-
-  /// No description provided for @homeViewStatistics.
-  ///
-  /// In en, this message translates to:
-  /// **'View statistics'**
-  String get homeViewStatistics;
-
-  /// No description provided for @homeCreateGame.
-  ///
-  /// In en, this message translates to:
-  /// **'Create game'**
-  String get homeCreateGame;
-
-  /// No description provided for @homeViewLibrary.
-  ///
-  /// In en, this message translates to:
-  /// **'View library'**
-  String get homeViewLibrary;
-
-  /// No description provided for @homeEmptyTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Your library is still empty.'**
-  String get homeEmptyTitle;
-
-  /// No description provided for @homeEmptyMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Once you add your first games, this dashboard will show activity, pending games, and data quality.'**
-  String get homeEmptyMessage;
-
-  /// No description provided for @homeCreateFirstGame.
-  ///
-  /// In en, this message translates to:
-  /// **'Create first game'**
-  String get homeCreateFirstGame;
 
   /// No description provided for @statisticsLibraryLoading.
   ///
@@ -846,149 +674,11 @@ abstract class AppLocalizations {
   /// **'Loading library'**
   String get statisticsLibraryLoading;
 
-  /// No description provided for @statisticsProgressLoading.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading progress'**
-  String get statisticsProgressLoading;
-
-  /// No description provided for @statisticsLoadProgressError.
-  ///
-  /// In en, this message translates to:
-  /// **'Progress could not be loaded'**
-  String get statisticsLoadProgressError;
-
   /// No description provided for @statisticsLoadError.
   ///
   /// In en, this message translates to:
   /// **'Statistics could not be loaded'**
   String get statisticsLoadError;
-
-  /// No description provided for @statisticsLibraryByStatus.
-  ///
-  /// In en, this message translates to:
-  /// **'Library by status'**
-  String get statisticsLibraryByStatus;
-
-  /// No description provided for @statisticsLibraryByStatusSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'A quick distribution of your current backlog.'**
-  String get statisticsLibraryByStatusSubtitle;
-
-  /// No description provided for @statisticsRatings.
-  ///
-  /// In en, this message translates to:
-  /// **'Ratings'**
-  String get statisticsRatings;
-
-  /// No description provided for @statisticsRatingsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'How your personal scores are distributed across rated games.'**
-  String get statisticsRatingsSubtitle;
-
-  /// No description provided for @statisticsDataQuality.
-  ///
-  /// In en, this message translates to:
-  /// **'Data quality'**
-  String get statisticsDataQuality;
-
-  /// No description provided for @statisticsDataQualitySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Metadata gaps that are still worth reviewing.'**
-  String get statisticsDataQualitySubtitle;
-
-  /// No description provided for @statisticsAnnualProgress.
-  ///
-  /// In en, this message translates to:
-  /// **'Annual progress'**
-  String get statisticsAnnualProgress;
-
-  /// No description provided for @statisticsAnnualProgressSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Completed games with dates and personal hours by period.'**
-  String get statisticsAnnualProgressSubtitle;
-
-  /// No description provided for @statisticsTopPlatforms.
-  ///
-  /// In en, this message translates to:
-  /// **'Most-used platforms'**
-  String get statisticsTopPlatforms;
-
-  /// No description provided for @statisticsTopPlatformsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Where most of your play activity is concentrated.'**
-  String get statisticsTopPlatformsSubtitle;
-
-  /// No description provided for @statisticsNoPlatforms.
-  ///
-  /// In en, this message translates to:
-  /// **'No platforms have been recorded.'**
-  String get statisticsNoPlatforms;
-
-  /// No description provided for @statisticsTopGenres.
-  ///
-  /// In en, this message translates to:
-  /// **'Most-used genres'**
-  String get statisticsTopGenres;
-
-  /// No description provided for @statisticsTopGenresSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'The styles that dominate your personal library.'**
-  String get statisticsTopGenresSubtitle;
-
-  /// No description provided for @statisticsNoGenres.
-  ///
-  /// In en, this message translates to:
-  /// **'No genres have been recorded.'**
-  String get statisticsNoGenres;
-
-  /// No description provided for @statisticsRecentCompleted.
-  ///
-  /// In en, this message translates to:
-  /// **'Recently completed'**
-  String get statisticsRecentCompleted;
-
-  /// No description provided for @statisticsRecentCompletedSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Your latest completions with a recorded date.'**
-  String get statisticsRecentCompletedSubtitle;
-
-  /// No description provided for @statisticsPulse.
-  ///
-  /// In en, this message translates to:
-  /// **'Library pulse'**
-  String get statisticsPulse;
-
-  /// No description provided for @statisticsPulseSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'A quick look at backlog, progress, and data quality from the same catalog.'**
-  String get statisticsPulseSubtitle;
-
-  /// No description provided for @statisticsCompletedHours.
-  ///
-  /// In en, this message translates to:
-  /// **'{completedCount} completed · {hours} hours'**
-  String statisticsCompletedHours(Object completedCount, Object hours);
-
-  /// No description provided for @statisticsTotalCompleted.
-  ///
-  /// In en, this message translates to:
-  /// **'Total completed'**
-  String get statisticsTotalCompleted;
-
-  /// No description provided for @statisticsLoggedHours.
-  ///
-  /// In en, this message translates to:
-  /// **'Logged hours'**
-  String get statisticsLoggedHours;
 
   /// No description provided for @statisticsAverageRating.
   ///
@@ -996,173 +686,11 @@ abstract class AppLocalizations {
   /// **'Average rating'**
   String get statisticsAverageRating;
 
-  /// No description provided for @statisticsYear.
-  ///
-  /// In en, this message translates to:
-  /// **'Year'**
-  String get statisticsYear;
-
-  /// No description provided for @statisticsNoAnnualProgress.
-  ///
-  /// In en, this message translates to:
-  /// **'No annual progress yet'**
-  String get statisticsNoAnnualProgress;
-
-  /// No description provided for @statisticsNoAnnualProgressMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Completed games with a date appear by year and month.'**
-  String get statisticsNoAnnualProgressMessage;
-
-  /// No description provided for @statisticsMonthsOf.
-  ///
-  /// In en, this message translates to:
-  /// **'Months of {year}'**
-  String statisticsMonthsOf(Object year);
-
-  /// No description provided for @statisticsNoRatings.
-  ///
-  /// In en, this message translates to:
-  /// **'No ratings yet'**
-  String get statisticsNoRatings;
-
-  /// No description provided for @statisticsNoRatingsMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Once you start rating games, this section will show how your scores are distributed.'**
-  String get statisticsNoRatingsMessage;
-
-  /// No description provided for @statisticsStars.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 star} other{{count} stars}}'**
-  String statisticsStars(num count);
-
-  /// No description provided for @statisticsUnrated.
-  ///
-  /// In en, this message translates to:
-  /// **'Unrated: {count}'**
-  String statisticsUnrated(Object count);
-
-  /// No description provided for @statisticsNoData.
-  ///
-  /// In en, this message translates to:
-  /// **'No data yet'**
-  String get statisticsNoData;
-
-  /// No description provided for @statisticsCompletedWithoutDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Completed without date'**
-  String get statisticsCompletedWithoutDate;
-
-  /// No description provided for @statisticsNoCompleted.
-  ///
-  /// In en, this message translates to:
-  /// **'No completed games yet'**
-  String get statisticsNoCompleted;
-
-  /// No description provided for @statisticsNoCompletedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Add an optional completion date to see a completed game here.'**
-  String get statisticsNoCompletedMessage;
-
-  /// No description provided for @statisticsEmptyTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'There is not enough data to calculate statistics yet.'**
-  String get statisticsEmptyTitle;
-
-  /// No description provided for @statisticsEmptyMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Add games to see completion, hours, ratings, and data quality.'**
-  String get statisticsEmptyMessage;
-
-  /// No description provided for @statisticsGoToLibrary.
-  ///
-  /// In en, this message translates to:
-  /// **'Go to library'**
-  String get statisticsGoToLibrary;
-
   /// No description provided for @hoursShort.
   ///
   /// In en, this message translates to:
   /// **'{value} h'**
   String hoursShort(Object value);
-
-  /// No description provided for @monthJanuary.
-  ///
-  /// In en, this message translates to:
-  /// **'January'**
-  String get monthJanuary;
-
-  /// No description provided for @monthFebruary.
-  ///
-  /// In en, this message translates to:
-  /// **'February'**
-  String get monthFebruary;
-
-  /// No description provided for @monthMarch.
-  ///
-  /// In en, this message translates to:
-  /// **'March'**
-  String get monthMarch;
-
-  /// No description provided for @monthApril.
-  ///
-  /// In en, this message translates to:
-  /// **'April'**
-  String get monthApril;
-
-  /// No description provided for @monthMay.
-  ///
-  /// In en, this message translates to:
-  /// **'May'**
-  String get monthMay;
-
-  /// No description provided for @monthJune.
-  ///
-  /// In en, this message translates to:
-  /// **'June'**
-  String get monthJune;
-
-  /// No description provided for @monthJuly.
-  ///
-  /// In en, this message translates to:
-  /// **'July'**
-  String get monthJuly;
-
-  /// No description provided for @monthAugust.
-  ///
-  /// In en, this message translates to:
-  /// **'August'**
-  String get monthAugust;
-
-  /// No description provided for @monthSeptember.
-  ///
-  /// In en, this message translates to:
-  /// **'September'**
-  String get monthSeptember;
-
-  /// No description provided for @monthOctober.
-  ///
-  /// In en, this message translates to:
-  /// **'October'**
-  String get monthOctober;
-
-  /// No description provided for @monthNovember.
-  ///
-  /// In en, this message translates to:
-  /// **'November'**
-  String get monthNovember;
-
-  /// No description provided for @monthDecember.
-  ///
-  /// In en, this message translates to:
-  /// **'December'**
-  String get monthDecember;
 
   /// No description provided for @apply.
   ///
@@ -1182,42 +710,6 @@ abstract class AppLocalizations {
   /// **'View'**
   String get view;
 
-  /// No description provided for @filters.
-  ///
-  /// In en, this message translates to:
-  /// **'Filters'**
-  String get filters;
-
-  /// No description provided for @table.
-  ///
-  /// In en, this message translates to:
-  /// **'Table'**
-  String get table;
-
-  /// No description provided for @gallery.
-  ///
-  /// In en, this message translates to:
-  /// **'Gallery'**
-  String get gallery;
-
-  /// No description provided for @list.
-  ///
-  /// In en, this message translates to:
-  /// **'List'**
-  String get list;
-
-  /// No description provided for @columns.
-  ///
-  /// In en, this message translates to:
-  /// **'Columns'**
-  String get columns;
-
-  /// No description provided for @saveView.
-  ///
-  /// In en, this message translates to:
-  /// **'Save view'**
-  String get saveView;
-
   /// No description provided for @importCsv.
   ///
   /// In en, this message translates to:
@@ -1229,18 +721,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Import metadata'**
   String get importMetadata;
-
-  /// No description provided for @libraryExitSelection.
-  ///
-  /// In en, this message translates to:
-  /// **'Exit selection'**
-  String get libraryExitSelection;
-
-  /// No description provided for @librarySelectMultiple.
-  ///
-  /// In en, this message translates to:
-  /// **'Select multiple'**
-  String get librarySelectMultiple;
 
   /// No description provided for @libraryLoading.
   ///
@@ -1254,137 +734,11 @@ abstract class AppLocalizations {
   /// **'Library could not be loaded'**
   String get libraryLoadError;
 
-  /// No description provided for @libraryDeleteSelectedTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete selected games'**
-  String get libraryDeleteSelectedTitle;
-
-  /// No description provided for @libraryDeleteSelectedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} games will be marked as deleted. They will not be physically removed.'**
-  String libraryDeleteSelectedMessage(Object count);
-
-  /// No description provided for @libraryTypeDeleteConfirmation.
-  ///
-  /// In en, this message translates to:
-  /// **'Type DELETE to confirm.'**
-  String get libraryTypeDeleteConfirmation;
-
-  /// No description provided for @libraryDeleteKeyword.
-  ///
-  /// In en, this message translates to:
-  /// **'DELETE'**
-  String get libraryDeleteKeyword;
-
   /// No description provided for @libraryConfirmation.
   ///
   /// In en, this message translates to:
   /// **'Confirmation'**
   String get libraryConfirmation;
-
-  /// No description provided for @libraryDeleteSelected.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete selected'**
-  String get libraryDeleteSelected;
-
-  /// No description provided for @libraryFiltersCount.
-  ///
-  /// In en, this message translates to:
-  /// **'Filters ({count})'**
-  String libraryFiltersCount(Object count);
-
-  /// No description provided for @libraryActions.
-  ///
-  /// In en, this message translates to:
-  /// **'Library actions'**
-  String get libraryActions;
-
-  /// No description provided for @libraryUpdateView.
-  ///
-  /// In en, this message translates to:
-  /// **'Update view'**
-  String get libraryUpdateView;
-
-  /// No description provided for @libraryRenameView.
-  ///
-  /// In en, this message translates to:
-  /// **'Rename view'**
-  String get libraryRenameView;
-
-  /// No description provided for @libraryDeleteView.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete view'**
-  String get libraryDeleteView;
-
-  /// No description provided for @libraryYear.
-  ///
-  /// In en, this message translates to:
-  /// **'Year'**
-  String get libraryYear;
-
-  /// No description provided for @libraryFilterStatus.
-  ///
-  /// In en, this message translates to:
-  /// **'Status: {value}'**
-  String libraryFilterStatus(Object value);
-
-  /// No description provided for @libraryFilterPlatform.
-  ///
-  /// In en, this message translates to:
-  /// **'Platform: {value}'**
-  String libraryFilterPlatform(Object value);
-
-  /// No description provided for @libraryFilterGenre.
-  ///
-  /// In en, this message translates to:
-  /// **'Genre: {value}'**
-  String libraryFilterGenre(Object value);
-
-  /// No description provided for @libraryFilterSearch.
-  ///
-  /// In en, this message translates to:
-  /// **'Search: {value}'**
-  String libraryFilterSearch(Object value);
-
-  /// No description provided for @libraryMissingCompletedDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Missing completion date'**
-  String get libraryMissingCompletedDate;
-
-  /// No description provided for @libraryOpenDetails.
-  ///
-  /// In en, this message translates to:
-  /// **'Open details'**
-  String get libraryOpenDetails;
-
-  /// No description provided for @libraryActionsTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Actions'**
-  String get libraryActionsTooltip;
-
-  /// No description provided for @libraryAdvancedFilters.
-  ///
-  /// In en, this message translates to:
-  /// **'Advanced filters'**
-  String get libraryAdvancedFilters;
-
-  /// No description provided for @libraryClearFilters.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear filters'**
-  String get libraryClearFilters;
-
-  /// No description provided for @libraryStatus.
-  ///
-  /// In en, this message translates to:
-  /// **'Status'**
-  String get libraryStatus;
 
   /// No description provided for @libraryPlatforms.
   ///
@@ -1398,143 +752,11 @@ abstract class AppLocalizations {
   /// **'Genres'**
   String get libraryGenres;
 
-  /// No description provided for @libraryMinimumRating.
-  ///
-  /// In en, this message translates to:
-  /// **'Minimum rating'**
-  String get libraryMinimumRating;
-
-  /// No description provided for @libraryMaximumRating.
-  ///
-  /// In en, this message translates to:
-  /// **'Maximum rating'**
-  String get libraryMaximumRating;
-
-  /// No description provided for @libraryMinimumHours.
-  ///
-  /// In en, this message translates to:
-  /// **'Minimum hours'**
-  String get libraryMinimumHours;
-
-  /// No description provided for @libraryMaximumHours.
-  ///
-  /// In en, this message translates to:
-  /// **'Maximum hours'**
-  String get libraryMaximumHours;
-
   /// No description provided for @libraryType.
   ///
   /// In en, this message translates to:
   /// **'Type'**
   String get libraryType;
-
-  /// No description provided for @libraryReleaseFrom.
-  ///
-  /// In en, this message translates to:
-  /// **'Released from'**
-  String get libraryReleaseFrom;
-
-  /// No description provided for @libraryReleaseTo.
-  ///
-  /// In en, this message translates to:
-  /// **'Released through'**
-  String get libraryReleaseTo;
-
-  /// No description provided for @libraryCompletedFrom.
-  ///
-  /// In en, this message translates to:
-  /// **'Completed from'**
-  String get libraryCompletedFrom;
-
-  /// No description provided for @libraryCompletedTo.
-  ///
-  /// In en, this message translates to:
-  /// **'Completed through'**
-  String get libraryCompletedTo;
-
-  /// No description provided for @libraryWithRating.
-  ///
-  /// In en, this message translates to:
-  /// **'With rating'**
-  String get libraryWithRating;
-
-  /// No description provided for @libraryWithPlatform.
-  ///
-  /// In en, this message translates to:
-  /// **'With platform'**
-  String get libraryWithPlatform;
-
-  /// No description provided for @libraryWithGenre.
-  ///
-  /// In en, this message translates to:
-  /// **'With genre'**
-  String get libraryWithGenre;
-
-  /// No description provided for @libraryWithCompletedDate.
-  ///
-  /// In en, this message translates to:
-  /// **'With completion date'**
-  String get libraryWithCompletedDate;
-
-  /// No description provided for @libraryNoOptions.
-  ///
-  /// In en, this message translates to:
-  /// **'No options available.'**
-  String get libraryNoOptions;
-
-  /// No description provided for @libraryClearDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear date'**
-  String get libraryClearDate;
-
-  /// No description provided for @libraryChooseDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose date'**
-  String get libraryChooseDate;
-
-  /// No description provided for @libraryVisibleColumns.
-  ///
-  /// In en, this message translates to:
-  /// **'Visible columns'**
-  String get libraryVisibleColumns;
-
-  /// No description provided for @libraryEmptyTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'There are no games in your library yet.'**
-  String get libraryEmptyTitle;
-
-  /// No description provided for @libraryEmptyMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Once you add the first one, the catalog will start taking shape.'**
-  String get libraryEmptyMessage;
-
-  /// No description provided for @libraryEmptyFilteredTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'No games match the current view.'**
-  String get libraryEmptyFilteredTitle;
-
-  /// No description provided for @libraryEmptyFilteredMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Try relaxing filters, changing the saved view, or clearing the search.'**
-  String get libraryEmptyFilteredMessage;
-
-  /// No description provided for @libraryViewUpdated.
-  ///
-  /// In en, this message translates to:
-  /// **'View updated.'**
-  String get libraryViewUpdated;
-
-  /// No description provided for @libraryDeleteViewMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'The view “{name}” will be deleted.'**
-  String libraryDeleteViewMessage(Object name);
 
   /// No description provided for @libraryDeleteGameTitle.
   ///
@@ -1548,149 +770,11 @@ abstract class AppLocalizations {
   /// **'“{title}” will be hidden from the library.'**
   String libraryDeleteGameMessage(Object title);
 
-  /// No description provided for @libraryNoLimit.
-  ///
-  /// In en, this message translates to:
-  /// **'No limit'**
-  String get libraryNoLimit;
-
-  /// No description provided for @libraryDefaultAll.
-  ///
-  /// In en, this message translates to:
-  /// **'All games'**
-  String get libraryDefaultAll;
-
-  /// No description provided for @libraryDefaultPending.
-  ///
-  /// In en, this message translates to:
-  /// **'Pending'**
-  String get libraryDefaultPending;
-
-  /// No description provided for @libraryDefaultCompleted.
-  ///
-  /// In en, this message translates to:
-  /// **'Completed'**
-  String get libraryDefaultCompleted;
-
-  /// No description provided for @libraryDefaultByYear.
-  ///
-  /// In en, this message translates to:
-  /// **'Filter by year'**
-  String get libraryDefaultByYear;
-
-  /// No description provided for @librarySelectedCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} selected'**
-  String librarySelectedCount(Object count);
-
-  /// No description provided for @librarySelectVisible.
-  ///
-  /// In en, this message translates to:
-  /// **'Select visible ({count})'**
-  String librarySelectVisible(Object count);
-
-  /// No description provided for @librarySelectAll.
-  ///
-  /// In en, this message translates to:
-  /// **'Select all ({count})'**
-  String librarySelectAll(Object count);
-
-  /// No description provided for @libraryClearSelection.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear selection'**
-  String get libraryClearSelection;
-
-  /// No description provided for @libraryAverage.
-  ///
-  /// In en, this message translates to:
-  /// **'Average'**
-  String get libraryAverage;
-
   /// No description provided for @libraryHours.
   ///
   /// In en, this message translates to:
   /// **'Hours'**
   String get libraryHours;
-
-  /// No description provided for @libraryNoOptionsShort.
-  ///
-  /// In en, this message translates to:
-  /// **'No options'**
-  String get libraryNoOptionsShort;
-
-  /// No description provided for @columnCover.
-  ///
-  /// In en, this message translates to:
-  /// **'Cover'**
-  String get columnCover;
-
-  /// No description provided for @columnTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Title'**
-  String get columnTitle;
-
-  /// No description provided for @columnStatus.
-  ///
-  /// In en, this message translates to:
-  /// **'Status'**
-  String get columnStatus;
-
-  /// No description provided for @columnPlatforms.
-  ///
-  /// In en, this message translates to:
-  /// **'Platforms'**
-  String get columnPlatforms;
-
-  /// No description provided for @columnGenres.
-  ///
-  /// In en, this message translates to:
-  /// **'Genres'**
-  String get columnGenres;
-
-  /// No description provided for @columnRating.
-  ///
-  /// In en, this message translates to:
-  /// **'Rating'**
-  String get columnRating;
-
-  /// No description provided for @columnReleaseDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Release date'**
-  String get columnReleaseDate;
-
-  /// No description provided for @columnCompletedDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Completion date'**
-  String get columnCompletedDate;
-
-  /// No description provided for @columnHours.
-  ///
-  /// In en, this message translates to:
-  /// **'Hours'**
-  String get columnHours;
-
-  /// No description provided for @columnType.
-  ///
-  /// In en, this message translates to:
-  /// **'Type'**
-  String get columnType;
-
-  /// No description provided for @columnNotes.
-  ///
-  /// In en, this message translates to:
-  /// **'Notes'**
-  String get columnNotes;
-
-  /// No description provided for @columnUpdatedAt.
-  ///
-  /// In en, this message translates to:
-  /// **'Updated'**
-  String get columnUpdatedAt;
 
   /// No description provided for @gameCreateTitle.
   ///
@@ -1703,18 +787,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit game'**
   String get gameEditTitle;
-
-  /// No description provided for @gameIdentity.
-  ///
-  /// In en, this message translates to:
-  /// **'Identity'**
-  String get gameIdentity;
-
-  /// No description provided for @gameIdentitySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Game information and external metadata.'**
-  String get gameIdentitySubtitle;
 
   /// No description provided for @gameName.
   ///
@@ -1782,18 +854,6 @@ abstract class AppLocalizations {
   /// **'Rating'**
   String get gameRating;
 
-  /// No description provided for @gamePersonalLibrary.
-  ///
-  /// In en, this message translates to:
-  /// **'Personal library'**
-  String get gamePersonalLibrary;
-
-  /// No description provided for @gamePersonalLibrarySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Status, rating, and private notes.'**
-  String get gamePersonalLibrarySubtitle;
-
   /// No description provided for @gamePersonalRating.
   ///
   /// In en, this message translates to:
@@ -1806,18 +866,6 @@ abstract class AppLocalizations {
   /// **'Personal notes'**
   String get gamePersonalNotes;
 
-  /// No description provided for @gameCatalogs.
-  ///
-  /// In en, this message translates to:
-  /// **'Catalogs'**
-  String get gameCatalogs;
-
-  /// No description provided for @gameCatalogsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Associated platforms and genres.'**
-  String get gameCatalogsSubtitle;
-
   /// No description provided for @gameAddPlatform.
   ///
   /// In en, this message translates to:
@@ -1829,18 +877,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add genre'**
   String get gameAddGenre;
-
-  /// No description provided for @gameCompletionSection.
-  ///
-  /// In en, this message translates to:
-  /// **'Personal record'**
-  String get gameCompletionSection;
-
-  /// No description provided for @gameCompletionSectionSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Completion date is optional. Hours and platform belong to this game.'**
-  String get gameCompletionSectionSubtitle;
 
   /// No description provided for @gameImportMetadata.
   ///
@@ -1902,23 +938,11 @@ abstract class AppLocalizations {
   /// **'The cover will be stored locally after the game is saved.'**
   String get gameIncludedCoverSave;
 
-  /// No description provided for @gameSearchMetadata.
-  ///
-  /// In en, this message translates to:
-  /// **'Search metadata'**
-  String get gameSearchMetadata;
-
   /// No description provided for @gamePendingCover.
   ///
   /// In en, this message translates to:
   /// **'Pending cover: {provider}'**
   String gamePendingCover(Object provider);
-
-  /// No description provided for @ratingNone.
-  ///
-  /// In en, this message translates to:
-  /// **'No rating'**
-  String get ratingNone;
 
   /// No description provided for @ratingOneStar.
   ///
@@ -2016,18 +1040,6 @@ abstract class AppLocalizations {
   /// **'Remove cover'**
   String get gameRemoveCover;
 
-  /// No description provided for @gameSummaryProgress.
-  ///
-  /// In en, this message translates to:
-  /// **'Summary and progress'**
-  String get gameSummaryProgress;
-
-  /// No description provided for @gameLastCompleted.
-  ///
-  /// In en, this message translates to:
-  /// **'Completion date'**
-  String get gameLastCompleted;
-
   /// No description provided for @metadataApplied.
   ///
   /// In en, this message translates to:
@@ -2069,12 +1081,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Note'**
   String get gameNote;
-
-  /// No description provided for @gameStartDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Start date'**
-  String get gameStartDate;
 
   /// No description provided for @gameNotes.
   ///
@@ -3429,6 +2435,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try another title or choose another year.'**
   String get logSearchHint;
+
+  /// No description provided for @statisticsFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get statisticsFinished;
+
+  /// No description provided for @statisticsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No data'**
+  String get statisticsUnavailable;
+
+  /// No description provided for @statisticsEmptyYear.
+  ///
+  /// In en, this message translates to:
+  /// **'No games this year'**
+  String get statisticsEmptyYear;
+
+  /// No description provided for @statisticsEmptyYearHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Games without a year remain available in Games → No year.'**
+  String get statisticsEmptyYearHint;
+
+  /// No description provided for @statisticsFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get statisticsFavorites;
+
+  /// No description provided for @statisticsNoRatedGames.
+  ///
+  /// In en, this message translates to:
+  /// **'No rated games this year yet.'**
+  String get statisticsNoRatedGames;
+
+  /// No description provided for @statisticsPlayedPlatforms.
+  ///
+  /// In en, this message translates to:
+  /// **'Where I played'**
+  String get statisticsPlayedPlatforms;
+
+  /// No description provided for @statisticsPlayedPlatformsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Games by recorded played platform.'**
+  String get statisticsPlayedPlatformsHint;
+
+  /// No description provided for @statisticsNoPlayedPlatforms.
+  ///
+  /// In en, this message translates to:
+  /// **'No played platforms recorded this year yet.'**
+  String get statisticsNoPlayedPlatforms;
+
+  /// No description provided for @columnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get columnTitle;
 }
 
 class _AppLocalizationsDelegate

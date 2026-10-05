@@ -5,7 +5,7 @@ import '../../features/games/presentation/game_detail_page.dart';
 import '../../features/games/presentation/game_form_page.dart';
 import '../../features/bulk_metadata_import/presentation/bulk_metadata_import_page.dart';
 import '../../features/import_export/notion_csv/presentation/import_notion_csv_page.dart';
-import '../../features/library/presentation/game_list_page.dart';
+import '../../features/library/presentation/annual_game_log_page.dart';
 import '../../features/settings/presentation/settings_page.dart';
 import '../../features/statistics/presentation/statistics_page.dart';
 import 'app_shell.dart';

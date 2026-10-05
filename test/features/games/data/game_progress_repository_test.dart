@@ -56,6 +56,7 @@ void main() {
         gameId: details.game.id,
         title: details.game.title,
         isCompleted: completed,
+        playedYear: 2026,
         completedAt: completedAt,
         hoursPlayed: hours,
         playedPlatformId: platform,
@@ -195,14 +196,17 @@ void main() {
       expect(rows.single.personalNotes, 'Personal notes');
       expect(rows.single.platforms.single.id, 'catalog-pc');
       expect(rows.single.playedPlatformId, 'played-switch');
-      final stats = const LibraryStatisticsCalculator().calculate(rows: rows);
+      final stats = const LibraryStatisticsCalculator().calculate(
+        rows: rows,
+        year: 2026,
+      );
       expect(stats.totalGames, 1);
-      expect(stats.completedByYear, {2026: 1});
+      expect(stats.completedCount, 1);
       expect(stats.totalHours, 7.5);
       expect(stats.averageRating, 4);
       expect(stats.platformBreakdown.single.id, 'played-switch');
       expect(stats.platformBreakdown.single.name, 'Switch');
-      expect(stats.latestCompleted.single.completedAt, date);
+      expect(stats.favorites.single.completedAt, date);
       final export =
           await LibraryExportRepository(
             db,

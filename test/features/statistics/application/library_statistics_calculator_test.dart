@@ -4,148 +4,167 @@ import 'package:test/test.dart';
 
 void main() {
   const calculator = LibraryStatisticsCalculator();
+  test(
+    'played year scopes all personal KPIs, independent of completion and catalog dates',
+    () {
+      final rows = [
+        row(
+          'a',
+          year: 2026,
+          completed: true,
+          date: DateTime(2025, 12),
+          hours: 10,
+          rating: 5,
+          played: 'ps5',
+        ),
+        row('b', year: 2026, hours: 18, rating: 3),
+        row('c', year: 2026, completed: true, played: 'pc'),
+        row(
+          'other-year',
+          year: 2025,
+          completed: true,
+          date: DateTime(2026),
+          hours: 99,
+          rating: 1,
+        ),
+        row(
+          'unknown-year',
+          completed: true,
+          date: DateTime(2026),
+          hours: 100,
+          rating: 1,
+        ),
+      ];
+      final stats = calculator.calculate(rows: rows, year: 2026);
+      expect(stats.year, 2026);
+      expect(stats.totalGames, 3);
+      expect(stats.completedCount, 2); // No completion date required.
+      expect(stats.totalHours, 28); // Includes unfinished games.
+      expect(stats.averageRating, 4); // Unrated game is ignored.
+      expect(stats.favorites.map((r) => r.libraryEntryId), ['a', 'b']);
+      expect(stats.platformBreakdown.map((p) => p.id).toSet(), {'pc', 'ps5'});
+      expect(stats.platformBreakdown.map((p) => p.count), [1, 1]);
+      expect(calculator.calculate(rows: rows, year: 2025).totalGames, 1);
+      expect(calculator.calculate(rows: rows, year: 2024).totalGames, 0);
+    },
+  );
 
-  test('calculates global, yearly, monthly and quality statistics', () {
-    final stats = calculator.calculate(rows: _rows);
+  test(
+    'unknown played year is never inferred from release, completion or update dates',
+    () {
+      final stats = calculator.calculate(
+        rows: [row('unknown', completed: true, date: DateTime(2026))],
+        year: 2026,
+      );
+      expect(stats.totalGames, 0);
+      expect(stats.completedCount, 0);
+      expect(stats.totalHours, isNull);
+      expect(stats.averageRating, isNull);
+      expect(stats.favorites, isEmpty);
+    },
+  );
 
-    expect(stats.totalGames, 5);
-    expect(stats.backlogCount, 2);
-    expect(stats.completedCount, 3);
-    expect(stats.completedByYear[2026], 2);
-    expect(stats.completedByYear[2025], isNull);
-    expect(stats.hoursByYear[2026], 77);
-    expect(stats.hoursByYear[2025], isNull);
-    expect(stats.totalHours, 77);
-
-    final year2026 = stats.statsForYear(2026)!;
-    expect(year2026.completedCount, 2);
-    expect(year2026.hours, 77);
-    expect(year2026.monthlyCompletions[0].completedCount, 0);
-    expect(year2026.monthlyCompletions[1].completedCount, 1);
-    expect(year2026.monthlyCompletions[2].completedCount, 1);
-    expect(year2026.monthlyCompletions[2].hours, 42);
-
-    expect(stats.averageRating, closeTo(3.67, 0.01));
-    expect(stats.ratingDistribution.countByRating[5], 1);
-    expect(stats.ratingDistribution.countByRating[4], 1);
-    expect(stats.ratingDistribution.countByRating[2], 1);
-    expect(stats.ratingDistribution.unratedCount, 2);
-
-    final pc = stats.platformBreakdown.singleWhere((item) => item.name == 'PC');
-    final rpg = stats.genreBreakdown.singleWhere((item) => item.name == 'RPG');
-    expect(pc.count, 2);
-    expect(rpg.count, 1);
-
-    expect(stats.qualityStats.missingCover, 2);
-    expect(stats.qualityStats.missingMetadata, 3);
-    expect(stats.qualityStats.missingRating, 2);
-    expect(stats.qualityStats.missingPlatform, 2);
-    expect(stats.qualityStats.missingGenre, 1);
-    expect(stats.qualityStats.completedWithoutDate, 1);
+  test('one LibraryEntry counts once even when an input row repeats', () {
+    final game = row(
+      'one',
+      year: 2026,
+      completed: true,
+      hours: 12,
+      rating: 5,
+      played: 'ps5',
+    );
+    final stats = calculator.calculate(rows: [game, game, game], year: 2026);
+    expect(stats.totalGames, 1);
+    expect(stats.completedCount, 1);
+    expect(stats.totalHours, 12);
+    expect(stats.favorites, hasLength(1));
+    expect(stats.platformBreakdown.single.count, 1);
   });
 
-  test('builds latest completions without duplicating the same game', () {
-    final stats = calculator.calculate(rows: _rows);
+  test(
+    'platform distribution uses personal platform ID, never catalog platforms',
+    () {
+      final stats = calculator.calculate(
+        rows: [
+          row('a', year: 2026, played: 'ps5'),
+          row('b', year: 2026, played: 'ps5'),
+          row('c', year: 2026),
+        ],
+        year: 2026,
+      );
+      expect(stats.platformBreakdown.single.id, 'ps5');
+      expect(stats.platformBreakdown.single.name, 'Played ps5');
+      expect(stats.platformBreakdown.single.count, 2);
+    },
+  );
 
-    expect(stats.latestCompleted.map((item) => item.row.title), [
-      'Baldur\'s Gate 3',
-      'Hades',
-    ]);
-    expect(stats.latestCompleted.first.completedAt, DateTime(2026, 3, 10));
-    expect(stats.latestCompleted.last.completedAt, DateTime(2026, 2, 2));
-  });
+  test(
+    'unknown hours and ratings remain unavailable, while explicit zero hours remains zero',
+    () {
+      final stats = calculator.calculate(
+        rows: [row('a', year: 2026)],
+        year: 2026,
+      );
+      expect(stats.totalHours, isNull);
+      expect(stats.averageRating, isNull);
+      expect(stats.favorites, isEmpty);
+      expect(stats.platformBreakdown, isEmpty);
+      expect(
+        calculator
+            .calculate(rows: [row('zero', year: 2026, hours: 0)], year: 2026)
+            .totalHours,
+        0,
+      );
+    },
+  );
 
-  test('handles an empty library without ugly values', () {
-    final stats = calculator.calculate(rows: const []);
+  test(
+    'favorites include only rated entries, use stable ties and stay small',
+    () {
+      final rows = [
+        row('unrated', year: 2026),
+        for (var i = 8; i >= 0; i--) row('$i', year: 2026, rating: 4),
+      ];
+      final stats = calculator.calculate(rows: rows, year: 2026);
+      expect(stats.favorites.map((r) => r.title), ['0', '1', '2', '3', '4']);
+      expect(stats.averageRating, 4);
+    },
+  );
 
+  test('empty year has zero records and unavailable personal measurements', () {
+    final stats = calculator.calculate(rows: [], year: 2026);
     expect(stats.totalGames, 0);
-    expect(stats.totalHours, 0);
+    expect(stats.completedCount, 0);
+    expect(stats.totalHours, isNull);
     expect(stats.averageRating, isNull);
-    expect(stats.ratingDistribution.unratedCount, 0);
     expect(stats.platformBreakdown, isEmpty);
-    expect(stats.genreBreakdown, isEmpty);
-    expect(stats.yearlyStatistics, isEmpty);
-    expect(stats.latestCompleted, isEmpty);
   });
 }
 
-final _rows = [
-  LibraryGameRow(
-    gameId: 'g1',
-    libraryEntryId: 'e1',
-    title: 'Hades',
-    selectedCoverLocalPath: 'media/games/g1/cover.png',
-    hasExternalMetadata: true,
-    isCompleted: true,
-    completedAt: DateTime(2026, 2, 2),
-    hoursPlayed: 35,
-    playedPlatformId: 'pc',
-    playedPlatformName: 'PC',
-    personalRating: 5,
-    type: 'game',
-    platforms: const [
-      LibraryCatalogItem(id: 'pc', name: 'PC'),
-      LibraryCatalogItem(id: 'switch', name: 'Nintendo Switch'),
-    ],
-    genres: const [LibraryCatalogItem(id: 'roguelite', name: 'Roguelite')],
-
-    updatedAt: DateTime(2026, 6, 1),
-  ),
-  LibraryGameRow(
-    gameId: 'g2',
-    libraryEntryId: 'e2',
-    title: 'Baldur\'s Gate 3',
-    isCompleted: true,
-    completedAt: DateTime(2026, 3, 10),
-    hoursPlayed: 42,
-    playedPlatformId: 'pc',
-    playedPlatformName: 'PC',
-    personalRating: 4,
-    type: 'game',
-    platforms: const [LibraryCatalogItem(id: 'pc', name: 'PC')],
-    genres: const [LibraryCatalogItem(id: 'rpg', name: 'RPG')],
-
-    updatedAt: DateTime(2026, 6, 2),
-  ),
-  LibraryGameRow(
-    gameId: 'g3',
-    libraryEntryId: 'e3',
-    title: 'Celeste',
-    isCompleted: false,
-    type: 'game',
-    platforms: const [],
-    genres: const [],
-
-    updatedAt: DateTime(2026, 6, 3),
-  ),
-  LibraryGameRow(
-    gameId: 'g4',
-    libraryEntryId: 'e4',
-    title: 'Silent Hill 3',
-    selectedCoverLocalPath: 'media/games/g4/cover.png',
-    isCompleted: true,
-    playedPlatformId: 'ps2',
-    playedPlatformName: 'PlayStation 2',
-    personalRating: 2,
-    type: 'game',
-    platforms: const [LibraryCatalogItem(id: 'ps2', name: 'PlayStation 2')],
-    genres: const [LibraryCatalogItem(id: 'horror', name: 'Horror')],
-
-    updatedAt: DateTime(2026, 6, 4),
-  ),
-  LibraryGameRow(
-    gameId: 'g5',
-    libraryEntryId: 'e5',
-    title: 'Dropped Game',
-    selectedCoverLocalPath: 'media/games/g5/cover.png',
-    hasExternalMetadata: true,
-    isCompleted: false,
-    type: 'game',
-    platforms: const [
-      LibraryCatalogItem(id: 'switch', name: 'Nintendo Switch'),
-    ],
-    genres: const [LibraryCatalogItem(id: 'strategy', name: 'Strategy')],
-
-    updatedAt: DateTime(2026, 6, 5),
-  ),
-];
+LibraryGameRow row(
+  String id, {
+  int? year,
+  bool completed = false,
+  DateTime? date,
+  double? hours,
+  int? rating,
+  String? played,
+}) => LibraryGameRow(
+  gameId: 'game-$id',
+  libraryEntryId: id,
+  title: id,
+  playedYear: year,
+  isCompleted: completed,
+  completedAt: date,
+  hoursPlayed: hours,
+  personalRating: rating,
+  playedPlatformId: played,
+  playedPlatformName: played == null ? null : 'Played $played',
+  releaseDate: DateTime(2026),
+  updatedAt: DateTime(2026),
+  type: 'game',
+  platforms: const [
+    LibraryCatalogItem(id: 'catalog-only', name: 'Catalog platform'),
+  ],
+  genres: const [],
+);

@@ -107,6 +107,4 @@ class GameDetailViewModel {
   final GameRepository _games;
 
   Future<void> deleteGame(String entryId) => _games.softDelete(entryId);
-  Future<void> deleteGames(Iterable<String> entryIds) =>
-      _games.softDeleteMany(entryIds);
 }

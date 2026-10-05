@@ -1,21 +1,10 @@
 part of 'library_catalog_widgets.dart';
 
-/// Lazy gallery used when the library is in cover-oriented layout.
+/// The annual game log gallery.
 class LibraryCatalogGrid extends StatelessWidget {
-  const LibraryCatalogGrid({
-    required this.rows,
-    required this.selectionMode,
-    required this.selectedIds,
-    required this.onSelectionChanged,
-    required this.rowActionsBuilder,
-    super.key,
-  });
+  const LibraryCatalogGrid({required this.rows, super.key});
 
   final List<LibraryGameRow> rows;
-  final bool selectionMode;
-  final Set<String> selectedIds;
-  final LibraryRowSelectionChanged onSelectionChanged;
-  final LibraryRowActionsBuilder rowActionsBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -30,36 +19,17 @@ class LibraryCatalogGrid extends StatelessWidget {
       itemCount: rows.length,
       itemBuilder: (context, index) {
         final row = rows[index];
-        return LibraryCatalogCard(
-          key: ValueKey(row.libraryEntryId),
-          row: row,
-          selectionMode: selectionMode,
-          selected: selectedIds.contains(row.libraryEntryId),
-          onSelected:
-              (selected) => onSelectionChanged(row.libraryEntryId, selected),
-          actions: rowActionsBuilder(row, true),
-        );
+        return LibraryCatalogCard(key: ValueKey(row.libraryEntryId), row: row);
       },
     );
   }
 }
 
-/// One selectable library item in the gallery layout.
+/// Opens one personal game record.
 class LibraryCatalogCard extends StatelessWidget {
-  const LibraryCatalogCard({
-    required this.row,
-    required this.selectionMode,
-    required this.selected,
-    required this.onSelected,
-    required this.actions,
-    super.key,
-  });
+  const LibraryCatalogCard({required this.row, super.key});
 
   final LibraryGameRow row;
-  final bool selectionMode;
-  final bool selected;
-  final ValueChanged<bool> onSelected;
-  final Widget actions;
 
   @override
   Widget build(BuildContext context) {
@@ -67,12 +37,8 @@ class LibraryCatalogCard extends StatelessWidget {
     final bv = BvThemeExtension.of(context);
     return BvSurface(
       padding: EdgeInsets.zero,
-      selected: selected,
       backgroundColor: bv.surfaceRaised,
-      onTap:
-          selectionMode
-              ? () => onSelected(!selected)
-              : () => context.go('/games/${row.libraryEntryId}'),
+      onTap: () => context.go('/games/${row.libraryEntryId}'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -105,15 +71,6 @@ class LibraryCatalogCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (selectionMode)
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: _SelectionBadge(
-                      selected: selected,
-                      onChanged: onSelected,
-                    ),
-                  ),
               ],
             ),
           ),
@@ -136,7 +93,6 @@ class LibraryCatalogCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (!selectionMode) actions,
                     ],
                   ),
                   const SizedBox(height: 6),
@@ -178,6 +134,35 @@ class LibraryCatalogCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _MetadataLine extends StatelessWidget {
+  const _MetadataLine({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 15,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+      ],
     );
   }
 }

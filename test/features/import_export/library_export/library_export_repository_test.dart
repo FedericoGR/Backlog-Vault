@@ -17,6 +17,41 @@ void main() {
 
   tearDown(() => db.close());
 
+  test(
+    'obsolete saved-view settings export verbatim without runtime filter models',
+    () async {
+      const filter =
+          '{"version":1,"statuses":["playing","paused","wishlist"],"minHours":18,"missingGenre":true,"futureField":{"keep":true}}';
+      const sort = '{"field":"releaseDate","direction":"descending"}';
+      const columns =
+          '{"visibleColumns":["title","status","hours"],"unknownOption":42}';
+      final date = DateTime(2020);
+      await db
+          .into(db.savedViews)
+          .insert(
+            SavedViewsCompanion.insert(
+              id: 'old-view',
+              name: 'Old custom view',
+              filterJson: filter,
+              sortJson: sort,
+              columnConfigJson: columns,
+              createdAt: date,
+              updatedAt: date,
+            ),
+          );
+      final before = await db.select(db.savedViews).getSingle();
+      final exported =
+          await LibraryExportRepository(
+            db,
+            sourcePlatform: 'windows',
+          ).createDocument();
+      expect(exported.savedViews.single['filterJson'], filter);
+      expect(exported.savedViews.single['sortJson'], sort);
+      expect(exported.savedViews.single['columnConfigJson'], columns);
+      expect(await db.select(db.savedViews).getSingle(), before);
+    },
+  );
+
   LibraryExportRepository repository({DateTime? now}) {
     return LibraryExportRepository(
       db,

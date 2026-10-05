@@ -181,13 +181,7 @@ class _GameListPageState extends ConsumerState<GameListPage> {
                     ),
                   );
                 }
-                return LibraryCatalogGrid(
-                  rows: visible,
-                  selectionMode: false,
-                  selectedIds: const {},
-                  onSelectionChanged: (_, _) {},
-                  rowActionsBuilder: (_, _) => const SizedBox.shrink(),
-                );
+                return LibraryCatalogGrid(rows: visible);
               },
               loading: () => BvLoadingState(label: l10n.libraryLoading),
               error:

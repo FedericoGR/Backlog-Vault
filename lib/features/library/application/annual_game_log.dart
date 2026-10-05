@@ -7,7 +7,7 @@ final annualLogClockProvider = Provider<Clock>((ref) => systemClock);
 final annualGameLogProvider =
     NotifierProvider<AnnualGameLog, AnnualGameLogState>(AnnualGameLog.new);
 
-/// Independent of the dormant saved-view, column and advanced-filter state.
+/// The active library state consists only of year and search.
 class AnnualGameLog extends Notifier<AnnualGameLogState> {
   @override
   AnnualGameLogState build() =>

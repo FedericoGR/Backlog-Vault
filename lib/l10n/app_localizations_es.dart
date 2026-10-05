@@ -12,9 +12,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get appTitle => 'Backlog Vault';
 
   @override
-  String get navigationHome => 'Inicio';
-
-  @override
   String get navigationLibrary => 'Juegos';
 
   @override
@@ -301,9 +298,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get games => 'Juegos';
 
   @override
-  String get backlog => 'Backlog';
-
-  @override
   String get completed => 'Completados';
 
   @override
@@ -313,291 +307,21 @@ class AppLocalizationsEs extends AppLocalizations {
   String get missingMetadata => 'Sin metadata';
 
   @override
-  String get missingRating => 'Sin puntaje';
-
-  @override
-  String get missingPlatform => 'Sin plataforma';
-
-  @override
   String get missingGenre => 'Sin género';
-
-  @override
-  String get homeBacklogDescription => 'Pendientes listos para volver a mirar.';
-
-  @override
-  String get homeBacklogEmpty => 'No hay pendientes en backlog.';
-
-  @override
-  String get homeRecentCompleted => 'Completados recientes';
-
-  @override
-  String get homeRecentCompletedDescription =>
-      'Los últimos cierres con fecha registrada.';
-
-  @override
-  String get homeRecentCompletedEmpty =>
-      'No hay completados con fecha registrada.';
-
-  @override
-  String get homeMissingCoverDescription =>
-      'Entradas que todavía piden una selección visual.';
-
-  @override
-  String get homeMissingCoverEmpty =>
-      'Todos los juegos visibles tienen portada.';
-
-  @override
-  String get homeMissingMetadataDescription =>
-      'Juegos que conviene enriquecer antes de ordenar.';
-
-  @override
-  String get homeMissingMetadataEmpty =>
-      'Todos los juegos visibles tienen metadata externa.';
-
-  @override
-  String get homeRecentlyUpdated => 'Últimos actualizados';
-
-  @override
-  String get homeRecentlyUpdatedDescription =>
-      'Cambios recientes en los registros personales.';
-
-  @override
-  String get homeRecentlyUpdatedEmpty => 'No hay actividad reciente.';
-
-  @override
-  String get homeLoading => 'Cargando inicio';
-
-  @override
-  String get homeLoadError => 'No se pudo cargar el inicio';
-
-  @override
-  String homeLibrarySummary(
-    Object completedCount,
-    Object pendingCount,
-    Object total,
-  ) {
-    return '$total juegos, $completedCount completados y $pendingCount pendientes.';
-  }
-
-  @override
-  String get homeOpenLibrary => 'Abrir biblioteca';
-
-  @override
-  String get homeQuickPanel => 'Panel rápido';
-
-  @override
-  String get homeQuickPanelDescription =>
-      'Saltá a estadísticas o revisá lo que sigue sin portada o metadata.';
-
-  @override
-  String get homeViewStatistics => 'Ver estadísticas';
-
-  @override
-  String get homeCreateGame => 'Crear juego';
-
-  @override
-  String get homeViewLibrary => 'Ver biblioteca';
-
-  @override
-  String get homeEmptyTitle => 'Tu biblioteca todavía está vacía.';
-
-  @override
-  String get homeEmptyMessage =>
-      'Cuando cargues tus primeros juegos, este panel te va a mostrar actividad, pendientes y calidad de datos.';
-
-  @override
-  String get homeCreateFirstGame => 'Crear primer juego';
 
   @override
   String get statisticsLibraryLoading => 'Cargando biblioteca';
 
   @override
-  String get statisticsProgressLoading => 'Cargando progreso';
-
-  @override
-  String get statisticsLoadProgressError => 'No se pudo cargar progreso';
-
-  @override
   String get statisticsLoadError => 'No se pudo cargar estadísticas';
-
-  @override
-  String get statisticsLibraryByStatus => 'Biblioteca por estado';
-
-  @override
-  String get statisticsLibraryByStatusSubtitle =>
-      'Distribución rápida del backlog actual.';
-
-  @override
-  String get statisticsRatings => 'Ratings';
-
-  @override
-  String get statisticsRatingsSubtitle =>
-      'Cómo se reparte tu valoración personal entre los juegos puntuados.';
-
-  @override
-  String get statisticsDataQuality => 'Calidad de datos';
-
-  @override
-  String get statisticsDataQualitySubtitle =>
-      'Huecos de metadata que todavía conviene revisar.';
-
-  @override
-  String get statisticsAnnualProgress => 'Progreso anual';
-
-  @override
-  String get statisticsAnnualProgressSubtitle =>
-      'Juegos completados con fecha y horas personales por período.';
-
-  @override
-  String get statisticsTopPlatforms => 'Plataformas más usadas';
-
-  @override
-  String get statisticsTopPlatformsSubtitle =>
-      'Dónde se concentra más actividad jugable.';
-
-  @override
-  String get statisticsNoPlatforms => 'No hay plataformas registradas.';
-
-  @override
-  String get statisticsTopGenres => 'Géneros más usados';
-
-  @override
-  String get statisticsTopGenresSubtitle =>
-      'Qué estilos dominan tu biblioteca personal.';
-
-  @override
-  String get statisticsNoGenres => 'No hay géneros registrados.';
-
-  @override
-  String get statisticsRecentCompleted => 'Últimos completados';
-
-  @override
-  String get statisticsRecentCompletedSubtitle =>
-      'Tus cierres más recientes con fecha registrada.';
-
-  @override
-  String get statisticsPulse => 'Pulso de tu biblioteca';
-
-  @override
-  String get statisticsPulseSubtitle =>
-      'Un vistazo rápido a backlog, progreso y calidad de datos sin salir del mismo catálogo.';
-
-  @override
-  String statisticsCompletedHours(Object completedCount, Object hours) {
-    return '$completedCount completados · $hours horas';
-  }
-
-  @override
-  String get statisticsTotalCompleted => 'Completados totales';
-
-  @override
-  String get statisticsLoggedHours => 'Horas registradas';
 
   @override
   String get statisticsAverageRating => 'Rating promedio';
 
   @override
-  String get statisticsYear => 'Año';
-
-  @override
-  String get statisticsNoAnnualProgress => 'Todavía no hay progreso anual';
-
-  @override
-  String get statisticsNoAnnualProgressMessage =>
-      'Los juegos completados con fecha aparecen por año y mes.';
-
-  @override
-  String statisticsMonthsOf(Object year) {
-    return 'Meses de $year';
-  }
-
-  @override
-  String get statisticsNoRatings => 'Todavía no hay puntajes';
-
-  @override
-  String get statisticsNoRatingsMessage =>
-      'Cuando empieces a calificar juegos, esta sección va a mostrar cómo se reparte tu criterio.';
-
-  @override
-  String statisticsStars(num count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count estrellas',
-      one: '1 estrella',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String statisticsUnrated(Object count) {
-    return 'Sin puntaje: $count';
-  }
-
-  @override
-  String get statisticsNoData => 'Sin datos todavía';
-
-  @override
-  String get statisticsCompletedWithoutDate => 'Completados sin fecha';
-
-  @override
-  String get statisticsNoCompleted => 'Todavía no hay completados';
-
-  @override
-  String get statisticsNoCompletedMessage =>
-      'Agregá una fecha opcional de completado para ver el juego acá.';
-
-  @override
-  String get statisticsEmptyTitle =>
-      'Todavía no hay datos para calcular estadísticas.';
-
-  @override
-  String get statisticsEmptyMessage =>
-      'Agregá juegos para ver completados, horas, puntajes y calidad de datos.';
-
-  @override
-  String get statisticsGoToLibrary => 'Ir a biblioteca';
-
-  @override
   String hoursShort(Object value) {
     return '$value h';
   }
-
-  @override
-  String get monthJanuary => 'Enero';
-
-  @override
-  String get monthFebruary => 'Febrero';
-
-  @override
-  String get monthMarch => 'Marzo';
-
-  @override
-  String get monthApril => 'Abril';
-
-  @override
-  String get monthMay => 'Mayo';
-
-  @override
-  String get monthJune => 'Junio';
-
-  @override
-  String get monthJuly => 'Julio';
-
-  @override
-  String get monthAugust => 'Agosto';
-
-  @override
-  String get monthSeptember => 'Septiembre';
-
-  @override
-  String get monthOctober => 'Octubre';
-
-  @override
-  String get monthNovember => 'Noviembre';
-
-  @override
-  String get monthDecember => 'Diciembre';
 
   @override
   String get apply => 'Aplicar';
@@ -609,34 +333,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get view => 'Vista';
 
   @override
-  String get filters => 'Filtros';
-
-  @override
-  String get table => 'Tabla';
-
-  @override
-  String get gallery => 'Galería';
-
-  @override
-  String get list => 'Lista';
-
-  @override
-  String get columns => 'Columnas';
-
-  @override
-  String get saveView => 'Guardar vista';
-
-  @override
   String get importCsv => 'Importar CSV';
 
   @override
   String get importMetadata => 'Importar metadata';
-
-  @override
-  String get libraryExitSelection => 'Salir de selección';
-
-  @override
-  String get librarySelectMultiple => 'Seleccionar varios';
 
   @override
   String get libraryLoading => 'Cargando biblioteca';
@@ -645,83 +345,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get libraryLoadError => 'No se pudo cargar la biblioteca';
 
   @override
-  String get libraryDeleteSelectedTitle => 'Eliminar juegos seleccionados';
-
-  @override
-  String libraryDeleteSelectedMessage(Object count) {
-    return 'Se marcarán como eliminados $count juegos. No se borrarán físicamente.';
-  }
-
-  @override
-  String get libraryTypeDeleteConfirmation =>
-      'Escribí ELIMINAR para confirmar.';
-
-  @override
-  String get libraryDeleteKeyword => 'ELIMINAR';
-
-  @override
   String get libraryConfirmation => 'Confirmación';
-
-  @override
-  String get libraryDeleteSelected => 'Eliminar seleccionados';
-
-  @override
-  String libraryFiltersCount(Object count) {
-    return 'Filtros ($count)';
-  }
-
-  @override
-  String get libraryActions => 'Acciones de biblioteca';
-
-  @override
-  String get libraryUpdateView => 'Actualizar vista';
-
-  @override
-  String get libraryRenameView => 'Renombrar vista';
-
-  @override
-  String get libraryDeleteView => 'Eliminar vista';
-
-  @override
-  String get libraryYear => 'Año';
-
-  @override
-  String libraryFilterStatus(Object value) {
-    return 'Estado: $value';
-  }
-
-  @override
-  String libraryFilterPlatform(Object value) {
-    return 'Plataforma: $value';
-  }
-
-  @override
-  String libraryFilterGenre(Object value) {
-    return 'Género: $value';
-  }
-
-  @override
-  String libraryFilterSearch(Object value) {
-    return 'Búsqueda: $value';
-  }
-
-  @override
-  String get libraryMissingCompletedDate => 'Sin fecha completado';
-
-  @override
-  String get libraryOpenDetails => 'Abrir detalle';
-
-  @override
-  String get libraryActionsTooltip => 'Acciones';
-
-  @override
-  String get libraryAdvancedFilters => 'Filtros avanzados';
-
-  @override
-  String get libraryClearFilters => 'Limpiar filtros';
-
-  @override
-  String get libraryStatus => 'Estado';
 
   @override
   String get libraryPlatforms => 'Plataformas';
@@ -730,78 +354,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get libraryGenres => 'Géneros';
 
   @override
-  String get libraryMinimumRating => 'Puntaje mínimo';
-
-  @override
-  String get libraryMaximumRating => 'Puntaje máximo';
-
-  @override
-  String get libraryMinimumHours => 'Horas mínimas';
-
-  @override
-  String get libraryMaximumHours => 'Horas máximas';
-
-  @override
   String get libraryType => 'Tipo';
-
-  @override
-  String get libraryReleaseFrom => 'Salida desde';
-
-  @override
-  String get libraryReleaseTo => 'Salida hasta';
-
-  @override
-  String get libraryCompletedFrom => 'Completado desde';
-
-  @override
-  String get libraryCompletedTo => 'Completado hasta';
-
-  @override
-  String get libraryWithRating => 'Con puntaje';
-
-  @override
-  String get libraryWithPlatform => 'Con plataforma';
-
-  @override
-  String get libraryWithGenre => 'Con género';
-
-  @override
-  String get libraryWithCompletedDate => 'Con fecha completado';
-
-  @override
-  String get libraryNoOptions => 'No hay opciones disponibles.';
-
-  @override
-  String get libraryClearDate => 'Limpiar fecha';
-
-  @override
-  String get libraryChooseDate => 'Elegir fecha';
-
-  @override
-  String get libraryVisibleColumns => 'Columnas visibles';
-
-  @override
-  String get libraryEmptyTitle => 'Todavía no hay juegos en tu biblioteca.';
-
-  @override
-  String get libraryEmptyMessage =>
-      'Cuando cargues el primero, el catálogo va a empezar a tomar forma.';
-
-  @override
-  String get libraryEmptyFilteredTitle =>
-      'No hay juegos que coincidan con la vista actual.';
-
-  @override
-  String get libraryEmptyFilteredMessage =>
-      'Probá aflojar filtros, cambiar la vista guardada o limpiar la búsqueda.';
-
-  @override
-  String get libraryViewUpdated => 'Vista actualizada.';
-
-  @override
-  String libraryDeleteViewMessage(Object name) {
-    return 'Se eliminará la vista “$name”.';
-  }
 
   @override
   String get libraryDeleteGameTitle => 'Eliminar juego';
@@ -812,94 +365,13 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get libraryNoLimit => 'Sin límite';
-
-  @override
-  String get libraryDefaultAll => 'Todos los juegos';
-
-  @override
-  String get libraryDefaultPending => 'Pendientes';
-
-  @override
-  String get libraryDefaultCompleted => 'Completados';
-
-  @override
-  String get libraryDefaultByYear => 'Filtrar por año';
-
-  @override
-  String librarySelectedCount(Object count) {
-    return '$count seleccionados';
-  }
-
-  @override
-  String librarySelectVisible(Object count) {
-    return 'Seleccionar visibles ($count)';
-  }
-
-  @override
-  String librarySelectAll(Object count) {
-    return 'Seleccionar todos ($count)';
-  }
-
-  @override
-  String get libraryClearSelection => 'Limpiar selección';
-
-  @override
-  String get libraryAverage => 'Promedio';
-
-  @override
   String get libraryHours => 'Horas';
-
-  @override
-  String get libraryNoOptionsShort => 'Sin opciones';
-
-  @override
-  String get columnCover => 'Portada';
-
-  @override
-  String get columnTitle => 'Título';
-
-  @override
-  String get columnStatus => 'Estado';
-
-  @override
-  String get columnPlatforms => 'Plataformas';
-
-  @override
-  String get columnGenres => 'Géneros';
-
-  @override
-  String get columnRating => 'Puntaje';
-
-  @override
-  String get columnReleaseDate => 'Fecha salida';
-
-  @override
-  String get columnCompletedDate => 'Fecha completado';
-
-  @override
-  String get columnHours => 'Horas';
-
-  @override
-  String get columnType => 'Tipo';
-
-  @override
-  String get columnNotes => 'Notas';
-
-  @override
-  String get columnUpdatedAt => 'Actualizado';
 
   @override
   String get gameCreateTitle => 'Crear juego';
 
   @override
   String get gameEditTitle => 'Editar juego';
-
-  @override
-  String get gameIdentity => 'Identidad';
-
-  @override
-  String get gameIdentitySubtitle => 'Datos del juego y metadata externa.';
 
   @override
   String get gameName => 'Nombre';
@@ -938,35 +410,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gameRating => 'Puntaje';
 
   @override
-  String get gamePersonalLibrary => 'Biblioteca personal';
-
-  @override
-  String get gamePersonalLibrarySubtitle => 'Estado, puntaje y notas privadas.';
-
-  @override
   String get gamePersonalRating => 'Puntaje personal';
 
   @override
   String get gamePersonalNotes => 'Notas personales';
 
   @override
-  String get gameCatalogs => 'Catálogos';
-
-  @override
-  String get gameCatalogsSubtitle => 'Plataformas y géneros asociados.';
-
-  @override
   String get gameAddPlatform => 'Agregar plataforma';
 
   @override
   String get gameAddGenre => 'Agregar género';
-
-  @override
-  String get gameCompletionSection => 'Registro personal';
-
-  @override
-  String get gameCompletionSectionSubtitle =>
-      'La fecha de finalización es opcional. Las horas y la plataforma pertenecen a este juego.';
 
   @override
   String get gameImportMetadata => 'Importar metadata';
@@ -1005,15 +458,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'Se guardará localmente después de guardar el juego.';
 
   @override
-  String get gameSearchMetadata => 'Buscar metadata';
-
-  @override
   String gamePendingCover(Object provider) {
     return 'Portada pendiente: $provider';
   }
-
-  @override
-  String get ratingNone => 'Sin puntaje';
 
   @override
   String get ratingOneStar => '1 estrella';
@@ -1066,12 +513,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gameRemoveCover => 'Quitar portada';
 
   @override
-  String get gameSummaryProgress => 'Resumen y progreso';
-
-  @override
-  String get gameLastCompleted => 'Fecha de completado';
-
-  @override
   String get metadataApplied => 'Metadata aplicada.';
 
   @override
@@ -1092,9 +533,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get gameNote => 'Nota';
-
-  @override
-  String get gameStartDate => 'Fecha de inicio';
 
   @override
   String get gameNotes => 'Notas';
@@ -1871,4 +1309,38 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get logSearchHint => 'Probá con otro título o elegí otro año.';
+
+  @override
+  String get statisticsFinished => 'Terminados';
+
+  @override
+  String get statisticsUnavailable => 'Sin datos';
+
+  @override
+  String get statisticsEmptyYear => 'Sin juegos en este año';
+
+  @override
+  String get statisticsEmptyYearHint =>
+      'Los juegos sin año siguen disponibles en Juegos → Sin año.';
+
+  @override
+  String get statisticsFavorites => 'Favoritos';
+
+  @override
+  String get statisticsNoRatedGames =>
+      'Todavía no hay juegos con puntaje en este año.';
+
+  @override
+  String get statisticsPlayedPlatforms => 'Dónde jugué';
+
+  @override
+  String get statisticsPlayedPlatformsHint =>
+      'Juegos por plataforma jugada registrada.';
+
+  @override
+  String get statisticsNoPlayedPlatforms =>
+      'Todavía no hay plataformas jugadas registradas en este año.';
+
+  @override
+  String get columnTitle => 'Título';
 }
