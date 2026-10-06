@@ -40,7 +40,8 @@ gate. The ZIP contains exactly:
 - `backlog_vault.exe`;
 - every root release DLL;
 - generated `native_assets.json` when present;
-- the complete `data/` directory.
+- the complete runtime `data/` directory;
+- `userdata/LEEME.txt`, which preserves and explains the portable data folder.
 
 PDB, LIB, EXP, OBJ, logs, source, cache, and build intermediates fail
 validation. Entries are sorted and receive a fixed ZIP timestamp; identical
@@ -110,7 +111,7 @@ flutter build apk --release --split-per-abi
 git diff --check
 ```
 
-Extract the Windows ZIP to a clean directory outside the repository and run a
-short launch/close smoke without user interaction. Preserve real AppData: if a
-read-only launch cannot be established safely, record that limitation instead
-of inventing a disposable profile or deleting application data.
+Extract the Windows ZIP to a clean directory and run a short launch/close smoke
+without user interaction. Verify that `userdata/backlog_vault.sqlite` is
+created beside the executable. The smoke profile is disposable because the
+Windows build does not write its library into OS-managed AppData.

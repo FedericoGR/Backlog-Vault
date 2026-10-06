@@ -17,7 +17,7 @@ $artifactVersion = if ([string]::IsNullOrWhiteSpace($ReleaseLabel)) {
 } else {
     $ReleaseLabel.Trim().TrimStart('v')
 }
-$zipName = "BacklogVault-windows-x64-v$artifactVersion.zip"
+$zipName = "BacklogVault-windows-x64-portable-v$artifactVersion.zip"
 $zipPath = Join-Path $distDir $zipName
 $checksumPath = "$zipPath.sha256"
 $stageRelative = Join-Path $OutputDirectory ".package-windows-$PID"
@@ -81,6 +81,24 @@ try {
     if ($packageFiles.Count -ne $sourceFiles.Count) {
         throw "Packaged runtime file count ($($packageFiles.Count)) does not match the validated release input ($($sourceFiles.Count))."
     }
+
+    $userDataDir = Join-Path $packageRoot "userdata"
+    New-Item -ItemType Directory -Path $userDataDir -Force | Out-Null
+    @"
+DATOS PORTABLES DE BACKLOG VAULT
+
+La base de datos, las portadas, las preferencias y las credenciales se guardan
+automáticamente dentro de esta carpeta.
+
+Para mover o respaldar Backlog Vault, cerrá la aplicación y copiá completa la
+carpeta "Backlog Vault". No separes backlog_vault.exe de sus DLL, la carpeta
+data ni esta carpeta userdata.
+
+El archivo de credenciales está protegido por Windows y sólo puede descifrarse
+con tu mismo usuario de Windows.
+"@ | Set-Content -LiteralPath (Join-Path $userDataDir "LEEME.txt") -Encoding utf8
+
+    $packageFiles = @(Get-ChildItem -LiteralPath $packageRoot -Recurse -File)
 
     Add-Type -AssemblyName System.IO.Compression
     if (Test-Path -LiteralPath $zipPath) {

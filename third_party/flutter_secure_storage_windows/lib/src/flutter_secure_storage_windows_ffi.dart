@@ -8,7 +8,6 @@ import 'package:flutter/foundation.dart' show debugPrint, visibleForTesting;
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage_platform_interface/flutter_secure_storage_platform_interface.dart';
 import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 import 'package:win32/win32.dart';
 
 /// An extension on `Map<String, String>` to add support for specific
@@ -250,11 +249,14 @@ class DpapiJsonFileMapStorage extends MapStorage {
   /// Returns:
   /// - A [FutureOr] resolving to the canonical file path as a string.
   FutureOr<String> _getJsonFilePath() async {
-    final appDataDirectory = await getApplicationSupportDirectory();
+    final executableDirectory = File(Platform.resolvedExecutable).parent;
+    final portableDataDirectory = Directory(
+      path.join(executableDirectory.path, 'userdata'),
+    );
 
     return path.canonicalize(
       path.join(
-        appDataDirectory.path,
+        portableDataDirectory.path,
         encryptedJsonFileName,
       ),
     );

@@ -15,7 +15,7 @@ Build the release folder:
 flutter build windows --release
 ```
 
-Create a portable application ZIP without rebuilding:
+Create the portable application ZIP without rebuilding:
 
 ```powershell
 .\tool\package_windows.ps1 -SkipBuild
@@ -27,9 +27,10 @@ then validates a deterministic ZIP and writes SHA-256 beside it. The target
 machine needs a compatible Microsoft Visual C++ runtime.
 
 Extract the complete ZIP and launch `backlog_vault.exe`. The executable, DLLs,
-native assets, and `data` folder must remain together. The portable application
-folder is separate from the OS-managed user-data folder. Replacing binaries
-must not delete or move that user-data folder.
+native assets, runtime `data` folder, and persistent `userdata` folder must
+remain together. SQLite, managed media, language preferences, and encrypted
+provider credentials are all written below `userdata`. Close the app before
+copying the complete folder to another location or making a backup.
 
 ## Android
 
@@ -66,13 +67,18 @@ picker.
 
 ## Local data
 
-- SQLite and managed media live in the OS application-support directory.
+- On Windows, SQLite and managed media live in the portable `userdata`
+  directory beside the executable. On Android they use the OS
+  application-support directory.
 - Media paths in SQLite are relative; the JSON export never exposes those
   paths.
-- The selected language is stored in platform preferences and is not part of
-  the library database or JSON export.
-- RAWG, IGDB/Twitch, and SteamGridDB credentials stay in OS secure storage and
-  are excluded from library exports.
+- On Windows, the selected language is stored in `userdata/settings.json`; on
+  Android it uses platform preferences. It is not part of SQLite or JSON
+  exports.
+- On Windows, RAWG, IGDB/Twitch, and SteamGridDB credentials are encrypted with
+  the current Windows user's DPAPI key and stored in
+  `userdata/flutter_secure_storage.dat`. They remain excluded from library
+  exports and may not decrypt under a different Windows user or PC.
 - On first schema-6 startup, only the explicit legacy Sync secure-storage keys
   are removed; external credentials and unknown keys are preserved.
 

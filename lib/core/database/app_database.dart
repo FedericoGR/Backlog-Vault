@@ -1,6 +1,10 @@
+import 'dart:io' as io;
+
 import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
+import '../storage/app_data_directory.dart';
 import '../version/app_versions.dart';
 import 'tables.dart';
 
@@ -188,5 +192,14 @@ class AppDatabase extends _$AppDatabase {
 }
 
 QueryExecutor _openConnection() {
+  if (io.Platform.isWindows) {
+    final directory = getPortableWindowsDataDirectory();
+    directory.createSync(recursive: true);
+    return NativeDatabase(
+      io.File(
+        '${directory.path}${io.Platform.pathSeparator}backlog_vault.sqlite',
+      ),
+    );
+  }
   return driftDatabase(name: 'backlog_vault');
 }

@@ -27,7 +27,8 @@ Backlog Vault como producto intencionalmente Offline.
 - No hay login ni backend de Backlog Vault.
 - SQLite y la media quedan en cada dispositivo.
 - La DB y la media local **no están cifradas at rest**.
-- Las credenciales de providers se guardan en el secure storage del sistema.
+- En Windows, las credenciales de providers se cifran con el usuario actual y
+  se guardan dentro de `userdata`.
 - Claves RAWG, credenciales y tokens IGDB/Twitch, y claves SteamGridDB no se incluyen en la exportación.
 - El JSON contiene información de biblioteca, pero no bytes de imágenes, paths locales, credenciales ni restore automático.
 - La aplicación no abre sockets, empareja dispositivos, escanea QR ni intercambia datos con otra instalación de Backlog Vault.
@@ -35,9 +36,11 @@ Backlog Vault como producto intencionalmente Offline.
 
 ## Instalación
 
-### Windows ZIP
+### Windows ZIP portable
 
-Extraé el ZIP completo y ejecutá `backlog_vault.exe`. La carpeta portable de la app no es la carpeta de datos administrada por el sistema; no borres esa carpeta al reemplazar binarios.
+Extraé el ZIP completo y ejecutá `backlog_vault.exe`. La base SQLite, portadas,
+preferencias y credenciales quedan dentro de `userdata`, junto a la aplicación.
+Para moverla o respaldarla, cerrá Backlog Vault y copiá la carpeta completa.
 
 ### Android APK
 

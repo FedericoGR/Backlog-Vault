@@ -10,10 +10,20 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
+  ProviderContainer createContainer() {
+    return ProviderContainer(
+      overrides: [
+        appLanguageStorageProvider.overrideWithValue(
+          SharedPreferencesAppLanguageStorage(),
+        ),
+      ],
+    );
+  }
+
   test(
     'uses system language by default and persists a device override',
     () async {
-      final firstContainer = ProviderContainer();
+      final firstContainer = createContainer();
       addTearDown(firstContainer.dispose);
 
       expect(
@@ -25,7 +35,7 @@ void main() {
           .read(appLanguageProvider.notifier)
           .setPreference(AppLanguagePreference.english);
 
-      final secondContainer = ProviderContainer();
+      final secondContainer = createContainer();
       addTearDown(secondContainer.dispose);
       expect(
         await secondContainer.read(appLanguageProvider.future),
@@ -36,7 +46,7 @@ void main() {
 
   test('system selection removes the persisted override', () async {
     SharedPreferences.setMockInitialValues({'app_language': 'es'});
-    final container = ProviderContainer();
+    final container = createContainer();
     addTearDown(container.dispose);
 
     expect(

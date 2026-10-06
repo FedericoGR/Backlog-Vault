@@ -3,8 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
-import 'package:path_provider/path_provider.dart';
-
+import '../../../core/storage/app_data_directory.dart';
 import '../domain/media_exception.dart';
 
 typedef MediaBaseDirectoryLoader = Future<Directory> Function();
@@ -26,7 +25,7 @@ class StoredMediaFile {
 class MediaFileStorage {
   MediaFileStorage({MediaBaseDirectoryLoader? baseDirectoryLoader})
     : _baseDirectoryLoader =
-          baseDirectoryLoader ?? getApplicationSupportDirectory;
+          baseDirectoryLoader ?? getBacklogVaultDataDirectory;
 
   final MediaBaseDirectoryLoader _baseDirectoryLoader;
 

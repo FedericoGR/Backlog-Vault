@@ -88,7 +88,7 @@ void main() {
     expect(android, contains('"arm64-v8a-split" { "arm64-split" }'));
     expect(
       windows,
-      contains('BacklogVault-windows-x64-v\$artifactVersion.zip'),
+      contains('BacklogVault-windows-x64-portable-v\$artifactVersion.zip'),
     );
   });
 }
