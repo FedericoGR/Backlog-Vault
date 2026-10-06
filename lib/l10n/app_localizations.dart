@@ -2442,6 +2442,102 @@ abstract class AppLocalizations {
   /// **'Try another title or choose another year.'**
   String get logSearchHint;
 
+  /// No description provided for @logFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get logFilters;
+
+  /// No description provided for @logShowFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Show filters'**
+  String get logShowFilters;
+
+  /// No description provided for @logHideFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide filters'**
+  String get logHideFilters;
+
+  /// No description provided for @logFilterStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get logFilterStatus;
+
+  /// No description provided for @logFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get logFilterAll;
+
+  /// No description provided for @logFilterCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get logFilterCompleted;
+
+  /// No description provided for @logFilterUnfinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Not completed'**
+  String get logFilterUnfinished;
+
+  /// No description provided for @logFilterPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get logFilterPlatform;
+
+  /// No description provided for @logFilterNoPlatforms.
+  ///
+  /// In en, this message translates to:
+  /// **'No played platforms this year.'**
+  String get logFilterNoPlatforms;
+
+  /// No description provided for @logFilterRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get logFilterRating;
+
+  /// No description provided for @logFilterAnyRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get logFilterAnyRating;
+
+  /// No description provided for @logFilterFourPlus.
+  ///
+  /// In en, this message translates to:
+  /// **'4★ or higher'**
+  String get logFilterFourPlus;
+
+  /// No description provided for @logFilterThreePlus.
+  ///
+  /// In en, this message translates to:
+  /// **'3★ or higher'**
+  String get logFilterThreePlus;
+
+  /// No description provided for @logFilterUnrated.
+  ///
+  /// In en, this message translates to:
+  /// **'Unrated'**
+  String get logFilterUnrated;
+
+  /// No description provided for @logClearFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filters'**
+  String get logClearFilters;
+
+  /// No description provided for @logFilteredEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No games match these filters.'**
+  String get logFilteredEmpty;
+
   /// No description provided for @statisticsFinished.
   ///
   /// In en, this message translates to:

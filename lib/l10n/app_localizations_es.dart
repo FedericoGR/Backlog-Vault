@@ -1314,6 +1314,55 @@ class AppLocalizationsEs extends AppLocalizations {
   String get logSearchHint => 'Probá con otro título o elegí otro año.';
 
   @override
+  String get logFilters => 'Filtros';
+
+  @override
+  String get logShowFilters => 'Mostrar filtros';
+
+  @override
+  String get logHideFilters => 'Ocultar filtros';
+
+  @override
+  String get logFilterStatus => 'Estado';
+
+  @override
+  String get logFilterAll => 'Todos';
+
+  @override
+  String get logFilterCompleted => 'Terminados';
+
+  @override
+  String get logFilterUnfinished => 'No terminados';
+
+  @override
+  String get logFilterPlatform => 'Plataforma';
+
+  @override
+  String get logFilterNoPlatforms => 'Sin plataformas jugadas este año.';
+
+  @override
+  String get logFilterRating => 'Puntuación';
+
+  @override
+  String get logFilterAnyRating => 'Cualquiera';
+
+  @override
+  String get logFilterFourPlus => '4★ o más';
+
+  @override
+  String get logFilterThreePlus => '3★ o más';
+
+  @override
+  String get logFilterUnrated => 'Sin puntaje';
+
+  @override
+  String get logClearFilters => 'Limpiar filtros';
+
+  @override
+  String get logFilteredEmpty =>
+      'No hay juegos que coincidan con estos filtros.';
+
+  @override
   String get statisticsFinished => 'Terminados';
 
   @override

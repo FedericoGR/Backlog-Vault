@@ -98,36 +98,112 @@ void main() {
     },
   );
 
-  testWidgets(
-    'gallery defaults to current year without configuration controls',
-    (tester) async {
-      await pump(tester);
-      expect(container.read(annualGameLogProvider).year, 2026);
-      expect(find.byType(GridView), findsOneWidget);
-      expect(find.text('Current finished'), findsOneWidget);
-      expect(find.text('Current unfinished'), findsOneWidget);
-      expect(find.text('Previous finished'), findsNothing);
-      expect(find.text('Unknown old game'), findsNothing);
-      for (final label in [
-        'Tabla',
-        'Lista',
-        'Galería',
-        'Guardar vista',
-        'Columnas',
-        'Filtros',
-        'Partidas',
-        'Nueva partida',
-        'Jugando',
-        'Pausar',
-        'Retirado',
-      ]) {
-        expect(find.textContaining(label), findsNothing, reason: label);
-      }
-      expect(find.byTooltip('Seleccionar varios'), findsNothing);
-      expect(find.byType(Checkbox), findsNothing);
-      expect(tester.takeException(), isNull);
-    },
-  );
+  testWidgets('gallery defaults to current year with compact filters hidden', (
+    tester,
+  ) async {
+    await pump(tester);
+    expect(container.read(annualGameLogProvider).year, 2026);
+    expect(find.byType(GridView), findsOneWidget);
+    expect(find.text('Current finished'), findsOneWidget);
+    expect(find.text('Current unfinished'), findsOneWidget);
+    expect(find.text('Previous finished'), findsNothing);
+    expect(find.text('Unknown old game'), findsNothing);
+    for (final label in [
+      'Tabla',
+      'Lista',
+      'Galería',
+      'Guardar vista',
+      'Columnas',
+      'Partidas',
+      'Nueva partida',
+      'Jugando',
+      'Pausar',
+      'Retirado',
+    ]) {
+      expect(find.textContaining(label), findsNothing, reason: label);
+    }
+    expect(
+      find.byKey(const ValueKey('library-filters-toggle')),
+      findsOneWidget,
+    );
+    expect(find.byTooltip('Seleccionar varios'), findsNothing);
+    expect(find.byType(Checkbox), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('wide gallery shows filters by default and can hide them', (
+    tester,
+  ) async {
+    await pump(tester, width: 1440);
+    expect(find.text('ESTADO'), findsOneWidget);
+    expect(find.text('PLATAFORMA'), findsOneWidget);
+    expect(find.text('PUNTUACIÓN'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('played-platform-filter-switch')),
+      findsOneWidget,
+    );
+    expect(find.text('Catalog PC'), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('hide-library-filters')));
+    await tester.pumpAndSettle();
+    expect(find.text('ESTADO'), findsNothing);
+    expect(
+      find.byKey(const ValueKey('library-filters-toggle')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const ValueKey('library-filters-toggle')));
+    await tester.pumpAndSettle();
+    expect(find.text('ESTADO'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('completion filter uses the two personal record states', (
+    tester,
+  ) async {
+    await pump(tester, width: 1440);
+    await tester.tap(find.text('No terminados'));
+    await tester.pumpAndSettle();
+    expect(find.text('Current unfinished'), findsOneWidget);
+    expect(find.text('Current finished'), findsNothing);
+    await tester.tap(find.text('Terminados'));
+    await tester.pumpAndSettle();
+    expect(find.text('Current finished'), findsOneWidget);
+    expect(find.text('Current unfinished'), findsNothing);
+  });
+
+  testWidgets('compact gallery opens filters without starting squeezed', (
+    tester,
+  ) async {
+    await pump(tester, width: 900);
+    expect(find.text('ESTADO'), findsNothing);
+    expect(
+      find.byKey(const ValueKey('library-filters-toggle')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const ValueKey('library-filters-toggle')));
+    await tester.pumpAndSettle();
+    expect(find.text('ESTADO'), findsOneWidget);
+    expect(find.byType(GridView), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('filters compose and filtered empty state can clear filters', (
+    tester,
+  ) async {
+    await pump(tester, width: 1440);
+    final controller = container.read(annualGameLogProvider.notifier);
+    controller.setCompletionFilter(LibraryCompletionFilter.completed);
+    controller.togglePlayedPlatform('not-played-here');
+    await tester.pumpAndSettle();
+    expect(
+      find.text('No hay juegos que coincidan con estos filtros.'),
+      findsOneWidget,
+    );
+    expect(find.text('No encontramos ese juego'), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('clear-library-filters-empty')));
+    await tester.pumpAndSettle();
+    expect(find.text('Current finished'), findsOneWidget);
+    expect(container.read(annualGameLogProvider).hasActiveFilters, isFalse);
+  });
 
   testWidgets(
     'year navigation and search intersect; unknown release-dated records stay accessible',
@@ -241,9 +317,9 @@ LibraryGameRow _row(
   isCompleted: completed,
   completedAt: completed ? DateTime(2026, 5, 1) : null,
   hoursPlayed: 18,
-  personalRating: 4,
   playedPlatformId: 'switch',
   playedPlatformName: 'Played Switch',
+  personalRating: 4,
   releaseDate: DateTime(1999),
   type: 'game',
   updatedAt: DateTime(2026),

@@ -9,8 +9,10 @@ class LibraryCatalogGrid extends StatelessWidget {
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
       final columns =
-          constraints.maxWidth >= 1100
+          constraints.maxWidth >= 1240
               ? 6
+              : constraints.maxWidth >= 1000
+              ? 5
               : constraints.maxWidth >= 760
               ? 4
               : constraints.maxWidth >= 500

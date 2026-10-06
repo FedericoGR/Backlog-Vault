@@ -1310,6 +1310,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logSearchHint => 'Try another title or choose another year.';
 
   @override
+  String get logFilters => 'Filters';
+
+  @override
+  String get logShowFilters => 'Show filters';
+
+  @override
+  String get logHideFilters => 'Hide filters';
+
+  @override
+  String get logFilterStatus => 'Status';
+
+  @override
+  String get logFilterAll => 'All';
+
+  @override
+  String get logFilterCompleted => 'Completed';
+
+  @override
+  String get logFilterUnfinished => 'Not completed';
+
+  @override
+  String get logFilterPlatform => 'Platform';
+
+  @override
+  String get logFilterNoPlatforms => 'No played platforms this year.';
+
+  @override
+  String get logFilterRating => 'Rating';
+
+  @override
+  String get logFilterAnyRating => 'Any';
+
+  @override
+  String get logFilterFourPlus => '4★ or higher';
+
+  @override
+  String get logFilterThreePlus => '3★ or higher';
+
+  @override
+  String get logFilterUnrated => 'Unrated';
+
+  @override
+  String get logClearFilters => 'Clear filters';
+
+  @override
+  String get logFilteredEmpty => 'No games match these filters.';
+
+  @override
   String get statisticsFinished => 'Finished';
 
   @override
