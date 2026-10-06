@@ -18,15 +18,15 @@ $versionSource = Get-Content -LiteralPath (
 if ($versionSource -notmatch "appVersionName\s*=\s*'$([regex]::Escape($version.Name))'") {
     throw "appVersionName does not match pubspec version name '$($version.Name)'."
 }
-if ($versionSource -notmatch 'databaseSchemaVersion\s*=\s*6\s*;') {
-    throw "Drift schema must remain 6 for this release candidate."
+if ($versionSource -notmatch 'databaseSchemaVersion\s*=\s*8\s*;') {
+    throw "Drift schema must remain 8 for this release candidate."
 }
 
 $exportSource = Get-Content -LiteralPath (
     Join-Path $repoRoot "lib\features\import_export\library_export\domain\library_export_document.dart"
 ) -Raw
-if ($exportSource -notmatch 'libraryExportFormatVersion\s*=\s*1\s*;') {
-    throw "Library export format must remain 1 for this release candidate."
+if ($exportSource -notmatch 'libraryExportFormatVersion\s*=\s*2\s*;') {
+    throw "Library export format must remain 2 for this release candidate."
 }
 
-Write-Host "Release candidate version check passed: $($version.Full); schema 6; export format 1."
+Write-Host "Release candidate version check passed: $($version.Full); schema 8; export format 2."
