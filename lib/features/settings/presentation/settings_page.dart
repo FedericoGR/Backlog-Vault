@@ -1,17 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../core/design_system/bv_async_action_button.dart';
-import '../../../core/design_system/bv_action_card.dart';
-import '../../../core/design_system/bv_danger_zone.dart';
 import '../../../core/design_system/bv_feedback.dart';
-import '../../../core/design_system/bv_key_value_row.dart';
-import '../../../core/design_system/bv_layout.dart';
-import '../../../core/design_system/bv_page_scaffold.dart';
-import '../../../core/design_system/bv_panel.dart';
 import '../../../core/design_system/bv_section.dart';
 import '../../../core/design_system/bv_spacing.dart';
-import '../../../core/design_system/bv_status_banner.dart';
 import '../../../core/design_system/bv_theme_extension.dart';
 import '../../../l10n/l10n.dart';
 import '../../import_export/library_export/application/library_export_controller.dart';
@@ -56,129 +48,147 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           loading: () => AppLanguagePreference.system,
           error: (_, _) => AppLanguagePreference.system,
         );
-    return BvPageScaffold(
-      title: l10n.settingsTitle,
-      maxContentWidth: BvLayout.readableContentWidth,
-      body: ListView(
-        children: [
-          _OverviewSection(loading: loading),
-          const SizedBox(height: BvSpacing.md),
-          _ActionShortcuts(loading: loading),
-          const SizedBox(height: BvSpacing.md),
-          _ConfigurationPanel(
-            title: 'RAWG',
-            subtitle: l10n.settingsRawgSubtitle,
-            icon: Icons.vpn_key_outlined,
-            configured: credentialState.rawgConfigured,
-            loading: loading,
-            fields: [
-              TextField(
-                controller: _rawgApiKeyController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: l10n.settingsNewApiKey,
-                  helperText: l10n.settingsApiKeyHelper,
-                ),
+    return Scaffold(
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 880),
+          child: ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              Text(
+                l10n.settingsTitle.toUpperCase(),
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(letterSpacing: 1.6),
               ),
-            ],
-            actions: [
-              FilledButton.icon(
-                onPressed: loading ? null : _saveRawgApiKey,
-                icon: const Icon(Icons.save_outlined),
-                label: Text(l10n.save),
+              const SizedBox(height: 28),
+              _OverviewSection(loading: loading),
+              const SizedBox(height: BvSpacing.md),
+              _ActionShortcuts(loading: loading),
+              const SizedBox(height: BvSpacing.md),
+              const SizedBox(height: 20),
+              Text(
+                l10n.settingsMetadataSources,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-              OutlinedButton.icon(
-                onPressed:
-                    loading || !credentialState.rawgConfigured
-                        ? null
-                        : _deleteRawgApiKey,
-                icon: const Icon(Icons.delete_outline),
-                label: Text(l10n.delete),
+              _ConfigurationPanel(
+                title: 'RAWG',
+                subtitle: l10n.settingsRawgSubtitle,
+
+                configured: credentialState.rawgConfigured,
+                loading: loading,
+                error: credentials.hasError,
+                fields: [
+                  TextField(
+                    controller: _rawgApiKeyController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: l10n.settingsNewApiKey,
+                      helperText: l10n.settingsApiKeyHelper,
+                    ),
+                  ),
+                ],
+                actions: [
+                  FilledButton.icon(
+                    onPressed: loading ? null : _saveRawgApiKey,
+                    icon: const Icon(Icons.save_outlined),
+                    label: Text(l10n.save),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed:
+                        loading || !credentialState.rawgConfigured
+                            ? null
+                            : _deleteRawgApiKey,
+                    icon: const Icon(Icons.delete_outline),
+                    label: Text(l10n.delete),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: BvSpacing.md),
-          _ConfigurationPanel(
-            title: 'IGDB / Twitch',
-            subtitle: l10n.settingsIgdbSubtitle,
-            icon: Icons.cloud_outlined,
-            configured: credentialState.igdbConfigured,
-            loading: loading,
-            fields: [
-              TextField(
-                controller: _igdbClientIdController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: l10n.settingsClientId,
-                  helperText: l10n.settingsClientIdHelper,
-                ),
+              const SizedBox(height: BvSpacing.md),
+              _ConfigurationPanel(
+                title: 'IGDB / Twitch',
+                subtitle: l10n.settingsIgdbSubtitle,
+
+                configured: credentialState.igdbConfigured,
+                loading: loading,
+                error: credentials.hasError,
+                fields: [
+                  TextField(
+                    controller: _igdbClientIdController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: l10n.settingsClientId,
+                      helperText: l10n.settingsClientIdHelper,
+                    ),
+                  ),
+                  const SizedBox(height: BvSpacing.sm),
+                  TextField(
+                    controller: _igdbClientSecretController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: l10n.settingsClientSecret,
+                      helperText: l10n.settingsClientSecretHelper,
+                    ),
+                  ),
+                ],
+                actions: [
+                  FilledButton.icon(
+                    onPressed: loading ? null : _saveIgdbCredentials,
+                    icon: const Icon(Icons.save_outlined),
+                    label: Text(l10n.save),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed:
+                        loading || !credentialState.igdbConfigured
+                            ? null
+                            : _deleteIgdbCredentials,
+                    icon: const Icon(Icons.delete_outline),
+                    label: Text(l10n.delete),
+                  ),
+                ],
               ),
-              const SizedBox(height: BvSpacing.sm),
-              TextField(
-                controller: _igdbClientSecretController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: l10n.settingsClientSecret,
-                  helperText: l10n.settingsClientSecretHelper,
-                ),
+              const SizedBox(height: BvSpacing.md),
+              _ConfigurationPanel(
+                title: 'SteamGridDB',
+                subtitle: l10n.settingsSteamGridDbSubtitle,
+
+                configured: credentialState.steamGridDbConfigured,
+                loading: loading,
+                error: credentials.hasError,
+                fields: [
+                  TextField(
+                    controller: _steamGridDbApiKeyController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: l10n.settingsNewApiKey,
+                      helperText: l10n.settingsMediaApiKeyHelper,
+                    ),
+                  ),
+                ],
+                actions: [
+                  FilledButton.icon(
+                    onPressed: loading ? null : _saveSteamGridDbApiKey,
+                    icon: const Icon(Icons.save_outlined),
+                    label: Text(l10n.save),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed:
+                        loading || !credentialState.steamGridDbConfigured
+                            ? null
+                            : _deleteSteamGridDbApiKey,
+                    icon: const Icon(Icons.delete_outline),
+                    label: Text(l10n.delete),
+                  ),
+                ],
               ),
-            ],
-            actions: [
-              FilledButton.icon(
-                onPressed: loading ? null : _saveIgdbCredentials,
-                icon: const Icon(Icons.save_outlined),
-                label: Text(l10n.save),
+              const SizedBox(height: BvSpacing.md),
+              Text(
+                l10n.settingsApplication,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-              OutlinedButton.icon(
-                onPressed:
-                    loading || !credentialState.igdbConfigured
-                        ? null
-                        : _deleteIgdbCredentials,
-                icon: const Icon(Icons.delete_outline),
-                label: Text(l10n.delete),
-              ),
-            ],
-          ),
-          const SizedBox(height: BvSpacing.md),
-          _ConfigurationPanel(
-            title: 'SteamGridDB',
-            subtitle: l10n.settingsSteamGridDbSubtitle,
-            icon: Icons.image_search_outlined,
-            configured: credentialState.steamGridDbConfigured,
-            loading: loading,
-            fields: [
-              TextField(
-                controller: _steamGridDbApiKeyController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: l10n.settingsNewApiKey,
-                  helperText: l10n.settingsMediaApiKeyHelper,
-                ),
-              ),
-            ],
-            actions: [
-              FilledButton.icon(
-                onPressed: loading ? null : _saveSteamGridDbApiKey,
-                icon: const Icon(Icons.save_outlined),
-                label: Text(l10n.save),
-              ),
-              OutlinedButton.icon(
-                onPressed:
-                    loading || !credentialState.steamGridDbConfigured
-                        ? null
-                        : _deleteSteamGridDbApiKey,
-                icon: const Icon(Icons.delete_outline),
-                label: Text(l10n.delete),
-              ),
-            ],
-          ),
-          const SizedBox(height: BvSpacing.md),
-          BvPanel(
-            child: BvSection(
-              title: l10n.language,
-              subtitle: l10n.languageDescription,
-              padding: EdgeInsets.zero,
-              child: DropdownButtonFormField<AppLanguagePreference>(
+              const SizedBox(height: 16),
+              DropdownButtonFormField<AppLanguagePreference>(
                 key: ValueKey(language),
                 initialValue: language,
                 decoration: InputDecoration(labelText: l10n.language),
@@ -202,27 +212,32 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   }
                 },
               ),
-            ),
-          ),
-          const SizedBox(height: BvSpacing.md),
-          BvDangerZone(
-            title: l10n.settingsExternalKeysDeletion,
-            message: l10n.settingsExternalKeysDeletionMessage,
-            actions: [
-              OutlinedButton.icon(
-                onPressed:
-                    loading ||
-                            (!credentialState.rawgConfigured &&
-                                !credentialState.igdbConfigured &&
-                                !credentialState.steamGridDbConfigured)
-                        ? null
-                        : _deleteAllExternalApiKeys,
-                icon: const Icon(Icons.key_off_outlined),
-                label: Text(l10n.settingsDeleteAllKeys),
+              const SizedBox(height: BvSpacing.md),
+              const SizedBox(height: 20),
+              Text(
+                l10n.settingsPrivacyProtectionMessage,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed:
+                        loading ||
+                                (!credentialState.rawgConfigured &&
+                                    !credentialState.igdbConfigured &&
+                                    !credentialState.steamGridDbConfigured)
+                            ? null
+                            : _deleteAllExternalApiKeys,
+                    icon: const Icon(Icons.key_off_outlined),
+                    label: Text(l10n.settingsDeleteAllKeys),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

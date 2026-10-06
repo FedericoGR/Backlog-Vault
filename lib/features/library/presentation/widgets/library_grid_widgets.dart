@@ -38,8 +38,13 @@ class LibraryCatalogGrid extends StatelessWidget {
 
 /// A poster and a compact personal record, without a surrounding card.
 class LibraryCatalogCard extends StatefulWidget {
-  const LibraryCatalogCard({required this.row, super.key});
+  const LibraryCatalogCard({
+    required this.row,
+    this.showPersonalDetails = true,
+    super.key,
+  });
   final LibraryGameRow row;
+  final bool showPersonalDetails;
 
   @override
   State<LibraryCatalogCard> createState() => _LibraryCatalogCardState();
@@ -92,7 +97,7 @@ class _LibraryCatalogCardState extends State<LibraryCatalogCard> {
                             borderRadius: 4,
                           ),
                     ),
-                    if (row.isCompleted)
+                    if (widget.showPersonalDetails && row.isCompleted)
                       Positioned(
                         right: 6,
                         bottom: 6,
@@ -129,7 +134,7 @@ class _LibraryCatalogCardState extends State<LibraryCatalogCard> {
               children: [
                 if (row.personalRating != null)
                   PersonalRatingStars(rating: row.personalRating!),
-                if (row.hoursPlayed != null)
+                if (widget.showPersonalDetails && row.hoursPlayed != null)
                   Text(
                     context.l10n.hoursShort(
                       row.hoursPlayed!.toStringAsFixed(1),
@@ -140,7 +145,7 @@ class _LibraryCatalogCardState extends State<LibraryCatalogCard> {
                   ),
               ],
             ),
-            if (row.playedPlatform != null) ...[
+            if (widget.showPersonalDetails && row.playedPlatform != null) ...[
               const SizedBox(height: 4),
               Text(
                 row.playedPlatform!.name,

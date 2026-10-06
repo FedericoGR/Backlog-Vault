@@ -125,7 +125,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsLocalStatusSubtitle =>
-      'Backlog Vault remains offline-first: your library lives on this device and external integrations are optional.';
+      'Your library is stored on this device. Use it offline and optionally connect external sources.';
 
   @override
   String get settingsAccountRequired => 'Account required';
@@ -147,7 +147,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsPrivacyProtectionMessage =>
-      'The local database and media files stay on this device. Library exports exclude images and credentials.';
+      'Your games and images are stored on this device. Exports do not include images or credentials.';
 
   @override
   String get settingsLibraryData => 'Library data';
@@ -176,16 +176,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'Never paste real keys into README files, issues, logs, tests, or commits. Credentials stay in local secure storage.';
 
   @override
-  String get settingsRawgSubtitle =>
-      'Optional source for game metadata. The key is stored locally in the system secure storage.';
+  String get settingsRawgSubtitle => 'Fill in game information with RAWG.';
 
   @override
   String get settingsIgdbSubtitle =>
-      'Client credentials used to query IGDB. The access token is renewed locally and the secret is never displayed.';
+      'Search IGDB using your Twitch application credentials.';
 
   @override
   String get settingsSteamGridDbSubtitle =>
-      'Optional key for cover search. Backlog Vault still asks for explicit confirmation before saving covers.';
+      'Search for covers and choose which ones to save in your library.';
 
   @override
   String get settingsNewApiKey => 'New API key';
@@ -198,7 +197,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsApiKeyHelper =>
-      'It is excluded from library exports, never shown in plain text, and must not end up in commits.';
+      'Stored securely on this device and excluded from exports.';
 
   @override
   String get settingsClientIdHelper =>
@@ -206,11 +205,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsClientSecretHelper =>
-      'Never paste it into logs, README files, tests, or issues.';
+      'Stored securely. Do not share this key.';
 
   @override
   String get settingsMediaApiKeyHelper =>
-      'Used only for media search and kept on this device.';
+      'Used to search for covers and stored only on this device.';
 
   @override
   String get settingsExternalKeysDeletion => 'External key removal';
@@ -270,10 +269,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsConfigurationPresent => 'Configuration present';
 
   @override
-  String get settingsConfigurationPending => 'Configuration pending';
+  String get settingsConfigurationPending => 'Not configured';
 
   @override
-  String get settingsPending => 'Pending';
+  String get settingsPending => 'Not configured';
 
   @override
   String get statusBacklog => 'Not finished';
@@ -1318,7 +1317,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statisticsEmptyYearHint =>
-      'Games without a year remain available in Games → No year.';
+      'Games without a year remain available under No year in Games.';
 
   @override
   String get statisticsFavorites => 'Favorites';
@@ -1339,6 +1338,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logCollectionHeading => 'My library';
+
+  @override
+  String get settingsMetadataSources => 'Metadata sources';
+
+  @override
+  String get settingsApplication => 'Application';
 
   @override
   String get columnTitle => 'Title';

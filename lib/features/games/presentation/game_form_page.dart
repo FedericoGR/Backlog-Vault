@@ -294,6 +294,9 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                                 type: MaterialType.transparency,
                                 child: ExpansionTile(
                                   key: const ValueKey('game-information'),
+                                  childrenPadding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                   title: Text(context.l10n.gameInformation),
                                   subtitle: Text(
                                     context.l10n.gameInformationHint,

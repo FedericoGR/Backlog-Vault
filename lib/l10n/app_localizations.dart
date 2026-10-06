@@ -329,7 +329,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsLocalStatusSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Backlog Vault remains offline-first: your library lives on this device and external integrations are optional.'**
+  /// **'Your library is stored on this device. Use it offline and optionally connect external sources.'**
   String get settingsLocalStatusSubtitle;
 
   /// No description provided for @settingsAccountRequired.
@@ -371,7 +371,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsPrivacyProtectionMessage.
   ///
   /// In en, this message translates to:
-  /// **'The local database and media files stay on this device. Library exports exclude images and credentials.'**
+  /// **'Your games and images are stored on this device. Exports do not include images or credentials.'**
   String get settingsPrivacyProtectionMessage;
 
   /// No description provided for @settingsLibraryData.
@@ -425,19 +425,19 @@ abstract class AppLocalizations {
   /// No description provided for @settingsRawgSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Optional source for game metadata. The key is stored locally in the system secure storage.'**
+  /// **'Fill in game information with RAWG.'**
   String get settingsRawgSubtitle;
 
   /// No description provided for @settingsIgdbSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Client credentials used to query IGDB. The access token is renewed locally and the secret is never displayed.'**
+  /// **'Search IGDB using your Twitch application credentials.'**
   String get settingsIgdbSubtitle;
 
   /// No description provided for @settingsSteamGridDbSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Optional key for cover search. Backlog Vault still asks for explicit confirmation before saving covers.'**
+  /// **'Search for covers and choose which ones to save in your library.'**
   String get settingsSteamGridDbSubtitle;
 
   /// No description provided for @settingsNewApiKey.
@@ -461,7 +461,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsApiKeyHelper.
   ///
   /// In en, this message translates to:
-  /// **'It is excluded from library exports, never shown in plain text, and must not end up in commits.'**
+  /// **'Stored securely on this device and excluded from exports.'**
   String get settingsApiKeyHelper;
 
   /// No description provided for @settingsClientIdHelper.
@@ -473,13 +473,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsClientSecretHelper.
   ///
   /// In en, this message translates to:
-  /// **'Never paste it into logs, README files, tests, or issues.'**
+  /// **'Stored securely. Do not share this key.'**
   String get settingsClientSecretHelper;
 
   /// No description provided for @settingsMediaApiKeyHelper.
   ///
   /// In en, this message translates to:
-  /// **'Used only for media search and kept on this device.'**
+  /// **'Used to search for covers and stored only on this device.'**
   String get settingsMediaApiKeyHelper;
 
   /// No description provided for @settingsExternalKeysDeletion.
@@ -593,13 +593,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsConfigurationPending.
   ///
   /// In en, this message translates to:
-  /// **'Configuration pending'**
+  /// **'Not configured'**
   String get settingsConfigurationPending;
 
   /// No description provided for @settingsPending.
   ///
   /// In en, this message translates to:
-  /// **'Pending'**
+  /// **'Not configured'**
   String get settingsPending;
 
   /// No description provided for @statusBacklog.
@@ -2457,7 +2457,7 @@ abstract class AppLocalizations {
   /// No description provided for @statisticsEmptyYearHint.
   ///
   /// In en, this message translates to:
-  /// **'Games without a year remain available in Games → No year.'**
+  /// **'Games without a year remain available under No year in Games.'**
   String get statisticsEmptyYearHint;
 
   /// No description provided for @statisticsFavorites.
@@ -2495,6 +2495,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'My library'**
   String get logCollectionHeading;
+
+  /// No description provided for @settingsMetadataSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Metadata sources'**
+  String get settingsMetadataSources;
+
+  /// No description provided for @settingsApplication.
+  ///
+  /// In en, this message translates to:
+  /// **'Application'**
+  String get settingsApplication;
 
   /// No description provided for @columnTitle.
   ///

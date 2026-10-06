@@ -14,9 +14,11 @@ void main() {
     expect(english.bulkTitle, 'Import metadata');
     expect(english.settingsUsageMode, 'Usage mode');
     expect(english.settingsLocalDatabase, 'Local database');
-    expect(english.settingsRawgSubtitle, contains('stored locally'));
-    expect(english.settingsIgdbSubtitle, contains('renewed locally'));
-    expect(english.settingsSteamGridDbSubtitle, contains('cover search'));
+    expect(english.settingsRawgSubtitle, contains('game information'));
+    expect(english.settingsIgdbSubtitle, contains('Twitch'));
+    expect(english.settingsSteamGridDbSubtitle, contains('covers'));
+    expect(english.settingsApiKeyHelper, contains('Stored securely'));
+    expect(english.settingsApiKeyHelper, contains('excluded from exports'));
 
     expect(spanish.navigationLibrary, 'Juegos');
     expect(spanish.settingsTitle, 'Ajustes');
@@ -25,9 +27,11 @@ void main() {
     expect(spanish.bulkTitle, 'Importar metadata');
     expect(spanish.settingsUsageMode, 'Modo de uso');
     expect(spanish.settingsLocalDatabase, 'Base local');
-    expect(spanish.settingsRawgSubtitle, contains('localmente'));
-    expect(spanish.settingsIgdbSubtitle, contains('renueva localmente'));
+    expect(spanish.settingsRawgSubtitle, contains('información'));
+    expect(spanish.settingsIgdbSubtitle, contains('Twitch'));
     expect(spanish.settingsSteamGridDbSubtitle, contains('portadas'));
+    expect(spanish.settingsApiKeyHelper, contains('forma segura'));
+    expect(spanish.settingsApiKeyHelper, contains('no se incluye'));
   });
 
   test(

@@ -6,7 +6,7 @@ import 'package:backlog_vault/core/design_system/bv_loading_state.dart';
 import 'package:backlog_vault/core/design_system/bv_page_scaffold.dart';
 import 'package:backlog_vault/core/design_system/bv_panel.dart';
 import 'package:backlog_vault/core/design_system/bv_section.dart';
-import 'package:backlog_vault/core/design_system/bv_stat_card.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -67,7 +67,7 @@ class _ComponentPreview extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  BvStatCard(label: 'Juegos', value: '51'),
+                  Text('Juegos'),
                   BvChip(label: 'Completado', tone: BvChipTone.primary),
                   BvChip(label: 'Warning', tone: BvChipTone.warning),
                   BvChip(label: 'Error', tone: BvChipTone.danger),

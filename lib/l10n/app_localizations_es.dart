@@ -125,7 +125,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsLocalStatusSubtitle =>
-      'Backlog Vault sigue siendo una app offline-first: la biblioteca vive en tu equipo y las integraciones externas son opcionales.';
+      'Tu biblioteca se guarda en este equipo. Podés usarla sin conexión y configurar fuentes externas si querés.';
 
   @override
   String get settingsAccountRequired => 'Cuenta obligatoria';
@@ -147,7 +147,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsPrivacyProtectionMessage =>
-      'La base local y los archivos de media permanecen en este dispositivo. La exportación excluye imágenes y credenciales.';
+      'Tus juegos e imágenes se guardan en este equipo. Las exportaciones no incluyen imágenes ni credenciales.';
 
   @override
   String get settingsLibraryData => 'Datos de la biblioteca';
@@ -177,15 +177,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsRawgSubtitle =>
-      'Fuente opcional para completar metadata de juegos. La clave se guarda localmente en el secure storage del sistema.';
+      'Completá la información de tus juegos con RAWG.';
 
   @override
   String get settingsIgdbSubtitle =>
-      'Client credentials para consultar IGDB. El access token se renueva localmente y el secret no se expone en pantalla.';
+      'Buscá juegos en IGDB con las credenciales de tu aplicación de Twitch.';
 
   @override
   String get settingsSteamGridDbSubtitle =>
-      'Clave opcional para buscar portadas. Backlog Vault sigue pidiendo confirmación explícita antes de guardar covers.';
+      'Buscá portadas y elegí cuáles guardar en tu biblioteca.';
 
   @override
   String get settingsNewApiKey => 'Nueva API key';
@@ -198,7 +198,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsApiKeyHelper =>
-      'No se incluye en exportaciones de biblioteca, no se muestra en claro y no debe terminar en commits.';
+      'Se guarda de forma segura en este dispositivo y no se incluye en las exportaciones.';
 
   @override
   String get settingsClientIdHelper =>
@@ -206,11 +206,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsClientSecretHelper =>
-      'No lo pegues en logs, README, tests ni issues.';
+      'Se guarda de forma segura. No compartas esta clave.';
 
   @override
   String get settingsMediaApiKeyHelper =>
-      'Se usa solo para búsqueda de media y se mantiene local.';
+      'Se usa para buscar portadas y se guarda solo en este dispositivo.';
 
   @override
   String get settingsExternalKeysDeletion => 'Borrado de claves externas';
@@ -271,10 +271,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsConfigurationPresent => 'Configuración presente';
 
   @override
-  String get settingsConfigurationPending => 'Configuración pendiente';
+  String get settingsConfigurationPending => 'Sin configurar';
 
   @override
-  String get settingsPending => 'Pendiente';
+  String get settingsPending => 'Sin configurar';
 
   @override
   String get statusBacklog => 'No terminado';
@@ -316,7 +316,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get statisticsLoadError => 'No se pudo cargar estadísticas';
 
   @override
-  String get statisticsAverageRating => 'Rating promedio';
+  String get statisticsAverageRating => 'Puntaje promedio';
 
   @override
   String hoursShort(Object value) {
@@ -1321,7 +1321,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get statisticsEmptyYearHint =>
-      'Los juegos sin año siguen disponibles en Juegos → Sin año.';
+      'Los juegos sin año siguen disponibles en la sección Sin año de Juegos.';
 
   @override
   String get statisticsFavorites => 'Favoritos';
@@ -1343,6 +1343,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get logCollectionHeading => 'Mi biblioteca';
+
+  @override
+  String get settingsMetadataSources => 'Fuentes de metadatos';
+
+  @override
+  String get settingsApplication => 'Aplicación';
 
   @override
   String get columnTitle => 'Título';

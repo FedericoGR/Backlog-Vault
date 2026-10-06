@@ -1,5 +1,5 @@
 import 'package:backlog_vault/app/theme/app_theme.dart';
-import 'package:backlog_vault/core/design_system/bv_stat_card.dart';
+
 import 'package:backlog_vault/core/time/clock.dart';
 import 'package:backlog_vault/features/library/application/annual_game_log.dart';
 import 'package:backlog_vault/features/library/application/library_providers.dart';
@@ -41,7 +41,7 @@ void main() {
   }
 
   String kpi(WidgetTester tester, String key) =>
-      tester.widget<BvStatCard>(find.byKey(ValueKey('statistics-$key'))).value;
+      tester.widget<Text>(find.byKey(ValueKey('statistics-$key'))).data!;
 
   testWidgets(
     'defaults to calendar year and exposes exactly four yearly KPIs with restrained sections',
@@ -55,7 +55,7 @@ void main() {
             .value,
         2026,
       );
-      expect(find.byType(BvStatCard), findsNWidgets(4));
+      expect(find.byType(Card), findsNothing);
       expect(kpi(tester, 'games'), '2');
       expect(kpi(tester, 'completed'), '1');
       expect(kpi(tester, 'hours'), '18.0');
@@ -123,7 +123,7 @@ void main() {
       expect(kpi(tester, 'hours'), 'Sin datos');
       expect(kpi(tester, 'rating'), 'Sin datos');
       expect(find.text('Sin juegos en este año'), findsOneWidget);
-      expect(find.textContaining('Juegos → Sin año'), findsOneWidget);
+      expect(find.textContaining('Sin año de Juegos'), findsOneWidget);
     },
   );
 
