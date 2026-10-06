@@ -495,7 +495,6 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
                                       const SizedBox(height: 28),
                                       personalSection,
                                       const SizedBox(height: 28),
-                                      const Divider(),
                                       catalogSection,
                                       const SizedBox(height: 40),
                                     ],

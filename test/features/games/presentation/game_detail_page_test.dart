@@ -74,13 +74,13 @@ void main() {
           ),
           findsNWidgets(5),
         );
-        expect(find.text('24.0 h'), findsOneWidget);
+        expect(find.text('24,0 h'), findsOneWidget);
         expect(find.text('PS5'), findsOneWidget);
         expect(
           find.text(completed ? 'Terminado' : 'No terminado'),
           findsOneWidget,
         );
-        expect(find.text('2025'), findsOneWidget);
+        expect(find.text('Jugado en 2025'), findsOneWidget);
         expect(
           find.textContaining('20-01-2026'),
           completed ? findsOneWidget : findsNothing,
@@ -149,7 +149,7 @@ void main() {
     'unknown year and empty optional personal fields render without duplicates',
     (tester) async {
       await open(tester, _details(withCover: false, emptyPersonal: true));
-      expect(find.text('Sin año'), findsOneWidget);
+      expect(find.text('Jugado en: Sin año'), findsOneWidget);
       expect(find.byKey(const ValueKey('detail-rating')), findsNothing);
       expect(
         find.byKey(const ValueKey('detail-completion-date')),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/widgets/personal_rating_stars.dart';
 import '../../../../core/design_system/bv_theme_extension.dart';

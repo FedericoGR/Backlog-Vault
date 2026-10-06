@@ -779,8 +779,14 @@ abstract class AppLocalizations {
   /// No description provided for @gameCreateTitle.
   ///
   /// In en, this message translates to:
-  /// **'Create game'**
+  /// **'Add game'**
   String get gameCreateTitle;
+
+  /// No description provided for @gamePlayedYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Played in'**
+  String get gamePlayedYear;
 
   /// No description provided for @gameEditTitle.
   ///

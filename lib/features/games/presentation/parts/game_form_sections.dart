@@ -74,7 +74,7 @@ class _MetadataSearchButton extends StatelessWidget {
         children: [
           OutlinedButton.icon(
             onPressed: saving ? null : onSearch,
-            icon: const Icon(Icons.auto_fix_high_outlined),
+            icon: const Icon(Icons.search),
             label: Text(context.l10n.gameFindGame),
           ),
           if (pendingCoverAsset != null) ...[

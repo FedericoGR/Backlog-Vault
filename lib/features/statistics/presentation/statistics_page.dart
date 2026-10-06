@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/design_system/bv_empty_state.dart';
@@ -162,13 +163,23 @@ class _AnnualStatistics extends StatelessWidget {
               (
                 'hours',
                 l10n.libraryHours,
-                stats.totalHours?.toStringAsFixed(1) ??
+                (stats.totalHours == null
+                        ? null
+                        : NumberFormat(
+                          '0.0',
+                          l10n.localeName,
+                        ).format(stats.totalHours!)) ??
                     l10n.statisticsUnavailable,
               ),
               (
                 'rating',
                 l10n.statisticsAverageRating,
-                stats.averageRating?.toStringAsFixed(1) ??
+                (stats.averageRating == null
+                        ? null
+                        : NumberFormat(
+                          '0.0',
+                          l10n.localeName,
+                        ).format(stats.averageRating!)) ??
                     l10n.statisticsUnavailable,
               ),
             ];

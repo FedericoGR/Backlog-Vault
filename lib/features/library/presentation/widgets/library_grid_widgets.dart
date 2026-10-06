@@ -137,7 +137,10 @@ class _LibraryCatalogCardState extends State<LibraryCatalogCard> {
                 if (widget.showPersonalDetails && row.hoursPlayed != null)
                   Text(
                     context.l10n.hoursShort(
-                      row.hoursPlayed!.toStringAsFixed(1),
+                      NumberFormat(
+                        '0.0',
+                        context.l10n.localeName,
+                      ).format(row.hoursPlayed!),
                     ),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,

@@ -58,8 +58,8 @@ void main() {
       expect(find.byType(Card), findsNothing);
       expect(kpi(tester, 'games'), '2');
       expect(kpi(tester, 'completed'), '1');
-      expect(kpi(tester, 'hours'), '18.0');
-      expect(kpi(tester, 'rating'), '5.0');
+      expect(kpi(tester, 'hours'), '18,0');
+      expect(kpi(tester, 'rating'), '5,0');
       expect(find.text('Favoritos'), findsOneWidget);
       expect(find.text('Dónde jugué'), findsOneWidget);
       expect(find.text('Current favorite'), findsOneWidget);
@@ -98,8 +98,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(kpi(tester, 'games'), '1');
     expect(kpi(tester, 'completed'), '0');
-    expect(kpi(tester, 'hours'), '4.0');
-    expect(kpi(tester, 'rating'), '3.0');
+    expect(kpi(tester, 'hours'), '4,0');
+    expect(kpi(tester, 'rating'), '3,0');
     expect(find.text('Old favorite'), findsOneWidget);
     expect(find.text('Current favorite'), findsNothing);
     expect(find.text('Switch'), findsOneWidget);

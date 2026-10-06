@@ -166,7 +166,7 @@ void main() {
       );
       Finder textInCard(String text) =>
           find.descendant(of: card, matching: find.text(text));
-      expect(textInCard('18.0 h'), findsOneWidget);
+      expect(textInCard('18,0 h'), findsOneWidget);
       expect(
         find.descendant(of: card, matching: find.byIcon(Icons.star)),
         findsNWidgets(4),

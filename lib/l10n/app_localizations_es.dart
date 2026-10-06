@@ -368,7 +368,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get libraryHours => 'Horas';
 
   @override
-  String get gameCreateTitle => 'Crear juego';
+  String get gameCreateTitle => 'Agregar juego';
+
+  @override
+  String get gamePlayedYear => 'Jugado en';
 
   @override
   String get gameEditTitle => 'Editar juego';

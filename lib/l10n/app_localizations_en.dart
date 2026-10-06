@@ -366,7 +366,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryHours => 'Hours';
 
   @override
-  String get gameCreateTitle => 'Create game';
+  String get gameCreateTitle => 'Add game';
+
+  @override
+  String get gamePlayedYear => 'Played in';
 
   @override
   String get gameEditTitle => 'Edit game';

@@ -43,7 +43,7 @@ class _GameInfoPanel extends StatelessWidget {
           children: [
             if (entry.hoursPlayed != null)
               Text(
-                '${entry.hoursPlayed} h',
+                '${NumberFormat('0.0', context.l10n.localeName).format(entry.hoursPlayed)} h',
                 style: theme.textTheme.titleMedium,
               ),
             if (platform != null)
@@ -80,7 +80,9 @@ class _GameInfoPanel extends StatelessWidget {
             Semantics(
               label: context.l10n.logPlayedYear,
               child: Text(
-                entry.playedYear?.toString() ?? context.l10n.logUnknownYear,
+                entry.playedYear == null
+                    ? '${context.l10n.gamePlayedYear}: ${context.l10n.logUnknownYear}'
+                    : '${context.l10n.gamePlayedYear} ${entry.playedYear}',
               ),
             ),
           ],
