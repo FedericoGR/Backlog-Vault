@@ -13,14 +13,7 @@ class _FormSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BvPanel(
-      child: BvSection(
-        title: title,
-        subtitle: subtitle,
-        padding: EdgeInsets.zero,
-        child: child,
-      ),
-    );
+    return BvSection(title: title, padding: EdgeInsets.zero, child: child);
   }
 }
 
@@ -36,6 +29,7 @@ class _FormFieldGrid extends StatelessWidget {
       builder: (context, constraints) {
         if (!twoColumns || constraints.maxWidth < 560) {
           return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (final child in children) ...[
                 child,
@@ -46,14 +40,11 @@ class _FormFieldGrid extends StatelessWidget {
           );
         }
         return Wrap(
-          spacing: BvSpacing.sm,
-          runSpacing: BvSpacing.sm,
+          spacing: 24,
+          runSpacing: 24,
           children: [
             for (final child in children)
-              SizedBox(
-                width: (constraints.maxWidth - BvSpacing.sm) / 2,
-                child: child,
-              ),
+              SizedBox(width: (constraints.maxWidth - 24) / 2, child: child),
           ],
         );
       },
@@ -76,8 +67,8 @@ class _MetadataSearchButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BvSurface(
-      padding: const EdgeInsets.all(BvSpacing.sm),
+    return Padding(
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -97,33 +88,6 @@ class _MetadataSearchButton extends StatelessWidget {
               onDeleted: onClearCover,
             ),
           ],
-        ],
-      ),
-    );
-  }
-}
-
-class _SaveActionBar extends StatelessWidget {
-  const _SaveActionBar({required this.saving, required this.onSave});
-
-  final bool saving;
-  final VoidCallback onSave;
-
-  @override
-  Widget build(BuildContext context) {
-    return BvPanel(
-      dense: true,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          BvAsyncActionButton(
-            label: context.l10n.save,
-            icon: Icons.save_outlined,
-            onPressed: onSave,
-            busy: saving,
-            busyLabel: context.l10n.loading,
-            minimumWidth: 180,
-          ),
         ],
       ),
     );

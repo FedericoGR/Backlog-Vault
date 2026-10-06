@@ -67,7 +67,13 @@ void main() {
         await open(tester, _details(withCover: true, completed: completed));
         expect(find.text('Hades'), findsOneWidget);
         expect(find.byKey(const ValueKey('detail-rating')), findsOneWidget);
-        expect(find.text('⭐⭐⭐⭐⭐'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byKey(const ValueKey('detail-rating')),
+            matching: find.byIcon(Icons.star),
+          ),
+          findsNWidgets(5),
+        );
         expect(find.text('24.0 h'), findsOneWidget);
         expect(find.text('PS5'), findsOneWidget);
         expect(
@@ -82,7 +88,7 @@ void main() {
         expect(find.text('Escape attempt notes.'), findsOneWidget);
         expect(find.text('Editar'), findsOneWidget);
         expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
-        expect(find.byIcon(Icons.image_search_outlined), findsOneWidget);
+        expect(find.byIcon(Icons.image_search_outlined), findsNothing);
         expect(find.text('PC'), findsNothing);
         expect(find.text('Roguelike'), findsNothing);
         expect(find.textContaining('17-09-2020'), findsNothing);
@@ -126,7 +132,13 @@ void main() {
       expect(find.textContaining('17-09-2020'), findsOneWidget);
       expect(find.text('PS5'), findsOneWidget);
       expect(find.text('Terminado'), findsOneWidget);
-      expect(find.text('⭐⭐⭐⭐⭐'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('detail-rating')),
+          matching: find.byIcon(Icons.star),
+        ),
+        findsNWidgets(5),
+      );
       expect(find.byIcon(Icons.travel_explore_outlined), findsOneWidget);
       expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -159,13 +171,23 @@ void main() {
         size: const Size(390, 844),
       );
       expect(find.textContaining('A Very Long Game Title'), findsOneWidget);
-      expect(find.text('Escape attempt notes.'), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.byKey(const ValueKey('detail-poster'))).dy,
+        lessThan(
+          tester
+              .getTopLeft(find.byKey(const ValueKey('detail-personal-record')))
+              .dy,
+        ),
+      );
       await tester.scrollUntilVisible(
-        find.byIcon(Icons.image_search_outlined),
+        find.text('Escape attempt notes.'),
         300,
         scrollable: find.byType(Scrollable).first,
       );
-      expect(find.byIcon(Icons.image_outlined), findsWidgets);
+      expect(find.text('Escape attempt notes.'), findsOneWidget);
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+      expect(find.text('Buscar portada'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

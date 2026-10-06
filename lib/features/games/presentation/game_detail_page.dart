@@ -3,11 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/design_system/bv_breakpoints.dart';
-import '../../../core/design_system/bv_chip.dart';
 import '../../../core/design_system/bv_error_state.dart';
 import '../../../core/design_system/bv_feedback.dart';
 import '../../../core/design_system/bv_loading_state.dart';
-import '../../../core/design_system/bv_panel.dart';
+import '../../../core/widgets/personal_rating_stars.dart';
 import '../../../core/design_system/bv_section.dart';
 import '../../../core/design_system/bv_spacing.dart';
 import '../../../core/design_system/bv_theme_extension.dart';
@@ -16,7 +15,6 @@ import '../../../core/formatting/date_formatters.dart';
 import '../../../l10n/domain_localizations.dart';
 import '../../../l10n/l10n.dart';
 import '../../library/domain/game_status.dart';
-import '../../library/domain/rating.dart';
 import '../../library/application/library_providers.dart';
 import '../../library/presentation/widgets/library_cover_thumbnail.dart';
 import '../../media/application/media_providers.dart';
@@ -49,7 +47,11 @@ class GameDetailPage extends ConsumerWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(context.l10n.gameMyRecord),
+            leading: IconButton(
+              tooltip: context.l10n.navigationLibrary,
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.go('/'),
+            ),
             actions: [
               TextButton.icon(
                 onPressed: () => context.go('/games/${item.entry.id}/edit'),
@@ -58,9 +60,31 @@ class GameDetailPage extends ConsumerWidget {
               ),
               PopupMenuButton<String>(
                 tooltip: context.l10n.gameActions,
-                onSelected: (_) => _confirmDelete(context, ref, item),
+                onSelected: (action) {
+                  switch (action) {
+                    case 'cover':
+                      _showMediaDialog(context, ref, item);
+                    case 'remove-cover':
+                      _confirmDeleteCover(context, ref, item);
+                    case 'delete':
+                      _confirmDelete(context, ref, item);
+                  }
+                },
                 itemBuilder:
                     (_) => [
+                      PopupMenuItem(
+                        value: 'cover',
+                        child: Text(
+                          item.selectedCover == null
+                              ? context.l10n.coverSearch
+                              : context.l10n.coverChange,
+                        ),
+                      ),
+                      if (item.selectedCover != null)
+                        PopupMenuItem(
+                          value: 'remove-cover',
+                          child: Text(context.l10n.gameRemoveCover),
+                        ),
                       PopupMenuItem(
                         value: 'delete',
                         child: Text(context.l10n.delete),
@@ -71,7 +95,7 @@ class GameDetailPage extends ConsumerWidget {
           ),
           body: LayoutBuilder(
             builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= BvBreakpoints.detailWide;
+              final isWide = constraints.maxWidth >= 760;
               final compact = constraints.maxWidth < BvBreakpoints.mobile;
               final padding = compact ? BvSpacing.pageCompact : BvSpacing.page;
               final coverPanel = _GameCoverPanel(item: item);
@@ -83,35 +107,46 @@ class GameDetailPage extends ConsumerWidget {
                 ],
               ];
 
-              return ListView(
-                padding: padding,
-                children: [
-                  if (isWide)
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(width: 300, child: coverPanel),
-                        const SizedBox(width: 20),
-                        Expanded(
-                          flex: 3,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [infoPanel, ...notes],
-                          ),
+              return Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1120),
+                  child: ListView(
+                    padding: padding,
+                    children: [
+                      if (isWide)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: constraints.maxWidth >= 1200 ? 260 : 220,
+                              child: coverPanel,
+                            ),
+                            const SizedBox(width: 40),
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [infoPanel, ...notes],
+                              ),
+                            ),
+                          ],
+                        )
+                      else ...[
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: SizedBox(width: 180, child: coverPanel),
                         ),
+                        const SizedBox(height: 24),
+                        infoPanel,
+                        ...notes,
                       ],
-                    )
-                  else ...[
-                    infoPanel,
-                    const SizedBox(height: 16),
-                    ...notes,
-                    const SizedBox(height: BvSpacing.md),
-                    Center(child: SizedBox(width: 300, child: coverPanel)),
-                  ],
-                  const SizedBox(height: BvSpacing.md),
-                  _GameCatalogPanel(item: item),
-                  const SizedBox(height: 80),
-                ],
+                      const SizedBox(height: BvSpacing.md),
+                      _GameCatalogPanel(item: item),
+                      const SizedBox(height: 80),
+                    ],
+                  ),
+                ),
               );
             },
           ),

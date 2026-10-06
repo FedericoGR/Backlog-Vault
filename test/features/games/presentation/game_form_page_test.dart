@@ -117,7 +117,12 @@ void main() {
         ).thenAnswer((_) => Stream.value([_platforms.first]));
         await open(tester, completed: completed);
         expect(
-          tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+          tester
+              .widget<SegmentedButton<bool>>(
+                find.byKey(const ValueKey('completion-state')),
+              )
+              .selected
+              .single,
           completed,
         );
         expect(value(tester, 'played-year-field'), '2025');
@@ -187,7 +192,7 @@ void main() {
         await selectPlatform(tester, 'PS4');
         await tester.tap(field('rating-4'));
         await tester.enterText(field('notes-field'), 'My own notes');
-        if (completed) await tester.tap(find.byType(SwitchListTile));
+        if (completed) await tester.tap(find.text('Terminado'));
         await tester.pumpAndSettle();
         final saved = await save(tester);
         expect(saved.isCompleted, completed);
@@ -206,7 +211,14 @@ void main() {
       (tester) async {
         await open(tester, completed: completed);
         for (var i = 0; i < 3; i++) {
-          await tester.tap(find.byType(SwitchListTile));
+          final selected =
+              tester
+                  .widget<SegmentedButton<bool>>(
+                    find.byKey(const ValueKey('completion-state')),
+                  )
+                  .selected
+                  .single;
+          await tester.tap(find.text(selected ? 'No terminado' : 'Terminado'));
           await tester.pumpAndSettle();
         }
         expect(

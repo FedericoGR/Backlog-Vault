@@ -15,35 +15,42 @@ class PersonalRatingField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InputDecorator(
-      decoration: InputDecoration(labelText: context.l10n.gameRating),
-      child: Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          for (var rating = 1; rating <= 5; rating++)
-            Semantics(
-              selected: value == rating,
-              child: IconButton(
-                key: ValueKey('rating-$rating'),
-                tooltip:
-                    rating == 1
-                        ? context.l10n.ratingOneStar
-                        : context.l10n.ratingStars(rating),
-                color: Theme.of(context).colorScheme.primary,
-                icon: Icon(
-                  rating <= (value ?? 0) ? Icons.star : Icons.star_border,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.l10n.gameRating,
+          style: Theme.of(context).textTheme.labelLarge,
+        ),
+        const SizedBox(height: 4),
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            for (var rating = 1; rating <= 5; rating++)
+              Semantics(
+                selected: value == rating,
+                child: IconButton(
+                  key: ValueKey('rating-$rating'),
+                  tooltip:
+                      rating == 1
+                          ? context.l10n.ratingOneStar
+                          : context.l10n.ratingStars(rating),
+                  color: Theme.of(context).colorScheme.primary,
+                  icon: Icon(
+                    rating <= (value ?? 0) ? Icons.star : Icons.star_border,
+                  ),
+                  onPressed: () => onChanged(rating),
                 ),
-                onPressed: () => onChanged(rating),
               ),
-            ),
-          if (value != null)
-            TextButton(
-              key: const ValueKey('clear-rating'),
-              onPressed: () => onChanged(null),
-              child: Text(context.l10n.clear),
-            ),
-        ],
-      ),
+            if (value != null)
+              TextButton(
+                key: const ValueKey('clear-rating'),
+                onPressed: () => onChanged(null),
+                child: Text(context.l10n.clear),
+              ),
+          ],
+        ),
+      ],
     );
   }
 }
