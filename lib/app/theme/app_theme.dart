@@ -15,20 +15,21 @@ ThemeData _buildBacklogVaultTheme(Brightness brightness) {
   final isDark = brightness == Brightness.dark;
   final bv = isDark ? BvThemeExtension.dark : BvThemeExtension.light;
   final colorScheme = ColorScheme.fromSeed(
-    seedColor: BvColors.mint,
+    seedColor: BvColors.accent,
     brightness: brightness,
   ).copyWith(
-    primary: isDark ? BvColors.mint : const Color(0xFF1D6F62),
-    onPrimary: isDark ? const Color(0xFF062B26) : Colors.white,
-    primaryContainer: isDark ? BvColors.mintContainer : const Color(0xFFCDEFE8),
+    primary: isDark ? BvColors.accent : const Color(0xFF9B4B08),
+    onPrimary: isDark ? const Color(0xFF241306) : Colors.white,
+    primaryContainer:
+        isDark ? BvColors.accentContainer : const Color(0xFFFFDCC0),
     onPrimaryContainer:
-        isDark ? const Color(0xFFC6FFF3) : const Color(0xFF063B34),
-    secondary: isDark ? const Color(0xFF9FCBC3) : const Color(0xFF49645F),
-    onSecondary: isDark ? const Color(0xFF16332E) : Colors.white,
+        isDark ? const Color(0xFFFFDCC0) : const Color(0xFF351B08),
+    secondary: isDark ? const Color(0xFFAAAAB2) : const Color(0xFF5C5C64),
+    onSecondary: isDark ? const Color(0xFF242428) : Colors.white,
     secondaryContainer:
-        isDark ? const Color(0xFF203F39) : const Color(0xFFD5E8E4),
+        isDark ? const Color(0xFF242428) : const Color(0xFFE6E6EA),
     onSecondaryContainer:
-        isDark ? const Color(0xFFD8F5EF) : const Color(0xFF1A3430),
+        isDark ? const Color(0xFFE6E6EA) : const Color(0xFF242428),
     tertiary: isDark ? BvColors.amber : const Color(0xFF8A5B13),
     onTertiary: isDark ? const Color(0xFF322000) : Colors.white,
     tertiaryContainer:
@@ -137,7 +138,7 @@ ThemeData _buildBacklogVaultTheme(Brightness brightness) {
         ),
         shape: WidgetStatePropertyAll(_buttonShape()),
         textStyle: WidgetStatePropertyAll(
-          textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+          textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
         ),
       ),
     ),
@@ -164,7 +165,7 @@ ThemeData _buildBacklogVaultTheme(Brightness brightness) {
         shape: WidgetStatePropertyAll(_buttonShape()),
         overlayColor: _overlayColor(colorScheme.primary),
         textStyle: WidgetStatePropertyAll(
-          textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+          textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
         ),
       ),
     ),
@@ -181,7 +182,7 @@ ThemeData _buildBacklogVaultTheme(Brightness brightness) {
         shape: WidgetStatePropertyAll(_buttonShape()),
         overlayColor: _overlayColor(colorScheme.primary),
         textStyle: WidgetStatePropertyAll(
-          textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+          textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
         ),
       ),
     ),
@@ -230,11 +231,11 @@ ThemeData _buildBacklogVaultTheme(Brightness brightness) {
       ),
       secondaryLabelStyle: textTheme.labelMedium?.copyWith(
         color: colorScheme.onPrimaryContainer,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
       ),
       side: BorderSide(color: bv.border),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(BvRadii.pill),
+        borderRadius: BorderRadius.circular(BvRadii.sm),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
     ),
@@ -255,41 +256,6 @@ ThemeData _buildBacklogVaultTheme(Brightness brightness) {
       ),
       textStyle: textTheme.bodySmall?.copyWith(color: Colors.white),
       waitDuration: const Duration(milliseconds: 450),
-    ),
-    navigationRailTheme: NavigationRailThemeData(
-      backgroundColor: colorScheme.surface,
-      indicatorColor: colorScheme.primaryContainer,
-      selectedIconTheme: IconThemeData(color: colorScheme.onPrimaryContainer),
-      unselectedIconTheme: IconThemeData(color: colorScheme.onSurfaceVariant),
-      selectedLabelTextStyle: textTheme.labelMedium?.copyWith(
-        color: colorScheme.onSurface,
-        fontWeight: FontWeight.w700,
-      ),
-      unselectedLabelTextStyle: textTheme.labelMedium?.copyWith(
-        color: colorScheme.onSurfaceVariant,
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-    navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: colorScheme.surface,
-      indicatorColor: colorScheme.primaryContainer,
-      labelTextStyle: WidgetStateProperty.resolveWith((states) {
-        final selected = states.contains(WidgetState.selected);
-        return textTheme.labelMedium?.copyWith(
-          color:
-              selected ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
-          fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-        );
-      }),
-      iconTheme: WidgetStateProperty.resolveWith((states) {
-        final selected = states.contains(WidgetState.selected);
-        return IconThemeData(
-          color:
-              selected
-                  ? colorScheme.onPrimaryContainer
-                  : colorScheme.onSurfaceVariant,
-        );
-      }),
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: bv.surfaceHighest,

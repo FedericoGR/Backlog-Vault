@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
-  testWidgets('app follows system theme and exposes OLED dark theme', (
+  testWidgets('app follows system theme and exposes neutral dark theme', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -34,13 +34,14 @@ void main() {
     expect(app.darkTheme, isNotNull);
   });
 
-  test('dark theme uses black scaffold and very dark surfaces', () {
+  test('dark theme uses neutral scaffold and restrained orange accent', () {
     final theme = buildBacklogVaultDarkTheme();
 
-    expect(theme.scaffoldBackgroundColor, const Color(0xFF050606));
-    expect(theme.colorScheme.surface, const Color(0xFF050606));
+    expect(theme.scaffoldBackgroundColor, const Color(0xFF0D0D0F));
+    expect(theme.colorScheme.surface, const Color(0xFF0D0D0F));
     expect(theme.extension<BvThemeExtension>(), isNotNull);
     expect(theme.cardTheme.elevation, 0);
+    expect(theme.colorScheme.primary, const Color(0xFFE98A2F));
   });
 
   test('light theme exposes the Backlog Vault design extension', () {

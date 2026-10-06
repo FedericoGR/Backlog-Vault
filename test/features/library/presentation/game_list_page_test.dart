@@ -80,13 +80,9 @@ void main() {
         '/',
       );
       expect(find.byType(GameListPage), findsOneWidget);
-      final nav = tester.widget<NavigationRail>(find.byType(NavigationRail));
-      expect(nav.selectedIndex, 0);
-      expect(nav.destinations.map((d) => (d.label as Text).data), [
-        'Juegos',
-        'Estadísticas',
-        'Ajustes',
-      ]);
+      expect(find.byKey(const ValueKey('nav-games')), findsOneWidget);
+      expect(find.byKey(const ValueKey('nav-statistics')), findsOneWidget);
+      expect(find.byTooltip('Ajustes'), findsOneWidget);
       expect(find.text('Inicio'), findsNothing);
       container.read(appRouterProvider).go('/home');
       await tester.pumpAndSettle();
@@ -185,8 +181,9 @@ void main() {
     'mobile retains gallery and three destinations without overflow',
     (tester) async {
       await pump(tester, router: true, width: 390);
-      final nav = tester.widget<NavigationBar>(find.byType(NavigationBar));
-      expect(nav.destinations, hasLength(3));
+      expect(find.byKey(const ValueKey('nav-games')), findsOneWidget);
+      expect(find.byKey(const ValueKey('nav-statistics')), findsOneWidget);
+      expect(find.byTooltip('Ajustes'), findsOneWidget);
       expect(find.byType(GridView), findsOneWidget);
       expect(find.text('Agregar juego'), findsOneWidget);
       expect(tester.takeException(), isNull);
