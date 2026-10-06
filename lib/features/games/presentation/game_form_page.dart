@@ -581,6 +581,8 @@ class _GameFormPageState extends ConsumerState<GameFormPage> {
           );
 
       if (!mounted) return;
+      // The detail route stays mounted below Edit and retains its cached read.
+      ref.invalidate(libraryGameProvider(entryId));
       context.go('/games/$entryId');
     } catch (error) {
       if (!mounted) return;
