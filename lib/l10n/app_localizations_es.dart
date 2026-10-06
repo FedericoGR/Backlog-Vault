@@ -1342,5 +1342,8 @@ class AppLocalizationsEs extends AppLocalizations {
       'Todavía no hay plataformas jugadas registradas en este año.';
 
   @override
+  String get logCollectionHeading => 'Mi biblioteca';
+
+  @override
   String get columnTitle => 'Título';
 }

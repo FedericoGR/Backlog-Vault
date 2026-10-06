@@ -2490,6 +2490,12 @@ abstract class AppLocalizations {
   /// **'No played platforms recorded this year yet.'**
   String get statisticsNoPlayedPlatforms;
 
+  /// No description provided for @logCollectionHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'My library'**
+  String get logCollectionHeading;
+
   /// No description provided for @columnTitle.
   ///
   /// In en, this message translates to:

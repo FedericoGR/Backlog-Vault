@@ -1338,5 +1338,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'No played platforms recorded this year yet.';
 
   @override
+  String get logCollectionHeading => 'My library';
+
+  @override
   String get columnTitle => 'Title';
 }

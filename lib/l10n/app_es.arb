@@ -396,5 +396,6 @@
   "statisticsPlayedPlatforms": "Dónde jugué",
   "statisticsPlayedPlatformsHint": "Juegos por plataforma jugada registrada.",
   "statisticsNoPlayedPlatforms": "Todavía no hay plataformas jugadas registradas en este año.",
+  "logCollectionHeading": "Mi biblioteca",
   "columnTitle": "Título"
 }

@@ -167,10 +167,16 @@ void main() {
       Finder textInCard(String text) =>
           find.descendant(of: card, matching: find.text(text));
       expect(textInCard('18.0 h'), findsOneWidget);
-      expect(textInCard('⭐⭐⭐⭐'), findsOneWidget);
-      expect(textInCard('Terminado'), findsOneWidget);
+      expect(
+        find.descendant(of: card, matching: find.byIcon(Icons.star)),
+        findsNWidgets(4),
+      );
+      expect(
+        find.descendant(of: card, matching: find.byTooltip('Terminado')),
+        findsOneWidget,
+      );
       expect(textInCard('Played Switch'), findsOneWidget);
-      expect(find.text('No terminado'), findsOneWidget);
+      expect(find.byIcon(Icons.check), findsOneWidget);
       expect(find.text('Catalog PC'), findsNothing);
       expect(find.text('Catalog RPG'), findsNothing);
       expect(find.text('01-01-1999'), findsNothing);

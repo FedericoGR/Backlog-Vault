@@ -396,5 +396,6 @@
   "statisticsPlayedPlatforms": "Where I played",
   "statisticsPlayedPlatformsHint": "Games by recorded played platform.",
   "statisticsNoPlayedPlatforms": "No played platforms recorded this year yet.",
+  "logCollectionHeading": "My library",
   "columnTitle": "Title"
 }
