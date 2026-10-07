@@ -65,12 +65,12 @@ void main() {
     final pubspec = File('pubspec.yaml').readAsStringSync();
     expect(
       pubspec,
-      contains(RegExp(r'^version: 1\.0\.0-rc1\+6$', multiLine: true)),
+      contains(RegExp(r'^version: 1\.0\.0-rc2\+7$', multiLine: true)),
     );
 
     final versions =
         File('lib/core/version/app_versions.dart').readAsStringSync();
-    expect(versions, contains("appVersionName = '1.0.0-rc1'"));
+    expect(versions, contains("appVersionName = '1.0.0-rc2'"));
 
     final common = File('tool/release_common.ps1').readAsStringSync();
     final android = File('tool/package_android.ps1').readAsStringSync();

@@ -1,6 +1,6 @@
 # Backlog Vault Offline workflows
 
-Backlog Vault `v1.0.0-rc1` is a local-first library for Windows and Android.
+Backlog Vault `v1.0.0-rc2` is a local-first library for Windows and Android.
 It has no account, cloud service, device pairing, or background transport.
 Normal library use does not require Internet.
 

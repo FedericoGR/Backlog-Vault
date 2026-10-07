@@ -1,7 +1,7 @@
 name: backlog_vault
 description: Backlog Vault is an offline personal video game log.
 publish_to: "none"
-version: 1.0.0-rc1+6
+version: 1.0.0-rc2+7
 
 environment:
   sdk: ">=3.7.0 <4.0.0"

@@ -1,6 +1,6 @@
 # Backlog Vault install and portability
 
-App version: `1.0.0-rc1+6`.
+App version: `1.0.0-rc2+7`.
 
 Backlog Vault is an offline, single-device application. SQLite, managed media,
 provider credentials, and language preferences stay on the device. The product
@@ -50,12 +50,9 @@ The default packages arm64-v8a for modern Motorola/Android hardware plus a
 universal fallback. `-Mode All` also emits armeabi-v7a and x86_64. The script
 never installs an APK. E7 performs the physical in-place QA.
 
-The release artifacts are
-`BacklogVault-android-arm64-v1.0.0-rc1.apk` and
-`BacklogVault-android-universal-v1.0.0-rc1.apk`. The first is recommended for
-compatible arm64 devices; the universal APK is larger and is provided as a
-compatibility fallback. They are personal/QA packages, not Play Store
-artifacts. An in-place update requires the same package identity and a
+The `v1.0.0-rc2` release APK is `Backlog-Vault-v1.0.0-rc2-Android.apk`.
+It uses Android debug signing for personal/QA installation and is not a Play
+Store artifact. An in-place update requires the same package identity and a
 compatible signing key. Never uninstall or clear app data as part of an update
 when the installation contains important data.
 The JSON export is not an automatic restore format.

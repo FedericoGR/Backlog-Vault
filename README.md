@@ -4,7 +4,7 @@ Backlog Vault is an offline personal videogame log for Windows and Android. Brow
 
 > Spanish documentation: [README.es.md](README.es.md)
 
-Current release candidate: `v1.0.0-rc1` (`1.0.0-rc1+6`). It consolidates
+Current release candidate: `v1.0.0-rc2` (`1.0.0-rc2+7`). It consolidates
 Backlog Vault as an intentionally Offline product.
 
 ## What it does
@@ -40,7 +40,7 @@ See [install and portability](docs/install_and_portability.md) for the current d
 
 ### Windows portable ZIP
 
-1. Download or build `BacklogVault-windows-x64-portable-v1.0.0-rc1.zip`.
+1. Download or build `Backlog-Vault-v1.0.0-rc2-Windows-x64.zip`.
 2. Extract the complete archive; do not run the executable from inside the ZIP.
 3. Launch `backlog_vault.exe`.
 
@@ -55,7 +55,7 @@ complete extracted folder when moving or backing it up.
 2. Allow installation from the local source when Android prompts you.
 3. Install the APK and open Backlog Vault.
 
-Current APKs are locally signed for personal installation and testing. They are not Play Store packages. Only perform an in-place update with the same package identity and a compatible signing key. Do not uninstall an installation that contains important data: uninstalling can remove app-local data, and JSON export is not an automatic restore format.
+The current RC APK uses Android debug signing for personal installation and testing. It is not a Play Store package. Only perform an in-place update with the same package identity and a compatible signing key. Do not uninstall an installation that contains important data: uninstalling can remove app-local data, and JSON export is not an automatic restore format.
 
 ## Build from source
 
@@ -134,7 +134,7 @@ Screenshots will be added after the bilingual Windows and Android UI pass is cap
 - [Install and portability](docs/install_and_portability.md)
 - [Library export format v1](docs/export/library_export_format_v1.md)
 - [Offline workflows](docs/product/offline_workflows.md)
-- [v1.0.0-rc1 release notes](docs/release/release_notes_v1_0_0_rc1.md)
+- [v1.0.0-rc2 release notes](docs/release/release_notes_v1_0_0_rc2.md)
 - [v1.0.0-rc1 QA checklist](docs/release/qa_checklist_v1_0_0_rc1.md)
 - [v0.2 QA checklist](docs/qa_v0_2_checklist.md)
 - [v0.2 release notes](docs/release_notes_v0_2.md)
