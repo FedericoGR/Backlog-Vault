@@ -1,6 +1,6 @@
 # Backlog Vault
 
-Backlog Vault is an offline videogame backlog manager for Windows and Android. It keeps your library, personal notes, playthroughs, metadata, and covers on your own device. There is no account, backend, cloud, device pairing, or cross-device synchronization.
+Backlog Vault is an offline personal videogame log for Windows and Android. Browse your games by year and keep one personal record with completion, hours, platform, rating, and notes. Your library and local covers stay on your device; there is no account, backend, cloud, or cross-device synchronization.
 
 > Spanish documentation: [README.es.md](README.es.md)
 
@@ -9,16 +9,16 @@ Backlog Vault as an intentionally Offline product.
 
 ## What it does
 
-- Library views: responsive table, gallery, and list.
-- Search, advanced filters, sorting, configurable columns, and saved views.
-- Manual game creation and editing with soft-delete behavior.
+- Annual poster gallery with year navigation, search, and simple completion, played-platform, and rating filters.
+- One personal record per game: completed status, played year, optional completion date, hours, played platform, rating, and notes.
+- Game details and yearly statistics for your personal gaming history.
+- Manual game creation and editing, with catalog information kept separate from your personal record.
 - Notion CSV import with mapping, preview, duplicate detection, and validation.
 - Optional metadata from RAWG and IGDB.
 - Optional covers from IGDB and SteamGridDB, plus local image import.
 - Bulk metadata and cover matching with explicit preview and replacement controls.
 - Local media storage using relative paths.
-- Portable, human-readable JSON export of the complete library data model.
-- Home dashboard and library statistics.
+- Portable, human-readable JSON export of library data, including supported legacy records.
 - System, light, dark, and OLED-friendly UI behavior.
 - English and Spanish, with a per-device language selector.
 
@@ -123,7 +123,7 @@ The preference is stored per device and is not part of the library database or J
 
 ## Offline product direction
 
-Backlog Vault is intentionally single-device and offline. Portability means an explicit, readable JSON export—not synchronization, restore, media packaging, or device recovery. Historical Sync and backup/restore implementations remain available only through Git and the external pre-refactor bundle.
+Backlog Vault is intentionally offline. On Windows, portable storage keeps the database, media, preferences, and encrypted credentials beside the application. The JSON export is for preservation and user-controlled processing; it is not an automatic restore format and does not include local image bytes.
 
 ## Screenshots
 

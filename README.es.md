@@ -1,6 +1,6 @@
 # Backlog Vault
 
-Backlog Vault es un gestor offline de backlog de videojuegos para Windows y Android. La biblioteca, notas personales, partidas, metadata y portadas quedan en el dispositivo. No requiere cuenta, backend, cloud, pairing ni sincronización entre dispositivos.
+Backlog Vault es un registro personal de videojuegos offline para Windows y Android. Permite recorrer los juegos por año y guardar un único registro personal con estado de finalización, horas, plataforma, puntaje y notas. La biblioteca y las portadas locales quedan en el dispositivo; no requiere cuenta, backend, cloud ni sincronización entre dispositivos.
 
 > Documentación principal en inglés: [README.md](README.md)
 
@@ -9,16 +9,16 @@ Backlog Vault como producto intencionalmente Offline.
 
 ## Funcionalidades
 
-- Biblioteca responsive en tabla, galería y lista.
-- Búsqueda, filtros avanzados, orden, columnas configurables y vistas guardadas.
-- Creación y edición manual con borrado lógico.
+- Galería anual de portadas con navegación por año, búsqueda y filtros simples por finalización, plataforma jugada y puntaje.
+- Un registro personal por juego: estado, año jugado, fecha opcional de finalización, horas, plataforma jugada, puntaje y notas.
+- Detalles y estadísticas anuales de tu historial personal de juegos.
+- Creación y edición manual, con la información del catálogo separada del registro personal.
 - Importación de CSV de Notion con mapping, preview, detección de duplicados y validaciones.
 - Metadata opcional desde RAWG e IGDB.
 - Portadas opcionales desde IGDB y SteamGridDB, además de archivos locales.
 - Importación masiva de metadata y covers con preview y reemplazos explícitos.
 - Media local almacenada con paths relativos.
-- Exportación JSON portable y legible de todos los datos de la biblioteca.
-- Home y estadísticas de biblioteca.
+- Exportación JSON portable y legible de los datos de biblioteca, incluidos los registros heredados compatibles.
 - Tema claro/oscuro con diseño OLED-friendly.
 - Español e inglés con selector por dispositivo.
 
@@ -106,7 +106,7 @@ La app detecta el idioma del sistema por default. En **Ajustes → Idioma** pod�
 
 ## Dirección Offline
 
-Backlog Vault es intencionalmente offline y de un solo dispositivo. Portabilidad significa un JSON explícito y legible, no sincronización, restore, packaging de media ni recuperación del dispositivo. Las implementaciones históricas de Sync y backup/restore permanecen sólo en Git y en el bundle externo previo al refactor.
+Backlog Vault funciona offline. En Windows, el almacenamiento portable mantiene la base, la media, las preferencias y las credenciales cifradas junto a la aplicación. La exportación JSON sirve para conservar y procesar los datos; no restaura la aplicación automáticamente ni incluye los bytes de las imágenes locales.
 
 ## Screenshots
 
