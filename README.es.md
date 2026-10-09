@@ -20,13 +20,18 @@ Backlog Vault guarda un registro personal de los juegos que jugaste. Recorré tu
 
 ## Capturas
 
-Las capturas de la interfaz actual se agregarán aquí.
+Interfaz de escritorio con datos de muestra.
 
-<!-- Reemplazar estos placeholders por capturas cuando los archivos estén disponibles:
-![Galería anual](docs/images/screenshots/library.png)
-![Registro personal del juego](docs/images/screenshots/game-detail.png)
-![Estadísticas anuales](docs/images/screenshots/statistics.png)
--->
+![Galería anual](docs/images/screenshots/library-es.png)
+
+<details>
+<summary>Registro personal y estadísticas anuales</summary>
+
+![Registro personal del juego](docs/images/screenshots/game-detail-es.png)
+
+![Estadísticas anuales](docs/images/screenshots/statistics-es.png)
+
+</details>
 
 ## Descargas
 

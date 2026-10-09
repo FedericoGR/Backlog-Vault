@@ -20,13 +20,18 @@ Backlog Vault keeps a personal record of the games you've played. Browse your li
 
 ## Screenshots
 
-Screenshots of the current interface will be added here.
+Desktop interface shown with sample data.
 
-<!-- Replace these placeholders with screenshots once the files are available:
-![Annual game gallery](docs/images/screenshots/library.png)
-![Personal game record](docs/images/screenshots/game-detail.png)
-![Yearly statistics](docs/images/screenshots/statistics.png)
--->
+![Annual game gallery](docs/images/screenshots/library-en.png)
+
+<details>
+<summary>Game record and yearly statistics</summary>
+
+![Personal game record](docs/images/screenshots/game-detail-en.png)
+
+![Yearly statistics](docs/images/screenshots/statistics-en.png)
+
+</details>
 
 ## Download
 
